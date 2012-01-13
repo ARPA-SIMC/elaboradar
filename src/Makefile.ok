@@ -1,0 +1,79 @@
+# se non è setata la libSP20_DIR vengono specificate qui
+
+libSP20_DIR=../../libSP20/lib
+libZR_DIR=../../util_Z-R/lib 
+libNR_DIR=../../NR_C/lib
+
+BINDIR=../bin
+
+INCLUDEDIR_SP20=../../libSP20/include
+
+LDLIBS_SP20= -L$(libSP20_DIR) -lSP20_utility
+LDLIBS_ZR= -L$(libZR_DIR) -lfunc_Z_R
+LDLIBS_NR=-L$(libNR_DIR) -lNR_C_ANSI
+
+LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm -llog4c
+
+CC=gcc
+
+IFLAGS=-I../include
+
+CFLAGS= -Wall -fstack-protector -D_FORTIFY_SOURCE=2 -DANAPROP -DTIME -DZ_LOWRIS  -DMEDIUM  $(IFLAGS) -I$(INCLUDEDIR_SP20)
+
+CFLAGS_BB= -Wall -fstack-protector -D_FORTIFY_SOURCE=2 -DANAPROP -DTIME  -DZ_LOWRIS  -DSHORT -DSTATIC  -DBEAMBLOCKING -DQUALITY  $(IFLAGS) -I$(INCLUDEDIR_SP20)
+
+CFLAGS_BB_VPR= -Wall -fstack-protector -D_FORTIFY_SOURCE=2 -DANAPROP -DTIME  -DZ_LOWRIS  -DSHORT -DSTATIC  -DBEAMBLOCKING -DQUALITY -DVPR $(IFLAGS) -I$(INCLUDEDIR_SP20)
+
+CFLAGS_BB_VPR_CLASS= -Wall -fstack-protector -D_FORTIFY_SOURCE=2 -DANAPROP -DTIME  -DZ_LOWRIS  -DSHORT -DSTATIC  -DBEAMBLOCKING -DQUALITY -DVPR -DCLASS $(IFLAGS) -I$(INCLUDEDIR_SP20)
+
+OBJ_BB_VPR_CLASS= cum_bac_SP20_BB_VPR_CLASS.o setstat.o setwork.o func_Q3d.o Q_components.o 
+OBJ_BB_VPR= cum_bac_SP20_BB_VPR.o setstat.o setwork.o func_Q3d.o Q_components.o 
+OBJ_BB= cum_bac_SP20_BB.o setstat.o setwork.o func_Q3d.o Q_components.o 
+OBJ= cum_bac_SP20.o 
+
+all: install
+
+cum_bac_SP20_m: $(OBJ)
+	$(CC) -o $@ $^ $(LDLIBS) 
+
+cum_bac_SP20.o:cum_bac_SP20.c $(INCLUDEDIR_SP20)/func_SP20read.h 
+	$(CC) -c  $(CFLAGS) $< -o $@ 
+
+cum_bac_SP20_BB: $(OBJ_BB)
+
+cum_bac_SP20_BB.o:cum_bac_SP20_BB_VPR.c $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h
+	$(CC) -c  $(CFLAGS_BB) $< -o $@
+
+cum_bac_SP20_BB_VPR: $(OBJ_BB_VPR)
+
+cum_bac_SP20_BB_VPR.o:cum_bac_SP20_BB_VPR.c $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h
+	$(CC) -c  $(CFLAGS_BB_VPR) $< -o $@
+
+cum_bac_SP20_BB_VPR_CLASS: $(OBJ_BB_VPR_CLASS)
+
+cum_bac_SP20_BB_VPR_CLASS.o:cum_bac_SP20_BB_VPR.c $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h ../include/par_class.h
+	$(CC) -c -g  $(CFLAGS_BB_VPR_CLASS) $< -o $@
+
+setwork.o:setwork.c
+	$(CC) -c  $< -o $@
+
+setstat.o:setstat.c
+	$(CC) -c  $< -o $@
+
+func_Q3d.o:func_Q3d.c ../include/qual_par.h
+	$(CC) -c $< $(IFLAGS) -o $@
+
+Q_components.o:Q_components.c ../include/qual_par.h
+	$(CC) -c $< $(IFLAGS) -o $@
+
+clean: 
+	$(RM) $(OBJ_BB_VPR) $(OBJ) $(OBJ_BB_VPR_CLASS) *.o $(BINDIR)/*
+
+install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_SP20_m
+	[ -d $(BINDIR) ] || mkdir -p $(BINDIR)
+	 mv cum_bac_SP20_BB_VPR_CLASS $(BINDIR)
+	 mv  cum_bac_SP20_BB_VPR  $(BINDIR)
+	 mv  cum_bac_SP20_BB  $(BINDIR)
+	 mv  cum_bac_SP20_m $(BINDIR)
+%: %.o
+	$(CC) -o $@ $^ $(LDLIBS)
