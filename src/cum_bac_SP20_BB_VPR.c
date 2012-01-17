@@ -3381,7 +3381,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	  dyda=vector(1,npar); 
 	  *hliq=(a[2]-2.1*a[3])*1000.;
 	  lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
-	  *vpr_liq=vpr[(int)(hliq)/TCK_VPR]; // ... SE HO IL VALORE VPR USO QUELLO.
+	  *vpr_liq=vpr[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
           free_vector(dyda,1,npar);
 	}
 	v3=vpr[(hvprmax+(int)(3.*a[3]*1000))/TCK_VPR];//vpr appena sopra bb
