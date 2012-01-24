@@ -3679,7 +3679,7 @@ int interpola_VPR(float a[], int ma)
       {
 	xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
 	lineargauss(xint, a, &y1, dyda, ndata); 
-	fprintf(file," %10.3f \n",RtoDBZ(y1)); 
+	fprintf(file," %10.3f \n",RtoDBZ(y1,aMP,bMP)); 
       }
     fclose(file);
   } 
