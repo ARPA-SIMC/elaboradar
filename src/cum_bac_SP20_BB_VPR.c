@@ -3675,7 +3675,7 @@ int interpola_VPR(float a[], int ma)
     //sprintf(file_vprint,"%s_int",getenv("VPR0_FILE"));
     sprintf(file_vprint,"%s_int",getenv("VPR_ARCH"));
     file=controllo_apertura(file_vprint," vpr interpolato ","w"); 
-    for (i=1; i<=ndata+20; i++)
+    for (i=1; i<=NMAXLAYER; i++)
       {
 	xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
 	lineargauss(xint, a, &y1, dyda, ndata); 
