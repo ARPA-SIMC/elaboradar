@@ -3381,7 +3381,14 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	  dyda=vector(1,npar); 
 	  *hliq=(a[2]-2.1*a[3])*1000.;
 	  lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
-	  *vpr_liq=vpr[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
+	  if ( *hliq > livmin) {
+	    *vpr_liq=vpr[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
+	  }
+	  else // altrimenti tengo il valore vpr neve + 6 dB* e metto tipo_profilo=2
+	    {
+	      tipo_profilo=2;
+	      *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
+	    }
           free_vector(dyda,1,npar);
 	}
 	v3=vpr[(hvprmax+(int)(3.*a[3]*1000))/TCK_VPR];//vpr appena sopra bb
@@ -3415,6 +3422,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   v1000=NODATAVPR;
   v1500=NODATAVPR;
   if (! ier) {
+ if(*hliq > livmin +200)
     vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
     vliq=RtoDBZ(*vpr_liq,aMP,bMP);
   }
