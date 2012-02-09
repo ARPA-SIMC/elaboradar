@@ -3332,7 +3332,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
       	else {
       	  fprintf(log_vpr," temperatura da neve e massimo al suolo, non interpolo\n");
       	  tipo_profilo=3;
-	  hvprmax=0;
+	  hvprmax=livmin;
       	}
 	//if (t_ground < T_MAX_SN && vpr[hvprmax/TCK_VPR]/vpr[hvprmax/TCK_VPR+2] < THR_SN ) tipo_profilo=3;  
       }
