@@ -2972,8 +2972,19 @@ int combina_profili(char *sito, char *sito_ad)
     if (livmin>=(NMAXLAYER-1)*TCK_VPR+TCK_VPR/2  || !foundlivmin) return (1);
 
   }   
+
+
   /*fine VPR combinato*/  
   else for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
+
+    livmin=0;
+    foundlivmin=0;
+    for (ilay=0; ilay<NMAXLAYER; ilay++){
+      if (vpr[ilay]> NODATAVPR && !foundlivmin) {
+	livmin=ilay*TCK_VPR+TCK_VPR/2;
+	foundlivmin=1;
+      }
+    }
  
   free(cv);
   free(ct);
@@ -3229,6 +3240,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   ier_ana=0;
   nstaz=4;
   nvar=1;
+  hvprmax=-9999;// inizializzo
 
   ier_max=trovo_hvprmax();
   printf("ier_max %i \n",ier_max);
@@ -3307,7 +3319,6 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	    }
 	    hvprmax=hmax;
 	    imax=hmax/TCK_VPR;
-	 
 
 	    fprintf(log_vpr,"hvprmax nuovo %i\n",hvprmax);        
 	  }
@@ -3324,15 +3335,17 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
       	  else fprintf(log_vpr," il livello %i potrebbe essere dentro la Bright Band, interpolo\n",livmin);
       	  tipo_profilo=2;
       	}
-      if (t_ground < T_MIN_ML)  {
-	if (  ier_max ) { 	
+      if (t_ground < T_MIN_ML )  {
+	if ( ier_max ){ 
+	  if (   hvprmax > livmin +200  ) { 	
 	    fprintf(log_vpr," temperatura da neve e massimo in quota, interpolo\n");
 	    tipo_profilo=2;	 
-     	}
+	  }
+	}
       	else {
+	  hvprmax=livmin;
       	  fprintf(log_vpr," temperatura da neve e massimo al suolo, non interpolo\n");
       	  tipo_profilo=3;
-	  hvprmax=livmin;
       	}
 	//if (t_ground < T_MAX_SN && vpr[hvprmax/TCK_VPR]/vpr[hvprmax/TCK_VPR+2] < THR_SN ) tipo_profilo=3;  
       }
@@ -3446,10 +3459,10 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
       v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
     if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
       v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
+
     vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
 
  
-
   fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f %f %f %f %f %f\n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax,a[1],a[2],a[3],a[4],a[5]);	     
   fclose(test_vpr);
   /* fine parte di stampa test vpr*/
