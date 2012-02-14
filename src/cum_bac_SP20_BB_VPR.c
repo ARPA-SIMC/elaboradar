@@ -2972,19 +2972,8 @@ int combina_profili(char *sito, char *sito_ad)
     if (livmin>=(NMAXLAYER-1)*TCK_VPR+TCK_VPR/2  || !foundlivmin) return (1);
 
   }   
-
-
   /*fine VPR combinato*/  
   else for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
-
-    livmin=0;
-    foundlivmin=0;
-    for (ilay=0; ilay<NMAXLAYER; ilay++){
-      if (vpr[ilay]> NODATAVPR && !foundlivmin) {
-	livmin=ilay*TCK_VPR+TCK_VPR/2;
-	foundlivmin=1;
-      }
-    }
  
   free(cv);
   free(ct);
@@ -3240,14 +3229,13 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   ier_ana=0;
   nstaz=4;
   nvar=1;
-  hvprmax=-9999;// inizializzo
 
   ier_max=trovo_hvprmax();
   printf("ier_max %i \n",ier_max);
- 	/* if ( ! ier_max ) { */
-	/*   fprintf(log_vpr," non ho trovato hvprmax, esco \n"); */
-	/*   return 1; */
-	/* } */
+  if ( ! ier_max ) {
+    fprintf(log_vpr," non ho trovato hvprmax, esco \n");
+    return 1;
+  }
   liv0=livmin+HALF_BB;  
   //hstim0=(t_ground/6.5)*1000.;
  
@@ -3255,19 +3243,11 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
     {
       fprintf(log_vpr,"non ho T,... interpolo \n");
       tipo_profilo=0;
-	if ( ! ier_max ) {
-	  fprintf(log_vpr," non ho trovato hvprmax, esco \n");
-	  return 1;
-	}
     }
   else 
     {
       h0start=(t_ground/9.8)*1000.;// inizio a cercare lo 0 partendo dalla adiabatica secca
       if (t_ground >= T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.){
-	if ( ! ier_max ) {
-	  fprintf(log_vpr," non ho trovato hvprmax, esco \n");
-	  return 1;
-	}
 	if (hvprmax > livmin) {
 	  fprintf(log_vpr,"il livello base %i sta sotto il massimo , e T >T_MAX_ML caso convettivo, o misto o con bright band alta, interpolo\n",livmin);
 	  tipo_profilo=0;
@@ -3319,6 +3299,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	    }
 	    hvprmax=hmax;
 	    imax=hmax/TCK_VPR;
+	 
 
 	    fprintf(log_vpr,"hvprmax nuovo %i\n",hvprmax);        
 	  }
@@ -3327,23 +3308,16 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
      
       if (t_ground >= T_MIN_ML  && t_ground < T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.)
       	{
-	  if ( ! ier_max ) {
-	    fprintf(log_vpr," non ho trovato hvprmax, esco \n");
-	    return 1;
-	  }
       	  if (hvprmax > liv0) fprintf(log_vpr," il livello %i è sotto la Bright band, ma T bassa  interpolo\n",livmin);
       	  else fprintf(log_vpr," il livello %i potrebbe essere dentro la Bright Band, interpolo\n",livmin);
       	  tipo_profilo=2;
       	}
-      if (t_ground < T_MIN_ML )  {
-	if ( ier_max ){ 
-	  if (   hvprmax > livmin +200  ) { 	
-	    fprintf(log_vpr," temperatura da neve e massimo in quota, interpolo\n");
-	    tipo_profilo=2;	 
-	  }
-	}
+      if (t_ground < T_MIN_ML)  {
+      	if (vpr[hvprmax/TCK_VPR]/vpr[hvprmax/TCK_VPR+2] > THR_SN )  {
+      	  fprintf(log_vpr," temperatura da neve e massimo in quota, interpolo\n");
+      	  tipo_profilo=2;
+      	}
       	else {
-	  hvprmax=livmin;
       	  fprintf(log_vpr," temperatura da neve e massimo al suolo, non interpolo\n");
       	  tipo_profilo=3;
       	}
@@ -3418,7 +3392,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
           free_vector(dyda,1,npar);
 	}
 	v3=vpr[(hvprmax+(int)(3.*a[3]*1000))/TCK_VPR];//vpr appena sopra bb
-	hl=1000*(a[2]-2.1*a[3]);//altezza ivello liquido
+	hl=1000*(a[2]-2.1*a[3]);//altezza livello liquido
  	free_vector(a,1,npar);
       }
       break;
@@ -3447,21 +3421,18 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   v600sottobb=NODATAVPR;
   v1000=NODATAVPR;
   v1500=NODATAVPR;
- 
-    if (! ier && tipo_profilo < 3) {
-      if(*hliq > livmin +200 )
-	vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
-        vliq=RtoDBZ(*vpr_liq,aMP,bMP);
-    }
-    if ( hvprmax-600 >= livmin && tipo_profilo < 3) 
-      v600sottobb=RtoDBZ(vpr[(hvprmax-600)/TCK_VPR],aMP,bMP);
-    if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
-      v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
-    if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
-      v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
-
-    vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
-
+  if (! ier) {
+ if(*hliq > livmin +200)
+    vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
+    vliq=RtoDBZ(*vpr_liq,aMP,bMP);
+  }
+  if ( hvprmax-600 >= livmin) 
+    v600sottobb=RtoDBZ(vpr[(hvprmax-600)/TCK_VPR],aMP,bMP);
+  if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
+    v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
+  if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
+    v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
+  vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
  
   fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f %f %f %f %f %f\n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax,a[1],a[2],a[3],a[4],a[5]);	     
   fclose(test_vpr);
