@@ -170,8 +170,6 @@
  |
  |--------------------------------------------------------------------------------
 
-/*----------------------------------------------------------------------------
-	INCLUDE file						       	      
 ----------------------------------------------------------------------------*/
 
 #include <stdio.h>
@@ -334,14 +332,8 @@ int main (int argc, char **argv)
 /* ==================== */
 {
   char *nome_file , *nome_file_volume;
-  float e;
-  int i,imp,ier,ier_test;
-  int count;
-  size_t s_head;
-  int tipo_dati_richiesti = INDEX_Z;
-  FILE *file2;
-  int i_el,j_az,k_ray;
-  
+  int ier,ier_test;
+  int tipo_dati_richiesti = INDEX_Z; 
 
   /*---------------------------------------
     definisco le variabili per estrarre 
@@ -357,6 +349,7 @@ if (argv[1]==NULL) {
     exit(1);
   }
  nome_file_volume=argv[1];
+ nome_file=nome_file_volume;
 
   ScrivoLog(0,nome_file);
   ScrivoLog(1,nome_file);
@@ -378,7 +371,6 @@ if (argv[1]==NULL) {
   /* while(1) */
   /*   { */
       /* if(fscanf(file2,"%s",nome_file) != 1) break; */
- nome_file=nome_file_volume;
 #ifdef TIME
       prendo_tempo();
 #endif
@@ -643,14 +635,16 @@ int test_file()
              fclose(f_aus);
       sprintf(errori,"File Vecchio");
       ScrivoLog(16,errori);
-            return 0;
+      //return 0;
            }
           /*----------------------------
            |  aggiorno la data nel file |
             ----------------------------*/
+	   else{
            rewind(f_aus);
            fwrite(&old_data_header.norm.maq.acq_date,4,1,f_aus);
            fclose(f_aus);
+	   }
         }
         else
         {
@@ -978,7 +972,6 @@ void 	creo_matrice_conv()
 /*===============================================*/
 {
 	int i,j;
-        long time1,time2;
 
 	for(i=0; i<MAX_BIN; i++)
 	  for(j=0; j<MAX_BIN; j++)
@@ -1088,9 +1081,6 @@ void scrivo_5x5 (imin,imax,jmin,jmax,dx,dy)
      int dx,dy;
 /*===============================================*/
 {
-	int x,y,i,val;
-	char nome_file [150];
-	FILE *output, *name_sidme;
 	struct tm *tempo;
 	time_t time;
 	/*----------------------------------------------------------------------------*/
@@ -1098,7 +1088,7 @@ void scrivo_5x5 (imin,imax,jmin,jmax,dx,dy)
 	/*----------------------------------------------------------------------------*/
 
 	time = NormalizzoData(old_data_header.norm.maq.acq_date);
-	printf( "%d \n", time);
+	printf( "%ld \n", time);
 	printf("%d\n",old_data_header.norm.maq.acq_date);
 
 	tempo = gmtime(&time);
@@ -1206,7 +1196,7 @@ void bacini()
    time_t Time;
    char date[80],dateold[80];
    int i,j,ind,flag;
-   static Piove = NON_PIOVE;
+   static int Piove = NON_PIOVE;
    struct {
            time_t last_ist,last_rain;
            char name[256];
@@ -1421,7 +1411,7 @@ void prendo_tempo()
     time_tot = time1;
   }
   time2 = time(&time2);
-  printf(" tempo parziale %4d ---- totale %4d\n",time2-time1, time2-time_tot);
+  printf(" tempo parziale %ld ---- totale %ld\n",time2-time1, time2-time_tot);
   time1=time2;
   return;
 }
@@ -1501,8 +1491,6 @@ void	creo_cart_z_lowris()
 {
 	int i,j,x,y;
 	unsigned char z;
-
-FILE *cartout;
 
         memset(z_out,0,sizeof(z_out));
 	for(i=0; i<CART_DIM_ZLR; i++)
@@ -1696,7 +1684,6 @@ char *stringa;
 char *PrendiOra()
 /*===============================================*/
 {
-  char stringa[80];
   time_t clock;
   struct tm *tempo;         
 
@@ -1706,7 +1693,6 @@ char *PrendiOra()
 return   asctime(tempo);
 
 }
-
 
 
 /*===============================================*/
