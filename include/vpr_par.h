@@ -13,7 +13,7 @@
 #define  CT_MIN  0.01    // FRAZIONE DI VOLUME MINIMO PIENO PER CALCOLO PROF.
 #define  K_C0  2 // COSTANTE MOLTIPLICATIVA PER RICAVARE C0 DA CV
 #define  MIN_AREA   100000 //area minima per strato in km^2/1000 cambiata a 100000
-#define  NMAXLAYER  50 // NUMERO MASSIMO STRATI (AGGIUNTA ANNA)
+#define  NMAXLAYER  70 // NUMERO MASSIMO STRATI (AGGIUNTA ANNA)
 #define  NODATAVPR  -9999. // 
 #define  INODATA     -9999
 #define  IAZ_MIN_SPC  -100   // spc -90° (-100)--> 135°(150) gat -45°(-50)--> 99°(110)
