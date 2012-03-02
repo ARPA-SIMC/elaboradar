@@ -798,12 +798,12 @@ int main (int argc, char **argv)
 	  scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking); 
 	  //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
 	  scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);  
-	  scrivo_out_file_bin(".quota_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);
+	  scrivo_out_file_bin(".quota_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
 
 #ifdef VPR  
 	  scrivo_out_file_bin(".corr_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
 	  scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve); 
-	  scrivo_out_file_bin(".neve_ZLR","file qualita' R",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1); 
+	  scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1); 
 #endif	
 #ifdef CLASS  
 	  scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1); 
@@ -3094,11 +3094,9 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 
   nstaz=4;
   nvar=1;
-<<<<<<< .mine
+
   strcpy(date,"000000000000");
   hvprmax=-9999;// inizializzo
-=======
->>>>>>> .r839
   tipo_profilo=-1;
   stdev=NODATAVPR;
   chisqfin=100.;
@@ -3116,58 +3114,49 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   }
 
   ier_max=trovo_hvprmax(&hvprmax);
+  
 
-
-
-  printf("ier_max %i \n",ier_max);
-<<<<<<< .mine
   /* if ( ! ier_max ) { */
   /*   fprintf(log_vpr," non ho trovato hvprmax, esco \n"); */
   /*   return 1; */
   /* } */
-=======
+
   if ( ! ier_max ) {
     fprintf(log_vpr," non ho trovato hvprmax, esco \n");
     return 1;
   }
->>>>>>> .r839
+
   liv0=livmin+HALF_BB;  
-  //hstim0=(t_ground/6.5)*1000.;
- 
   if (ier_t)
     {
-      fprintf(log_vpr,"non ho T,... interpolo \n");
-      tipo_profilo=0;
-<<<<<<< .mine
+      fprintf(log_vpr,"non ho T,...  \n");
+
       if ( ! ier_max ) {
 	fprintf(log_vpr," non ho trovato hvprmax, esco \n");
 	free_vector(a,1,npar);
 	free_vector(dyda,1,npar);
 	return 1;
       }
-=======
->>>>>>> .r839
+      tipo_profilo=0;
     }
   else 
     {
      
       if (t_ground >= T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.){
-<<<<<<< .mine
 	if ( ! ier_max ) {
 	  fprintf(log_vpr," non ho trovato hvprmax, esco \n");
 	  free_vector(a,1,npar);
 	  free_vector(dyda,1,npar);
 	  return 1;
 	}
-=======
->>>>>>> .r839
+
 	if (hvprmax > livmin) {
 	  fprintf(log_vpr,"il livello base %i sta sotto il massimo , e T >T_MAX_ML caso convettivo, o misto o con bright band alta, interpolo\n",livmin);
 	  tipo_profilo=0;
 	}
 	else
 	  {
-	    fprintf(log_vpr," temperatura troppo alta perchè il livello %i sia nella BB  il massimo della precipitazione passa sopra il radar, esco \n",livmin); //(nn dovrebbe più essere necessario)
+	    fprintf(log_vpr," temperatura troppo alta perchè il livello %i sia nella BB  il massimo della precipitazione passa sopra il radar \n",livmin); //(nn dovrebbe più essere necessario)
 	    tipo_profilo=1;
             h0start=hvprmax+TCK_VPR;
 	    decreasing=1;
@@ -3222,7 +3211,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
      
       if (t_ground >= T_MIN_ML  && t_ground < T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.)
       	{
-<<<<<<< .mine
+
 	  if ( ! ier_max ) {
 	    if (t_ground <= T_MAX_SN ){
 		tipo_profilo=3;
@@ -3235,32 +3224,24 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	      }
 	    
 	  }
-=======
->>>>>>> .r839
+
       	  if (hvprmax > liv0) fprintf(log_vpr," il livello %i è sotto la Bright band, ma T bassa  interpolo\n",livmin);
       	  else fprintf(log_vpr," il livello %i potrebbe essere dentro la Bright Band, interpolo\n",livmin);
       	  tipo_profilo=2;
       	}
-<<<<<<< .mine
-      if (t_ground < T_MIN_ML )  {
+
+      if (t_ground < T_MAX_SN )  {
 	if ( ier_max ){ 
 	  //	  if (   hvprmax > livmin +200  ) { 	
 	  fprintf(log_vpr," temperatura da neve e massimo in quota\n");
 	  tipo_profilo=2;	 
 	}
-=======
-      if (t_ground < T_MIN_ML)  {
-      	if (vpr[hvprmax/TCK_VPR]/vpr[hvprmax/TCK_VPR+2] > THR_SN )  {
-      	  fprintf(log_vpr," temperatura da neve e massimo in quota, interpolo\n");
-      	  tipo_profilo=2;
-      	}
->>>>>>> .r839
+
 	//    }
       	else {
       	  fprintf(log_vpr," temperatura da neve e massimo al suolo, non interpolo\n");
       	  tipo_profilo=3;
         }
-	//if (t_ground < T_MAX_SN && vpr[hvprmax/TCK_VPR]/vpr[hvprmax/TCK_VPR+2] < THR_SN ) tipo_profilo=3;  
       }
     }
   
@@ -3371,7 +3352,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
     v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
   vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
  
-<<<<<<< .mine
+
   if (! ier && tipo_profilo < 3) {
     if(*hliq > livmin +200 )
       vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
@@ -3387,8 +3368,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
   //fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);
  
-=======
->>>>>>> .r839
+
   fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);	     
   free_vector(a,1,npar);
   free_vector(dyda,1,npar);
