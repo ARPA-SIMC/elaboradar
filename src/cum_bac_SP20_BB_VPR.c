@@ -2986,7 +2986,7 @@ int corr_vpr(char *sito)
 
 	if (vpr[ilref]>0 && vpr[ilray]>0 ){ /*devo avere un dato DI PIOGGIA nel VPR!*/
 	  vpr_hray=vpr[ilray]+((vpr[ilray]-vpr[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2);	/*per rendere la correzione continua non a gradini */ 		 
-	  if (dem[i][k]> hvprmax+HALF_BB-TCK_VPR){ /*classifico neve*/            
+	  if (dem[i][k]> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/            
 	    neve[i][k]=1;
 	  }
 	  if(snow)
@@ -3112,19 +3112,9 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
     a[i]=NODATAVPR;
     dyda[i]=NODATAVPR;
   }
-
+ 
   ier_max=trovo_hvprmax(&hvprmax);
   
-
-  /* if ( ! ier_max ) { */
-  /*   fprintf(log_vpr," non ho trovato hvprmax, esco \n"); */
-  /*   return 1; */
-  /* } */
-
-  if ( ! ier_max ) {
-    fprintf(log_vpr," non ho trovato hvprmax, esco \n");
-    return 1;
-  }
 
   liv0=livmin+HALF_BB;  
   if (ier_t)
@@ -3132,7 +3122,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
       fprintf(log_vpr,"non ho T,...  \n");
 
       if ( ! ier_max ) {
-	fprintf(log_vpr," non ho trovato hvprmax, esco \n");
+	fprintf(log_vpr," non ho trovato hvprmax, nè T , esco \n");
 	free_vector(a,1,npar);
 	free_vector(dyda,1,npar);
 	return 1;
@@ -3322,6 +3312,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
       *snow=1;
       *vpr_liq=NODATAVPR;
       *hliq=NODATAVPR;
+      
       break;   
     }
   fprintf(log_vpr,"TIPO_PROFILO= %i vpr_liq %f hliq %f \n", tipo_profilo, *vpr_liq,*hliq );
