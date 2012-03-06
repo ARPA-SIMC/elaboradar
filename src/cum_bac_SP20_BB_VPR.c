@@ -87,7 +87,7 @@
   |              nel nuovo formato, reso compatibile con il vecchio formato (DATAMAT MDB_2.0).
   |
   | 17-09-2003 - Sono state introdotte le seguenti variabili di compilazione ANAPROP BACINI SHORT MEDIUM
-  |              questo permette di attivare la rimozione del. clutter e della propagazione anomala,
+  |              questo permette di attivare la rimozione del  clutter e della propagazione anomala,
   |              del calcolo della cumulata a livello di bacino e permette di gestire i file a 
   |              impulso corto e impulso medio.
   |              Vedi sotto per una descrizione completa delle variabili di compilazione
@@ -279,6 +279,7 @@
 
 
 #define RANGE_KM                 125
+
 #define CART_DIM_ZLR             256
 #define ZLR_N_ELEMENTARY_PIXEL   4
 #define ZLR_OFFSET               0
@@ -293,6 +294,7 @@ int  elev_array_gat[NEL]={6,16,27,37,45,55,65,76,85,95};//105,126,149,174,201 è 
 #ifdef MEDIUM
 #define NEL 5
 #define RANGE_KM                 250
+
 #define CART_DIM_ZLR             512
 #define ZLR_N_ELEMENTARY_PIXEL   1
 #define ZLR_OFFSET               CART_DIM_ZLR/2
@@ -302,6 +304,7 @@ int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define NMIN 2
 #define MAX_TIME_DIFF 1
 #endif
+
 
 
 /*   #include <datamat_file.h> */
@@ -365,11 +368,13 @@ unsigned short quota_rel[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio in coordinate az
 unsigned short quota[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio in coordinate azimut range*/
 unsigned short quota_cart[MAX_BIN*2][MAX_BIN*2];/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
 unsigned char quota_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
+
 unsigned char dato_corrotto[NUM_AZ_X_PPI][MAX_BIN]; /*uscita controllo anaprop in coordinate azimut range */
 unsigned char elev_fin[NUM_AZ_X_PPI][MAX_BIN]; /* elevazione finale in coordinate azimut range  */ 
 unsigned char qual[NEL][NUM_AZ_X_PPI][MAX_BIN]; /* qualita volume polare */
 unsigned char qual_Z_cart[MAX_BIN*2][MAX_BIN*2]; /* qualita della Z in formato 1024*1024, risoluzione minima */
 unsigned char qual_Z_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* qualita della Z in formato 256*256, risoluzione ZLR */
+
 float zeroterm;
 float dtrs;
 unsigned char att_cart[NUM_AZ_X_PPI][MAX_BIN]; /* matrice azimut-range di attenuazione */
@@ -432,6 +437,7 @@ void leggo_first_level();
 void creo_matrice_conv();
 void creo_cart();
 float BYTE_to_mp_func();  /* trasforma dato byte in pioggia */
+
 unsigned char DBtoBYTE(); /* trasforma dato di riflettivita' dBZ in valore byte 0-255 */
 float BYTEtoZ();          /* trasforma dato byte in Z (non dBZ) */
 float Z_to_mp_func();     /* trasforma Z (non dBZ) in pioggia */
@@ -478,8 +484,6 @@ int trovo_hvprmax(int *hmax);
 int n_close_(); 
 void lineargauss(float x, float a[], float *y, float dyda[],int na);
 
-
-
 time_t Time,T_Time;
 int ier_t ;
 float chisqfin=100; //???puo' essere def in anal
@@ -487,8 +491,6 @@ float chisqfin=100; //???puo' essere def in anal
 
 #ifdef CLASS
 unsigned char cappi[NUM_AZ_X_PPI][MAX_BIN],class_VIZ[NUM_AZ_X_PPI][MAX_BIN],*conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
-//unsigned char cart[MAX_BIN*2][MAX_BIN*2], conv_cart[MAX_BIN*2][MAX_BIN*2];
-//unsigned char z_out[CART_DIM_ZLR][CART_DIM_ZLR], conv_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
 unsigned char conv_cart[MAX_BIN*2][MAX_BIN*2],cappi_cart[MAX_BIN*2][MAX_BIN*2], conv_1x1[CART_DIM_ZLR][CART_DIM_ZLR],cappi_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
 int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
 int lista_bckg[NUM_AZ_X_PPI*MAX_BIN][2];
@@ -516,7 +518,6 @@ void ingrasso_nuclei(float cr,int j,int k);
 void classifico_STEINER();
 void classifico_ZLR();
 void merge_metodi();
-
 #endif
 
 #endif
@@ -530,8 +531,7 @@ int main (int argc, char **argv)
   char *nome_file , *nome_file_volume;
   int l,ier,ier_test, ier_main=0;
   int tipo_dati_richiesti = INDEX_Z;
- 
-  FILE  *output;
+   FILE  *output;
   char *sito;
   /*---------------------------------------
     definisco le variabili per estrarre 
@@ -542,7 +542,6 @@ int main (int argc, char **argv)
   int imin,imax;
   int jmin,jmax;
   int dx,dy;
-
   printf("sono in programma elaborazione\n");
   if (argv[1]==NULL || argv[2]==NULL || argv[3]==NULL) {
     printf("insufficiente numero di argomenti\n");
@@ -551,10 +550,9 @@ int main (int argc, char **argv)
 
   nome_file_volume=argv[1];
   /*setto ambiente lavoro*/
-  setwork(argv[3]);
-    
 
-  nome_file=nome_file_volume;
+  setwork(argv[3]);
+    nome_file=nome_file_volume;
   ScrivoLog(0,nome_file);
   ScrivoLog(1,nome_file);
   ScrivoLog(2,nome_file);
@@ -582,10 +580,7 @@ int main (int argc, char **argv)
     }
   }
 
-  
-  /*-------------------------------------------
-    | testo presenza e apro il file di lista |
-    -------------------------------------------*/
+ 
 #ifdef TIME
   prendo_tempo();
 #endif      
@@ -595,9 +590,7 @@ int main (int argc, char **argv)
 #ifdef ZLR_MEDIA
   memset(cartm,0.,sizeof(cartm));
 #endif 
-#ifdef Z_AVERAGE
 
-#endif
   memset(z_out,0,sizeof(z_out));
   memset(nbeam_elev,0,sizeof(nbeam_elev));
   memset (first_level,0,sizeof(first_level));    
@@ -626,8 +619,7 @@ int main (int argc, char **argv)
 #ifdef BEAMBLOCKING
   memset(bb_first_level,0,sizeof(bb_first_level)); 
 #endif 
-
-
+     
   nome_fl=(char *)malloc(200*sizeof(char));
   nome_dem=(char *)malloc(200*sizeof(char));
 
@@ -668,7 +660,7 @@ int main (int argc, char **argv)
 	  month=tempo->tm_mon+1;
 	  setstat(argv[3],month, nome_dem, nome_fl);
 	  printf ("nome dem %s nome fl %s\n",nome_dem, nome_fl);
-	  
+	  ScrivoLog(1,nome_file);
 	  /*definisco i coeff MP in base alla stagione*/
 	  if ( month > 4 && month < 10 )  {
 	    aMP=aMP_conv;
@@ -1657,6 +1649,7 @@ void 	creo_matrice_conv()
 
 
 
+
 /*===============================================*/
 time_t 	NormalizzoData(time)    /* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
 /*===============================================*/
@@ -2422,7 +2415,7 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
 
 
 {
-  //#include <vpr_par.h>
+ 
  
   int l,i,iA,k,ilay,il,ilast,iaz_min,iaz_max,icounter,naz,nra,strat;
   long int dist,vert_ext,vol_rain,cappi1100[1200*MAX_BIN];
@@ -2516,7 +2509,7 @@ areaqual[i]=(long int )(0);
     ilast=0;  
     vert_ext=0;
     for  (ilay=0; ilay<NMAXLAYER; ilay++){ 
-      fprintf(log_vpr,"  ilay %i area_vpr= %li  ct= %li  cv= %li  \n", ilay, area_vpr[ilay],*ct,*cv );
+      fprintf(log_vpr,"  ilay %d area_vpr= %ld  ct= %ld  cv= %ld \n", ilay, area_vpr[ilay],*ct,*cv );
       if (area_vpr[ilay]>=MIN_AREA) {
 	vert_ext=vert_ext+TCK_VPR;
 	vpr1[ilay]=vpr1[ilay]/(float)(area_vpr[ilay]);
@@ -2680,8 +2673,9 @@ int combina_profili(char *sito, char *sito_ad)
     area_vpr[i]=0;
     vpr0[i]=NODATAVPR;
     vpr1[i]=NODATAVPR;  
- 
   }
+ 
+  
   noval=NODATAVPR;
   vprmax=0.;
   /* questo per fare ciclo sul vpr vecchio*/
@@ -2710,6 +2704,7 @@ int combina_profili(char *sito, char *sito_ad)
     for (i=0;i<MEMORY;i++){
       T_Time=Time+i*900;
       T_tempo=gmtime(&T_Time);
+
       sprintf(nomefile,"%s/%04d%02d%02d%02d%02d_vpr_%s",getenv("DIR_STORE_VPR"),
 	      T_tempo->tm_year+1900, T_tempo->tm_mon+1, T_tempo->tm_mday,
 	      T_tempo->tm_hour, T_tempo->tm_min,getenv("SITO"));
@@ -2832,6 +2827,15 @@ int combina_profili(char *sito, char *sito_ad)
   }   
   /*fine VPR combinato*/  
   else for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
+
+    livmin=TCK_VPR;
+    foundlivmin=0;
+    for (ilay=livmin/TCK_VPR; ilay<NMAXLAYER; ilay++){
+      if (vpr[ilay]> NODATAVPR && !foundlivmin) {
+	livmin=ilay*TCK_VPR+TCK_VPR/2;
+	foundlivmin=1;
+      }
+    }
  
   free(cv);
   free(ct);
@@ -2977,13 +2981,9 @@ int corr_vpr(char *sito)
 	ilray=floor((hbin)/TCK_VPR);
 	if (ilray>= NMAXLAYER ) ilray=NMAXLAYER-2;
         ilref=(dem[i][k]>livmin)?(floor(dem[i][k]/TCK_VPR)):(floor(livmin/TCK_VPR));
-	if (ilray>= NMAXLAYER) ilray=NMAXLAYER-2;
-
-
+	
 	if ((int)hbin%TCK_VPR > TCK_VPR/2) ilay2=ilray+1;
 	else ilay2=(int)(fabs(ilray-1));
-
-
 	if (vpr[ilref]>0 && vpr[ilray]>0 ){ /*devo avere un dato DI PIOGGIA nel VPR!*/
 	  vpr_hray=vpr[ilray]+((vpr[ilray]-vpr[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2);	/*per rendere la correzione continua non a gradini */ 		 
 	  if (dem[i][k]> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/            
@@ -3029,8 +3029,8 @@ int trovo_hvprmax(int *hvprmax)
 
   /* trovo hvprmax e il suo livello a partire dal livello istart*/
   foundlivmax=0;
-  hvprmax=-9999; 
-  vprmax=-9999;
+  hvprmax=INODATA; 
+  vprmax=NODATAVPR;
   imax=istart;	    
   for (i=istart;i<NMAXLAYER;i++) //la ricerca è un po' diversa dall'originale.. trovo il picco + alto con valore  rispetto a 4 sopra > soglia 
     { 
@@ -3079,12 +3079,10 @@ int trovo_hvprmax(int *hvprmax)
 int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
     
 {
-  int i,imax,ier=0,ier_ana=0,ier_ap,liv0,ier_max;
+  int i,ier=1,ier_ana=0,ier_ap,liv0,ier_max;
   int nstaz,nvar,tipo_profilo;
-  int npar=5,decreasing,hmax,hstart;
-  float h0start,*a,*dyda,vprmin,v3,v1000,v1500,v600sottobb,vliq,vhliquid,vprmax; //*togliere gli ultimi tre*/;nlines
-  
-  int hl;/*togliere*/
+  int npar=5;
+  float *a,*dyda,v1000,v1500,v600sottobb,vliq,vhliquid,vprmax; //*togliere gli ultimi tre*/;
   char date[20];
   struct tm *tempo;
   time_t Time;
@@ -3096,7 +3094,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   nvar=1;
 
   strcpy(date,"000000000000");
-  hvprmax=-9999;// inizializzo
+  hvprmax=INODATA;// inizializzo
   tipo_profilo=-1;
   stdev=NODATAVPR;
   chisqfin=100.;
@@ -3115,9 +3113,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
  
   ier_max=trovo_hvprmax(&hvprmax);
   
-
-  liv0=livmin+HALF_BB;  
-  if (ier_t)
+  if (ier_t) //1  se non ho nè T nè il massimo esco altrimenti tipo_profilo=0 
     {
       fprintf(log_vpr,"non ho T,...  \n");
 
@@ -3126,76 +3122,20 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	free_vector(a,1,npar);
 	free_vector(dyda,1,npar);
 	return 1;
-      }
+      } 
       tipo_profilo=0;
     }
   else 
     {
      
-      if (t_ground >= T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.){
+      if (t_ground >= T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.){ //1  se T > T_MAX_ML e non ho il massimo esco
 	if ( ! ier_max ) {
 	  fprintf(log_vpr," non ho trovato hvprmax, esco \n");
 	  free_vector(a,1,npar);
 	  free_vector(dyda,1,npar);
 	  return 1;
 	}
-
-	if (hvprmax > livmin) {
-	  fprintf(log_vpr,"il livello base %i sta sotto il massimo , e T >T_MAX_ML caso convettivo, o misto o con bright band alta, interpolo\n",livmin);
-	  tipo_profilo=0;
-	}
-	else
-	  {
-	    fprintf(log_vpr," temperatura troppo alta perchè il livello %i sia nella BB  il massimo della precipitazione passa sopra il radar \n",livmin); //(nn dovrebbe più essere necessario)
-	    tipo_profilo=1;
-            h0start=hvprmax+TCK_VPR;
-	    decreasing=1;
-	    hstart=h0start;
-	    hmax=h0start;
-	    /*for (i=hvprmax/TCK_VPR+1;i<NMAXLAYER;i++)*/
-	    for (i=h0start/TCK_VPR-2;i<NMAXLAYER;i++)
-	      {
-		if (vpr[i]<vpr[hstart/TCK_VPR] && decreasing )
-		  {
-		    hstart=i*TCK_VPR+TCK_VPR/2;
-		    hmax=hstart;
-		  } 
-		if (vpr[i]>vpr[hmax/TCK_VPR] )
-		  {
-		    hmax=i*TCK_VPR+TCK_VPR/2;
-		    decreasing=0;
-		  }
-	      }
-	    hvprmax=hmax;
-	    imax=hmax/TCK_VPR;
-	    /*
-
-	      pezzo di prova per reiterare se trovo un picco troppo ridotto
-	    */
-	    while ( 10*log10(vpr[imax]/vpr[imax+3] ) < MIN_PEAK_VPR  ){
-	      decreasing=1;
-	      hstart=hvprmax;
-	      hmax=hvprmax;
-	      for (i=imax;i<NMAXLAYER;i++)
-		{
-		  if (vpr[i]<vpr[hstart/TCK_VPR] && decreasing )
-		    {
-		      hstart=i*TCK_VPR+TCK_VPR/2;
-		      hmax=hstart;
-		    } 
-		  if (vpr[i]>vpr[hmax/TCK_VPR] )
-		    {
-		      hmax=i*TCK_VPR+TCK_VPR/2;
-		      decreasing=0;
-		    }
-		}
-	    }
-	    hvprmax=hmax;
-	    imax=hmax/TCK_VPR;
-	 
-
-	    fprintf(log_vpr,"hvprmax nuovo %i\n",hvprmax);        
-	  }
+	tipo_profilo=0; 
       }
 
      
@@ -3215,14 +3155,14 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	    
 	  }
 
+	  liv0=livmin+HALF_BB;  
       	  if (hvprmax > liv0) fprintf(log_vpr," il livello %i è sotto la Bright band, ma T bassa  interpolo\n",livmin);
       	  else fprintf(log_vpr," il livello %i potrebbe essere dentro la Bright Band, interpolo\n",livmin);
       	  tipo_profilo=2;
       	}
 
       if (t_ground < T_MAX_SN )  {
-	if ( ier_max ){ 
-	  //	  if (   hvprmax > livmin +200  ) { 	
+	if ( ier_max ){ 		
 	  fprintf(log_vpr," temperatura da neve e massimo in quota\n");
 	  tipo_profilo=2;	 
 	}
@@ -3236,7 +3176,6 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
     }
   
 
-
   switch
     (tipo_profilo)
     {
@@ -3249,39 +3188,25 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	fprintf(log_vpr," interpolazione fallita \n");           
 	switch (tipo_profilo)
 	  {  
-	    /* Questo algoritmo individua SEMPRE UN LIVELLO LIQUIDO, IL SUCCESSIVO FA FALLIRE TRANNE CHE IN CASO DI BB AL SUOLO
-	       case 0:
-	       *hliq=REPR_LEV;
-	       *vpr_liq=vpr[REPR_LEV/TCK_VPR]; 
-	       break;
-	       case 1:	    
-	       case 2:
-	       *hliq=0;
-	       *vpr_liq=vpr[(hvprmax+HALF_BB)/TCK_VPR];       
-	       break;
-	    */
+
 	    /*Questo fallisce se la bright band non è al suolo (per evitare correzioni dannose in casi poco omogenei)*/
 	  case 0:
 	  case 1:	
-	    ier_ana=1;
- 	    
+	    ier_ana=1; 	    
 	    *vpr_liq=NODATAVPR;
             *hliq=NODATAVPR;
 	    break; 
 	  case 2:
 	    //*vpr_liq=vpr[(hvprmax+HALF_BB-100)/TCK_VPR];/*21 aprile 2008*/
 	    *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;/*21 aprile 2008*/
-	    *hliq=0;	
- 	         
+	    *hliq=0;		         
 	    break;
 	  }  
       }
       else{
-  	fprintf(log_vpr," interpolazione eseguita con successo \n");    
-	
+  	fprintf(log_vpr," interpolazione eseguita con successo \n");    	
 	/*calcolo valore di riferimento di vpr_liq per l'acqua liquida nell'ipotesi che a[2]=quota_bright_band e a[2]-1.5*a[3]=quota acqua liquida*/
-        if (tipo_profilo == 2 ) { 
-	 
+        if (tipo_profilo == 2 ) { 	 
 	  *hliq=(a[2]-2.1*a[3])*1000.;
 	  lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);	 
          
@@ -3289,9 +3214,9 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	  //*vpr_liq=vpr[(hvprmax+(int)(7.*a[3]*1000))/TCK_VPR]*2.15; /*23 aprile 2008 cioè vpr neve + 6 dB*/
 	  *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
 	}
-        else { 
-	  
+        else { 	  
 	  *hliq=(a[2]-2.1*a[3])*1000.;
+
 	  lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
 	  if ( *hliq > livmin) {
 	    *vpr_liq=vpr[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
@@ -3300,12 +3225,8 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	    {
 	      tipo_profilo=2;
 	      *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
-	    }
-       
+	    }       
 	}
-	v3=vpr[(hvprmax+(int)(3.*a[3]*1000))/TCK_VPR];//vpr appena sopra bb
-	hl=1000*(a[2]-2.1*a[3]);//altezza livello liquido
- 
       }
       break;
     case 3:
@@ -3316,12 +3237,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
       break;   
     }
   fprintf(log_vpr,"TIPO_PROFILO= %i vpr_liq %f hliq %f \n", tipo_profilo, *vpr_liq,*hliq );
-  /* parte di test_vpr*/
-  vprmin=vpr[hvprmax/TCK_VPR];
-  for (i=hvprmax/TCK_VPR;i>=livmin/TCK_VPR;i--)	    
-    if (vpr[i]<vprmin)
-      vprmin=vpr[i];      
-
+ 
   /* nome data */
   Time = NormalizzoData(old_data_header.norm.maq.acq_date);
   tempo = gmtime(&Time);
@@ -3330,33 +3246,21 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 
   /* parte di stampa test vpr*/
 
-  if (! ier) {
- if(*hliq > livmin +200)
-    vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
-    vliq=RtoDBZ(*vpr_liq,aMP,bMP);
-  }
-  if ( hvprmax-600 >= livmin) 
-    v600sottobb=RtoDBZ(vpr[(hvprmax-600)/TCK_VPR],aMP,bMP);
-  if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
-    v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
-  if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
-    v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
-  vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
  
-
-  if (! ier && tipo_profilo < 3) {
+  if (! ier ) {
     if(*hliq > livmin +200 )
       vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
     vliq=RtoDBZ(*vpr_liq,aMP,bMP);
   }
-  if ( hvprmax-600 >= livmin && tipo_profilo < 3) 
-    v600sottobb=RtoDBZ(vpr[(hvprmax-600)/TCK_VPR],aMP,bMP);
-  if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
-    v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
-  if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
-    v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
-
-  vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
+  if (ier_max) {
+    if ( hvprmax-600 >= livmin ) 
+      v600sottobb=RtoDBZ(vpr[(hvprmax-600)/TCK_VPR],aMP,bMP);
+    if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
+      v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
+    if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
+      v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
+    vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
+  }
   //fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);
  
 
