@@ -3115,7 +3115,6 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   strcpy(date,"000000000000");
   hvprmax=INODATA;// inizializzo
   tipo_profilo=-1;
-  stdev=NODATAVPR;
   chisqfin=100.;
   vliq=NODATAVPR;
   vhliquid=NODATAVPR;
