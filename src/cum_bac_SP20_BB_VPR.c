@@ -4,11 +4,11 @@
   | CUMULO SU BACINI
   |
   | Questo programma legge i file volumi polari DATAMAT 
-  | scopo del programma e' eliminare il clutter tramite una maschera che pu√≤ essere stagionale 
+  | scopo del programma e' eliminare il clutter tramite una maschera che puÚ essere stagionale 
   | implementare un algoritmo di rimozione della propagazione anomala
   | un algoritmo di correzione e riduzione del beam_blocking (per il corto)
   | la correzione del VPR (se attivata)
-  | calcolare la qualit√† del dato
+  | calcolare la qualit‡ del dato
   | come presentato al RADME 96 -ERAD 2004- ERAD 2006 -ERAD 2008 etc.
   | Il programma provvede inoltre a convertire il PPI, ripulito, a minor
   | elevazione in formato cartesiano, testare la classificazione stratiforme convettiva..
@@ -27,7 +27,7 @@
   |  -la maschera oltre al clutter climatologico puo' tenere 
   |   in cons. il beam blocking, e la traiettoria del lim inf. del fascio. 
   | - Inoltre se compilato con QUALITY il programma produce mappe di indici di qualita'
-  | - il controllo anaprop √® diverso a seconda che ci si trovi alla prima o successive elevazioni
+  | - il controllo anaprop Ë diverso a seconda che ci si trovi alla prima o successive elevazioni
   |----------------------------------------------------------------------------------------------- 
   |  AUTORI: Alberoni PierPaolo  S.M.R.  (modifiche A. Gioia, A. Fornasiero)
   |-----------------------------------------------------------------------------------------------
@@ -100,8 +100,8 @@
   |              A. Fornasiero
   |-------------------------------------------------------------------------------------------------------------
   | 
-  |  NB $HOME_BB_VPR √® la directory dove sta il pacchetto---$WORKDIR quella di lavoro (per la versione studio e'
-  |                  /scratch/fornasiero/DATI_OUT/CUM_BAC/cum_bac_tmp_BB_VPR/[SPC,GAT]_short, per quella ope √® 
+  |  NB $HOME_BB_VPR Ë la directory dove sta il pacchetto---$WORKDIR quella di lavoro (per la versione studio e'
+  |                  /scratch/fornasiero/DATI_OUT/CUM_BAC/cum_bac_tmp_BB_VPR/[SPC,GAT]_short, per quella ope Ë 
   |                  $HOME_BB_VPR/cum_bac_tmp_BB_VPR/[SPC,GAT]_short)
   |  Files input: 
   |            $HOME_BB_VPR/DB/DBP2_[aaaammgghhmm]_BOLOGNA(GATTATICO): file vol. polare
@@ -116,10 +116,10 @@
   |            $HOME_BB_VPR/PP+BLOC/[aaaammgghhmm]hray.txt: file traiettorie del centro fascio e diverse elev
   |            $HOME_BB_VPR/VPR/vpr_par.h: parametri calcolo VPR
   |  Files output: 
-  |            $WORKDIR/log_file: file di log.. importante perch√® memorizza anche le variabili di compilazione
+  |            $WORKDIR/log_file: file di log.. importante perchË memorizza anche le variabili di compilazione
   |            $WORKDIR/stat_anap(ANAP_STAT_FILE) $WORKDIR/stat_elev(ELEV_STAT_FILE)  $WORKDIR/stat_bloc(BLOC_STAT_FILE):
   |            v. variabili ambiente: files statistiche
-  |            $HOME_BB_VPR/INPUT_ZLR_BB/[aaaammgghhmm].ZLR: file matrice cart. unsign.char valori riflettivit√† [0,255] sta per [-20,80]
+  |            $HOME_BB_VPR/INPUT_ZLR_BB/[aaaammgghhmm].ZLR: file matrice cart. unsign.char valori riflettivit‡ [0,255] sta per [-20,80]
   |            $HOME_BB_VPR/INPUT_ZLR_BB/[aaaammgghhmm].qual_ZLR:file matrice cart. unsign.char valori qualita' ZLR
   |            $HOME_BB_VPR/INPUT_ZLR_BB/[aaaammgghhmm].qual_RLR:file matrice cart. unsign.char neve ( 0=preci e 1=neve)
    |            $WORKDIR/QUALITY/[aaammgghhmm].elev: file matrice unsigned char elevazioni usate 
@@ -199,7 +199,7 @@
   | MEDIUM    -  configura il programma all'esecuzione per dati provenienti da impulso medio (250 km range; 1000 m ris)
   | BEAMBLOCKING - abilita la lettura delle matrici di Beam Blocking e la correzione della misura
   |
-  | QUALITY      - abilita la generazione e scrittura variabili con un un contenuto di qualit√†:
+  | QUALITY      - abilita la generazione e scrittura variabili con un un contenuto di qualit‡:
   |               bb residuo, hrelativa, dati 'corrotti'(anaprop,manca dato,aseenza controllo anaprop)
   |
   | STATIC       - abilita la lettura della mappa statica
@@ -212,7 +212,7 @@
   | VPR         - attiva calcolo e correzione VPR: agosto 2007 deve essere abilitato anche QUALITY
   |-----------------------------------------------------------------------------
   |
-  | Queste varialibi (sig.ra Fletcher!) di compilazione vengono momentaneamente a perdere di validit√† 17-09-2003
+  | Queste varialibi (sig.ra Fletcher!) di compilazione vengono momentaneamente a perdere di validit‡ 17-09-2003
   | 
   | Deve essere inoltre definita una delle seguenti variabili che individua
   | l'ambiente di esecuzione del programma e utilizza i file di include 
@@ -288,8 +288,8 @@
 #define MAX_TIME_DIFF 3
 int elev_array[NEL];
 
-int  elev_array_spc[NEL]={6,15,26,36,46,57,80,108,148,159};//l'ultimo √® fittizio:ANNA 30-03-2011
-int  elev_array_gat[NEL]={6,16,27,37,45,55,65,76,85,95};//105,126,149,174,201 √® da completare NEL=15:ANNA 30-03-2011
+int  elev_array_spc[NEL]={6,15,26,36,46,57,80,108,148,159};//l'ultimo Ë fittizio:ANNA 30-03-2011
+int  elev_array_gat[NEL]={6,16,27,37,45,55,65,76,85,95};//105,126,149,174,201 Ë da completare NEL=15:ANNA 30-03-2011
 #endif
 
 #ifdef MEDIUM
@@ -313,7 +313,7 @@ int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 /*----------------------------------------------------------------------------*/
 /*	DICHIARATIVE GLOBALI						      */
 /*----------------------------------------------------------------------------*/
-T_MDB_ap_beam_header  old_beam_header;  /* queste due dichiarazioni le metto qui perch√® sono sfaticato*/
+T_MDB_ap_beam_header  old_beam_header;  /* queste due dichiarazioni le metto qui perchË sono sfaticato*/
 T_MDB_data_header   old_data_header;    /* P.P. Sei un mito! */
 
 /*extern char *sys_errlist[];  ANNA 17-2-2006 sostituito con strerror che sta in string.h */
@@ -327,7 +327,7 @@ char errori[256];
 #define MIN_VALUE_NEXT_OR 0 
 #define MAX_DIF_LIMIT 55     /*  soglia diff tra valori bin per anaprop in caso il bin si trovi oltre LIMITE_ANAP (60 KM) */
 #define MIN_VALUE_LIMIT -20  /*  soglia valore minimo bin per anaprop oltre LIMITE_ANAP (60 KM) */
-int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perch√® non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
+int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchË non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 #define MISSING 0 /*valore mancante*/
 #define NUM_MIN_BEAM 200
 #define PIOVE     1
@@ -715,9 +715,8 @@ int main (int argc, char **argv)
 	  ier_comb=combina_profili(argv[3],argv[4]);
 	  printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
 	  printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
-
 	  heating=profile_heating();
-	  printf ("heating %i \n", heating);
+	  printf ("heating %i \n", heating);	      	     
 	  if (!ier_comb && heating >= WARM){
 
 	    /*CORREZIONE */
@@ -1038,9 +1037,9 @@ int elabora_dato()
 	     e range > 80 km cambio il riconoscimento anaprop, in modo
 	     da evitare di riconoscere come anaprop una pioggia a bassa quota
 	     (la diff. tra Z elev. corrente e Z alla successiva puo' essere
-	     grande perch√® sopra non c'√® niente).
-	     Il criterio diventa: - se la differenza tra Z all'elevazione pi√π bassa della
-	     corrente e la Z corrente √® <10 dbZ allora sono quasi certa di non avere 
+	     grande perchË sopra non c'Ë niente).
+	     Il criterio diventa: - se la differenza tra Z all'elevazione pi˘ bassa della
+	     corrente e la Z corrente Ë <10 dbZ allora sono quasi certa di non avere 
 	     anaprop, percio' cambio i limiti di riconoscimento anaprop, altrimenti li
 	     lascio identici. */
 
@@ -1065,7 +1064,7 @@ int elabora_dato()
 		  test_prec_anap=1;// anaprop precedentemente riscontrata nel raggio (riduco le soglie di test)
 		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT ||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
 		    {
-		      test_anap=1;// anaprop s√¨
+		      test_anap=1;// anaprop sÏ
 		      for(l=0; l<el_up; l++) {
 			vol_pol[l][i].ray[k]=1;	//metto a fondoscala i valori di vol_pol sul pixel fino a el_inf  (no preci nella ZLR finale)  
 		      }
@@ -1102,12 +1101,12 @@ int elabora_dato()
 		      flag_anap = 0;
 		    }
 		} 
-	      else    /* se invece flag_anap == 0 cio√® non ho ancora trovato anaprop nel raggio */
+	      else    /* se invece flag_anap == 0 cioË non ho ancora trovato anaprop nel raggio */
 		{
 		  test_prec_anap=0;// anaprop precedentemente non riscontrata nel raggio	
 		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE ||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
 		    {
-		      test_anap=1;// anaprop s√¨
+		      test_anap=1;// anaprop sÏ
 		      for(l=0; l<el_up; l++){
 			vol_pol[l][i].ray[k]=1;
 		      }
@@ -1184,13 +1183,13 @@ int elabora_dato()
 		    {
 		      vol_pol[l][i].flag = 1;
 		      vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
-		      vol_pol[l][i].b_header.teta = elev_array[l];  //perch√® ridefinisce ??
+		      vol_pol[l][i].b_header.teta = elev_array[l];  //perchË ridefinisce ??
 		      vol_pol[l][i].b_header.tipo_gran=vol_pol[el_inf][i].b_header.tipo_gran;
 		      vol_pol[l][i].b_header.max_bin=vol_pol[el_inf][i].b_header.max_bin;
 		    }
 		}
 #ifdef QUALITY
-	      dato_corrotto[i][k]=0; //non so perch√®..
+	      dato_corrotto[i][k]=0; //non so perchË..
 
 #endif
 	      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
@@ -1222,8 +1221,8 @@ int elabora_dato()
   comstart caratterizzo_volume
   idx calcola qualita' volume polare
   calcola qualita' volume polare 
-  NB il calcolo √® fatto considerando q=0 al di sotto della mappa dinamica.
-  per ora drrs=dist nche nel caso di Gattatico, mentre dtrs √® letto da file
+  NB il calcolo Ë fatto considerando q=0 al di sotto della mappa dinamica.
+  per ora drrs=dist nche nel caso di Gattatico, mentre dtrs Ë letto da file
   si puo' scegliere tra qualita' rispetto a Z e rispetto a R.
  
   double PIA;  path integrated attenuation
@@ -1312,7 +1311,7 @@ double attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic,1984 for
 
 { 
 
-  double Zhh,att_rate,R;/* PIA diventa att_tot devo decidere infatti se PIA sar√† 3d percio' temp. uso  nomi diversi*/
+  double Zhh,att_rate,R;/* PIA diventa att_tot devo decidere infatti se PIA sar‡ 3d percio' temp. uso  nomi diversi*/
   double att_tot;
   
   
@@ -1651,7 +1650,7 @@ void 	creo_matrice_conv()
 
 
 /*===============================================*/
-time_t 	NormalizzoData(time)    /* time √® in secondi, itime √® un intero che rappresenta il numero intero di intervalli da 5 minuti*/
+time_t 	NormalizzoData(time)    /* time Ë in secondi, itime Ë un intero che rappresenta il numero intero di intervalli da 5 minuti*/
 /*===============================================*/
      time_t time;
 {
@@ -1664,8 +1663,8 @@ time_t 	NormalizzoData(time)    /* time √® in secondi, itime √® un intero che ra
     printf("%s\n",ctime(&time));
     printf("%d\n",(NMIN-MAX_TIME_DIFF)*60);
   */
-  if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza √® meno di tre minuti vado al 5¬∞ min. prec*/
-  if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza √® meno di tre minuti vado al 5¬∞ min. successivo*/
+  if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza Ë meno di tre minuti vado al 5∞ min. prec*/
+  if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza Ë meno di tre minuti vado al 5∞ min. successivo*/
   return -1;
 }
 
@@ -2378,18 +2377,18 @@ void   leggo_dem()
   comstart func_vpr
   idx funzione calcolo VPR istantaneo
   calcola il VPR istantaneo secondo il metodo di Germann e Joss (2003)
-  Per il calcolo si considerano i punti con Z>THR_VPR, qualit√†>QMIN_VPR, BeamBlocking<20% e clutter free all'interno del volume scelto. 
-  Il punto del vpr corrispondente ad un livello √® calcolato come la somma dei volumi di pioggia di ciascuna cella polare presente nell'intervallo di quota, diviso l'area totale. Per ogni livello devo avere un'area minima coperta di pioggia,per i primi due livelli, se non si verifica, ricopio il valore del primo livello che raggiunge questa copertura.
-  La parte del profilo alta, che sta cio√® al di sopra dell'ultimo livello calcolato, viene riempite tirando una retta con coeff. amgolre negativo e costante, pari a -0.03 (valore passibile di discussione)
-  Il profilo √® poi soggetto a quality check e viene rigettato (return(1)) se:
+  Per il calcolo si considerano i punti con Z>THR_VPR, qualit‡>QMIN_VPR, BeamBlocking<20% e clutter free all'interno del volume scelto. 
+  Il punto del vpr corrispondente ad un livello Ë calcolato come la somma dei volumi di pioggia di ciascuna cella polare presente nell'intervallo di quota, diviso l'area totale. Per ogni livello devo avere un'area minima coperta di pioggia,per i primi due livelli, se non si verifica, ricopio il valore del primo livello che raggiunge questa copertura.
+  La parte del profilo alta, che sta cioË al di sopra dell'ultimo livello calcolato, viene riempite tirando una retta con coeff. amgolre negativo e costante, pari a -0.03 (valore passibile di discussione)
+  Il profilo Ë poi soggetto a quality check e viene rigettato (return(1)) se:
   - estensione verticale troppo bassa
-  - cv<CT_MIN*ct, cio√® frazione di volume precipitante piccola
+  - cv<CT_MIN*ct, cioË frazione di volume precipitante piccola
   - la deviazione standard del volume di R a 1100 m normalizzata rispetto al volume totale precipitante supera soglia prefissata
 
  
   COSTANTI
   THR_VPR:soglia valore Z per calcolo vpr
-  QMIN_VPR: qualit√† minima necessaria per entrare nel calcolo vpr 
+  QMIN_VPR: qualit‡ minima necessaria per entrare nel calcolo vpr 
   MIN_AREA: area minima a un livello per avere un punto del vpr
   IAZ_MIN_SPC,IAZ_MAX_SPC,IAZ_MIN_GAT,I_AZ_MAX_GAT,R_MIN_VPR,R_MAX_VPR:limiti dell'area considerata per il calcolo VPR
   TCK_VPR: spessore dei livelli
@@ -2399,12 +2398,12 @@ void   leggo_dem()
   CT_MIN: frazione di volume minimo precipitante per considerare buono il profilo 
 
   VARIABILI
-  int flag_vpr[][][]: flag che indica l'usabilit√† della cella polare in termini di posizione del bin, beam blocking e clutter
+  int flag_vpr[][][]: flag che indica l'usabilit‡ della cella polare in termini di posizione del bin, beam blocking e clutter
   long int *cv,*ct:  volume del settore libero,volume precipitante
   float vpr1[]: vpr istantaneo
   long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del singolo bin
   cappi1100[1200*MAX_BIN]: vettore volumi buoni tra 1000 e 1200 m
-  long int area_vpr[NMAXLAYER],areaqual[NMAXLAYER]; area totale usata per calcolo vpr; area totale pesata con le qualit√†(per ora non usata)
+  long int area_vpr[NMAXLAYER],areaqual[NMAXLAYER]; area totale usata per calcolo vpr; area totale pesata con le qualit‡(per ora non usata)
 
   comend
 */
@@ -2423,13 +2422,7 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
   long int areaqual[NMAXLAYER];
   //float noval,area,stdev,somma,media;
   float noval,area,somma,media;
- /*  printf("1 - %d %d - ",sizeof(*cv),sizeof(*ct));
-  printf("2 - %d ",sizeof(vpr1));
-  printf("3 - %d ",sizeof(area_vpr));
-  printf("4 - %d ",sizeof(*sito));
-  printf("%s\n",sito);
-  return 1;
-*/
+
   somma=0;
   stdev = -1.;
   for (i=0;i<NMAXLAYER; i++ ) {
@@ -2464,7 +2457,7 @@ areaqual[i]=(long int )(0);
       for (k=0; k<MAX_BIN; k++)/*ciclo range*/
 	{
 	  dist=k*(int)(size_cell[old_data_header.norm.maq.resolution])+(int)(size_cell[old_data_header.norm.maq.resolution])/2.;
-	   ilay=floor(hray[k][l]/TCK_VPR); // poich√® in teoria quota indipendente da azimuth  
+	   ilay=floor(hray[k][l]/TCK_VPR); // poichË in teoria quota indipendente da azimuth  
 	   if (ilay <0 || ilay >= NMAXLAYER) {
 	     fprintf(log_vpr,"ilay %d errore\n",ilay);
 	     break;}
@@ -2579,7 +2572,7 @@ areaqual[i]=(long int )(0);
   comstart comp_levels
   idx esegue composizione dei profili istantaneo e 'ultimo'
   esegue composizione dei profili istantaneo e 'ultimo'
-  se il profilo istantaneo √® pi√π 'corto', inserisco i valori dell'ultimo profilo negli strati'mancanti'  
+  se il profilo istantaneo Ë pi˘ 'corto', inserisco i valori dell'ultimo profilo negli strati'mancanti'  
 
   float v0  ultimo profilo
   float v1  profilo istantaneo
@@ -2599,7 +2592,7 @@ float comp_levels(v0, v1, nodata, peso)
   if ((v0<nodata+1)&&(v1<nodata+1)) result=nodata;
   if (v0<nodata+1) result=v1;
   if (v1<nodata+1) result=v0;                            
-  if ((v0>nodata+1) && (v1>nodata+1)  ) result=((1.-peso)*v0+peso*v1); /* in questa configurazione il vpr √® di altezza costante  nel tempo ma un po' 'sconnesso' in alto*/
+  if ((v0>nodata+1) && (v1>nodata+1)  ) result=((1.-peso)*v0+peso*v1); /* in questa configurazione il vpr Ë di altezza costante  nel tempo ma un po' 'sconnesso' in alto*/
   return(result);
 }
 /*===============================================*/
@@ -2641,16 +2634,16 @@ long int profile_gap(char nomefile[])
   d) faccio func_vpr
   f) cerco il profilo con cui combinare (->proprio, se gap<MEMORY ->dell'altro radar se gap_res<MEMORY e profile_heating_res=WARM)
   g) Combino livelli con peso sottostante
-  Dati cv e ct, volume totale e volume precipitante il peso del vpr istantaneo √® calcolato come segue:
+  Dati cv e ct, volume totale e volume precipitante il peso del vpr istantaneo Ë calcolato come segue:
   c0=2*(*cv);
   peso=(float)(*ct)/(c0+(*ct))
   long int c0,*cv,*ct; costanti di combinazione (v. ref.)
-  h) trovo livello minimo, se livello minimo profilo combinato pi√π alto del precedente calcolo la diff media e sommo al vecchio
+  h) trovo livello minimo, se livello minimo profilo combinato pi˘ alto del precedente calcolo la diff media e sommo al vecchio
   e) ricalcolo livello minimo 
   float vpr0[NMAXLAYER],vpr1[NMAXLAYER],vpr[NMAXLAYER]; profilo precedente, ultimo e combinato
   float alfat,noval; peso, nodata
   FILE *file;   
-  int mode,ilay;  modalit√† calcolo profilo (0=combinazione, 1=istantaneo),indice di strato    
+  int mode,ilay;  modalit‡ calcolo profilo (0=combinazione, 1=istantaneo),indice di strato    
   comend
 */
 int combina_profili(char *sito, char *sito_ad)
@@ -2743,7 +2736,7 @@ int combina_profili(char *sito, char *sito_ad)
   ier_vpr=func_vpr(cv,ct,vpr1,area_vpr,sito); // ho fatto func_vpr, il profilo istantaneo
   fprintf(log_vpr,"fatta func vpr\n");
   c0=2*(*cv);
-  if(mode == 0) {    /*modalit√† VPR combinato*/
+  if(mode == 0) {    /*modalit‡ VPR combinato*/
     fprintf(log_vpr,"gap %li \n",gap);
     if (gap>MEMORY) 
       { 	
@@ -2763,7 +2756,7 @@ int combina_profili(char *sito, char *sito_ad)
  	    }
 	  }
 	}
- 	else  /////////qui va ristrutturato, cio√® se non ho il vecchio ma ho il nuovo ..organizzare 
+ 	else  /////////qui va ristrutturato, cioË se non ho il vecchio ma ho il nuovo ..organizzare 
 	  if (ier_vpr){
 	    free(cv);
 	    free(ct);
@@ -2771,7 +2764,7 @@ int combina_profili(char *sito, char *sito_ad)
 	  }
       }
 
-    if (!ier_vpr) {  // se il calcolo dell'istantaneo √® andato bene  (////va aggiunto il caso in cui il vecchio non c'√®)
+    if (!ier_vpr) {  // se il calcolo dell'istantaneo Ë andato bene  (////va aggiunto il caso in cui il vecchio non c'Ë)
       alfat=(float)(*ct)/(c0+(*ct)); // peso vpr corrente per combinazione
       for (ilay=0;  ilay<NMAXLAYER; ilay++){
 	vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli 
@@ -2781,7 +2774,7 @@ int combina_profili(char *sito, char *sito_ad)
 	}
       }
     }
-    else { // se il calcolo dell'istantaneo non √® andato bene , ricopio l'altro vpr, la sua area(? discutibile) e trovo il livello minimo 
+    else { // se il calcolo dell'istantaneo non Ë andato bene , ricopio l'altro vpr, la sua area(? discutibile) e trovo il livello minimo 
 
       for (ilay=0;  ilay<NMAXLAYER; ilay++){
 	area_vpr[ilay]=area[ilay];
@@ -2792,7 +2785,7 @@ int combina_profili(char *sito, char *sito_ad)
 	}
       }
     }
-    // inserisco un pezzo di prova che calcola la differenza media tra 2 profili successivi e s√¨stema i pti in basso usandola 
+    // inserisco un pezzo di prova che calcola la differenza media tra 2 profili successivi e sÏstema i pti in basso usandola 
     // in pratica li calcolo dal livello minimo del vpr1 
     //
 
@@ -2812,7 +2805,7 @@ int combina_profili(char *sito, char *sito_ad)
       }
     }
     //}  
-    /// questo pezzo √® indipendente dal precedente ma sembra sensato fare cos√¨ , una volta combinati i profili prendere il livello minimo del combinato
+    /// questo pezzo Ë indipendente dal precedente ma sembra sensato fare cosÏ , una volta combinati i profili prendere il livello minimo del combinato
     // resetto livello minimo e lo calcolo sul combinato..togliere.. 
     livmin=0;
     foundlivmin=0;
@@ -2856,11 +2849,11 @@ int combina_profili(char *sito, char *sito_ad)
 /*===============================================*/
 /*
   comstart profile_heating
-  idx calcola quanto il profilo √® 'caldo'
-  calcola quanto il profilo √® 'caldo' 
-  heating=heating-gap; se il profilo non √® stato aggiornato
-  heating=heating-gap+2; se il profilo √® stato aggiornato
-  heating=MEMORY;   se heating raggiunge WARM resta costante finch√® non inizia raffreddamento
+  idx calcola quanto il profilo Ë 'caldo'
+  calcola quanto il profilo Ë 'caldo' 
+  heating=heating-gap; se il profilo non Ë stato aggiornato
+  heating=heating-gap+2; se il profilo Ë stato aggiornato
+  heating=MEMORY;   se heating raggiunge WARM resta costante finchË non inizia raffreddamento
   comend
 */
 
@@ -2883,10 +2876,10 @@ int profile_heating()
   } /*contemplo la prima iterazione dopo installazione testando l'esistenza del file*/
   else heating=0;
   if (ier_vpr){
-    heating=heating-gap; /*se il profilo non √® stato aggiornato, ho raffreddamento, in caso arrivi sotto WARM riparto da 0, cio√® serve riscaldamento  */     
+    heating=heating-gap; /*se il profilo non Ë stato aggiornato, ho raffreddamento, in caso arrivi sotto WARM riparto da 0, cioË serve riscaldamento  */     
   }
   else  { 
-    heating=heating-gap+2; /*se il profilo √® stato aggiornato, ho riscaldamento , in caso arrivi sopra WARM riparto da MEMORY  */  
+    heating=heating-gap+2; /*se il profilo Ë stato aggiornato, ho riscaldamento , in caso arrivi sopra WARM riparto da MEMORY  */  
     if (heating>=WARM) heating=MEMORY;  /* se heating raggiunge WARM allora lo pongo uguale a MEMORY     */
   }  
   if (heating<0) heating=0;   
@@ -2933,15 +2926,15 @@ int stampa_vpr()
 /*
   comstart corr_vpr
   idx corregge i dati tramite profilo verticale
-  corregge i dati tramite profilo verticale a partire da quelli con valore maggiore di THR_CORR(v vpr_par.h): riporto il dato alla quota del livello 'liquido' tramite "traslazione" cio√® aggiungo al valore in dBZ la differenza tra il valore del VPR alla quota 'liquida' e quello alla quota della misura, anche in caso di neve,purch√® esista il livello liquido nel profilo. In questo caso pero' flaggo il bin tramte la variabile neve[][]. In caso il profilo intero sia di neve allora riporto al valore di Z al suolo (o al livello rappresentativo) perch√® non ho un valore di riferimento 'liquido'. 
+  corregge i dati tramite profilo verticale a partire da quelli con valore maggiore di THR_CORR(v vpr_par.h): riporto il dato alla quota del livello 'liquido' tramite "traslazione" cioË aggiungo al valore in dBZ la differenza tra il valore del VPR alla quota 'liquida' e quello alla quota della misura, anche in caso di neve,purchË esista il livello liquido nel profilo. In questo caso pero' flaggo il bin tramte la variabile neve[][]. In caso il profilo intero sia di neve allora riporto al valore di Z al suolo (o al livello rappresentativo) perchË non ho un valore di riferimento 'liquido'. 
   La correzione avviene solo se heating>warm
   
   int ilref : livello del suolo o della quota rappresentativa di esso nel VPR (dove considero buoni i dati a partire dati da REPR_LEV)
   int ilray : livello a cui ho il dato
   int ilay2 : livello sopra o sotto ilray a seconda che il fascio stia sopra o sotto il centro di ilray, serve per interpolare il dato vpr su retta ed evitare correzioni a gradino
-  int heating,warm: indicano quanto √® caldo il profilo, e la soglia di riscaldamento
-  int snow : indica se il profilo √® di neve (snow=1)
-  int neve[NUM_AZ_X_PPI][MAX_BIN]: 1 se c'√® neve, identificata se quota dem> hvprmax+300m   
+  int heating,warm: indicano quanto Ë caldo il profilo, e la soglia di riscaldamento
+  int snow : indica se il profilo Ë di neve (snow=1)
+  int neve[NUM_AZ_X_PPI][MAX_BIN]: 1 se c'Ë neve, identificata se quota dem> hvprmax+300m   
   float corr: correzione in dB
   float vpr_liq: valore di R nel VPR alla quota 'liquida' ricavato dalla funzione analyse_VPR
 
@@ -2965,7 +2958,7 @@ int corr_vpr(char *sito)
   ier=analyse_VPR(&vpr_liq,&snow,&hliq,sito);
 
   fprintf (log_vpr,"ier_analisi %i \n",ier) ;
-  if (ier) return 1; /* se analisi dice che non √® il caso di correggere non correggo (NB in questo caso non riempio la matrice di neve)*/
+  if (ier) return 1; /* se analisi dice che non Ë il caso di correggere non correggo (NB in questo caso non riempio la matrice di neve)*/
   fprintf (log_vpr,"CORREGGO VPR \n") ;
   fprintf (log_vpr,"altezza bright band %i \n",hvprmax) ;
   for (i=0; i<NUM_AZ_X_PPI; i++){
@@ -3048,7 +3041,7 @@ int trovo_hvprmax(int *hmax)
     vprmax=vpr[imax];
      printf("il primo punto soddisfa le condizioni di picco \n");
   }	    
-  for (i=istart+1;i<NMAXLAYER-4;i++) //la ricerca √® un po' diversa dall'originale.. trovo il picco + alto con valore  rispetto a 4 sopra > soglia 
+  for (i=istart+1;i<NMAXLAYER-4;i++) //la ricerca Ë un po' diversa dall'originale.. trovo il picco + alto con valore  rispetto a 4 sopra > soglia 
     { 
       if (vpr[i] <0 || vpr[i+4] < 0) break;
       peak=10*log10(vpr[i]/vpr[i+4]);
@@ -3081,13 +3074,13 @@ int trovo_hvprmax(int *hmax)
   1)hvprmax - semiampiezza BB > liv 100 m => la bright band sta sopra il suolo => interpolo il profilo per trovare il livello liquido
   se interpolazione fallisce NON CORREGGO (scelta cautelativa, potrei avere caso convettivo
   o pochi punti o molto disomogeneo)
-  2)hvprmax - semiampiezza BB < liv 100 m  => la bright contiene o √® sotto il livello 100 m  oppure ho un massimo 'spurio'
-  quindi calcolo la Tground, temperatura media nelle stazioni pi√π vicine al radar, se non trovo T torno al caso 1.
+  2)hvprmax - semiampiezza BB < liv 100 m  => la bright contiene o Ë sotto il livello 100 m  oppure ho un massimo 'spurio'
+  quindi calcolo la Tground, temperatura media nelle stazioni pi˘ vicine al radar, se non trovo T torno al caso 1.
   2A) Tground>T_MAX_ML ----> prob. caso convettivo o max preci passa sopra radar, interpolo il profilo e calcolo livello liquido
   se interpolazione fallisce NON CORREGGO
   2B) T_MIN_ML<T0<T_MAX_ML : prob. bright band al suolo, interpolo il profilo per trovare il livello liquido
   se interpolazione fallisce NON CORREGGO
-  2C) Tground<T_MIN_ML ----> prob. profilo neve NON interpolo e non calcolo vpr al livello liquido perch√® non ho livello liquido
+  2C) Tground<T_MIN_ML ----> prob. profilo neve NON interpolo e non calcolo vpr al livello liquido perchË non ho livello liquido
                                      
   comend                  
 
@@ -3128,140 +3121,84 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
     a[i]=NODATAVPR;
     dyda[i]=NODATAVPR;
   }
- 
+
   ier_max=trovo_hvprmax(&hvprmax);
 
-  
-  if (ier_t) //1  se non ho n√® T n√® il massimo esco altrimenti tipo_profilo=0 
-    {
-      fprintf(log_vpr,"non ho T,...  \n");
+  printf("ier_max %i \n",ier_max);
 
-      if ( ! ier_max ) {
-	fprintf(log_vpr," non ho trovato hvprmax, n√® T , esco \n");
-	free_vector(a,1,npar);
-	free_vector(dyda,1,npar);
-	return 1;
-      } 
-      tipo_profilo=0;
+  if (  ier_t ) {
+    fprintf(log_vpr," non ho trovato t_ground, esco \n");
+    return 1;
+  }
+
+  if ( ! ier_max ) {
+    if ( t_ground < T_MAX_SN ){
+      tipo_profilo=3;
+      fprintf(log_vpr," non ho trovato hvprmax, temperatura da neve, profilo di neve \n");
     }
-  else 
-    {
-     
-      if (t_ground >= T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100.){ //1  se T > T_MAX_ML e non ho il massimo esco
-	if ( ! ier_max ) {
-	  fprintf(log_vpr," temperatura alta e non ho trovato hvprmax, esco \n");
-	  free_vector(a,1,npar);
-	  free_vector(dyda,1,npar);
-	  return 1;
-	}
-	tipo_profilo=0; 
-      }
-
-     
-      // if (t_ground >= T_MAX_SN+0.65*(float)(livmin+TCK_VPR/2)/100  && t_ground < T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100. )
-      if (t_ground >= T_MAX_SN  && t_ground < T_MAX_ML+0.65*(float)(livmin+TCK_VPR/2)/100. )
-      	{
-
-	  if (  ier_max ) {
-	    fprintf(log_vpr," temperatura da scioglimento e massimo in quota\n");
-	    tipo_profilo=2;
-	  }
-	  else{
-	    fprintf(log_vpr," temperatura da scioglimento e non ho trovato hvprmax, esco \n");
-	    free_vector(a,1,npar);
-	    free_vector(dyda,1,npar);
-	    return 1;
-	  }
-
-	  liv0=livmin+HALF_BB;  
-      	  if (hvprmax > liv0) fprintf(log_vpr," il livello %i √® sotto la Bright band, ma T bassa  interpolo\n",livmin);
-      	  else fprintf(log_vpr," il livello %i potrebbe essere dentro la Bright Band, interpolo\n",livmin);
+    else {
+      fprintf(log_vpr," non ho trovato hvprmax, esco \n");
+      return 1;
+    }
+  }
+  else {//ho trovato hvprmax
+    if (hvprmax-600 > livmin) {
+      tipo_profilo=0; //se quota massimo maggiore 600 m rispetto al livello minimo tipo_profilo=0
+    }
+    else { // se massimo vicino al suolo
       
-      	}
-
-      //if (t_ground >= T_MIN_ML  && t_ground < T_MAX_SN+0.65*(float)(livmin+TCK_VPR/2)/100.)
-      if (t_ground < T_MAX_SN)
-      	{
-	   if ( ier_max ){ 		
-	    fprintf(log_vpr," temperatura da neve o scioglimento e massimo in quota\n");
-	    tipo_profilo=2;	 
-	  }
-	  else {
-	    fprintf(log_vpr," temperatura da neve o scioglimento e massimo non trovato,neve , non interpolo\n");
-	    tipo_profilo=3;
-	  }
-
-	}
-
-      /* if (t_ground < T_MIN_ML )  { */
-      /* 	if ( ier_max ){ 		 */
-      /* 	  fprintf(log_vpr," temperatura sottozero e massimo in quota, esco\n"); */
-      /* 	  free_vector(a,1,npar); */
-      /* 	  free_vector(dyda,1,npar); */
-      /* 	  return 1; */
-      /* 	} */
-      /* 	//tipo_profilo=2;	  */
-   
-      /* 	else { */
-      /* 	  fprintf(log_vpr," temperatura sottozero e massimo > 5dB non trovato,neve, non interpolo\n"); */
-      /* 	  tipo_profilo=3; */
-      /* 	} */
+      /* if (t_ground < T_MIN_ML)  { */
+      /* 	if (vpr[hvprmax/TCK_VPR]/vpr[hvprmax/TCK_VPR+2] > THR_SN )  {// test sul gradiente (forse si puo' condensare nella ricerca del massimo) */
+      /* 	  fprintf(log_vpr," temperatura da neve e massimo al suolo,\n"); */
+      	  tipo_profilo=2;
+      	/* } */
+      	/* else { */
+      	/*   fprintf(log_vpr," temperatura da neve e massimo al suolo, non interpolo\n"); */
+      	/*   tipo_profilo=3; */
+      	/* } */
       /* } */
-   
-    } 
 
+      /* else { */
+      /* 	tipo_profilo=2; // altrimenti bright band vicina al suolo  */
+	// verifico T: se T  >> TML --> problema forse max preci vicino radar (potrei mettere filtro su dbZ )
+	  
+      }
+  }
+    //hstim0=(t_ground/6.5)*1000.; 
+
+ 
   switch
     (tipo_profilo)
     {
     case 0:
-    case 1:
-    case 2:
-  
+    case 1:  
       ier=interpola_VPR(a,npar);
       if (ier){ 
 	fprintf(log_vpr," interpolazione fallita \n");           
-	switch (tipo_profilo)
-	  {  
-
-	    /*Questo fallisce se la bright band non √® al suolo (per evitare correzioni dannose in casi poco omogenei)*/
-	  case 0:
-	  case 1:	
-	    ier_ana=1; 	    
+	    /*Questo fallisce se la bright band non Ë al suolo (per evitare correzioni dannose in casi poco omogenei)*/	
+	    ier_ana=1;
 	    *vpr_liq=NODATAVPR;
             *hliq=NODATAVPR;
-	    break; 
-	  case 2:
-	    //*vpr_liq=vpr[(hvprmax+HALF_BB-100)/TCK_VPR];/*21 aprile 2008*/
-	    *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;/*21 aprile 2008*/
-	    *hliq=0;		         
-	    break;
-	  }  
       }
       else{
-  	fprintf(log_vpr," interpolazione eseguita con successo \n");    	
-	/*calcolo valore di riferimento di vpr_liq per l'acqua liquida nell'ipotesi che a[2]=quota_bright_band e a[2]-1.5*a[3]=quota acqua liquida*/
-        if (tipo_profilo == 2 ) { 	 
-	  *hliq=(a[2]-2.1*a[3])*1000.;
-	  lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);	 
-         
-	  *hliq=0;  /*con casi di bright band bassa.. cerco di correggere il pi√π possibile*/
-	  //*vpr_liq=vpr[(hvprmax+(int)(7.*a[3]*1000))/TCK_VPR]*2.15; /*23 aprile 2008 cio√® vpr neve + 6 dB*/
+  	fprintf(log_vpr," interpolazione eseguita con successo \n");   
+	*hliq=(a[2]-2.1*a[3])*1000.;
+  /*calcolo valore di riferimento di vpr_liq per l'acqua liquida nell'ipotesi che a[2]=quota_bright_band e a[2]-1.5*a[3]=quota acqua liquida*/
+	lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
+	if(*hliq < livmin +200)  {  
+	  tipo_profilo=2;	  
+	  *hliq=0;  /*con casi di bright band bassa.. cerco di correggere il pi˘ possibile*/
+	  //*vpr_liq=vpr[(hvprmax+(int)(7.*a[3]*1000))/TCK_VPR]*2.15; /*23 aprile 2008 cioË vpr neve + 6 dB*/
 	  *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
 	}
-        else { 	  
-	  *hliq=(a[2]-2.1*a[3])*1000.;
-
-	  lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
-	  if ( *hliq > livmin) {
-	    *vpr_liq=vpr[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
-	  }
-	  else // altrimenti tengo il valore vpr neve + 6 dB* e metto tipo_profilo=2
-	    {
-	      tipo_profilo=2;
-	      *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
-	    }       
-	}
+        else { 
+	  *vpr_liq=vpr[(int)(*hliq)/TCK_VPR]; // ... SE HO IL VALORE VPR USO QUELLO..         
+	}	
       }
+      break;
+    case 2:
+      *hliq=0;
+      *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
       break;
     case 3:
       *snow=1;
@@ -3298,7 +3235,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   //fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);
  
 
-  fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);	     
+  fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f %f %f  %f %f %f %f\n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vpr[(hvprmax/TCK_VPR)],a[1],a[2],a[3],a[4],a[5]);	     
   free_vector(a,1,npar);
   free_vector(dyda,1,npar);
   /* fine parte di stampa test vpr*/
@@ -3354,7 +3291,7 @@ int get_t_ground(float *t_gr)
   if (icount>0)
     {
       media_t/=(float)(icount);
-      fprintf(log_vpr,"ho %i stazioni dati affidabili e la t media √®  %f\n",icount,media_t);
+      fprintf(log_vpr,"ho %i stazioni dati affidabili e la t media Ë  %f\n",icount,media_t);
       *t_gr=media_t;
       ierr=0;
     }
@@ -3376,7 +3313,7 @@ int get_t_ground(float *t_gr)
   y= B*exp(-((x-E)/G)^2)+C+Fx
 
   usa la funzione mrqmin delle numerical recipes in C: tutti i vettori passati a mrqmin devono essere allocati e deallcocati usando le funzioni di NR (vector, matrix, free_vector, free_matrix.. etc) che definiscono vettori con indice a partire da 1.
-  NB gli ndata dati considerati partono da 1000 m sotto il massimo (in caso il massimo sia pi√π basso di 1000 m partono da 0 m)
+  NB gli ndata dati considerati partono da 1000 m sotto il massimo (in caso il massimo sia pi˘ basso di 1000 m partono da 0 m)
   A ogni iterazione si esegue un test sui parametri. Se ritorna 1 si torna ai valori dell'iterazione precedente.
   A fine interpolazione si verifica che il chisquare non superi una soglia prefissata, in tal caso ritorna 1 e interpol. fallisce.
 
@@ -3411,7 +3348,8 @@ int interpola_VPR(float a[], int ma)
   float chisqin=0.0;
   int i,in1,in2,in3,in4,*ia,ifit,ii,ndati_ok,k,ier_int;
   //int ma=5;
-  int ndata=12;  
+  //int ndata=12;  
+  int ndata=18;  
   float **covar;
   float **alpha;
   char file_vprint[200];
@@ -3476,8 +3414,8 @@ int interpola_VPR(float a[], int ma)
 	  sig[ii]=0.5; 
 	  //x[ii]= ((hvprmax-1000.)>livmin)? (i*TCK_VPR+(hvprmax-800)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
 	  //y[ii]= ((hvprmax-1000.)>livmin)? vpr[i+((hvprmax-800)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 
-	  x[ii]= ((hvprmax-800.)>livmin)? (i*TCK_VPR+(hvprmax-600)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
-	  y[ii]= ((hvprmax-800.)>livmin)? vpr[i+((hvprmax-600)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 	  
+	  x[ii]= ((hvprmax-2000.)>livmin)? (i*TCK_VPR+(hvprmax-1800)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
+	  y[ii]= ((hvprmax-2000.)>livmin)? vpr[i+((hvprmax-1800)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 	  
 	  lineargauss(x[ii], a, &y1, dyda, ndata);
 	  qdist=(y1-y[ii])*(y1-y[ii]);
 	  if (sqrt(qdist) < DIST_MAX) 
@@ -3667,7 +3605,7 @@ void classifica_rain()
    
   if (hmax <0 && !ier_0term) {
    
-    htbb=zeroterm/1000. + 0.4; // se non ho trovato il vpr allora uso un range pi√π ristetto, prob caso convettivo
+    htbb=zeroterm/1000. + 0.4; // se non ho trovato il vpr allora uso un range pi˘ ristetto, prob caso convettivo
     hbbb=zeroterm/1000. - 0.6;
    
   }
@@ -3735,7 +3673,7 @@ void classifica_rain()
       i_xx[i][k]=floor((xx[i][k]-xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k 
       RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;
       //shift orizzontale negativo del punto di indice i_xx[i][k] per costruire la finestra in x
-      // se l'estremo minimo in x della finestra √® negativo assegno come shift il massimo possibile e cio√® la distanza del punto dall'origine
+      // se l'estremo minimo in x della finestra Ë negativo assegno come shift il massimo possibile e cioË la distanza del punto dall'origine
       i_xx_min[i][k]=i_xx[i][k];
       if (i_xx[i][k]-w_x_size_2 >= 0) 
 	i_xx_min[i][k]= w_x_size_2;
