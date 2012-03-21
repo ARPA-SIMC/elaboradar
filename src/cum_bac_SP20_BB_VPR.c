@@ -2520,14 +2520,13 @@ areaqual[i]=(long int )(0);
 	ilast=ilay;
       }
       else{
-
+	vpr1[ilay]=NODATAVPR;
 	if (ilast > 0 && vert_ext>VEXTMIN_VPR){  
 	  fprintf(log_vpr,"raggiunta cima profilo \n");
 	  ilast=ilay;
 	  ilay=NMAXLAYER; 
 	}
-	else
-	  vpr1[ilay]=NODATAVPR;
+
 	/*        } */
       }
      
@@ -2982,12 +2981,15 @@ int corr_vpr(char *sito)
       }
 #endif     
       if (BYTEtoDB(vol_pol[0][i].ray[k])>THR_CORR && hbin > hliq  && strat){   
-	ilray=floor((hbin)/TCK_VPR);
-	if (ilray>= NMAXLAYER ) ilray=NMAXLAYER-2;
-        ilref=(dem[i][k]>livmin)?(floor(dem[i][k]/TCK_VPR)):(floor(livmin/TCK_VPR));
+	ilray=(hbin>=livmin)?(floor(hbin/TCK_VPR)):(floor(livmin/TCK_VPR));//discutibile :livello del fascio se minore di livmin posto=livmin	
+	if (ilray>= NMAXLAYER ) ilray=NMAXLAYER-2;//livello del fascio se >= NMAXLAYER posto =NMAXLAYER-2
+
+        ilref=(dem[i][k]>livmin)?(floor(dem[i][k]/TCK_VPR)):(floor(livmin/TCK_VPR));//livello di riferimento; se livello dem>livmin = livello dem altrimenti livmin
 	
 	if ((int)hbin%TCK_VPR > TCK_VPR/2) ilay2=ilray+1;
 	else ilay2=(int)(fabs(ilray-1));
+	if (ilay2< livmin) ilay2=livmin;
+
 	if (vpr[ilref]>0 && vpr[ilray]>0 ){ /*devo avere un dato DI PIOGGIA nel VPR!*/
 	  vpr_hray=vpr[ilray]+((vpr[ilray]-vpr[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2);	/*per rendere la correzione continua non a gradini */ 		 
 	  if (dem[i][k]> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/            
@@ -3018,7 +3020,7 @@ int trovo_hvprmax(int *hmax)
   int i,imax,istart,foundlivmax;
   float vprmax,h0start,peak;
 
-  istart=livmin/TCK_VPR+1; //il primo punto lo scarto
+ 
   if (! ier_t ){
 
       printf("trovo hvprmax  a partire da 400 m sotto lo zero dell'adiabatica secca\n");
