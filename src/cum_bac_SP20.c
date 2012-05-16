@@ -607,9 +607,11 @@ int test_file()
 
     if(nbeam_elev[k] <  NUM_MIN_BEAM)
     {
+      printf("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,nbeam_elev[k]);
       sprintf(errori,"Trovati Pochi Beam Elevazione %2d - num.: %3d",k,nbeam_elev[k]);
+
       ScrivoLog(16,errori);
-      return 0;
+      exit(1);
     }
   }                                                             //end for
       sprintf(errori,"Primi test passati");
