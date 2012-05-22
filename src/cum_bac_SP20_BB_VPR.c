@@ -3579,7 +3579,7 @@ int testfit(float a[], float chisq, float chisqin)
 {
   if (a[1]<0. || a[1] >15.) return 1;
   if (a[2] >10.) return 1;
-  if (a[3]<0. ) return 1;
+  if (a[3]<0.2 || a[3] > 0.6 ) return 1; //da analisi set dati
   if (a[4]<0. ) return 1;
   if (a[5]>0 ) return 1;
   if (chisq>chisqin ) return 1;
