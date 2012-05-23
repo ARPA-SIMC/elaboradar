@@ -28,7 +28,7 @@
 #define T_MAX_ML 4. // °C  temperatura massima indicativa della Bright band
 #define THR_STDEVR  0.03  // soglia sulla standard deviation di vol R  a 1100 m normalizzato rispetto vol R totale
 #define DCHISQTHR 0.00001 //minima differenza di chisquare tra una iterazione e l' altra
-#define DIST_MAX 10.  // (old 5) massima distanza tra i punti e il profilo di prima approssimazione affinchè i punti siano considerati
+#define DIST_MAX 20.  // (old 5) massima distanza tra i punti e il profilo di prima approssimazione affinchè i punti siano considerati (parametro messo grande abbastanza da includere tutto)
 #define CHISQ_MAX 1. // (old 30) massimo chisquare affinchè l'interpolazione sia accettata
 #define MAX_CORR 20. // massima correzione in dB
 #define THR_SN 1.36 //differenza massima tra vprmax e vpr a hmax+400m per neve (in rapporto precipitazione
