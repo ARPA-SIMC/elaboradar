@@ -488,6 +488,7 @@ void lineargauss(float x, float a[], float *y, float dyda[],int na);
 time_t Time,T_Time;
 int ier_t ;
 float chisqfin=100; //???puo' essere def in anal
+float rmsefin=100;
 #endif
 
 #ifdef CLASS
@@ -3301,7 +3302,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   //fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);
  
 
-  fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);	     
+  fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f  %f\n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax,rmsefin);	     
   free_vector(a,1,npar);
   free_vector(dyda,1,npar);
   /* fine parte di stampa test vpr*/
@@ -3477,10 +3478,10 @@ int interpola_VPR(float a[], int ma)
       for (i=1; i<=ndati_ok; i++)
 	{ 
 	  sig[ii]=0.5; 
-	  //x[ii]= ((hvprmax-1000.)>livmin)? (i*TCK_VPR+(hvprmax-800)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
-	  //y[ii]= ((hvprmax-1000.)>livmin)? vpr[i+((hvprmax-800)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 
-	  x[ii]= ((hvprmax-800.)>livmin)? (i*TCK_VPR+(hvprmax-600)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
-	  y[ii]= ((hvprmax-800.)>livmin)? vpr[i+((hvprmax-600)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 	  
+	  x[ii]= ((hvprmax-1000.)>livmin)? (i*TCK_VPR+(hvprmax-800)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
+	  y[ii]= ((hvprmax-1000.)>livmin)? vpr[i+((hvprmax-800)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 
+	  // x[ii]= ((hvprmax-800.)>livmin)? (i*TCK_VPR+(hvprmax-600)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
+	  //y[ii]= ((hvprmax-800.)>livmin)? vpr[i+((hvprmax-600)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR]; 	  
 	  lineargauss(x[ii], a, &y1, dyda, ndata);
 	  qdist=(y1-y[ii])*(y1-y[ii]);
 	  if (sqrt(qdist) < DIST_MAX) 
@@ -3538,6 +3539,8 @@ int interpola_VPR(float a[], int ma)
 	  /* 	      fprintf(file," %10.3f \n",y1);  */
 	  /* 	    } */
 	  /* 	  fclose(file); */
+
+
 	  if (chisq <chisqfin) 
 	    { 
 	      chisqfin=chisq;
@@ -3545,6 +3548,16 @@ int interpola_VPR(float a[], int ma)
 	    }
 	}
     }
+
+  for (i=1; i<=ndati_ok; i++)
+    { 
+      lineargauss(x[i], abest, &y1, dyda, ndata);
+      rmsefin=rmsefin+  (y[i]-y1)*(y[i]-y1) ; 	   
+    }
+  rmsefin=sqrt(rmsefin/(float)(ndati_ok*ndati_ok));
+  fprintf(log_vpr,"RMSEFIN %f \n ", rmsefin );
+
+ 
   if (chisqfin>CHISQ_MAX)
     {
       ier_int=1;
