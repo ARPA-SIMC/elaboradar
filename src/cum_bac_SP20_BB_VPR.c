@@ -3302,7 +3302,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
   //fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax);
  
 
-  fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f  %f\n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,v1000,v1500,vprmax,rmsefin);	     
+  fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f  %f %f %f  %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,vprmax,rmsefin,a[1],a[2],a[3],a[4],a[5]);	     
   free_vector(a,1,npar);
   free_vector(dyda,1,npar);
   /* fine parte di stampa test vpr*/
