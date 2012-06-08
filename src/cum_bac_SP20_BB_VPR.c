@@ -4235,8 +4235,9 @@ int trovo_top()
     for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){
       for (l=first_level_static[i][k]; l<NEL; l++)	   
 	{ 
-	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 25.)
+	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 25.&& l < NEL -1)
 	    top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);//top in ettometri
+	    
 	  
 	}
     }
