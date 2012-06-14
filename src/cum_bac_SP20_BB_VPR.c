@@ -800,7 +800,7 @@ int main (int argc, char **argv)
 #endif
 
 
-	  scrivo_out_file_bin(".top25_ZLR","file top25",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
+	  scrivo_out_file_bin(".top10_ZLR","file top10",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
 
 #ifdef QUALITY      
 	  scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto); 
@@ -4235,7 +4235,7 @@ int trovo_top()
     for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){
       for (l=first_level_static[i][k]; l<NEL; l++)	   
 	{ 
-	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 25.&& l < NEL -1)
+	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 10. && l < NEL -1)
 	    top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);//top in ettometri
 	    
 	  
