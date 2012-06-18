@@ -34,8 +34,7 @@
   |cc -o cum_bac_SP20_BSA cum_bac_SP20_BB.c  -DANAPROP -DTIME  -DZ_AVERAGE -DZ_LOWRIS  
   |       -DSHORT -DSTATIC  -DBEAMBLOCKING -DQUALITY  -I$INCLUDEDIR -lSP20_utility -L$HOME_BB/lib -lm
   |-------------------------------------------------------------------------------------------------
-  | MODIFICHE
-  |
+  | MODIFICHE  |
   |
   | 31-07-1996 - Aggiunta la costruzione e la scrittura di una matrice di 
   |              riflettivita' alla risoluzione di 1Kmx1Km in output
@@ -377,7 +376,11 @@ unsigned short quota_cart[MAX_BIN*2][MAX_BIN*2];/*quota fascio in coordinate car
 unsigned char quota_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
 
 unsigned char dato_corrotto[NUM_AZ_X_PPI][MAX_BIN]; /*uscita controllo anaprop in coordinate azimut range */
+unsigned char dato_corr_xy[MAX_BIN*2][MAX_BIN*2]; 
+unsigned char dato_corr_1x1[CART_DIM_ZLR][CART_DIM_ZLR]; 
 unsigned char elev_fin[NUM_AZ_X_PPI][MAX_BIN]; /* elevazione finale in coordinate azimut range  */ 
+unsigned char elev_fin_xy[MAX_BIN*2][MAX_BIN*2];
+unsigned char elev_fin_1x1[NUM_AZ_X_PPI][MAX_BIN];
 unsigned char qual[NEL][NUM_AZ_X_PPI][MAX_BIN]; /* qualita volume polare */
 unsigned char qual_Z_cart[MAX_BIN*2][MAX_BIN*2]; /* qualita della Z in formato 1024*1024, risoluzione minima */
 unsigned char qual_Z_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* qualita della Z in formato 256*256, risoluzione ZLR */
@@ -604,17 +607,18 @@ int main (int argc, char **argv)
   memset(nbeam_elev,0,sizeof(nbeam_elev));
   memset (first_level,0,sizeof(first_level));    
   memset (first_level_static,0,sizeof(first_level_static));    
-#ifdef QUALITY
-  memset(elev_fin,0,sizeof(elev_fin));        
-  memset(dato_corrotto,2,sizeof(dato_corrotto));                 
+#ifdef QUALITY      
+  memset(dato_corrotto,0,sizeof(dato_corrotto));  
+  memset(dato_corr_xy,0,sizeof(dato_corr_xy));
+  memset(dato_corr_1x1,0,sizeof(dato_corr_1x1));
   memset(att_cart,DBtoBYTE(0.),sizeof(att_cart));
-  memset(qual,0,sizeof(qual));
   memset(quota_rel,0,sizeof(quota_rel));
   memset(quota,0,sizeof(quota));
   memset(quota_cart,0,sizeof(quota_cart));
   memset(quota_1x1,0,sizeof(quota_1x1));
-  memset(dato_corrotto,0,sizeof(dato_corrotto));
   memset(elev_fin,0,sizeof(elev_fin));
+  memset(elev_fin_xy,0,sizeof(elev_fin_xy));
+  memset(elev_fin_1x1,0,sizeof(elev_fin_1x1));
   memset(qual,0,sizeof(qual));
   memset(qual_Z_cart,0,sizeof(qual_Z_cart));
   memset(qual_Z_1x1,0,sizeof(qual_Z_1x1));
@@ -631,6 +635,8 @@ int main (int argc, char **argv)
   memset(top,0,sizeof(top)); 
   memset(topxy,0,sizeof(topxy));
   memset(top_1x1,0,sizeof(top_1x1));
+ 
+  
 
   nome_fl=(char *)malloc(200*sizeof(char));
   nome_dem=(char *)malloc(200*sizeof(char));
@@ -686,6 +692,7 @@ int main (int argc, char **argv)
 	  } 	   
 	  MP_coeff[0]=(unsigned char)(aMP/10);
 	  MP_coeff[1]=(unsigned char)(bMP*10); 
+
 	      
 	  /*fine definizione coeff MP in base alla stagione*/
 #ifdef ANAPROP
@@ -807,13 +814,16 @@ int main (int argc, char **argv)
 	  scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
 	  scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking); 
 	  //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-	  scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);  
+	   scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);  
 	  scrivo_out_file_bin(".quota_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
-
+	  scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
+#ifdef STAMPE_EXTRA
+   	  scrivo_out_file_bin(".anap_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
+#endif
 #ifdef VPR  
-	  scrivo_out_file_bin(".corr_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
+	  scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
 	  scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve); 
-	  scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1); 
+	  // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1); 
 #endif	
 #ifdef CLASS  
 	  scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1); 
@@ -976,10 +986,12 @@ int elabora_dato()
     | calcolo fondo scala |
     ---------------------*/
   flag_anap = 1;
-
   fondo_scala = BYTEtoDB(flag_anap);/*-19.7 dBZ*/
+
+
   printf("leggo first level \n");
   leggo_first_level();
+
 #ifdef QUALITY
   leggo_dem();
   leggo_hray();
@@ -987,6 +999,8 @@ int elabora_dato()
 
   /*per quando non rimuovo anap e voglio riscrivere volume polare*/
 #ifdef DECLUTTER
+
+
   for(i=0; i<NUM_AZ_X_PPI; i++)
     {
       PIA=0.0
@@ -1010,7 +1024,11 @@ int elabora_dato()
 	  }
     }
   return 0;
+
+
 #endif  /* fine DECLUTTER */
+
+
 
   /*----------------------------------------
     | azzero matrici per statistica anaprop |
@@ -1034,7 +1052,7 @@ int elabora_dato()
 #endif
 	  el_up = el_inf +1;
 	  bin_low_low=fondo_scala+1;
-	  if (el_inf>=1) bin_low_low=BYTEtoDB(vol_pol[el_inf-1][i].ray[k]);
+ 	  if (el_inf>=1) bin_low_low=BYTEtoDB(vol_pol[el_inf-1][i].ray[k]);
 	  bin_low  = BYTEtoDB(vol_pol[el_inf][i].ray[k]);
 	  bin_high = BYTEtoDB(vol_pol[el_up][i].ray[k]);
      
@@ -1073,13 +1091,14 @@ int elabora_dato()
 	      MIN_VALUE=MIN_VALUE_LIMIT;                        
 	      MIN_VALUE_NEXT=MIN_VALUE_LIMIT;     }
 
-	  if(bin_low > fondo_scala && bin_high >= fondo_scala )// ho qualcosa sia sotto che sopra
+	  if(bin_low > fondo_scala && bin_high >= fondo_scala )// ho qualcosa sia sotto che sopras
 	    {
 	      test_vertZ=1;
 	      if(flag_anap)
 		{		  
 		  test_prec_anap=1;// anaprop precedentemente riscontrata nel raggio (riduco le soglie di test)
-		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT ||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
+
+		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT )||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
 		    {
 		      test_anap=1;// anaprop sì
 		      for(l=0; l<el_up; l++) {
@@ -1090,8 +1109,9 @@ int elabora_dato()
 		      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statitica cambio elevazione
 	      
 #ifdef QUALITY
+	
 		      dato_corrotto[i][k]=1;/* matrice risultato test: propagazione anomala*/
-
+		    
 #endif
 #ifdef BEAMBLOCKING
 		      beam_blocking[i][k]=0;/* beam blocking azzerato ( ho cambiato elevazione, non posso determinarlo)*/
@@ -1120,7 +1140,8 @@ int elabora_dato()
 		} 
 	      else    /* se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio */
 		{
-		  test_prec_anap=0;// anaprop precedentemente non riscontrata nel raggio	
+		  test_prec_anap=0;// anaprop precedentemente non riscontrata nel raggio
+
 		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE ||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
 		    {
 		      test_anap=1;// anaprop sì
@@ -1614,6 +1635,8 @@ void creo_cart()
 #ifdef QUALITY
 		qual_Z_cart[x][y]=qual[elev_fin[iaz%NUM_AZ_X_PPI][irange]][iaz%NUM_AZ_X_PPI][irange];
 		quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
+		dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
+		elev_fin_xy[x][y]=elev_fin[iaz%NUM_AZ_X_PPI][irange];
 		/*neve_cart[x][y]=qual_Z_cart[x][y];*/
 #ifdef VPR
 		neve_cart[x][y]=(neve[iaz%NUM_AZ_X_PPI][irange])?0:1;  
@@ -1623,7 +1646,7 @@ void creo_cart()
 #ifdef CLASS
 		if (irange<x_size)
 		  conv_cart[x][y]=conv[iaz%NUM_AZ_X_PPI][irange];
-		cappi_cart[x][y]=cappi[iaz%NUM_AZ_X_PPI][irange];
+	          cappi_cart[x][y]=cappi[iaz%NUM_AZ_X_PPI][irange];
 #endif
 	      }
 #ifdef ZLR_MEDIA
@@ -1993,7 +2016,7 @@ void	creo_cart_z_lowris()
 /*===============================================*/
 {
   int i,j,x,y,cont;
-  unsigned char z,q,nv,c1x1,t25;
+  unsigned char z,q,nv,c1x1,t25,dc1x1,el1x1;
   unsigned short q1x1;
   float zm;
        
@@ -2021,6 +2044,8 @@ void	creo_cart_z_lowris()
 #ifdef QUALITY
 		  q= qual_Z_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
  		  q1x1=quota_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET]; 
+		  dc1x1=dato_corr_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+		  el1x1=elev_fin_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
 
 #ifdef VPR
 		  c1x1=corr_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET]; 
@@ -2042,8 +2067,12 @@ void	creo_cart_z_lowris()
 #endif
 		}    
 	      z_out[i][j]=z;
+#ifdef QUALITY
 	      qual_Z_1x1[i][j]=q;
 	      quota_1x1[i][j]=128+(unsigned char)(q1x1/100);
+	      dato_corr_1x1[i][j]=dc1x1;
+	      elev_fin_1x1[i][j]=el1x1;
+#endif
 	      top_1x1[i][j]=t25;
 
 #ifdef VPR
@@ -4235,10 +4264,10 @@ int trovo_top()
     for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){
       for (l=first_level_static[i][k]; l<NEL; l++)	   
 	{ 
-	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 10. && l < NEL -1)
-	    top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);//top in ettometri
-	    
-	  
+	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 10. )
+	    top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);{ //top in ettometri
+	    if (l >= NEL -1 ) top[i][k]=0;
+	  }
 	}
     }
   }
