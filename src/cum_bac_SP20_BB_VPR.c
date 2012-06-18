@@ -808,14 +808,14 @@ int main (int argc, char **argv)
 
 #ifdef QUALITY    
 	  scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
+     	  scrivo_out_file_bin(".anap_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
 #ifdef STAMPE_EXTRA
 	  scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto); 
 	  scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
 	  scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking); 
 	  //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
 	  // scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);  
-     	  scrivo_out_file_bin(".anap_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
-	  scrivo_out_file_bin(".quota_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
+    	  scrivo_out_file_bin(".quota_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
 	  scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
 	  scrivo_out_file_bin(".top10_ZLR","file top10",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
 #endif
