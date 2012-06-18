@@ -806,25 +806,24 @@ int main (int argc, char **argv)
 	      
 #endif
 
-
-	  scrivo_out_file_bin(".top10_ZLR","file top10",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
-
 #ifdef QUALITY      
+#ifdef STAMPE_EXTRA
 	  scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto); 
 	  scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
 	  scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking); 
 	  //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-	   scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);  
+	  // scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);  
 	  scrivo_out_file_bin(".quota_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
 	  scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
-#ifdef STAMPE_EXTRA
    	  scrivo_out_file_bin(".anap_ZLR","file quota",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
+	  scrivo_out_file_bin(".top10_ZLR","file top10",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
 #endif
 #ifdef VPR  
 	  scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
-	  scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve); 
+	  //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve); 
 	  // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1); 
 #endif	
+
 #ifdef CLASS  
 	  scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1); 
 #endif	   
@@ -1098,7 +1097,7 @@ int elabora_dato()
 		{		  
 		  test_prec_anap=1;// anaprop precedentemente riscontrata nel raggio (riduco le soglie di test)
 
-		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT )||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
+		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT  || (bin_low_low==fondo_scala && bin_high==fondo_scala)  )
 		    {
 		      test_anap=1;// anaprop sì
 		      for(l=0; l<el_up; l++) {
@@ -1142,7 +1141,7 @@ int elabora_dato()
 		{
 		  test_prec_anap=0;// anaprop precedentemente non riscontrata nel raggio
 
-		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE ||(bin_low_low==fondo_scala && bin_high==fondo_scala)) 
+		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE || (bin_low_low==fondo_scala && bin_high==fondo_scala) ) 
 		    {
 		      test_anap=1;// anaprop sì
 		      for(l=0; l<el_up; l++){
