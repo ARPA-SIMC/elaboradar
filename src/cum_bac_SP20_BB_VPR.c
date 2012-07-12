@@ -1098,7 +1098,7 @@ int elabora_dato()
 		{		  
 		  test_prec_anap=1;// anaprop precedentemente riscontrata nel raggio (riduco le soglie di test)
 
-		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT  || (bin_low_low==fondo_scala && bin_high==fondo_scala)  )
+		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT   )
 		    {
 		      test_anap=1;// anaprop sì
 		      for(l=0; l<el_up; l++) {
@@ -1142,7 +1142,7 @@ int elabora_dato()
 		{
 		  test_prec_anap=0;// anaprop precedentemente non riscontrata nel raggio
 
-		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE || (bin_low_low==fondo_scala && bin_high==fondo_scala) ) 
+		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  ) 
 		    {
 		      test_anap=1;// anaprop sì
 		      for(l=0; l<el_up; l++){
