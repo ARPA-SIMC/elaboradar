@@ -274,6 +274,8 @@
 #undef NEL
 #endif
 
+
+
 #ifdef SHORT
 #define NEL 15
 
@@ -695,6 +697,14 @@ int main (int argc, char **argv)
 
 	      
 	  /*fine definizione coeff MP in base alla stagione*/
+
+	  /* /\*CALIBRAZIONE*\/ */
+
+	  /* for (l=0;l<NEL;l++) */
+	  /*   { */
+	  /*     if (vol_pol[l][i].ray[k]>1) vol_pol[l][i].ray[k]=(DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])+calibr)>0)?DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])+calibr):1; */
+	  /*   }                          */
+
 #ifdef ANAPROP
 	  printf ("inizio rimozione anaprop e beam blocking \n") ;
 	  ier = elabora_dato();  
@@ -975,7 +985,6 @@ int elabora_dato()
 {   
   int i,l,k;
   int el_inf,el_up;
-  int test_ridotto,test_vertZ, test_prec_anap,test_anap,test_nodatalow; // varibili di controllo sull'andamento del test anap
   float bin_low,bin_high, bin_low_low; 
   float fondo_scala,elevaz,quota_true;
   unsigned char flag_anap;
@@ -1050,6 +1059,9 @@ int elabora_dato()
 #ifdef QUALITY
 	  elev_fin[i][k]=el_inf;
 #endif
+	  if ( el_up >= NEL ) //aggiunta
+	    bin_high = fondo_scala;
+
 	  el_up = el_inf +1;
 	  bin_low_low=fondo_scala+1;
  	  if (el_inf>=1) bin_low_low=BYTEtoDB(vol_pol[el_inf-1][i].ray[k]);
@@ -1083,44 +1095,46 @@ int elabora_dato()
 	  MIN_VALUE=MIN_VALUE_OR;                    
 	  MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR;
 
-	  if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) /*se sono a elev almeno 2, oltre 80km e test applicato sotto non da anaprop =>*/
+	  if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) /*se sono a elev almeno 2, oltre 60km e test applicato sotto non da anaprop =>*/
 	    {   
-	      test_ridotto=1;
 	      MAX_DIF_NEXT=MAX_DIF_LIMIT;
 	      MAX_DIF=MAX_DIF_LIMIT;
 	      MIN_VALUE=MIN_VALUE_LIMIT;                        
 	      MIN_VALUE_NEXT=MIN_VALUE_LIMIT;     }
 
-	  if(bin_low > fondo_scala && bin_high >= fondo_scala )// ho qualcosa sia sotto che sopras
+	  if(bin_low > fondo_scala && bin_high >= fondo_scala )// ho qualcosa sia sotto che sopra
 	    {
-	      test_vertZ=1;
 	      if(flag_anap)
-		{		  
-		  test_prec_anap=1;// anaprop precedentemente riscontrata nel raggio (riduco le soglie di test)
-
-		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT   )
-		    {
-		      test_anap=1;// anaprop sì
+		{
+		  
+		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT )
+		    {	
+		      // ricontrollo sopra
+		      bin_low=vol_pol[el_up][i].ray[k];//modifica		      
+		      if (el_up +1 <= NEL) bin_high=vol_pol[el_up+1][i].ray[k];//modifica
+		      else//modifica
+			bin_high=fondo_scala;//modifica
+		      if( bin_low-bin_high >= MAX_DIF_NEXT  && bin_high> fondo_scala)
+			 {
+			   el_inf=el_up;//modifica
+			   el_up=el_up+1;//modifica
+			 }		      
 		      for(l=0; l<el_up; l++) {
-			vol_pol[l][i].ray[k]=1;	//metto a fondoscala i valori di vol_pol sul pixel fino a el_inf  (no preci nella ZLR finale)  
+		       	vol_pol[l][i].ray[k]=1;	//metto a fondoscala i valori di vol_pol sul pixel fino a el_inf  (no preci nella ZLR finale)  
+			 vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];	//ALTERN
 		      }
 		      flag_anap = 1;
 		      stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statitica anaprop
-		      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statitica cambio elevazione
-	      
-#ifdef QUALITY
-	
-		      dato_corrotto[i][k]=1;/* matrice risultato test: propagazione anomala*/
-		    
+		      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statitica cambio elevazione	     
+#ifdef QUALITY	
+		      dato_corrotto[i][k]=1;/* matrice risultato test: propagazione anomala*/		    
 #endif
 #ifdef BEAMBLOCKING
 		      beam_blocking[i][k]=0;/* beam blocking azzerato ( ho cambiato elevazione, non posso determinarlo)*/
-#endif
-	     
+#endif	     
 		    }
 		  else 
 		    {
-		      test_anap=0;// anaprop no
 		      for(l=0; l<=el_inf; l++){
 			vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 #ifdef BEAMBLOCKING
@@ -1134,19 +1148,27 @@ int elabora_dato()
 		      dato_corrotto[i][k]=0;/* matrice risultato test: no propagazione anomala*/	
 #endif	    
 		      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
-
 		      flag_anap = 0;
 		    }
 		} 
 	      else    /* se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio */
 		{
-		  test_prec_anap=0;// anaprop precedentemente non riscontrata nel raggio
-
 		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  ) 
 		    {
-		      test_anap=1;// anaprop sì
+		      // ricontrollo sopra
+		      bin_low=vol_pol[el_up][i].ray[k];//modifica		      
+		      if (el_up +1 <= NEL) bin_high=vol_pol[el_up+1][i].ray[k];//modifica
+		      else//modifica
+			bin_high=fondo_scala;//modifica
+		      if( bin_low-bin_high >= MAX_DIF_NEXT  && bin_high> fondo_scala)
+			{
+			  el_inf=el_up;//modifica
+			  el_up=el_up+1;//modifica
+			}		      
+
 		      for(l=0; l<el_up; l++){
 			vol_pol[l][i].ray[k]=1;
+			vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];	//ALTERN
 		      }
 		      flag_anap = 1;
 		      stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
@@ -1160,8 +1182,6 @@ int elabora_dato()
 		    } 
 		  else 
 		    {
-
-		      test_anap=0;// anaprop no		     
 		      for(l=0; l<=el_inf; l++)
 			{
 			  vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
@@ -1184,10 +1204,7 @@ int elabora_dato()
 	    }/*endif bin_low > fondo_scala && bin_high >= fondo_scala*/
 	  else if (bin_low < fondo_scala)  
 	    {
-	      test_vertZ=0;
-	      test_nodatalow=1;
-
-	      for(l=0; l<el_up; l++) //riempio con i valori di el_up tutte le elevazioni sotto (ricostruisco il volume)
+	      for(l=0; l<el_up; l++) // se nn ho dato  el_inf riempio con i valori di el_up tutte le elevazioni sotto (ricostruisco il volume)
 		{
 		  vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];
 		  if(!vol_pol[l][i].flag)
@@ -1212,8 +1229,7 @@ int elabora_dato()
 	    }
 	  else if (bin_low == fondo_scala || bin_high < fondo_scala)/* quel che resta da (bin_low > fondo_scala && bin_high >= fondo_scala) e (bin_low < fondo_scala) basterebbe un else*/
 	    {
-	      test_vertZ=0;
-	      test_nodatalow=0;
+
 	      for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
 		{ 
 		  vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; 
@@ -1228,17 +1244,10 @@ int elabora_dato()
 		}
 #ifdef QUALITY
 	      dato_corrotto[i][k]=0; //non so perchè..
-
 #endif
 	      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
 	    }
 	  /*-----------------------------------------------------------fine-----------*/
-	  /*CALIBRAZIONE*/
-
-	  for (l=0;l<NEL;l++)
-	    {
-	      if (vol_pol[l][i].ray[k]>1) vol_pol[l][i].ray[k]=(DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])+calibr)>0)?DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])+calibr):1;
-	    }                         
 
 #ifdef QUALITY
 	  elevaz=(float)(vol_pol[elev_fin[i][k]][i].teta_true)*CONV_RAD;	
@@ -2767,7 +2776,7 @@ int combina_profili(char *sito, char *sito_ad)
 	file=fopen(nomefile,"r");
 	gap=0;
 	heating=WARM;  //profilo caldo 
-	fscanf(file," %s" ,stringa); 
+	fscanf(file," %s %s %s %s" ,stringa ,stringa,stringa,stringa); 
 	for (ilay=0;  ilay<NMAXLAYER; ilay++){
 	  ier_cp=fscanf(file," %i %f %li", &il, &vpr_dbz, &ar);  
 	  if (vpr_dbz>0){ 
