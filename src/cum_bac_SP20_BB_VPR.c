@@ -1102,7 +1102,7 @@ int elabora_dato()
 	      MIN_VALUE=MIN_VALUE_LIMIT;                        
 	      MIN_VALUE_NEXT=MIN_VALUE_LIMIT;     }
 
-	  if(bin_low > fondo_scala && bin_high >= fondo_scala )// ho qualcosa sia sotto che sopra
+	  if(bin_low > fondo_scala && bin_high > fondo_scala )// ho qualcosa sia sotto che sopra; tolto = cioè faccio solo se sopra c'è un segnale, per evitare problemi di overshooting top
 	    {
 	      if(flag_anap)
 		{
@@ -1227,7 +1227,7 @@ int elabora_dato()
 	      beam_blocking[i][k]=0;
 #endif   
 	    }
-	  else if (bin_low == fondo_scala || bin_high < fondo_scala)/* quel che resta da (bin_low > fondo_scala && bin_high >= fondo_scala) e (bin_low < fondo_scala) basterebbe un else*/
+	  else if (bin_low == fondo_scala || bin_high <= fondo_scala)/* quel che resta da (bin_low > fondo_scala && bin_high >= fondo_scala) e (bin_low < fondo_scala) basterebbe un else*///aggiunto = per includere caso di overshooting top dell'elevazione superiore.. da rivedere
 	    {
 
 	      for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
