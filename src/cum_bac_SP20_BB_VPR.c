@@ -330,6 +330,7 @@ char errori[256];
 #define MAX_DIF_LIMIT 55     /*  soglia diff tra valori bin per anaprop in caso il bin si trovi oltre LIMITE_ANAP (60 KM) */
 #define MIN_VALUE_LIMIT -20  /*  soglia valore minimo bin per anaprop oltre LIMITE_ANAP (60 KM) */
 int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
+#define THR_CONT_ANAP 20 /* limite in numero occorrenze anaprop sul raggio dopo i 30 km per non togliere =*/ 
 #define MISSING 0 /*valore mancante*/
 #define NUM_MIN_BEAM 200
 #define PIOVE     1
@@ -983,7 +984,7 @@ int test_file(char *tipofile )
 int elabora_dato()
 /*===============================================*/
 {   
-  int i,l,k;
+  int i,l,k,cont_anap,test_an;
   int el_inf,el_up;
   float bin_low,bin_high, bin_low_low; 
   float fondo_scala,elevaz,quota_true;
@@ -1051,6 +1052,7 @@ int elabora_dato()
   for(i=0; i<NUM_AZ_X_PPI; i++)
     {
       flag_anap = 0;  
+      cont_anap=0;
       PIA=0.0;
       for(k=0; k<vol_pol[0][i].b_header.max_bin; k++)
 	{ 	  
@@ -1101,8 +1103,11 @@ int elabora_dato()
 	      MAX_DIF=MAX_DIF_LIMIT;
 	      MIN_VALUE=MIN_VALUE_LIMIT;                        
 	      MIN_VALUE_NEXT=MIN_VALUE_LIMIT;     }
-
-	  if(bin_low > fondo_scala && bin_high >= fondo_scala )// ho qualcosa sia sotto che sopra
+	  if (cont_anap< THR_CONT_ANAP )
+	    test_an=(bin_low > fondo_scala && bin_high > fondo_scala );
+	  else
+	    test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
+	  if(test_an )// ho qualcosa sia sotto che sopra; tolto = cioè faccio solo se sopra c'è un segnale, per evitare problemi di overshooting top
 	    {
 	      if(flag_anap)
 		{
@@ -1124,6 +1129,7 @@ int elabora_dato()
 			 vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];	//ALTERN
 		      }
 		      flag_anap = 1;
+		      cont_anap=cont_anap+1;
 		      stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statitica anaprop
 		      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statitica cambio elevazione	     
 #ifdef QUALITY	
@@ -1153,8 +1159,9 @@ int elabora_dato()
 		} 
 	      else    /* se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio */
 		{
-		  if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  ) 
-		    {
+		  // if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  ) 
+		    if(test_an )
+		  {
 		      // ricontrollo sopra
 		      bin_low=vol_pol[el_up][i].ray[k];//modifica		      
 		      if (el_up +1 <= NEL) bin_high=vol_pol[el_up+1][i].ray[k];//modifica
@@ -1171,6 +1178,7 @@ int elabora_dato()
 			vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];	//ALTERN
 		      }
 		      flag_anap = 1;
+		      cont_anap=cont_anap+1;
 		      stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
 #ifdef QUALITY
 		      dato_corrotto[i][k]=1;/*matrice risultato test: propagazione anomala*/
@@ -1218,7 +1226,11 @@ int elabora_dato()
 		}
 #ifdef QUALITY
 	      if (bin_high<fondo_scala)   dato_corrotto[i][k]=2;/*manca dato sotto e sopra*/
-	      if (bin_high>fondo_scala)  dato_corrotto[i][k]=3;/*manca controllo (sotto non ho nulla)*/
+	      if (cont_anap< THR_CONT_ANAP )
+		test_an=(bin_high>=fondo_scala); //modificato per contemplare > o >=
+	      else 
+		test_an=(bin_high>fondo_scala);	    
+	      if (test_an)  dato_corrotto[i][k]=3;/*manca controllo (sotto non ho nulla)*/
 	      if (bin_high==fondo_scala) dato_corrotto[i][k]=0;/*non piove*/
               elev_fin[i][k]=el_up; 
 #endif
@@ -1227,7 +1239,7 @@ int elabora_dato()
 	      beam_blocking[i][k]=0;
 #endif   
 	    }
-	  else if (bin_low == fondo_scala || bin_high < fondo_scala)/* quel che resta da (bin_low > fondo_scala && bin_high >= fondo_scala) e (bin_low < fondo_scala) basterebbe un else*/
+	  else if (bin_low == fondo_scala || bin_high <= fondo_scala)/* quel che resta da (bin_low > fondo_scala && bin_high >= fondo_scala) e (bin_low < fondo_scala) basterebbe un else*///aggiunto = per includere caso di overshooting top dell'elevazione superiore.. da rivedere
 	    {
 
 	      for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
