@@ -1159,8 +1159,7 @@ int elabora_dato()
 		} 
 	      else    /* se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio */
 		{
-		  // if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  ) 
-		    if(test_an )
+		   if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  ) 		  
 		  {
 		      // ricontrollo sopra
 		      bin_low=vol_pol[el_up][i].ray[k];//modifica		      
