@@ -383,7 +383,7 @@ unsigned char dato_corr_xy[MAX_BIN*2][MAX_BIN*2];
 unsigned char dato_corr_1x1[CART_DIM_ZLR][CART_DIM_ZLR]; 
 unsigned char elev_fin[NUM_AZ_X_PPI][MAX_BIN]; /* elevazione finale in coordinate azimut range  */ 
 unsigned char elev_fin_xy[MAX_BIN*2][MAX_BIN*2];
-unsigned char elev_fin_1x1[NUM_AZ_X_PPI][MAX_BIN];
+unsigned char elev_fin_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
 unsigned char qual[NEL][NUM_AZ_X_PPI][MAX_BIN]; /* qualita volume polare */
 unsigned char qual_Z_cart[MAX_BIN*2][MAX_BIN*2]; /* qualita della Z in formato 1024*1024, risoluzione minima */
 unsigned char qual_Z_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* qualita della Z in formato 256*256, risoluzione ZLR */
@@ -1334,8 +1334,7 @@ void caratterizzo_volume()
 		dh=dhst; /* non ho le altezze oltre nscan-1 pero' suppongo che a tali elevazioni la prop. si possa considerare standard*/
 		hray[k][l]=(sqrt(pow(dist/1000.,2)+(rst*rst)+2.0*dist/1000.*rst*sin(el))-rst)*1000.; /*quota in prop. standard  */  	
 	      } 
-
-	      quo=quota_f(elevaz,k);  
+	 
 	      if (l-elev_fin[i][k] <0) {
 		qual[l][i][k]=0;  
 		cl=2;
