@@ -1107,6 +1107,11 @@ int elabora_dato()
 	    test_an=(bin_low > fondo_scala && bin_high > fondo_scala );
 	  else
 	    test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
+//PPA - Patch momentanea per ripulire le mappe del corto 9 elev che risultano sporche.
+// di fatto sopprimo il test su cont_anap
+	    test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
+//PPA --- fine modifica
+//
 	  if(test_an )// ho qualcosa sia sotto che sopra; tolto = cioè faccio solo se sopra c'è un segnale, per evitare problemi di overshooting top
 	    {
 	      if(flag_anap)
