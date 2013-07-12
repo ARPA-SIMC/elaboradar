@@ -914,7 +914,7 @@ int test_file(char *tipofile )
 
   if(old_data_header.norm.maq.resolution != resolution)
     {
-      sprintf(errori,"File Risoluzione Sbagliata %1d", old_data_header.norm.maq.resolution);
+      sprintf(errori,"File Risoluzione Sbagliata %1d %1d", old_data_header.norm.maq.resolution,resolution);
       ScrivoLog(16,errori);
       return 0;
     }
@@ -1324,6 +1324,8 @@ void caratterizzo_volume()
 	  el=el*M_PI/180.;   
 	  elevaz=(float)(vol_pol[l][i].teta_true)*CONV_RAD;
 	  PIA=0.;
+          int check_max_bin;
+	      check_max_bin = (vol_pol[0][i].b_header.max_bin < MAX_BIN)?  vol_pol[0][i].b_header.max_bin: MAX_BIN-1;
 	  for (k=0; k<vol_pol[0][i].b_header.max_bin; k++)/*ciclo range*/
 	    { 
 	      dist= k*size_cell[old_data_header.norm.maq.resolution]+size_cell[old_data_header.norm.maq.resolution]/2.;/*distanza radar M*/
@@ -1591,8 +1593,11 @@ void   leggo_first_level()
 void creo_cart()
 /*===============================================*/
 {
-  int i,j,quad,x,y,irange,az,iaz,az_min,az_max,cont;
+  //PPA - perche az int ????? - messo a float 
+  //int i,j,quad,x,y,irange,az,iaz,az_min,az_max,cont;
+  int i,j,quad,x,y,irange,iaz,az_min,az_max,cont;
   static int flag = 1;
+  float az; 
 
   if(flag)
     {
