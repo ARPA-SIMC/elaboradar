@@ -62,7 +62,10 @@
  |              del calcolo della cumulata a livello di bacino e permette di gestire i file a 
  |              impulso corto e impulso medio.
  |              Vedi sotto per una descrizione completa delle variabili di compilazione
- !
+ | 12-07-2013 - PPA - aggiunta patch in utilizzo matrice first_level per MEDIO 
+ |              Risultavano all'interno valori di elevazione molto elevati non resenti nelle scansioni operative 
+ |              Messo tappo a 3
+ |
  |--------------------------------------------------------------------------------
  | Questo programma legge i file polari DATAMAT MDB_2.0
  | scopo del programma e' eliminare il clutter tramite una maschera e 
@@ -430,6 +433,7 @@ if (argv[1]==NULL) {
 		| rimozione propagazione anomala e clutter |
 		------------------------------------------*/
 	      ScrivoLog(7,nome_file);
+printf(" %d \n",old_data_header.norm.maq.acq_date) ;
 #ifdef ANAPROP
 	      ier = remove_anap();  
 #endif
@@ -699,6 +703,7 @@ int remove_anap()
    }
    return 0;
 #endif
+//printf("dopo Declutter \n");
 
    /*---------------------------------------
      | azzero matrici per statistica anaprop |
@@ -711,9 +716,13 @@ int remove_anap()
       flag_anap = 0;
       for(k=1; k<vol_pol[0][i].b_header.max_bin; k++)   
       {
+//printf(" raggio : %d  --- num_cell %d", i, vol_pol[0][i].b_header.max_bin);
         stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
 	el_inf = first_level[i][k];
 	el_up = el_inf +1;
+printf(" -- El_inf %d \n", el_inf);
+if(el_inf > 3) printf(" %d -- %d \n",i,k);
+
         bin_low  = DBZ(vol_pol[el_inf][i].ray[k]);
         bin_high = DBZ(vol_pol[el_up][i].ray[k]);
 	/*------------------------------------------------
@@ -886,6 +895,18 @@ return ;
     -------------------------------*/
 #ifdef MEDIUM
   {
+  /*-------------------------------
+    patch per limitare first_level a 3
+    -------------------------------*/
+
+    for (i=0; i<400; i++)
+      {
+	for (j=0; j<440; j++)
+	  {
+	      if(first_level[i%400][j] > 3) 
+		first_level[i%400][j]=3; 
+	  }
+      }
     unsigned char first_level_tmp[400][MAX_BIN];
     int k;
     memcpy(first_level_tmp,first_level,sizeof(first_level));
