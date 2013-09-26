@@ -5,7 +5,9 @@
 #define  RMIN_VPR 500 // M DISTANZA MINIMA CONSIDERATA
 #define  RMAX_VPR 70000 // M DISTANZA MASSIMA CONSIDERATA
 #define  VEXTMIN_VPR 2000  // M SPESSORE MINIMO DATI USATI
+// #define  THR_VPR 13 //DBZ MINIMO PER CONSIDERARE DATO
 #define  THR_VPR 13 //DBZ MINIMO PER CONSIDERARE DATO
+#define  THR_PDF 13 //DBZ MINIMO PER FARE COMBINAZIONE
 #define  THR_CORR 0 //DBZ MINIMO PER CORREGGERE DATO
 #define  CL_VPR  0  // USO SOLO DATI PRIVI DI CLUTTER
 #define  BBMAX_VPR  20  // USO SOLO DATI CON VISIBILITA' > 80%
@@ -22,7 +24,8 @@
 #define  IAZ_MAX_GAT   110
 #define  MOD_VPR 0 // modalità calcolo VPR: se 0 vpr mediato, se 1 istantaneo
 #define  WARM      3 //no profili per 'riscaldamento' VPR
-#define  MEMORY      14 // no di istanti di 'raffreddamento'
+#define  MEMORY      10 // no di istanti di 'raffreddamento'
+#define MINPOINTBASE 700  // m alla cui quota massima puoò pertire il profilo
 #define HALF_BB 500 // M spessore indicativo del MELTING LAYER
 #define T_MIN_ML 0. //  °C temperatura minima indicativa della bright band
 #define T_MAX_ML 4. // °C  temperatura massima indicativa della Bright band
