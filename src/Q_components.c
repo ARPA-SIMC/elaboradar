@@ -1,3 +1,4 @@
+
 /*
  omstart Q_components.c 
  idx libreria componenti qualita'
@@ -13,6 +14,9 @@
 
  omend
 */
+
+#include <Q_components.h>
+
 #include <math.h> //file di sistema definisce costanti matematiche e richiama funzioni mat
 #include <qual_par.h> //file creato da me, parametri qualita'
 
@@ -36,10 +40,10 @@
  omend
 */
 
-   float qBB(bbc,dr,dt)
+   float qBB(unsigned char bbc,float dr,float dt)
 
-unsigned char  bbc;
-float          dr,dt;   /* distanza spaziale radiosondaggio*/
+   //unsigned char  bbc;
+   //float          dr,dt;   /* distanza spaziale radiosondaggio*/
 
 {
 
@@ -81,18 +85,19 @@ float fcErrpt; /* comp. qual. corr. da errore puntamento antenna*/
    3=  no control qCl=0.8
  omend
 */
-   float qCl(clc)
-   unsigned char  clc;
+
+   float qCl( unsigned char  clc)
+   //  unsigned char  clc;
 {
     switch(clc)
        {
-	 case 0:
+	 case ANAP_OK:
 	   return (1.);     //  ok
-	 case 1:
+	 case ANAP_YES:
 	   return (0.5);    // anaprop
-	 case 2:
+	 case ANAP_NODAT:
 	   return (0.);     // no  data
-	 case 3:
+	 case ANAP_NOCONTROL:
 	   return (0.8);   //  no control
        }
    
@@ -107,8 +112,8 @@ float fcErrpt; /* comp. qual. corr. da errore puntamento antenna*/
  omend
 */
 
-   float qDist(dr)
-   float dr;
+   float qDist( float dr)
+   //  float dr;
 
 {
    
@@ -126,13 +131,14 @@ float fcErrpt; /* comp. qual. corr. da errore puntamento antenna*/
  qd=1.-sqrt(pow((1.-pow(dh/dhst,1/1.5)),2.))
  omend
 */
-float qVol(dr,dh,dhst)
 
-     float dr,dh,dhst;
+float qVol( float dh, float dhst)
+
+//     float dh,dhst;
 
 {
 
-  //dhst= dr*AMPLITUDE*M_PI/180.;
+
  
   return (1.-sqrt(pow((1.-pow(dh/dhst,1/1.5)),2.)));
 
@@ -148,9 +154,10 @@ float qVol(dr,dh,dhst)
  qd=pow(10,-PIA/15.) 
  omend
 */
-  float qAtt(PIA)
 
-float PIA;
+  float qAtt(float PIA)
+
+  //float PIA;
 
 {
   
@@ -173,9 +180,16 @@ float PIA;
  float  sdevZ deviazione standard della correzione su Z
  omend
 */
-  float qVpr(dZ,sdevZ)
 
-float dZ,sdevZ;
+
+/*
+ *  @brief funzione componente qualita' da VPR
+ *  @param dZ correzione
+ *  @param stdev standard deviation della correzione
+*/
+  float qVpr(float  dZ,float sdevZ)
+
+  //float dZ,sdevZ;
 
 {
   float qd,qc,eps;

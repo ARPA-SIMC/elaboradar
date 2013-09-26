@@ -1,4 +1,6 @@
-#include <stdio.h> 
+#include <setstat.h>
+
+#include <stdio.h>
 #include <stdlib.h> 
 #include <errno.h> 
 #include <string.h> 
@@ -36,10 +38,10 @@ int setstat(char *sito, int mese, char *n_dem, char *n_fl)
     if (mese > 0 && mese < 4) 
       if (getenv("FIRST_LEVEL_FILE")==NULL) strcpy(n_fl,"../dati/FIRST_LEVEL_GAT_2006_INV");
       else strcpy(n_fl,getenv("FIRST_LEVEL_FILE"));
-    if (mese > 9 && mese <=12) 
+    else if (mese > 9 && mese <=12) 
       if (getenv("FIRST_LEVEL_FILE")==NULL) strcpy(n_fl,"../dati/FIRST_LEVEL_GAT_2006_AUT");
       else strcpy(n_fl,getenv("FIRST_LEVEL_FILE")); 
-    if (mese > 3 && mese < 10) 
+    else if (mese > 3 && mese < 10) 
       if (getenv("FIRST_LEVEL_FILE")==NULL) strcpy(n_fl,"../dati/FIRST_LEVEL_GAT_2006_PRI-EST");
       else strcpy(n_fl,getenv("FIRST_LEVEL_FILE"));
   }

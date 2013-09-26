@@ -1,11 +1,16 @@
-#include <stdio.h> 
+#include <setwork.h>
+
 #include <stdlib.h> 
 #include <errno.h> 
 #include <string.h> 
+
+
+
 int setwork(char *sito)
 {  
   char *lv,*lvad,*v0,*v0ad,*vh,*vhad,*logv;
   int ier;
+
   /*settaggio var amb tempo GTM*/  
   if (getenv("TZ")==NULL)    ier=putenv("TZ=GTM");
   /*settaggio var amb files e directories di lavoro nel caso non siano settate*/		
