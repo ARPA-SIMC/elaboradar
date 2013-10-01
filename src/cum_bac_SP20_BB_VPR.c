@@ -1014,12 +1014,12 @@ int elabora_dato()
 	  MIN_VALUE=MIN_VALUE_OR;                     
 	  MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR; 
      //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia 
-	  if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) //-----------ANNULLO EFFETTO TEST ANAP 
-	    {    
-	      MAX_DIF_NEXT=BYTEtoDB(255); 
-	      MAX_DIF=BYTEtoDB(255); 
-	      MIN_VALUE=BYTEtoDB(0);                      
-	      MIN_VALUE_NEXT= BYTEtoDB(0);  } 
+	  if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) //-----------ANNULLO EFFETTO TEST ANAP
+	    {
+	      MAX_DIF_NEXT=BYTEtoDB(255);
+	      MAX_DIF=BYTEtoDB(255);
+	      MIN_VALUE=BYTEtoDB(0);
+	      MIN_VALUE_NEXT= BYTEtoDB(0);  }
  
     // ------------separo i diversi casi x analisi anaprop: ho dati sia al livello base che sopra o no  e ho trovato anaprop in precedenza sul raggio o no 
 	  if (cont_anap> THR_CONT_ANAP || k < 80  )
@@ -3789,11 +3789,12 @@ void 	classifico_VIZ()
 		  stratiform[i][j]=1;
 	      }
 	    }
-	    //  else if (cil[i][j][k]>10. &&  cil[i][j][k+4]> 5. &&  cil[i][j][k-4] > 5.){
-	      if (cil[i][j][k] - cil[i][j][k+4] > 5.&&   cil[i][j][k]- cil[i][j][k-4] > 3. )
+	      else if (cil[i][j][k]>10. &&  cil[i][j][k+4]> 5. &&  cil[i][j][k-4] > 5.){
+	      if (cil[i][j][k] - cil[i][j][k+4] > 5.&&   cil[i][j][k]- cil[i][j][k-4] > 5. )
 		stratiform[i][j]=1;
-	      //   }
+ 
 	  }
+
 
 		if (cil[i][j][k] - cil[i][j][k+4] > 5.)
 		  stratiform[i][j]=1;
@@ -3813,10 +3814,10 @@ void 	classifico_VIZ()
 
 	//solo se l'estensione verticale del segnale sopra il top della bright band è maggiore di 0.8 Km classifico
 
-	if (ext_bbb +  ext_abb>0.8) { 
-	  
-	  if ((Zabb[i][j] +Zbbb[i][j])/(ext_bbb+ext_abb) > THR_VIZ){
- 
+		if (ext_bbb +  ext_abb>0.8) { 
+		  //if ( ext_abb>0.8) { 	  
+	   if ((Zabb[i][j] +Zbbb[i][j])/(ext_bbb+ext_abb) > THR_VIZ){
+	     //if ((Zabb[i][j] /ext_abb) > THR_VIZ){
 	    conv_VIZ[i][j]=CONV_VAL; 
 	    lista_conv[ncv][0]= i; 
 	    lista_conv[ncv][1]= j;	       
