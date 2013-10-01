@@ -82,6 +82,6 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 	 mv  cum_bac_SP20_BB_VPR  $(BINDIR)
 	 mv  cum_bac_SP20_BB  $(BINDIR)
 	 mv  cum_bac_SP20_m $(BINDIR)
-	doxygen ../Doxyfile
+
 %: %.o
 	$(CC) -o $@ $^ $(LDLIBS)
