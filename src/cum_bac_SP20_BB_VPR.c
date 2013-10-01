@@ -1,6 +1,6 @@
 
 /*----------------------------------------------------------------------------*
-/*	INCLUDE file						       	      */
+  /*	INCLUDE file						       	      */
 /*----------------------------------------------------------------------------*/
 
 #include <cum_bac_SP20_BB_VPR.h>
@@ -123,7 +123,7 @@ int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define OVERBLOCKING 51 /* minimo BB non accettato*/ 
 #define THRES_ATT 0 /* minimo valore di Z in dBZ per calcolare att rate */ 
 #define SOGLIA_TOP 20 // soglia per trovare top
-	// anaprop
+// anaprop
 #define LIMITE_ANAP 240/* LIMITE in numero bins per cambiare controllo anaprop*/ 
 #define THR_CONT_ANAP 1 /* limite in numero occorrenze anaprop sul raggio dopo i 30 km per non togliere =*/ 
 #define MAX_DIF_OR 30            /* differenzio limiti controllo anap      */ 
@@ -294,8 +294,8 @@ FILE *log_class;
 #endif 
  
 /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
-struct tm *time_dbp;
-T_time, T_data, T_ora..*/ 
+   struct tm *time_dbp;
+   T_time, T_data, T_ora..*/ 
  
 /*----------------------------------------------------------------------------*/ 
 /*	FUNCTION PROTOTYPE						      */ 
@@ -352,7 +352,7 @@ int main (int argc, char **argv)
   memset(neve_cart,0,sizeof(neve_cart)); 
   memset(neve_1x1,0,sizeof(neve_1x1)); 
   memset(neve,0,sizeof(neve)); 
-for  (i=0; i<NMAXLAYER; i++)
+  for  (i=0; i<NMAXLAYER; i++)
     vpr[i]=NODATAVPR;
   for (l=0; l<NEL; l++) 
     for (i=0; i<NUM_AZ_X_PPI; i++) 
@@ -360,14 +360,14 @@ for  (i=0; i<NMAXLAYER; i++)
 	flag_vpr[l][i][k]=0;
   
 #ifdef CLASS
-	for (k=0; k<NUM_AZ_X_PPI*MAX_BIN;k++ ){
-	lista_conv[k][0]=-999;
-	lista_conv[k][1]=-999;
-	lista_bckg[k][0]=-999;
-	lista_bckg[k][1]=-999;
-	}
+  for (k=0; k<NUM_AZ_X_PPI*MAX_BIN;k++ ){
+    lista_conv[k][0]=-999;
+    lista_conv[k][1]=-999;
+    lista_bckg[k][0]=-999;
+    lista_bckg[k][1]=-999;
+  }
 
-	memset(stratiform,0,sizeof(stratiform));
+  memset(stratiform,0,sizeof(stratiform));
 #endif
  
 #endif 
@@ -382,15 +382,15 @@ for  (i=0; i<NMAXLAYER; i++)
   memset(stat_elev,0,sizeof(stat_elev)); 
  
  
- // ----- alloco i puntatori ---------  
+  // ----- alloco i puntatori ---------  
   nome_fl=(char *)malloc(200*sizeof(char)); 
   nome_dem=(char *)malloc(200*sizeof(char)); 
  
-//-----  FINE INIZIALIZZAZIONI---------// 
+  //-----  FINE INIZIALIZZAZIONI---------// 
  
  
  
-//-------INPUT------------------------ 
+  //-------INPUT------------------------ 
  
   //------- verifica n0 argomenti ------ 
  
@@ -411,9 +411,9 @@ for  (i=0; i<NMAXLAYER; i++)
  
 
   sito=argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni 
-   setwork(argv[3]);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------ 
+  setwork(argv[3]);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------ 
  
- // ----- definisco array delle elevazioni che è diverso per i due siti --------- 
+  // ----- definisco array delle elevazioni che è diverso per i due siti --------- 
    
   if (!(strcmp(sito,"SPC")) ) { 
     printf("sito  SPC elevazioni \n" ); 
@@ -435,12 +435,12 @@ for  (i=0; i<NMAXLAYER; i++)
  
  
  
-// ----- TEMPO E LOG------   
+  // ----- TEMPO E LOG------   
 #ifdef TIME 
   prendo_tempo(); 
 #endif   
  
-// ----- sezione scrivo Log --------- 
+  // ----- sezione scrivo Log --------- 
   ScrivoLog(0,nome_file); 
   ScrivoLog(1,nome_file); 
   ScrivoLog(2,nome_file); 
@@ -452,57 +452,57 @@ for  (i=0; i<NMAXLAYER; i++)
  
   ScrivoLog(4,nome_file); 
   printf("processo file dati: %s\n",nome_file); 
-// ----- FINE TEMPO E LOG------   
+  // ----- FINE TEMPO E LOG------   
  
  
-//--------lettura volume------ 
+  //--------lettura volume------ 
   ier = read_dbp_SP20(nome_file,vol_pol,&old_data_header, 
 		      tipo_dati_richiesti,nbeam_elev); 
  
  
-// ----- TEMPO E LOG------  
-//  -----Scrivolog -------- 
- printf("fatta lettura\n");       
+  // ----- TEMPO E LOG------  
+  //  -----Scrivolog -------- 
+  printf("fatta lettura\n");       
   ScrivoLog(5,nome_file); 
         
 #ifdef TIME 
   prendo_tempo(); 
 #endif 
-// ----- FINE TEMPO E LOG------  
+  // ----- FINE TEMPO E LOG------  
  
  
-//--test legato a argv[2] 
+  //--test legato a argv[2] 
  
-//  ----- Test sul volume test_file.......  --------        
+  //  ----- Test sul volume test_file.......  --------        
   ier_test=test_file(argv[2]); 
    
   printf("ier -- test  %d  %d\n",ier,ier_test);     
  
 
 
-///---------------------- FINE INPUT------------------------------ 
+  ///---------------------- FINE INPUT------------------------------ 
  
  
  
-///-------------------------ELABORAZIONE ------------------------- 
+  ///-------------------------ELABORAZIONE ------------------------- 
  
-//  ----- se test su volume andato bene 
+  //  ----- se test su volume andato bene 
   if(ier == OK  && ier_test) 
     { 
  
  
-//  ----- da buttare : eventuale scrittura del volume polare ad azimut e range fissi  
-/* #ifdef WRITE_DBP_REORDER  */
+      //  ----- da buttare : eventuale scrittura del volume polare ad azimut e range fissi  
+      /* #ifdef WRITE_DBP_REORDER  */
 	   
-/*       /\*------------------------------------------------------------------  */
-/* 	| eventuale scrittura del volume polare ad azimut e range fissi  |  */
-/* 	-----------------------------------------------------------------*\/   */
-/*       strcat(nome_file,"_reorder");	    */
-/*       ScrivoLog(6,nome_file);  */
-/*       ier=write_dbp(nome_file);  */
-/* #endif */	   
+      /*       /\*------------------------------------------------------------------  */
+      /* 	| eventuale scrittura del volume polare ad azimut e range fissi  |  */
+      /* 	-----------------------------------------------------------------*\/   */
+      /*       strcat(nome_file,"_reorder");	    */
+      /*       ScrivoLog(6,nome_file);  */
+      /*       ier=write_dbp(nome_file);  */
+      /* #endif */	   
  
-//  ----- test su normalizzazione data ( no minuti strani) 
+      //  ----- test su normalizzazione data ( no minuti strani) 
  
       if( NormalizzoData(old_data_header.norm.maq.acq_date) != -1 )   
 	{ 
@@ -513,17 +513,17 @@ for  (i=0; i<NMAXLAYER; i++)
 	  ScrivoLog(7,nome_file); 
  
  
- // --- ricavo il mese x definizione first_level e  aMP bMP --------- 
-//definisco stringa data in modo predefinito 
+	  // --- ricavo il mese x definizione first_level e  aMP bMP --------- 
+	  //definisco stringa data in modo predefinito 
 	  Time = NormalizzoData(old_data_header.norm.maq.acq_date); 
 	  tempo = gmtime(&Time); 
 	  month=tempo->tm_mon+1; 
 
-  // scrivo la variabile char date con la data in formato aaaammgghhmm
+	  // scrivo la variabile char date con la data in formato aaaammgghhmm
 	  sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1, 
 		  tempo->tm_mday,tempo->tm_hour, tempo->tm_min); 
  
- // ------setto ambiente statico (le first level e il nome del dem )-------------- 
+	  // ------setto ambiente statico (le first level e il nome del dem )-------------- 
 	  setstat(argv[3],month, nome_dem, nome_fl); 
 	  printf ("nome dem %s nome fl %s\n",nome_dem, nome_fl); 
  
@@ -533,7 +533,7 @@ for  (i=0; i<NMAXLAYER; i++)
  
  
  
-// ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione-------------- 
+	  // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione-------------- 
 	  if ( month > 4 && month < 10 )  { 
 	    aMP=aMP_conv; 
 	    bMP=bMP_conv; 
@@ -549,21 +549,21 @@ for  (i=0; i<NMAXLAYER; i++)
  
 	  /* /\*CALIBRAZIONE*\/ */ 
  
-	 /* for (l=0;l<NEL;l++) */ 
+	  /* for (l=0;l<NEL;l++) */ 
 	  /*   { */ 
 	  /*     if (vol_pol[l][i].ray[k]>1) vol_pol[l][i].ray[k]=(DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])+calibr)>0)?DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])+calibr):1; */ 
 	  /*   }                          */ 
  
  
  
-//--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------// 
+	  //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------// 
 #ifdef ANAPROP 
 	  printf ("inizio rimozione anaprop e beam blocking \n") ; 
 	  ier = elabora_dato();   
 #endif 
  
  
-//--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------// 
+	  //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------// 
  
 #ifdef QUALITY 
  
@@ -576,7 +576,7 @@ for  (i=0; i<NMAXLAYER; i++)
 	  /* ier=trovo_top(); */ 
  
  
-   //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------// 
+	  //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------// 
 #ifdef VPR 
 	  log_vpr=fopen(getenv("LOG_VPR"),"a+"); 
 	  ier_t=get_t_ground(&t_ground); 
@@ -584,7 +584,7 @@ for  (i=0; i<NMAXLAYER; i++)
 #endif 
  
  
-   //--------------se definita CLASS procedo con  classificazione -----------------// 
+	  //--------------se definita CLASS procedo con  classificazione -----------------// 
 #ifdef CLASS 
 	  log_vpr=fopen(getenv("LOG_VPR"),"a+"); 
 	  log_class=fopen(getenv("LOG_CLASS"),"a+"); 
@@ -594,7 +594,7 @@ for  (i=0; i<NMAXLAYER; i++)
 #endif 
  
  
-   //--------------se definito VPR procedo con calcolo VPR -----------------// 
+	  //--------------se definito VPR procedo con calcolo VPR -----------------// 
  
 #ifdef VPR 
 	  log_vpr=fopen(getenv("LOG_VPR"),"a+"); 
@@ -615,20 +615,20 @@ for  (i=0; i<NMAXLAYER; i++)
 	  printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug 
  
  
-	   //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo --------------- 
+	  //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo --------------- 
  
 	  heating=profile_heating(); 
 	  printf ("heating %i \n", heating); 
 	  fprintf (log_vpr,"ier_vpr %i ier_comb %i \n",ier_vpr,ier_comb); 
  
-	   //VPR  // ------------se combina profili ok e profilo caldo correggo -------------- 
+	  //VPR  // ------------se combina profili ok e profilo caldo correggo -------------- 
 	  if (!ier_comb && heating >= WARM){ 
  
 	    ier=corr_vpr(argv[3]); 
 	    printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug 
  
  
-	  //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data------- 
+	    //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data------- 
  
 	    if ( ! ier && ! ier_vpr)  
 	      ier_stampa_vpr=stampa_vpr(); 
@@ -640,19 +640,19 @@ for  (i=0; i<NMAXLAYER; i++)
 #endif 
  
 #ifdef CLASS 
-	log_class=fopen(getenv("LOG_CLASS"),"a+"); 
-	for (i=0; i<NUM_AZ_X_PPI; i++){ 
-	  for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){
+	  log_class=fopen(getenv("LOG_CLASS"),"a+"); 
+	  for (i=0; i<NUM_AZ_X_PPI; i++){ 
+	    for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){
 
-	    if (conv[i][k] > 0){
+	      if (conv[i][k] > 0){
 
-	      vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
+		vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
    
-	    }     
-	  }
+	      }     
+	    }
 
-	}
-      fclose(log_class);
+	  }
+	  fclose(log_class);
 #endif 
 
 	       
@@ -661,26 +661,26 @@ for  (i=0; i<NMAXLAYER; i++)
 #endif	  
  
  
- //--------------------da rimuovere eventuale scrittura volume ripulito      
+	  //--------------------da rimuovere eventuale scrittura volume ripulito      
  
-/* #ifdef WRITE_DBP  */
-/* 	  /\*-------------------------------------------------  */
-/* 	    | eventuale scrittura del volume polare ripulito e |  */
-/* 	    -------------------------------------------------*\/   */
-/* #ifdef DECLUTTER  */
-/* 	  strcat(nome_file,"_decl");  */
-/* #else  */
-/* 	  strcat(nome_file,"_anap");  */
-/* #endif  */
-/* 	  /\*exit (1);*\/  */
-/* 	  ScrivoLog(8,nome_file);  */
-/* 	  ier=write_dbp(nome_file);  */
-/* #endif  */
- 
- 
+	  /* #ifdef WRITE_DBP  */
+	  /* 	  /\*-------------------------------------------------  */
+	  /* 	    | eventuale scrittura del volume polare ripulito e |  */
+	  /* 	    -------------------------------------------------*\/   */
+	  /* #ifdef DECLUTTER  */
+	  /* 	  strcat(nome_file,"_decl");  */
+	  /* #else  */
+	  /* 	  strcat(nome_file,"_anap");  */
+	  /* #endif  */
+	  /* 	  /\*exit (1);*\/  */
+	  /* 	  ScrivoLog(8,nome_file);  */
+	  /* 	  ier=write_dbp(nome_file);  */
+	  /* #endif  */
  
  
- //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP ----------------------- 
+ 
+ 
+	  //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP ----------------------- 
 #ifndef WRITE_DBP 
 	       
 	  /*-------------------------------------------------- 
@@ -689,14 +689,14 @@ for  (i=0; i<NMAXLAYER; i++)
 	  ScrivoLog(9,nome_file); 
 	  creo_cart(); 
  
-//------------------- STA PRENDOTEMPO!!!!!!!!!!!!!!! 
+	  //------------------- STA PRENDOTEMPO!!!!!!!!!!!!!!! 
 #ifdef TIME 
 	  prendo_tempo(); 
 #endif 
  
  
  
-//-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------ 
+	  //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------ 
 	       
 #ifdef Z_LOWRIS 
  
@@ -704,7 +704,7 @@ for  (i=0; i<NMAXLAYER; i++)
 	  creo_cart_z_lowris(); 
 	  printf(" dopo z_lowris\n"); 
  
-//-------------------scritture output ----------------------- 
+	  //-------------------scritture output ----------------------- 
 	  ScrivoLog(14,nome_file); 
 	  scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out),z_out); 
  
@@ -725,15 +725,15 @@ for  (i=0; i<NMAXLAYER; i++)
  
  
  
-//-------------------scritture output ----------------------- 
+	  //-------------------scritture output ----------------------- 
 #ifdef QUALITY  
    
- //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza   
+	  //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza   
 	  // temporanee 
 	  // in archivio 
 	  scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1),qual_Z_1x1);  
  
-  //------------------ stampe extra per studio  
+	  //------------------ stampe extra per studio  
 #ifdef STAMPE_EXTRA 
 	  //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);  
 	  //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart); 
@@ -747,7 +747,7 @@ for  (i=0; i<NMAXLAYER; i++)
 	  scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1); 
  
 #endif 
-  //------------------ stampe correzioni da profili verticali in formato ZLR 
+	  //------------------ stampe correzioni da profili verticali in formato ZLR 
 #ifdef VPR   
 	  scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1); 
 	  //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);  
@@ -864,7 +864,7 @@ int test_file(char *tipofile )
   ScrivoLog(16,errori); 
  
  
-//--------verifico la presenza del file contenente l'ultima data processata------- 
+  //--------verifico la presenza del file contenente l'ultima data processata------- 
  
   
   if(access(getenv("LAST_FILE"),6) == 0) 
@@ -906,7 +906,7 @@ int test_file(char *tipofile )
       fwrite(&old_data_header.norm.maq.acq_date,4,1,f_aus); 
       fclose(f_aus); 
     } 
-// ------- se ok status di uscita:1 
+  // ------- se ok status di uscita:1 
   return 1; 
 }                                                        
  
@@ -954,8 +954,8 @@ int elabora_dato()
 	      //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)	 
 #ifdef BEAMBLOCKING 
 #ifndef BLOCNOCORR 
-	      	vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.)); 
-		//vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); 
+	      vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.)); 
+	      //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); 
 #endif 
 #endif 
  
@@ -972,14 +972,14 @@ int elabora_dato()
   //------------se non definito DECLUTTER inizio rimozione propagazione anomala al livello mappa dinamica e elaborazioni accessorie 
  
  
-	  /* 26-5-2004 : se sono alla 1 o successive elevazioni 
-	     e range > 60 km cambio le soglie, in modo 
-	     da evitare di riconoscere come anaprop una pioggia shallow 
-	     Il criterio diventa: - se la differenza tra Z all'elevazione più bassa della 
-	     corrente e la Z corrente è <10 dbZ allora 
-	     rendo inefficaci i limiti di riconoscimento anaprop. */ 
+  /* 26-5-2004 : se sono alla 1 o successive elevazioni 
+     e range > 60 km cambio le soglie, in modo 
+     da evitare di riconoscere come anaprop una pioggia shallow 
+     Il criterio diventa: - se la differenza tra Z all'elevazione più bassa della 
+     corrente e la Z corrente è <10 dbZ allora 
+     rendo inefficaci i limiti di riconoscimento anaprop. */ 
  
- //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala---------------- 
+  //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala---------------- 
  
   for(i=0; i<NUM_AZ_X_PPI; i++) 
     { 
@@ -995,12 +995,12 @@ int elabora_dato()
 #ifdef QUALITY 
 	  elev_fin[i][k]=el_inf; 
 #endif 
-	   // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala 
+	  // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala 
 	  el_up = el_inf +1; 
 	  if ( el_up >= NEL )  
 	    bin_high = fondo_scala ;
  
-	      // ------------assegno  bin_low_low (cioè il valore sotto il bin base) 	  
+	  // ------------assegno  bin_low_low (cioè il valore sotto il bin base) 	  
      	  if (el_inf>0) bin_low_low=BYTEtoDB(vol_pol[el_inf-1][i].ray[k]); 
 	  else  bin_low_low=fondo_scala+1; 
  
@@ -1008,12 +1008,12 @@ int elabora_dato()
 	  bin_low  = BYTEtoDB(vol_pol[el_inf][i].ray[k]); 
 	  bin_high = BYTEtoDB(vol_pol[el_up][i].ray[k]); 
  
-      //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci) 
+	  //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci) 
 	  MAX_DIF=MAX_DIF_OR;                         
 	  MAX_DIF_NEXT=MAX_DIF_NEXT_OR;               
 	  MIN_VALUE=MIN_VALUE_OR;                     
 	  MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR; 
-     //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia 
+	  //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia 
 	  if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) //-----------ANNULLO EFFETTO TEST ANAP
 	    {
 	      MAX_DIF_NEXT=BYTEtoDB(255);
@@ -1021,7 +1021,7 @@ int elabora_dato()
 	      MIN_VALUE=BYTEtoDB(0);
 	      MIN_VALUE_NEXT= BYTEtoDB(0);  }
  
-    // ------------separo i diversi casi x analisi anaprop: ho dati sia al livello base che sopra o no  e ho trovato anaprop in precedenza sul raggio o no 
+	  // ------------separo i diversi casi x analisi anaprop: ho dati sia al livello base che sopra o no  e ho trovato anaprop in precedenza sul raggio o no 
 	  if (cont_anap> THR_CONT_ANAP || k < 80  )
 	    test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
 	  else
@@ -1029,7 +1029,7 @@ int elabora_dato()
 
 	  //------------------ se ho qualcosa sia al livello base che sopra allora effettuo il confronto----------------- 
 	  //if(bin_low > fondo_scala && bin_high >= fondo_scala ) // tolto = per bin_high
-	       if(test_an )
+	  if(test_an )
 	    { 
 	      //------------------ se ho trovato anap prima nel raggio cambio le soglie le abbasso)----------------- 
 	      if(flag_anap) 
@@ -1038,13 +1038,13 @@ int elabora_dato()
 		  if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT ) 
 		    {	  
   
-		   //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop  e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione 
+		      //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop  e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione 
 		      flag_anap = 1; 
 		      cont_anap=cont_anap+1;
  
 		      //--------ricopio valore a el_up su tutte elev inferiori-------------- 
 		      for(l=0; l<el_up; l++) {		       
-			    vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];  
+			vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];  
 		      }	// 
  
 		      //--------azzero beam_blocking ( ho cambiato elevazione, non ho disponible il bbeam blocking all' elev superiore)-------------- 
@@ -1068,9 +1068,9 @@ int elabora_dato()
 		      flag_anap = 0; 
 #ifdef BEAMBLOCKING 
 #ifndef BLOCNOCORR 
-			vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.)); 
-			  //	vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking	 
-			stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking 
+		      vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.)); 
+		      //	vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking	 
+		      stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking 
 #endif 
 #endif 
 		      for(l=0; l<=el_up; l++){ 
@@ -1085,7 +1085,7 @@ int elabora_dato()
  
 		    } 
 		}  
-      //------------------se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio ripeto le operazioni ma con i limiti più restrittivi (controlla elev_fin)------------------ 
+	      //------------------se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio ripeto le operazioni ma con i limiti più restrittivi (controlla elev_fin)------------------ 
  
 	      else     
 		{ 
@@ -1097,7 +1097,7 @@ int elabora_dato()
 			vol_pol[l][i].ray[k]=1; 
 			vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];	//ALTERN 
 		      } 
-//---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione 
+		      //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione 
 		      flag_anap = 1; 
 		      cont_anap=cont_anap+1;
 		      stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; 
@@ -1111,7 +1111,7 @@ int elabora_dato()
 #endif 
 		    }  
  
- //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static[i][k]----------- 
+		  //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static[i][k]----------- 
 		  else  
 		    { 
 		      for(l=0; l<=el_inf; l++) 
@@ -1119,8 +1119,8 @@ int elabora_dato()
 			  vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; 
 #ifdef BEAMBLOCKING 
 #ifndef BLOCNOCORR 
-			 vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.)); 
-			 //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);   
+			  vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.)); 
+			  //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);   
 			  stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; 
 #endif 
 #endif 
@@ -1137,7 +1137,7 @@ int elabora_dato()
 		}/*endif flaganap*/ 
 	    }/*endif bin_low > fondo_scala && bin_high >= fondo_scala*/ 
  
- //----------------se al livello base non ho dato riempio con i valori di el_up tutte le elevazioni sotto (ricostruisco il volume) e assegno beam_blocking 0 
+	  //----------------se al livello base non ho dato riempio con i valori di el_up tutte le elevazioni sotto (ricostruisco il volume) e assegno beam_blocking 0 
 	  else if (bin_low < fondo_scala)   
 	    { 
 	      for(l=0; l<el_up; l++)  
@@ -1171,7 +1171,7 @@ int elabora_dato()
 #endif    
 	    } 
  
- //----------------se bin_low == fondo_scala riempio matrice vol_pol con dato a el_inf (mi resta il dubbio di quest'if se seve o basti un else ) azzero matrice anap (dato ok) 
+	  //----------------se bin_low == fondo_scala riempio matrice vol_pol con dato a el_inf (mi resta il dubbio di quest'if se seve o basti un else ) azzero matrice anap (dato ok) 
 	  else if (bin_low == fondo_scala || bin_high <= fondo_scala)/* quel che resta da (bin_low > fondo_scala && bin_high >= fondo_scala) e (bin_low < fondo_scala) ; messo =per bin_high*/ 
  
 	    { 
@@ -1195,7 +1195,7 @@ int elabora_dato()
 	      if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; 
 	    } 
 	  /*-----------------------------------------------------------fine di tutti gli if-----------*/ 
-	      //-----finiti tutti i controlli assegno le varibili di qualita definitive: elevazione, quota calcolata sull'elevazione reale con propagazione standard , e quota relativa al suolo calcolata con elevazione nominale e propagazione da radiosondaggio. 
+	  //-----finiti tutti i controlli assegno le varibili di qualita definitive: elevazione, quota calcolata sull'elevazione reale con propagazione standard , e quota relativa al suolo calcolata con elevazione nominale e propagazione da radiosondaggio. 
  
 #ifdef QUALITY 
 	  elevaz=(float)(vol_pol[elev_fin[i][k]][i].teta_true)*CONV_RAD;	 
@@ -1216,28 +1216,28 @@ int elabora_dato()
  
 #ifdef QUALITY 
 /* 
-  comstart caratterizzo_volume 
-  idx calcola qualita' volume polare 
-  calcola qualita' volume polare  
-  NB il calcolo è fatto considerando q=0 al di sotto della mappa dinamica. 
-  per ora drrs=dist nche nel caso di Gattatico, mentre dtrs è letto da file 
-  si puo' scegliere tra qualita' rispetto a Z e rispetto a R, in realtà per ora sono uguali. 
+   comstart caratterizzo_volume 
+   idx calcola qualita' volume polare 
+   calcola qualita' volume polare  
+   NB il calcolo è fatto considerando q=0 al di sotto della mappa dinamica. 
+   per ora drrs=dist nche nel caso di Gattatico, mentre dtrs è letto da file 
+   si puo' scegliere tra qualita' rispetto a Z e rispetto a R, in realtà per ora sono uguali. 
   
-  double PIA;  path integrated attenuation 
-  float dh: dimensione verticale bin calcolata tramite approcio geo-ottico 
-  float drrs: distanza radiosondaggio, 
-  float dtrs: tempo dal radiosondaggio  
-  float dist: distanza dal radar 
-  float quo:  quota bin 
-  float el:   elevazione 
-  float rst:  raggio equivalente in condizioni standard 
-  float dZ:   correzione vpr 
-  float sdevZ:  stand. dev. correzione vpr 
-  unsigned char bb: beam blocking 
-  unsigned char cl: indice clutter da anaprop 
+   double PIA;  path integrated attenuation 
+   float dh: dimensione verticale bin calcolata tramite approcio geo-ottico 
+   float drrs: distanza radiosondaggio, 
+   float dtrs: tempo dal radiosondaggio  
+   float dist: distanza dal radar 
+   float quo:  quota bin 
+   float el:   elevazione 
+   float rst:  raggio equivalente in condizioni standard 
+   float dZ:   correzione vpr 
+   float sdevZ:  stand. dev. correzione vpr 
+   unsigned char bb: beam blocking 
+   unsigned char cl: indice clutter da anaprop 
  
-//--- nb. non ho il valore di bb sotto_bb_first_level 
-  comend 
+   //--- nb. non ho il valore di bb sotto_bb_first_level 
+   comend 
 */ 
 
 
@@ -1254,7 +1254,7 @@ void caratterizzo_volume(char *sito)
  
   //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK. 
  
-for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK 
+  for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK 
     {  
       for (i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/ 
 	{ 
@@ -1271,12 +1271,12 @@ for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
  
 	      //-----distanza dal radiosondaggio (per GAT si finge che sia colocato ..), perchè? (verificare che serva ) 
 	      drrs=dist; 	      
-	       /* if (!(strcmp(sito,"GAT")) ) {  */
-	       /* 	 drrs=dist; */
-	       /* } */
-	       /* if (!(strcmp(sito,"SPC")) ) {  */
-	       /* 	 drrs=dist; */
-	       /* } */
+	      /* if (!(strcmp(sito,"GAT")) ) {  */
+	      /* 	 drrs=dist; */
+	      /* } */
+	      /* if (!(strcmp(sito,"SPC")) ) {  */
+	      /* 	 drrs=dist; */
+	      /* } */
 
  
 	      //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto) 
@@ -1302,14 +1302,14 @@ for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
 		cl=ANAP_YES;   
 		bb=BBMAX;
 	      } 
- 		if (l == elev_fin[i][k] ) { 
-		  cl=dato_corrotto[i][k];  /*cl al livello della mappa dinamica*/  
-		  bb=beam_blocking[i][k];  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così 
-		} 
-		if (l-elev_fin[i][k] >0 ) { 
-		  cl=0;	    /*per come viene scelta la mappa dinamica si suppone che al livello superiore cl=0 e bb=0*/ 
-		  bb=0;   // sarebbe if (l-bb_first_level[i][k] >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa 
-		} 
+	      if (l == elev_fin[i][k] ) { 
+		cl=dato_corrotto[i][k];  /*cl al livello della mappa dinamica*/  
+		bb=beam_blocking[i][k];  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così 
+	      } 
+	      if (l-elev_fin[i][k] >0 ) { 
+		cl=0;	    /*per come viene scelta la mappa dinamica si suppone che al livello superiore cl=0 e bb=0*/ 
+		bb=0;   // sarebbe if (l-bb_first_level[i][k] >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa 
+	      } 
  
 	      //------dato che non ho il valore di beam blocking sotto i livelli che ricevo in ingresso ada progrmma beam blocking e 
 	      //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%) 
@@ -1321,7 +1321,7 @@ for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
 	      //--------bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.---------- 
 	      else { 
 
-	    //-----------calcolo la qualità---------- 
+		//-----------calcolo la qualità---------- 
 		qual[l][i][k]=(unsigned char)(func_q_Z(cl,bb,dist,drrs,dtrs,dh,dhst,PIA)*100); 
 	      } 
  
@@ -1353,8 +1353,8 @@ double attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic,1984 for
   double Zhh,att_rate,R;/* PIA diventa att_tot devo decidere infatti se PIA sarà 3d percio' temp. uso  nomi diversi*/ 
   double att_tot; 
  
- //---ricevo in ingresso il dato e l'attenuazione fino  quel punto 
- //---la formula recita che l'attenuazione è pari una funzione di Z reale (quindi corretta dell'attenuazione precedente). ovviamente devo avere un segnale per correggere. 
+  //---ricevo in ingresso il dato e l'attenuazione fino  quel punto 
+  //---la formula recita che l'attenuazione è pari una funzione di Z reale (quindi corretta dell'attenuazione precedente). ovviamente devo avere un segnale per correggere. 
   //--------- CALCOL 
   att_tot=PIA; 
   Zhh=(double)(BYTEtoZ(DBZbyte)); 
@@ -1433,16 +1433,16 @@ void   leggo_first_level()
   /*------------------- 
     Leggo mappa  statica  
     -------------------*/ 
-	//controllo apertura file dimensioni mappa statica 
+  //controllo apertura file dimensioni mappa statica 
   file=controllo_apertura(getenv("FIRST_LEVEL_DIM_FILE")," dimensioni mappa statica","r");
-    //lettura dimensioni matrice mappa statica da file esterno 
+  //lettura dimensioni matrice mappa statica da file esterno 
   fscanf(file,"%i ",&dim); 
   fclose(file);
-//leggo mappa statica con dimensioni appena lette 
+  //leggo mappa statica con dimensioni appena lette 
   file=controllo_apertura(nome_fl," mappa statica","r"); 
   for(i=0; i<NUM_AZ_X_PPI; i++) 
     fread(&first_level_static[i][0],dim,1,file);
-// copio mappa statica su matrice first_level 
+  // copio mappa statica su matrice first_level 
   memcpy(first_level,first_level_static,sizeof(first_level));	    
   fclose(file); 
   printf ("letta mappa statica \n"); 
@@ -1452,8 +1452,8 @@ void   leggo_first_level()
   /*---------------------------- 
     Leggo file elevazioni per BB   
     ----------------------------*/ 
-// perchè c'è doppia definizione di tempo ?? misteri.. 
-//definisco stringa data in modo predefinito
+  // perchè c'è doppia definizione di tempo ?? misteri.. 
+  //definisco stringa data in modo predefinito
 #ifdef SHORT 
   time = NormalizzoData(old_data_header.norm.maq.acq_date); /* arrotonda ai 5 minuti di precisione*/ 
   tempo = gmtime(&time); 
@@ -1549,11 +1549,11 @@ void creo_cart()
       cart[i][j] = MISSING; 
  
   /* 
-    Stampa di controllo 
-    for(i=0; i<MAX_BIN*2; i++) 
-    for(j=MAX_BIN-10; j<MAX_BIN+10; j++) 
-    if (i<10 || i> MAX_BIN*2-10) 
-    printf("%3d  %3d  %3d\n",i,j,cart[i][j]); 
+     Stampa di controllo 
+     for(i=0; i<MAX_BIN*2; i++) 
+     for(j=MAX_BIN-10; j<MAX_BIN+10; j++) 
+     if (i<10 || i> MAX_BIN*2-10) 
+     printf("%3d  %3d  %3d\n",i,j,cart[i][j]); 
   */ 
  
   for(quad=0; quad<4; quad++) 
@@ -1616,7 +1616,7 @@ void creo_cart()
 #ifdef CLASS 
 		if (irange<x_size) 
 		  conv_cart[x][y]=conv[iaz%NUM_AZ_X_PPI][irange]; 
-	          cappi_cart[x][y]=cappi[iaz%NUM_AZ_X_PPI][irange]; 
+		cappi_cart[x][y]=cappi[iaz%NUM_AZ_X_PPI][irange]; 
 		
 #endif 
 	      } 
@@ -1668,9 +1668,9 @@ time_t 	NormalizzoData  (time_t time)    /* time è in secondi, itime è un inte
   itime = time/(NMIN*60); 
  
   /* 
-    printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60)); 
-    printf("%s\n",ctime(&time)); 
-    printf("%d\n",(NMIN-MAX_TIME_DIFF)*60); 
+     printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60)); 
+     printf("%s\n",ctime(&time)); 
+     printf("%d\n",(NMIN-MAX_TIME_DIFF)*60); 
   */ 
    
   if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/ 
@@ -1703,8 +1703,8 @@ void	creo_cart_z_lowris()
   unsigned short q1x1; 
   float zm;
  
- //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main) 
- // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc.. 
+  //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main) 
+  // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc.. 
   for(i=0; i<CART_DIM_ZLR; i++) 
     for(j=0; j<CART_DIM_ZLR; j++) 
       {
@@ -1721,7 +1721,7 @@ void	creo_cart_z_lowris()
 	traw=0; 
 	for(x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++) 
 	  for(y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
-	//ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc... 
+	    //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc... 
 	    { 
 	      if(cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] != MISSING) 
 		if(cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] > z){  
@@ -1793,7 +1793,7 @@ void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *
   /*----------------------------------------------------------------------------*/ 
   /*	apertura file dati di output	                                      */ 
   /*----------------------------------------------------------------------------*/ 
-//definisco stringa data in modo predefinito 
+  //definisco stringa data in modo predefinito 
 #ifdef SHORT 
   time = NormalizzoData(old_data_header.norm.maq.acq_date); 
   tempo = gmtime(&time); 
@@ -1932,7 +1932,7 @@ void ScrivoLog(i,stringa)
       fprintf(log,"FIRST_LEVEL_FILE = %s\n",getenv("FIRST_LEVEL_FILE")); 
       fprintf(log,"OUTPUT_Z_DIR = %s\n",getenv("OUTPUT_Z_DIR")); 
       fprintf(log,"OUTPUT_RAIN_DIR = %s\n",getenv("OUTPUT_RAIN_DIR")); 
-          fprintf(log,"OUTPUT_Z_LOWRIS_DIR = %s\n",getenv("OUTPUT_Z_LOWRIS_DIR")); 
+      fprintf(log,"OUTPUT_Z_LOWRIS_DIR = %s\n",getenv("OUTPUT_Z_LOWRIS_DIR")); 
       fprintf(log,"-----------------------------------------------------------------\n"); 
       break; 
     case  2: 
@@ -1960,7 +1960,7 @@ void ScrivoLog(i,stringa)
     case  9: 
       fprintf(log,"%s -- Creazione Matrice Cartesiana \n",PrendiOra()); 
       break; 
-        case 13: 
+    case 13: 
       fprintf(log,"%s -- Estrazione Precipitazione 1X1\n",PrendiOra()); 
       break; 
     case 14: 
@@ -2017,7 +2017,7 @@ void   leggo_hray( )
   /*-------------------------- 
     Leggo quota centro fascio 
     --------------------------*/
-//definisco stringa data in modo predefinito 
+  //definisco stringa data in modo predefinito 
 #ifdef SHORT 
   time = NormalizzoData(old_data_header.norm.maq.acq_date); 
   tempo = gmtime(&time); 
@@ -2087,35 +2087,35 @@ void   leggo_dem()
 
 /* 
   
-  idx funzione calcolo VPR istantaneo 
-  calcola il VPR istantaneo secondo il metodo di Germann e Joss (2003) 
-  Per il calcolo si considerano i punti con Z>THR_VPR, qualità>QMIN_VPR, BeamBlocking<20% e clutter free all'interno del volume scelto.  
-  Il punto del vpr corrispondente ad un livello è calcolato come la somma dei volumi di pioggia di ciascuna cella polare presente nell'intervallo di quota, diviso l'area totale. Per ogni livello devo avere un'area minima coperta di pioggia,se non si verifica, ricopio il valore del primo livello che raggiunge questa copertura. 
-  La parte del profilo alta, che sta cioè al di sopra dell'ultimo livello calcolato, viene riempite tirando una retta con coeff. amgolre negativo e costante, pari a -0.03 (valore passibile di discussione) 
-  Il profilo è poi soggetto a quality check e viene rigettato (return(1)) se: 
-  - estensione verticale troppo bassa (devo avere almeno 2 km di profilo da un punto che sta non più alto di 700 m dal suolo)
-  - cv<CT_MIN*ct, cioè frazione di volume precipitante piccola 
-  - la deviazione standard del volume di R a 1100 m normalizzata rispetto al volume totale precipitante supera soglia prefissata 
+   idx funzione calcolo VPR istantaneo 
+   calcola il VPR istantaneo secondo il metodo di Germann e Joss (2003) 
+   Per il calcolo si considerano i punti con Z>THR_VPR, qualità>QMIN_VPR, BeamBlocking<20% e clutter free all'interno del volume scelto.  
+   Il punto del vpr corrispondente ad un livello è calcolato come la somma dei volumi di pioggia di ciascuna cella polare presente nell'intervallo di quota, diviso l'area totale. Per ogni livello devo avere un'area minima coperta di pioggia,se non si verifica, ricopio il valore del primo livello che raggiunge questa copertura. 
+   La parte del profilo alta, che sta cioè al di sopra dell'ultimo livello calcolato, viene riempite tirando una retta con coeff. amgolre negativo e costante, pari a -0.03 (valore passibile di discussione) 
+   Il profilo è poi soggetto a quality check e viene rigettato (return(1)) se: 
+   - estensione verticale troppo bassa (devo avere almeno 2 km di profilo da un punto che sta non più alto di 700 m dal suolo)
+   - cv<CT_MIN*ct, cioè frazione di volume precipitante piccola 
+   - la deviazione standard del volume di R a 1100 m normalizzata rispetto al volume totale precipitante supera soglia prefissata 
  
   
-  COSTANTI 
-  THR_VPR:soglia valore Z per calcolo vpr 
-  QMIN_VPR: qualità minima necessaria per entrare nel calcolo vpr  
-  MIN_AREA: area minima a un livello per avere un punto del vpr 
-  IAZ_MIN_SPC,IAZ_MAX_SPC,IAZ_MIN_GAT,I_AZ_MAX_GAT,R_MIN_VPR,R_MAX_VPR:limiti dell'area considerata per il calcolo VPR 
-  TCK_VPR: spessore dei livelli 
-  NMAXLAYER: n max. livelli 
-  VEXTMIN_VPR: estensione verticale minima del profilo 
-  THR_TDEVR: soglia di massima dev. standard di R per considerare buono il profilo 
-  CT_MIN: frazione di volume minimo precipitante per considerare buono il profilo  
+   COSTANTI 
+   THR_VPR:soglia valore Z per calcolo vpr 
+   QMIN_VPR: qualità minima necessaria per entrare nel calcolo vpr  
+   MIN_AREA: area minima a un livello per avere un punto del vpr 
+   IAZ_MIN_SPC,IAZ_MAX_SPC,IAZ_MIN_GAT,I_AZ_MAX_GAT,R_MIN_VPR,R_MAX_VPR:limiti dell'area considerata per il calcolo VPR 
+   TCK_VPR: spessore dei livelli 
+   NMAXLAYER: n max. livelli 
+   VEXTMIN_VPR: estensione verticale minima del profilo 
+   THR_TDEVR: soglia di massima dev. standard di R per considerare buono il profilo 
+   CT_MIN: frazione di volume minimo precipitante per considerare buono il profilo  
  
-  VARIABILI 
-  int flag_vpr[][][]: flag che indica l'usabilità della cella polare in termini di posizione del bin, beam blocking e clutter 
-  long int *cv,*ct:  volume del settore libero,volume precipitante 
-  float vpr1[]: vpr istantaneo 
-  long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del singolo bin 
-  cappi1100[1200*MAX_BIN]: vettore volumi buoni tra 1000 e 1200 m 
-  long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr 
+   VARIABILI 
+   int flag_vpr[][][]: flag che indica l'usabilità della cella polare in termini di posizione del bin, beam blocking e clutter 
+   long int *cv,*ct:  volume del settore libero,volume precipitante 
+   float vpr1[]: vpr istantaneo 
+   long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del singolo bin 
+   cappi1100[1200*MAX_BIN]: vettore volumi buoni tra 1000 e 1200 m 
+   long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr 
  
 */ 
 
@@ -2195,7 +2195,7 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
 
 	      if(qual[l][i][k]<QMIN_VPR ) flag_vpr[l][i][k]=0;
 
-//AGGIUNTA PER CLASS
+	      //AGGIUNTA PER CLASS
 # ifdef CLASS
 	      if(conv[i][k]>= CONV_VAL){
 		flag_vpr[l][i][k]=0;
@@ -2218,13 +2218,13 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
  
 		  //-------incremento l'area precipitante totale ct,aggiungendo però,cosa che avevo messo male una THR solo per ct, cioè per il peso 
 		  if (BYTEtoDB(vol_pol[l][i].ray[k])> THR_PDF) 
-		  *ct=*ct+(long int)(area);     
+		    *ct=*ct+(long int)(area);     
  
                   //------se l'area in quello strato è già maggiore di 0 allora incremento il volume dello strato altrimenti lo scrivo ex novo. poi vpr1 andrà diviso per l'area 
 		  if (area_vpr[ilay]> 0) vpr1[ilay]=vpr1[ilay]+(float)(vol_rain);  
 		  else vpr1[ilay]=(float)(vol_rain);  
  
-                 //------incremento l'area dello strato---------- 
+		  //------incremento l'area dello strato---------- 
 		  area_vpr[ilay]=area_vpr[ilay]+area;   
  
 		  /* //------cappi 1100 m */	 
@@ -2249,7 +2249,7 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
     vert_ext=0; 
  
  
- //----- calcolo 'estensione verticale del profilo , negli strati dove l'area è troppo piccola assegno NODATAVPR,  NORMALIZZO il profilo, e se l'estensione è minore di VEXTMIN_VPR esco- 
+    //----- calcolo 'estensione verticale del profilo , negli strati dove l'area è troppo piccola assegno NODATAVPR,  NORMALIZZO il profilo, e se l'estensione è minore di VEXTMIN_VPR esco- 
  
  
     for  (ilay=0; ilay<NMAXLAYER; ilay++){  
@@ -2274,7 +2274,7 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
 	  fprintf(log_vpr,"raggiunta cima profilo \n"); 
 	  ilast=ilay-1;// c'era errore!!! 
  
-	   //---------- raggiunta la cima profilo faccio check immediato sull'estensione verticale 
+	  //---------- raggiunta la cima profilo faccio check immediato sull'estensione verticale 
 	  if (vert_ext<VEXTMIN_VPR ){ 
 	    fprintf(log_vpr,"estensione profilo verticale troppo bassa\n"); 
 	    *ct=0; 
@@ -2305,10 +2305,10 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
  
   grad=((vpr1[ilast]-vpr1[ilast-1]) + (vpr1[ilast-1]-vpr1[ilast-2])/(2.)+ (vpr1[ilast-2]-vpr1[ilast-3])/(3.) ) /3.; 
   if (grad > 0.002)  
-     grad=-0.03 ; 
+    grad=-0.03 ; 
   fprintf(log_vpr," %f \n", grad); 
  
- //--riempio la parte alta del profilo decrementando di grad il profilo in ogni strato fino a raggiunere 0, SI PUÒ TOGLIERE E METTERE NODATA 
+  //--riempio la parte alta del profilo decrementando di grad il profilo in ogni strato fino a raggiunere 0, SI PUÒ TOGLIERE E METTERE NODATA 
  
   for (ilay=ilast+1; ilay<NMAXLAYER; ilay++) {
     if (vpr1[ilay-1] + grad > 0.002)
@@ -2317,11 +2317,11 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
       vpr1[ilay]=0;
   }
  
-// HO CAMBIATO DA GRADIENTE FISSO PARI A (V. VECCHIO) A GRADIENTE RICAVATO DAL PROFILO PER LA PARTE ALTA 
-//---HO TOLTO TUTTA LA PARTE CHE FA IL CHECK SULLA STDEV A 1100 M SI PUO' RIVEDERE SE METTERLA SE SERVE. 
+  // HO CAMBIATO DA GRADIENTE FISSO PARI A (V. VECCHIO) A GRADIENTE RICAVATO DAL PROFILO PER LA PARTE ALTA 
+  //---HO TOLTO TUTTA LA PARTE CHE FA IL CHECK SULLA STDEV A 1100 M SI PUO' RIVEDERE SE METTERLA SE SERVE. 
   
  
-    return(0); 
+  return(0); 
 } 
  
 
@@ -2386,7 +2386,7 @@ long int profile_gap(char nomefile[])
 */ 
 
 
- int combina_profili(char *sito)
+int combina_profili(char *sito)
  
 {  
   long int c0,*cv,*ct; 
@@ -2659,7 +2659,7 @@ int profile_heating()
     file = controllo_apertura(getenv("LAST_VPR")," ultimo vpr ","w"); 
     fwrite(&old_data_header.norm.maq.acq_date,4,1,file); 
     fclose(file);  
-}  
+  }  
   if (heating<0) heating=0;    
  
   //----stampo heating su file 
@@ -2667,7 +2667,7 @@ int profile_heating()
   fprintf(file," %i \n",heating);  
   fclose(file); 
  
- //----stampo log vpr 
+  //----stampo log vpr 
   fprintf (log_vpr,"gap %li heating %i \n",gap,heating); 
  
   return(heating); 
@@ -2697,26 +2697,26 @@ int stampa_vpr()
   return 0; 
 } 
 /* 
-  =======================================================================================*/ 
+   =======================================================================================*/ 
 /* 
-  comstart corr_vpr 
-  idx corregge i dati tramite profilo verticale 
-  corregge i dati tramite profilo verticale a partire da quelli con valore maggiore di THR_CORR(v vpr_par.h): riporto il dato alla quota del livello 'liquido' tramite "traslazione" cioè aggiungo al valore in dBZ la differenza tra il valore del VPR alla quota 'liquida' e quello alla quota della misura, anche in caso di neve,purchè esista il livello liquido nel profilo. In questo caso pero' flaggo il bin tramte la variabile neve[][]. In caso il profilo intero sia di neve allora riporto al valore di Z al suolo (o al livello rappresentativo) perchè non ho un valore di riferimento 'liquido'.  
-  La correzione avviene solo se heating>warm 
+   comstart corr_vpr 
+   idx corregge i dati tramite profilo verticale 
+   corregge i dati tramite profilo verticale a partire da quelli con valore maggiore di THR_CORR(v vpr_par.h): riporto il dato alla quota del livello 'liquido' tramite "traslazione" cioè aggiungo al valore in dBZ la differenza tra il valore del VPR alla quota 'liquida' e quello alla quota della misura, anche in caso di neve,purchè esista il livello liquido nel profilo. In questo caso pero' flaggo il bin tramte la variabile neve[][]. In caso il profilo intero sia di neve allora riporto al valore di Z al suolo (o al livello rappresentativo) perchè non ho un valore di riferimento 'liquido'.  
+   La correzione avviene solo se heating>warm 
    
-  int ilref : livello del suolo o della quota rappresentativa di esso nel VPR (dove considero buoni i dati a partire dati da REPR_LEV) 
-  int ilray : livello a cui ho il dato 
-  int ilay2 : livello sopra o sotto ilray a seconda che il fascio stia sopra o sotto il centro di ilray, serve per interpolare il dato vpr su retta ed evitare correzioni a gradino 
-  int heating,warm: indicano quanto è caldo il profilo, e la soglia di riscaldamento 
-  int snow : indica se il profilo è di neve (snow=1) 
-  int neve[NUM_AZ_X_PPI][MAX_BIN]: 1 se c'è neve, identificata se quota dem> hvprmax+300m    
-  float corr: correzione in dB 
-  float vpr_liq: valore di R nel VPR alla quota 'liquida' ricavato dalla funzione analyse_VPR 
+   int ilref : livello del suolo o della quota rappresentativa di esso nel VPR (dove considero buoni i dati a partire dati da REPR_LEV) 
+   int ilray : livello a cui ho il dato 
+   int ilay2 : livello sopra o sotto ilray a seconda che il fascio stia sopra o sotto il centro di ilray, serve per interpolare il dato vpr su retta ed evitare correzioni a gradino 
+   int heating,warm: indicano quanto è caldo il profilo, e la soglia di riscaldamento 
+   int snow : indica se il profilo è di neve (snow=1) 
+   int neve[NUM_AZ_X_PPI][MAX_BIN]: 1 se c'è neve, identificata se quota dem> hvprmax+300m    
+   float corr: correzione in dB 
+   float vpr_liq: valore di R nel VPR alla quota 'liquida' ricavato dalla funzione analyse_VPR 
  
-  ilref= (dem[i][k]>REPR_LEV)?(floor(dem[i][k]/TCK_VPR)):( floor(REPR_LEV/TCK_VPR)); in pratica livello dem se > REPR_LEV, livello di REPR_LEV altrimenti.  
-  ilray=floor((hbin[i][k])/TCK_VPR) 
-  corr=RtoDBZ(vpr_liq)-RtoDBZ(vpr_hray)  
-  comend 
+   ilref= (dem[i][k]>REPR_LEV)?(floor(dem[i][k]/TCK_VPR)):( floor(REPR_LEV/TCK_VPR)); in pratica livello dem se > REPR_LEV, livello di REPR_LEV altrimenti.  
+   ilray=floor((hbin[i][k])/TCK_VPR) 
+   corr=RtoDBZ(vpr_liq)-RtoDBZ(vpr_hray)  
+   comend 
 */ 
 
  
@@ -2744,7 +2744,7 @@ int corr_vpr(char *sito)
   ier_ana=analyse_VPR(&vpr_liq,&snow,&hliq,sito); 
   fprintf (log_vpr,"ier_analisi %i \n",ier_ana) ; 
  
- /* se analisi dice che non è il caso di correggere non correggo (NB in questo caso non riempio la matrice di neve)*/ 
+  /* se analisi dice che non è il caso di correggere non correggo (NB in questo caso non riempio la matrice di neve)*/ 
   if (ier_ana) return 1; 
  
   fprintf (log_vpr,"altezza bright band %i \n",hvprmax) ; 
@@ -2882,7 +2882,7 @@ int trovo_hvprmax(int *hmax)
   imax=INODATA; 
   soglia=DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO 
  
-//--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco 
+  //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco 
   if (vpr[istart] >soglia && vpr[istart+4] > soglia){ 
     peak=10*log10(vpr[istart]/vpr[istart+4]);//inizializzo il picco 
     printf("peak1 = %f\n",peak); 
@@ -2920,18 +2920,18 @@ int trovo_hvprmax(int *hmax)
  
 /* 
   
-  1)hvprmax - semiampiezza BB > liv 100 m => la bright band sta sopra il suolo => interpolo il profilo per trovare il livello liquido 
-  se interpolazione fallisce NON CORREGGO (scelta cautelativa, potrei avere caso convettivo 
-  o pochi punti o molto disomogeneo) 
-  2)hvprmax - semiampiezza BB < liv 100 m  => la bright contiene o è sotto il livello 100 m  oppure ho un massimo 'spurio' 
-  quindi calcolo la Tground, temperatura media nelle stazioni più vicine al radar, se non trovo T torno al caso 1. 
-  2A) Tground>T_MAX_ML ----> prob. caso convettivo o max preci passa sopra radar, interpolo il profilo e calcolo livello liquido 
-  se interpolazione fallisce NON CORREGGO 
-  2B) T_MIN_ML<T0<T_MAX_ML : prob. bright band al suolo, interpolo il profilo per trovare il livello liquido 
-  se interpolazione fallisce NON CORREGGO 
-  2C) Tground<T_MIN_ML ----> prob. profilo neve NON interpolo e non calcolo vpr al livello liquido perchè non ho livello liquido 
+   1)hvprmax - semiampiezza BB > liv 100 m => la bright band sta sopra il suolo => interpolo il profilo per trovare il livello liquido 
+   se interpolazione fallisce NON CORREGGO (scelta cautelativa, potrei avere caso convettivo 
+   o pochi punti o molto disomogeneo) 
+   2)hvprmax - semiampiezza BB < liv 100 m  => la bright contiene o è sotto il livello 100 m  oppure ho un massimo 'spurio' 
+   quindi calcolo la Tground, temperatura media nelle stazioni più vicine al radar, se non trovo T torno al caso 1. 
+   2A) Tground>T_MAX_ML ----> prob. caso convettivo o max preci passa sopra radar, interpolo il profilo e calcolo livello liquido 
+   se interpolazione fallisce NON CORREGGO 
+   2B) T_MIN_ML<T0<T_MAX_ML : prob. bright band al suolo, interpolo il profilo per trovare il livello liquido 
+   se interpolazione fallisce NON CORREGGO 
+   2C) Tground<T_MIN_ML ----> prob. profilo neve NON interpolo e non calcolo vpr al livello liquido perchè non ho livello liquido 
                                       
-  comend                    
+   comend                    
 */ 
 
 
@@ -3028,7 +3028,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	  else { 
 	    fprintf(log_vpr," temperatura da neve o scioglimento e massimo non trovato,neve , non interpolo\n"); 
 	    tipo_profilo=3; 
-	  hvprmax=0; 
+	    hvprmax=0; 
 	  } 
 	} 
         
@@ -3068,7 +3068,7 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
 	  //lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);	 	  
 	  if (*hliq<0) 
 	    *hliq=0;  /*con casi di bright band bassa.. cerco di correggere il più possibile*/	  
-	 *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15; 
+	  *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15; 
 	} 
         else { 	   
 	  *hliq=(a[2]-2.1*a[3])*1000.; 
@@ -3096,8 +3096,8 @@ int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito)
  
   /* parte di stampa test vpr*/  
  
- /* nome data */
-//definisco stringa data in modo predefinito 
+  /* nome data */
+  //definisco stringa data in modo predefinito 
   Time = NormalizzoData(old_data_header.norm.maq.acq_date); 
   tempo = gmtime(&Time); 
   sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1, 
@@ -3158,14 +3158,14 @@ int get_t_ground(float *t_gr)
     media_t=0; 
     icount=0; 
 
-     sito=getenv("SITO"); 
+    sito=getenv("SITO"); 
 
-     if (!(strcmp(sito,"SPC"))) { // spostata qui
-	radar_lat=SPC_LAT; 
-	radar_lon=SPC_LON; } 
-      if (!(strcmp(sito,"GAT"))) { 
-	radar_lat=GAT_LAT; 
-	radar_lon=GAT_LON; }
+    if (!(strcmp(sito,"SPC"))) { // spostata qui
+      radar_lat=SPC_LAT; 
+      radar_lon=SPC_LON; } 
+    if (!(strcmp(sito,"GAT"))) { 
+      radar_lat=GAT_LAT; 
+      radar_lon=GAT_LON; }
 
     while (1) { 
       if(fscanf(file_t,"%f %f %f \n",&lon,&lat,&t) == EOF) break;   
@@ -3198,36 +3198,36 @@ int get_t_ground(float *t_gr)
 /* 
  
  
-  comstart interpola_VPR 
-  idx interpola il profilo verticale tramite una funzione lingauss  
-  interpola il profilo verticale tramite una funzione gaussiana + lineare del tipo  
+   comstart interpola_VPR 
+   idx interpola il profilo verticale tramite una funzione lingauss  
+   interpola il profilo verticale tramite una funzione gaussiana + lineare del tipo  
      
-  y= B*exp(-((x-E)/G)^2)+C+Fx 
+   y= B*exp(-((x-E)/G)^2)+C+Fx 
  
-  usa la funzione mrqmin delle numerical recipes in C: tutti i vettori passati a mrqmin devono essere allocati e deallcocati usando le funzioni di NR (vector, matrix, free_vector, free_matrix.. etc) che definiscono vettori con indice a partire da 1. 
-  NB gli ndata dati considerati partono da 1000 m sotto il massimo (in caso il massimo sia più basso di 1000 m partono da 0 m) 
-  A ogni iterazione si esegue un test sui parametri. Se ritorna 1 si torna ai valori dell'iterazione precedente. 
-  A fine interpolazione si verifica che il chisquare non superi una soglia prefissata, in tal caso ritorna 1 e interpol. fallisce. 
+   usa la funzione mrqmin delle numerical recipes in C: tutti i vettori passati a mrqmin devono essere allocati e deallcocati usando le funzioni di NR (vector, matrix, free_vector, free_matrix.. etc) che definiscono vettori con indice a partire da 1. 
+   NB gli ndata dati considerati partono da 1000 m sotto il massimo (in caso il massimo sia più basso di 1000 m partono da 0 m) 
+   A ogni iterazione si esegue un test sui parametri. Se ritorna 1 si torna ai valori dell'iterazione precedente. 
+   A fine interpolazione si verifica che il chisquare non superi una soglia prefissata, in tal caso ritorna 1 e interpol. fallisce. 
  
-  INIZIALIZZAZIONE PARAMETRI:   
-  a[1]=B=vpr(liv del massimo)-vpr(liv. del massimo+500m); 
-  a[2]=E= quota liv. massimo vpr (in KM); 
-  a[3]=G=semiampiezza BB (quota liv .massimo- quota massimo decremento vpr nei 600 m sopra il massimo ) in KM; 
-  a[4]=C=vpr(liv massimo + 700 m); 
-  a[5]=F=coeff. angolare segmento con estremi nel vpr ai livelli max+900m e max+1700m, se negativo =0.; 
+   INIZIALIZZAZIONE PARAMETRI:   
+   a[1]=B=vpr(liv del massimo)-vpr(liv. del massimo+500m); 
+   a[2]=E= quota liv. massimo vpr (in KM); 
+   a[3]=G=semiampiezza BB (quota liv .massimo- quota massimo decremento vpr nei 600 m sopra il massimo ) in KM; 
+   a[4]=C=vpr(liv massimo + 700 m); 
+   a[5]=F=coeff. angolare segmento con estremi nel vpr ai livelli max+900m e max+1700m, se negativo =0.; 
  
   
-  float a[ma], int ma: vettore parametri e n0 parametri 
-  float *x, *y:  quote in KM e valori del vpr usati per l'interpolazione 
-  float *sig,alamda : vettore dev st. e variabile che decrementa al convergere delle iterazioni 
-  float *dyda: vettore derivate rispetto ai parametri  
-  float B,E,C,G,F:  parametri da ottimizzare, first guess 
-  float chisq; scarto quadratico 
-  int i,in1,in2,in3,in4,*ia,ifit,ii,ndati_ok,k; 
-  int ndata=15;  numero di dati considerati 
-  float **covar,**alpha; matrice ovarianze, matrice alpha 
+   float a[ma], int ma: vettore parametri e n0 parametri 
+   float *x, *y:  quote in KM e valori del vpr usati per l'interpolazione 
+   float *sig,alamda : vettore dev st. e variabile che decrementa al convergere delle iterazioni 
+   float *dyda: vettore derivate rispetto ai parametri  
+   float B,E,C,G,F:  parametri da ottimizzare, first guess 
+   float chisq; scarto quadratico 
+   int i,in1,in2,in3,in4,*ia,ifit,ii,ndati_ok,k; 
+   int ndata=15;  numero di dati considerati 
+   float **covar,**alpha; matrice ovarianze, matrice alpha 
  
-  comend 
+   comend 
 */ 
 
 
@@ -3471,14 +3471,14 @@ void classifica_rain()
  
   /* ;---------------------------------- */ 
   /* ;          FASE 0 :   
-  /* ;---------------------------------- */ 
+     /* ;---------------------------------- */ 
   // DEFINISCO QUOTE DELLA BASE E DEL TOP DELLA BRIGHT BAND USANDO IL DATO quota del picco  DEL PRECEDENTE RUN O, SE NON PRESENTE LA QUOTA DELLO ZERO DA MODELLO
  
   // Lettura quota massimo da VPR  calcolo base e top bright band
-      fprintf(log_class,"data= %s \n",date); 
- // calcolo il gap 
+  fprintf(log_class,"data= %s \n",date); 
+  // calcolo il gap 
   gap=profile_gap(getenv("LAST_VPR"));  
- //-- se gap < memory leggo hmax da VPR  
+  //-- se gap < memory leggo hmax da VPR  
   if (gap<=MEMORY){     
     ier_ap=access(getenv("VPR_HMAX"),R_OK); 
     if (!ier_ap) {   
@@ -3486,7 +3486,7 @@ void classifica_rain()
       //file=controllo_apertura(getenv("VPR_HMAX")," altezza hmax ultimo vpr ","r"); 
       fscanf(file,"%i", &hmax); 
       fprintf(log_class,"fatta lettura hmax vpr = %i \n",hmax); 
-printf("fatta lettura hmax vpr = %i \n",hmax); 
+      printf("fatta lettura hmax vpr = %i \n",hmax); 
       //---suppongo una semiampiezza massima della bright band di 600 m e definisco htopbb e hbasebb come hmassimo +600 m (che da clima ci sta) e hmassimo -600 m 
       hbbb=(hmax-600.)/1000.; 
       htbb=(hmax+600.)/1000.; 
@@ -3506,16 +3506,16 @@ printf("fatta lettura hmax vpr = %i \n",hmax);
      
     } 
     else{
-    printf("attenzione, non ho trovat zero termico ne da vpr ne da radiosondaggio \n");
+      printf("attenzione, non ho trovat zero termico ne da vpr ne da radiosondaggio \n");
       htbb=0; // discutibile così faccio tutto con VIZ
       hbbb=0;
     }
   }
   
   // se hbasebb è <0 metto 0  
-   if (hbbb<0) hbbb=0; 
+  if (hbbb<0) hbbb=0; 
  
-   fprintf(log_class,"calcolati livelli sopra e sotto bright band hbbb=%f  htbb=%f \n",hbbb,htbb);  
+  fprintf(log_class,"calcolati livelli sopra e sotto bright band hbbb=%f  htbb=%f \n",hbbb,htbb);  
   /* ---------------------------------- */ 
   /*           FASE 1 */ 
   /* ---------------------------------- */ 
@@ -3594,12 +3594,12 @@ printf("fatta lettura hmax vpr = %i \n",hmax);
   } 
      
   /* 
-    ;------------------------------------------------------------------------------ 
-    ;          FASE 2 
-    ;------------------------------------------------------------------------------ 
-    ;   Costruzione matrice pesi 
-    ;   Questa matrice contiene i pesi (in funzione della distanza) per ogni punto. 
-    ;-----------------------------------------------------------------------------*/ 
+     ;------------------------------------------------------------------------------ 
+     ;          FASE 2 
+     ;------------------------------------------------------------------------------ 
+     ;   Costruzione matrice pesi 
+     ;   Questa matrice contiene i pesi (in funzione della distanza) per ogni punto. 
+     ;-----------------------------------------------------------------------------*/ 
      
   for (k=0;k<w_x_size;k++) 
     w_x[k]=exp(-pow(k-w_x_size_2,2.)/pow(w_x_size_2/2.,2.));  
@@ -3712,18 +3712,18 @@ printf("fatta lettura hmax vpr = %i \n",hmax);
   //fwrite(cappi,sizeof(cappi),1,output); 
   //fclose(output);
  
-   //-------------------------------------------------------------------------------------------------------------------------
-// faccio la classificazione col metodo Vertical Integrated Reflectivity 
+  //-------------------------------------------------------------------------------------------------------------------------
+  // faccio la classificazione col metodo Vertical Integrated Reflectivity 
   classifico_VIZ();
-//classificazione con STEINER 
-//  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare 
-// if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare 
-    calcolo_background(); 
-    classifico_STEINER(); 
-    //  } 
+  //classificazione con STEINER 
+  //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare 
+  // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare 
+  calcolo_background(); 
+  classifico_STEINER(); 
+  //  } 
   merge_metodi(); 
-    return ; 
-  } 
+  return ; 
+} 
  
 
 void 	classifico_VIZ() 
@@ -3738,8 +3738,8 @@ void 	classifico_VIZ()
 
   kbbb=floor(hbbb/resol[1]);   //08/01/2013...MODIFICA, inserito questo dato
   ktbb=ceil(htbb/resol[1]); 
-    kmax=ceil(LIM_VERT/resol[1]);  
-    // kmax=ceil(z_size/resol[1]);  
+  kmax=ceil(LIM_VERT/resol[1]);  
+  // kmax=ceil(z_size/resol[1]);  
   if (t_ground < T_MAX_ML) kmax=0;/////se t suolo dentro t melting layer pongo kmax=00 e in tal modo non classifico 
   if (ktbb>z_size) ktbb=z_size; 
   printf ("kmax= %i \n kbbb= %i \n ktbb= %i \n  z_size= %i \n ",kmax,kbbb,ktbb,z_size);
@@ -3761,7 +3761,7 @@ void 	classifico_VIZ()
       conv_STEINER[i][j]=MISSING; 
       conv[i][j]=MISSING; 
       stratiform[i][j]=MISSING; 
-        } 
+    } 
   }	 
 
   //inizio l'integrazione
@@ -3779,7 +3779,7 @@ void 	classifico_VIZ()
 	      cil_Z=pow(10.,base); 
 	      Zbbb[i][j] = Zbbb[i][j] + resol[1]*cil_Z; 
 	      ext_bbb=resol[1]+ext_bbb; 
-	    	    }
+	    }
 	  }
 	for(k=kbbb; k<ktbb; k++)
 	  {
@@ -3789,217 +3789,218 @@ void 	classifico_VIZ()
 		  stratiform[i][j]=1;
 	      }
 	    }
-	      else if (cil[i][j][k]>10. &&  cil[i][j][k+4]> 5. &&  cil[i][j][k-4] > 5.){
+	    else if (cil[i][j][k]>10. &&  cil[i][j][k+4]> 5. &&  cil[i][j][k-4] > 5.){
 	      if (cil[i][j][k] - cil[i][j][k+4] > 5.&&   cil[i][j][k]- cil[i][j][k-4] > 5. )
 		stratiform[i][j]=1;
  
-	  }
+	    }
 
 
-		if (cil[i][j][k] - cil[i][j][k+4] > 5.)
-		  stratiform[i][j]=1;
+	    if (cil[i][j][k] - cil[i][j][k+4] > 5.)
+	      stratiform[i][j]=1;
 	      
-	for(k=ktbb; k<kmax; k++) 
-	  { 
-	    if (cil[i][j][k] > -19.){	 // 08/01/2013..modifica, prendo fin dove ho un segnale
-	      base=(cil[i][j][k])/10.; 
-	      cil_Z=pow(10.,base); 
-	      Zabb[i][j] = Zabb[i][j] + resol[1]*cil_Z; 
-	      ext_abb=resol[1]+ext_abb; 
-	      //if (j == 400) printf(" %i  %i %f  %f  %f \n", i, j, cil[i][j][k],Zabb[i][j],ext ) ; 
-	    } 
+	    for(k=ktbb; k<kmax; k++) 
+	      { 
+		if (cil[i][j][k] > -19.){	 // 08/01/2013..modifica, prendo fin dove ho un segnale
+		  base=(cil[i][j][k])/10.; 
+		  cil_Z=pow(10.,base); 
+		  Zabb[i][j] = Zabb[i][j] + resol[1]*cil_Z; 
+		  ext_abb=resol[1]+ext_abb; 
+		  //if (j == 400) printf(" %i  %i %f  %f  %f \n", i, j, cil[i][j][k],Zabb[i][j],ext ) ; 
+		} 
 
-	  }
+	      }
 
 
-	//solo se l'estensione verticale del segnale sopra il top della bright band è maggiore di 0.8 Km classifico
+	    //solo se l'estensione verticale del segnale sopra il top della bright band è maggiore di 0.8 Km classifico
 
-		if (ext_bbb +  ext_abb>0.8) { 
-		  //if ( ext_abb>0.8) { 	  
-	   if ((Zabb[i][j] +Zbbb[i][j])/(ext_bbb+ext_abb) > THR_VIZ){
-	     //if ((Zabb[i][j] /ext_abb) > THR_VIZ){
-	    conv_VIZ[i][j]=CONV_VAL; 
-	    lista_conv[ncv][0]= i; 
-	    lista_conv[ncv][1]= j;	       
-	    ncv=ncv+1; 
-	  }
-	}
+	    if (ext_bbb +  ext_abb>0.8) { 
+	      //if ( ext_abb>0.8) { 	  
+	      if ((Zabb[i][j] +Zbbb[i][j])/(ext_bbb+ext_abb) > THR_VIZ){
+		//if ((Zabb[i][j] /ext_abb) > THR_VIZ){
+		conv_VIZ[i][j]=CONV_VAL; 
+		lista_conv[ncv][0]= i; 
+		lista_conv[ncv][1]= j;	       
+		ncv=ncv+1; 
+	      }
+	    }
 	    	    
-      } 
-  }  
-   
+	  } 
+      }  
+  }
   printf("numero nuclei VIZ = %i \n",ncv);   
 
   return; 
 } 
+
  
-void 	classifico_STEINER()  
-{    
-  int i,j,k; 
+  void 	classifico_STEINER()  
+  {    
+    int i,j,k; 
    
-  unsigned char BYTE; 
-  float diff_bckgr,cr; 
+    unsigned char BYTE; 
+    float diff_bckgr,cr; 
   
-  for(i=0; i<np; i++){ 
-    j=lista_bckg[i][0]; //az=lista_bckg[i][0]
-    k=lista_bckg[i][1]; //ra=lista_bckg[i][1]
+    for(i=0; i<np; i++){ 
+      j=lista_bckg[i][0]; //az=lista_bckg[i][0]
+      k=lista_bckg[i][1]; //ra=lista_bckg[i][1]
 
-    // calcolo valore BYTE nel punto
-    BYTE=vol_pol[elev_fin[j][k]][j].ray[k];
-    // calcolo diff col background 
-    diff_bckgr=BYTEtoDB(BYTE)-bckgr[i]; 
-    /* if (k < 160 ){ */
-    /*   fprintf(log_class," bckgr[i] = %f diff_bckgr %f \n ",bckgr[i],diff_bckgr ); */
-    /* } */
-    // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
-     if ((BYTEtoDB(BYTE)>40.)||  
-	 (bckgr[i]< 0 && diff_bckgr > 10) || 
-	 (bckgr[i]< 42.43 &&  bckgr[i]>0 &&  diff_bckgr > 10. - bckgr[i]*bckgr[i]/180. )|| 
-	 (bckgr[i]> 42.43 &&  diff_bckgr >0)  ) { 
-      // assegno il punto  nucleo di Steiner
-      conv_STEINER[j][k]=CONV_VAL; 
+      // calcolo valore BYTE nel punto
+      BYTE=vol_pol[elev_fin[j][k]][j].ray[k];
+      // calcolo diff col background 
+      diff_bckgr=BYTEtoDB(BYTE)-bckgr[i]; 
+      /* if (k < 160 ){ */
+      /*   fprintf(log_class," bckgr[i] = %f diff_bckgr %f \n ",bckgr[i],diff_bckgr ); */
+      /* } */
+      // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
+      if ((BYTEtoDB(BYTE)>40.)||  
+	  (bckgr[i]< 0 && diff_bckgr > 10) || 
+	  (bckgr[i]< 42.43 &&  bckgr[i]>0 &&  diff_bckgr > 10. - bckgr[i]*bckgr[i]/180. )|| 
+	  (bckgr[i]> 42.43 &&  diff_bckgr >0)  ) { 
+	// assegno il punto  nucleo di Steiner
+	conv_STEINER[j][k]=CONV_VAL; 
   
-      // ingrasso il nucleo
-      cr=convective_radius[i];
-      printf (" %f cr \n", cr);
-      ingrasso_nuclei(cr,j,k); 
-      ncs=ncs+1; 
+	// ingrasso il nucleo
+	cr=convective_radius[i];
+	printf (" %f cr \n", cr);
+	ingrasso_nuclei(cr,j,k); 
+	ncs=ncs+1; 
  
+      } 
     } 
-  } 
 
-  return;  
-}  
+    return;  
+  }  
 
-void calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
- // definisco una lista di punti utili per l'analisi, cioè con valore non nullo e sotto la bright band o sopra (NB. per l'analisi considero i punti usati per la ZLR che si suppongono non affetti da clutter e beam blocking<50%. questo ha tutta una serie di implicazioni..... tra cui la proiezione, il fatto che nel confronto entrano dei 'buchi'...cioè il confronto è fatto su una matrice pseudo-orizzontale bucata e quote variabili tuttavia, considerato che i gradienti verticali in caso convettivo e fuori dalla bright band non sono altissimi spero funzioni ( andro' a verificare che l'ipotesi sia soddisfatta)
+  void calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
+  // definisco una lista di punti utili per l'analisi, cioè con valore non nullo e sotto la bright band o sopra (NB. per l'analisi considero i punti usati per la ZLR che si suppongono non affetti da clutter e beam blocking<50%. questo ha tutta una serie di implicazioni..... tra cui la proiezione, il fatto che nel confronto entrano dei 'buchi'...cioè il confronto è fatto su una matrice pseudo-orizzontale bucata e quote variabili tuttavia, considerato che i gradienti verticali in caso convettivo e fuori dalla bright band non sono altissimi spero funzioni ( andro' a verificare che l'ipotesi sia soddisfatta)
   // per trovare il background uso uno pseudo quadrato anzichè cerchio, mantenendo come semi-lato il raggio di steiner (11KM); devo perciò  definire una semi-ampiezza delle finestre in azimut e range corrispondente al raggio di 11 km
   // quella in azimut  dipende dal range
 
-{ 
-  int i,j,k,jmin,jmax,J_MAX,J_BBB,J_ABB,kmin,kmax,delta_naz=0,delta_nr;
-  float z,zmax,range,delta_r,delta_az,az_min,az_max; 
-  long int npoints=0;  
+  { 
+    int i,j,k,jmin,jmax,J_MAX,J_BBB,J_ABB,kmin,kmax,delta_naz=0,delta_nr;
+    float z,zmax,range,delta_r,delta_az,az_min,az_max; 
+    long int npoints=0;  
 
 
 
 
-  //traccio una lista dei punti che hanno valore non nullo e sotto base bright band (lista_bckg) contenente iaz e irange e conto i punti
-  for (i=0; i<NUM_AZ_X_PPI;i++) {
-    for (j=0; j<MAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa 
-      { 
-	//if ( vol_pol[0][i].ray[j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
+    //traccio una lista dei punti che hanno valore non nullo e sotto base bright band (lista_bckg) contenente iaz e irange e conto i punti
+    for (i=0; i<NUM_AZ_X_PPI;i++) {
+      for (j=0; j<MAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa 
+	{ 
+	  //if ( vol_pol[0][i].ray[j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 	 
- { 	if ( vol_pol[0][i].ray[j] > 1 ) 
-	    lista_bckg[np][0]=i;  //IAZIMUT
+	  { 	if ( vol_pol[0][i].ray[j] > 1 ) 
+	      lista_bckg[np][0]=i;  //IAZIMUT
 	    lista_bckg[np][1]=j;  //IRANGE 
 	    np=np+1; 
 	  }  
-      }   
+	}   
 
-  }
-
-  // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
-  delta_nr=(int)(STEINER_RADIUS*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare 
-  printf("delta_nrange per analisi Steiner = %i \n",delta_nr); 
-
-
-
-  if (np > 1) { 
-    //inizializzo vettori
-    convective_radius=(float *)malloc(np*sizeof(float)); 
-    Z_bckgr=(double *) malloc(np*sizeof(double)); 
-    bckgr=(float *) malloc(np*sizeof(float)); 
-
-    for (i=1;i<np;i++){ //M: tolto np-1 messo np
-      bckgr[i]=0.; 
-      Z_bckgr[i]=0;
-      convective_radius[i]=0;
     }
 
-    for(i=0; i<np;i++){       // M:tolto np -1 messo np
-      npoints=0; 
+    // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
+    delta_nr=(int)(STEINER_RADIUS*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare 
+    printf("delta_nrange per analisi Steiner = %i \n",delta_nr); 
 
-      // estremi della finestra in range 
-      kmin=lista_bckg[i][1]-delta_nr; 
-      kmax=lista_bckg[i][1]+delta_nr; 
 
-      if (kmin>0) {
+
+    if (np > 1) { 
+      //inizializzo vettori
+      convective_radius=(float *)malloc(np*sizeof(float)); 
+      Z_bckgr=(double *) malloc(np*sizeof(double)); 
+      bckgr=(float *) malloc(np*sizeof(float)); 
+
+      for (i=1;i<np;i++){ //M: tolto np-1 messo np
+	bckgr[i]=0.; 
+	Z_bckgr[i]=0;
+	convective_radius[i]=0;
+      }
+
+      for(i=0; i<np;i++){       // M:tolto np -1 messo np
+	npoints=0; 
+
+	// estremi della finestra in range 
+	kmin=lista_bckg[i][1]-delta_nr; 
+	kmax=lista_bckg[i][1]+delta_nr; 
+
+	if (kmin>0) {
 	
-	if (kmax>MAX_BIN) kmax=MAX_BIN; 
+	  if (kmax>MAX_BIN) kmax=MAX_BIN; 
 
-	//definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
-	delta_naz=ceil(11./((lista_bckg[i][1]*size_cell[old_data_header.norm.maq.resolution]/1000.+size_cell[old_data_header.norm.maq.resolution]/2000.)/(AMPLITUDE*DTOR))); 
-	if (delta_naz>NUM_AZ_X_PPI/2) 
-	  delta_naz=NUM_AZ_X_PPI/2;
+	  //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
+	  delta_naz=ceil(11./((lista_bckg[i][1]*size_cell[old_data_header.norm.maq.resolution]/1000.+size_cell[old_data_header.norm.maq.resolution]/2000.)/(AMPLITUDE*DTOR))); 
+	  if (delta_naz>NUM_AZ_X_PPI/2) 
+	    delta_naz=NUM_AZ_X_PPI/2;
       
-	jmin=lista_bckg[i][0]-delta_naz;
-	jmax=lista_bckg[i][0]+delta_naz;
+	  jmin=lista_bckg[i][0]-delta_naz;
+	  jmax=lista_bckg[i][0]+delta_naz;
 
 
-	if (jmin<0) { 
-	  jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI; 
-	  for (j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
-	    for (k= kmin ; k< kmax  ; k++){ 
-	      //	      if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
-	     if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ){
-		Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]) ; 
+	  if (jmin<0) { 
+	    jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI; 
+	    for (j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
+	      for (k= kmin ; k< kmax  ; k++){ 
+		//	      if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
+		if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ){
+		  Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]) ; 
+		  bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]);
+		  npoints=npoints+1; 
+		} 
+	      } 
+	    }
+	    jmin=0;  
+	  }        
+
+	  if (jmax>NUM_AZ_X_PPI) { 
+	    jmax=jmax%NUM_AZ_X_PPI; 
+	    for (j= 0  ; j< jmax ; j++) {
+	      for (k= kmin ; k< kmax  ; k++){ 
+		// if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+		if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
+		  Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]); 
+		  bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]);
+		  npoints=npoints+1;
+		}
+	      }  
+	    }
+	    jmax=NUM_AZ_X_PPI;  
+	  } 
+
+	  for (j=jmin   ; j<jmax  ; j++) {
+	    for (k=kmin  ; k<kmax   ; k++){ 
+	      // if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+	      if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
+		Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]); 
 		bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]);
 		npoints=npoints+1; 
 	      } 
-	    } 
+	    }
 	  }
-	  jmin=0;  
-	}        
-
-	if (jmax>NUM_AZ_X_PPI) { 
-	  jmax=jmax%NUM_AZ_X_PPI; 
-	  for (j= 0  ; j< jmax ; j++) {
-	    for (k= kmin ; k< kmax  ; k++){ 
+	}
+	else{
+	  for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++){ 
+	    for (k=0  ; k<kmax   ; k++){ 
 	      // if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
- if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
+	      if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
+		Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]);	   
+		bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]); 
+		npoints=npoints+1; 
+	      } 
+	    }
+	  }
+	  for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
+	    for (k=0  ; k<-kmin   ; k++){ 
+	      // if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+	      if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
 		Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]); 
-		bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]);
-		npoints=npoints+1;
-	      }
-	    }  
-	  }
-	  jmax=NUM_AZ_X_PPI;  
-	} 
-
-	for (j=jmin   ; j<jmax  ; j++) {
-	  for (k=kmin  ; k<kmax   ; k++){ 
-	    // if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
- if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
-	      Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]); 
-	      bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]);
-	      npoints=npoints+1; 
-	    } 
+		bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]); 
+		npoints=npoints+1; 
+	      } 
+	    }
 	  }
 	}
-      }
-      else{
-	for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++){ 
-	  for (k=0  ; k<kmax   ; k++){ 
-	    // if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
-	      Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]);	   
-	      bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]); 
-	      npoints=npoints+1; 
-	    } 
-	  }
-	}
-	for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
-	  for (k=0  ; k<-kmin   ; k++){ 
-	    // if (vol_pol[elev_fin[j][k]][j].ray[k]> 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-	    if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
-	      Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(vol_pol[elev_fin[j][k]][j].ray[k]); 
-	      bckgr[i]=bckgr[i]+BYTEtoDB(vol_pol[elev_fin[j][k]][j].ray[k]); 
-	      npoints=npoints+1; 
-	    } 
-	  }
-	}
-      }
 	if (npoints > 0){
 	  Z_bckgr[i]=Z_bckgr[i]/npoints; 
 	  //bckgr[i]=bckgr[i]/npoints; //no
@@ -4014,126 +4015,126 @@ if ( vol_pol[elev_fin[j][k]][j].ray[k]> 1  ) {
 
       }  
  
-  }
+    }
 
     return; 
   } 
 
-void ingrasso_nuclei(float cr,int ja,int kr)
-{  
-  int daz, dr,jmin,jmax,kmin,kmax,j,k; 
+  void ingrasso_nuclei(float cr,int ja,int kr)
+  {  
+    int daz, dr,jmin,jmax,kmin,kmax,j,k; 
  
 
-  dr=(int)(cr*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare 
+    dr=(int)(cr*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare 
 
-kmin=kr-dr;
-kmax=kr+dr;
+    kmin=kr-dr;
+    kmax=kr+dr;
 
-daz=ceil(cr/((kr*size_cell[old_data_header.norm.maq.resolution]/1000.+size_cell[old_data_header.norm.maq.resolution]/2000.)/(AMPLITUDE*DTOR))); 
-	jmin=ja-daz;
-	jmax=ja+daz;
+    daz=ceil(cr/((kr*size_cell[old_data_header.norm.maq.resolution]/1000.+size_cell[old_data_header.norm.maq.resolution]/2000.)/(AMPLITUDE*DTOR))); 
+    jmin=ja-daz;
+    jmax=ja+daz;
 
-	printf ("dr cr kmin kmax  %d %f %d %d %d %d \n", dr,cr, kmin,kmax,jmin,jmax);
+    printf ("dr cr kmin kmax  %d %f %d %d %d %d \n", dr,cr, kmin,kmax,jmin,jmax);
 
- if (kmin>0) { 
-  if (kmax>x_size) kmax=x_size;  
+    if (kmin>0) { 
+      if (kmax>x_size) kmax=x_size;  
  
-  if (jmin<0) { 
-    jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI; 
-    for (j=jmin; j< NUM_AZ_X_PPI ; j++) {
-      for (k=kmin ; k<kmax  ; k++) {
-	conv_STEINER[j][k]=CONV_VAL; 
-      }
-    }
- printf ("jmin %d \n", jmin);
-    jmin=0;  
+      if (jmin<0) { 
+	jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI; 
+	for (j=jmin; j< NUM_AZ_X_PPI ; j++) {
+	  for (k=kmin ; k<kmax  ; k++) {
+	    conv_STEINER[j][k]=CONV_VAL; 
+	  }
+	}
+	printf ("jmin %d \n", jmin);
+	jmin=0;  
 
-  } 
+      } 
     
-  if (jmax>NUM_AZ_X_PPI) { 
-    jmax=jmax%NUM_AZ_X_PPI; 
-    for (j=0; j<jmax ; j++) {
-      for (k=kmin; k<kmax  ; k++) {
-	conv_STEINER[j][k]=CONV_VAL; 
+      if (jmax>NUM_AZ_X_PPI) { 
+	jmax=jmax%NUM_AZ_X_PPI; 
+	for (j=0; j<jmax ; j++) {
+	  for (k=kmin; k<kmax  ; k++) {
+	    conv_STEINER[j][k]=CONV_VAL; 
+	  }
+	}
+	printf ("jmax %d \n", jmax);
+	jmax=NUM_AZ_X_PPI;  
+      } 
+      for (j=jmin; j<jmax ; j++) {
+	for (k=kmin; k<kmax  ; k++) {
+	  conv_STEINER[j][k]=CONV_VAL; 
+	}
       }
     }
-printf ("jmax %d \n", jmax);
-    jmax=NUM_AZ_X_PPI;  
-  } 
-  for (j=jmin; j<jmax ; j++) {
-    for (k=kmin; k<kmax  ; k++) {
-      conv_STEINER[j][k]=CONV_VAL; 
-    }
-  }
- }
- else
-   {
+    else
+      {
 	for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++) 
 	  for (k=0  ; k<kmax   ; k++){ 
-	      conv_STEINER[j][k]=CONV_VAL; 
+	    conv_STEINER[j][k]=CONV_VAL; 
 	  }  
 	for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) 
 	  for (k=0  ; k<-kmin   ; k++){ 
-	      conv_STEINER[j][k]=CONV_VAL; 
+	    conv_STEINER[j][k]=CONV_VAL; 
 	  }
 
-}
+      }
 
-  return; 
-} 
-
-void merge_metodi() 
-{ 
-  int j,k; 
- 
-  for(j=0; j<NUM_AZ_X_PPI; j++){ 
-    for(k=0; k<x_size; k++) 
-      { 
-
-	if ( conv_STEINER[j][k] == conv_VIZ[j][k] &&  conv_STEINER[j][k]> 0 && stratiform[j][k]<1 ){
-	   conv[j][k]=conv_VIZ[j][k];
-	}
-
-      }  
+    return; 
   } 
-  return; 
-} 
+
+  void merge_metodi() 
+  { 
+    int j,k; 
  
-int trovo0term() 
-{ 
+    for(j=0; j<NUM_AZ_X_PPI; j++){ 
+      for(k=0; k<x_size; k++) 
+	{ 
+
+	  if ( conv_STEINER[j][k] == conv_VIZ[j][k] &&  conv_STEINER[j][k]> 0 && stratiform[j][k]<1 ){
+	    conv[j][k]=conv_VIZ[j][k];
+	  }
+
+	}  
+    } 
+    return; 
+  } 
  
-  int ier; 
-  FILE *file0;
-  ier=access(getenv("FILE_ZERO_TERMICO"),R_OK); 
-  if (!ier) {  
-    file0=fopen(getenv("FILE_ZERO_TERMICO"),"r");//metti condizione di non trovato!!! 
-    fscanf(file0,"%f", &zeroterm );
-    fprintf(log_class," zero termico da modello= %f \n ",zeroterm);
-    fclose(file0); 
+  int trovo0term() 
+  { 
+ 
+    int ier; 
+    FILE *file0;
+    ier=access(getenv("FILE_ZERO_TERMICO"),R_OK); 
+    if (!ier) {  
+      file0=fopen(getenv("FILE_ZERO_TERMICO"),"r");//metti condizione di non trovato!!! 
+      fscanf(file0,"%f", &zeroterm );
+      fprintf(log_class," zero termico da modello= %f \n ",zeroterm);
+      fclose(file0); 
+    }  
+    else { 
+      fprintf(log_class,"non ho trovato il file dello zero termico \n "); 
+    } 
+    return ier; 
   }  
-  else { 
-   fprintf(log_class,"non ho trovato il file dello zero termico \n "); 
-  } 
-  return ier; 
-}  
 #endif
  
-/*non cancellare*/ 
-/* int trovo_top() */ 
-/* { */ 
-/*   int ier,i,k,l; */ 
-/*   FILE *file0; */ 
+  /*non cancellare*/ 
+  /* int trovo_top() */ 
+  /* { */ 
+  /*   int ier,i,k,l; */ 
+  /*   FILE *file0; */ 
  
-/*   for(i=0; i<NUM_AZ_X_PPI; i++){ */ 
-/*     for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){ */ 
-/*       for (l=first_level_static[i][k]; l<NEL; l++)	    */ 
-/* 	{  */ 
-/* 	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 10. ) */ 
-/* 	    top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);{ //top in ettometri */ 
-/* 	    if (l >= NEL -1 ) top[i][k]=0; */ 
-/* 	  } */ 
-/* 	} */ 
-/*     } */ 
-/*   } */ 
-/*   return ier; */ 
-/* } */ 
+  /*   for(i=0; i<NUM_AZ_X_PPI; i++){ */ 
+  /*     for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){ */ 
+  /*       for (l=first_level_static[i][k]; l<NEL; l++)	    */ 
+  /* 	{  */ 
+  /* 	  if (BYTEtoDB(vol_pol[l][i].ray[k]) > 10. ) */ 
+  /* 	    top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);{ //top in ettometri */ 
+  /* 	    if (l >= NEL -1 ) top[i][k]=0; */ 
+  /* 	  } */ 
+  /* 	} */ 
+  /*     } */ 
+  /*   } */ 
+  /*   return ier; */ 
+  /* } */ 
