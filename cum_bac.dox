@@ -1,0 +1,23 @@
+/**
+* @page cum_bac
+* @section Introduzione
+* Codice di elaborazione dati radar grezzi per la stima di Z da convertire in R
+* @section Librerie_necessarie Librerie
+* Di seguito, l'elenco delle librerie necessarie per la compilazione 
+* - libSP20
+* - NR
+* @section Flag_di_compilazione Flag
+* Di seguito, l'elenco delle variabili da definire nel preprocessatore per abilitare certe funzionalità:
+* - ANAPROP: abilita rimozione anaprop
+* - TIME: abilita
+* - Z_LOWRIS: abilita scrittura livello piu' basso
+* - MEDIUM: abilita elaborazione impulso medio
+* - SHORT: abilita elaborazione impulso corto
+* - STATIC: abilita uso mappa statica e non dinamica
+* - BEAMBLOCKING: abilita correzione beam blocking
+* - QUALITY : abilita calcolo e scrittura qualita'
+* - STAMPE_EXTRA: abilita scrittura stampe extra
+* - VPR : abilita correzione VPR
+* - CLASS : abilita classificazione stratiforme convettiva
+
+*/
