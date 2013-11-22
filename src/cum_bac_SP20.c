@@ -887,7 +887,7 @@ void   leggo_first_level()
 return ;
 }
 	for(i=0; i<400; i++)
-	  fread(&first_level[i][0],440,1,file1);
+	  fread(&first_level[i][0],MAX_BIN,1,file1);
 	fclose(file1);
   /*-------------------------------
     patch per espandere il clutter
