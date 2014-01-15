@@ -189,7 +189,9 @@
 #include <string.h>
 #include <memory.h>
 #include <unistd.h>
+extern "C" {
 #include <func_SP20read.h>
+}
 #include <radar_parameter.h>
 
 /*#define NEL 10*/
@@ -290,32 +292,32 @@ unsigned char z_out[CART_DIM_ZLR][CART_DIM_ZLR];
 /*----------------------------------------------------------------------------*/
 /*	FUNCTION PROTOTYPE						      */
 /*----------------------------------------------------------------------------*/
-float DBZ();
+float DBZ(unsigned char z);
 int remove_anap();
-int write_dbp();
+int write_dbp(const char* nome);
 void leggo_first_level();
 void creo_matrice_conv();
 void creo_cart();
-float mp_func();
-void creo_cart_5x5();
-void scrivo_5x5 ();
-float Z_func();
-float Z_to_mp_func();
-time_t 	NormalizzoData();
+float mp_func(unsigned char byte);
+void creo_cart_5x5(int imin,int imax,int jmin,int jmax,int dx,int dy);
+void scrivo_5x5 (int imin,int imax,int jmin,int jmax,int dx,int dy);
+float Z_func(unsigned char byte);
+float Z_to_mp_func(double Z);
+time_t 	NormalizzoData(time_t time);
 int test_file();
 
 void bacini();
 void prendo_tempo();
-void AggiornoHistoryFile();
-void ScrivoBacini();
+void AggiornoHistoryFile(char* data, int flag);
+void ScrivoBacini(const char* nome,char* data, float* array_bacini, int quanti);
 void ScrivoStatistica();
 #ifdef Z_LOWRIS
 void creo_cart_z_lowris();
 void scrivo_z_lowris();
 #endif
 char *PrendiOra();
-void ScrivoLog();
-void   write_xdr();
+void ScrivoLog(int i, char* stringa);
+void   write_xdr(float* bacini, time_t Time);
 
 /*sostituisco 
   unsigned int old_data_header.norm.maq.acq_date(secondi dal 1970) con    volume->getStartEpochs()?    
@@ -672,8 +674,7 @@ int test_file()
 
 
 
-float DBZ(z)
-unsigned char z; 
+float DBZ(unsigned char z)
 {
   return (z*80./255.-20.);
 }
@@ -845,9 +846,8 @@ void ScrivoStatistica()
 
 
 /*===============================================*/
-int write_dbp(nome)
+int write_dbp(const char* nome)
 /*===============================================*/
-char *nome;
 {
   int i,j,size_h;
   FILE *file1;
@@ -993,8 +993,7 @@ void 	creo_matrice_conv()
 }
 
 /*===============================================*/
-void	creo_cart_5x5(imin,imax,jmin,jmax,dx,dy)
-     int imin,imax,jmin,jmax,dx,dy;
+void	creo_cart_5x5(int imin,int imax,int jmin,int jmax,int dx,int dy)
 /*===============================================*/
 {
 	int i,j,x,y;
@@ -1041,9 +1040,8 @@ void	creo_cart_5x5(imin,imax,jmin,jmax,dx,dy)
 
 
 /*===============================================*/
-float Z_func(byte)
+float Z_func(unsigned char byte)
 /*===============================================*/
-unsigned char byte;
 {
    static char flag=1;
    static float Z[256];
@@ -1059,17 +1057,15 @@ unsigned char byte;
 
 
 /*===============================================*/
-float Z_to_mp_func(Z)
+float Z_to_mp_func(double Z)
 /*===============================================*/
-double Z;
 {
   return (pow(Z/200.,1./1.6));
 }
 
 /*===============================================*/
-float mp_func(byte)
+float mp_func(unsigned char byte)
 /*===============================================*/
-unsigned char byte;
 {
    static char flag=1;
    static float MP[256];
@@ -1086,9 +1082,7 @@ unsigned char byte;
 
 
 /*===============================================*/
-void scrivo_5x5 (imin,imax,jmin,jmax,dx,dy)
-     int imin,imax,jmin,jmax;
-     int dx,dy;
+void scrivo_5x5 (int imin,int imax,int jmin,int jmax,int dx,int dy)
 /*===============================================*/
 {
 	struct tm *tempo;
@@ -1176,9 +1170,8 @@ void scrivo_5x5 (imin,imax,jmin,jmax,dx,dy)
 
 
 /*===============================================*/
-time_t 	NormalizzoData(time)
+time_t 	NormalizzoData(time_t time)
 /*===============================================*/
-time_t time;
 {
 	int itime;
 
@@ -1387,11 +1380,8 @@ void bacini()
 
 
 /*===============================================*/
-void ScrivoBacini(nome,data,array_bacini,quanti)
+void ScrivoBacini(const char* nome,char* data, float* array_bacini, int quanti)
 /*===============================================*/
-char *nome,*data;
-float *array_bacini;
-int quanti;
 {
   FILE  *f_out;
   /*--------------------------
@@ -1429,10 +1419,8 @@ void prendo_tempo()
 
 
 /*===============================================*/
-void AggiornoHistoryFile(data,flag)
+void AggiornoHistoryFile(char* data, int flag)
 /*===============================================*/
-char *data;
-int flag;
 {
   FILE *fhistory;
   int ntot = 0;
@@ -1559,10 +1547,8 @@ void scrivo_z_lowris ()
 
 
 /*===============================================*/
-void ScrivoLog(i,stringa)
+void ScrivoLog(int i, char* stringa)
 /*===============================================*/
-int i;
-char *stringa;
 {
   static FILE *log;
   switch (i)
@@ -1706,10 +1692,8 @@ return   asctime(tempo);
 
 
 /*===============================================*/
-void   write_xdr(bacini,Time)
+void   write_xdr(float* bacini, time_t Time)
 /*===============================================*/
-time_t Time;
-float *bacini;
 {
   FILE *f_output;
   XDR xdr;

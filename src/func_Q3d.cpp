@@ -5,12 +5,7 @@
 #include <math.h> //file di sistema definisce costanti matematiche e richiama funzioni mat
 #include <qual_par.h> //file creato da me, parametri qualita' e definizione funzioni qualita'
 
-float func_q_Z(cl,bb,dst,dr,dt,dh,dhst,PIA)
-
-unsigned char  bb;
-unsigned char  cl;
-float          PIA,dr,dt,dh,dhst,dst;
-
+float func_q_Z(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA)
 {
 float q;
 
@@ -39,11 +34,7 @@ float q;
   q=qCl(cl)*qBB(bb,dr,dt)*qDist(dr)*qVol(dr,dh)*qAtt(PIA)*qVpr(dZ,sdevZ)
  omend
 */
-float func_q_R(cl,bb,dst,dr,dt,dh,dhst,PIA,dZ,sdevZ)
-
-unsigned char  bb;
-unsigned char  cl;
-float          PIA,dr,dt,dh,dst,dZ,dhst,sdevZ;
+float func_q_R(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA, float dZ, float sdevZ)
 {
 float q;
 

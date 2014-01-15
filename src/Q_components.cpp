@@ -16,7 +16,7 @@
 */
 
 #include <Q_components.h>
-
+#include <stdlib.h>
 #include <math.h> //file di sistema definisce costanti matematiche e richiama funzioni mat
 #include <qual_par.h> //file creato da me, parametri qualita'
 
