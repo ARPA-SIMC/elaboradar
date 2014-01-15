@@ -316,7 +316,7 @@ void creo_cart_z_lowris();
 void scrivo_z_lowris();
 #endif
 char *PrendiOra();
-void ScrivoLog(int i, char* stringa);
+void ScrivoLog(int i, const char* stringa);
 void   write_xdr(float* bacini, time_t Time);
 
 /*sostituisco 
@@ -1547,7 +1547,7 @@ void scrivo_z_lowris ()
 
 
 /*===============================================*/
-void ScrivoLog(int i, char* stringa)
+void ScrivoLog(int i, const char* stringa)
 /*===============================================*/
 {
   static FILE *log;
