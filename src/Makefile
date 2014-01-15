@@ -29,6 +29,7 @@ CC=cc
 CXX=g++ 
 
 CFLAGS= -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_MEDIUM)   $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+CXXFLAGS=$(CFLAGS)
 
 CFLAGS_BB= -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_SHORT)  $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
@@ -85,6 +86,10 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 	 mv  cum_bac_SP20_BB_VPR  $(BINDIR)
 	 mv  cum_bac_SP20_BB  $(BINDIR)
 	 mv  cum_bac_SP20_m $(BINDIR)
+
+# Compile test suite
+cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp))
+	$(CXX) -o $@ $^ $(LDLIBS)
 
 %: %.o
 	$(CXX) -o $@ $^ $(LDLIBS)
