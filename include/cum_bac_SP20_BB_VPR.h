@@ -156,7 +156,7 @@ char *PrendiOra();//togliere?
  *  @param[in] stringa stringa che fa parte del contenuto da scrivere nel log 
  *  @return file  non ritorna valori 
 */  
-void ScrivoLog(int i, char* stringa);//togliere?
+void ScrivoLog(int i, const char* stringa);//togliere?
 
 // funzioni per QUALITA' 
 //#ifdef QUALITY

@@ -1871,7 +1871,7 @@ FILE *controllo_apertura (const char *nome_file, char *content,char *mode)
 } 
 
 /*=======================================================================================*/ 
-void ScrivoLog(int i, char* stringa) 
+void ScrivoLog(int i, const char* stringa) 
 /*======================scrivo log=================================================================*/ 
 { 
   static FILE *log; 
