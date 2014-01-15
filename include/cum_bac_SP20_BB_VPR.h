@@ -31,11 +31,11 @@
 /**
  *   @brief funzione che setta l'ambiente statico
 */ 
-int setstat(); 
+int setstat(char *sito, int mese, char *n_dem, char *n_fl);
 /**
  *   @brief funzione che setta l'ambiente di lavoro
 */
-int setwork();
+int setwork(char*);
 
 /**
  *  
@@ -92,7 +92,7 @@ void ScrivoStatistica();
  *  @return    0  in caso di errore   1  in caso di successo  .
  *  
 */
-int test_file(); 
+int test_file(char*); 
 // funzioni di conversione cartesiana:associa a pixel matrice alta ris azimut e range, crea alta risoluzione e crea bassa risoluzione  
   /**
  *  
@@ -130,7 +130,7 @@ void creo_cart_z_lowris();
  *  @param[in] matrice matrice di dati da scrivere
  *  @return 
 */ 
-void scrivo_out_file_bin(); 
+void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *matrice);
 //#endif 
 
 // funzione di controllo esistenza file e restituisce puntatore a file+messaggio ev errore o info su status apertura, utile? 
@@ -161,7 +161,7 @@ char *PrendiOra();//togliere?
  *  @param[in] stringa stringa che fa parte del contenuto da scrivere nel log 
  *  @return file  non ritorna valori 
 */  
-void ScrivoLog();//togliere?
+void ScrivoLog(int i, char* stringa);//togliere?
 
 // funzioni per QUALITA' 
 //#ifdef QUALITY
@@ -209,7 +209,7 @@ double attenuation(unsigned char DBZbyte, double  PIA); //ingresso:dbz in quel p
  *  @return non ritorna nulla
  *  
 */
-void caratterizzo_volume();
+void caratterizzo_volume(char*);
 
 /**
  *  
@@ -235,7 +235,7 @@ int func_vpr(); // crea vpr istantaneo
  *  @param[in]  peso peso del profilo nuovo
  *  @return result :ritorna il valore combinato dei due profili e se uno dei due manca mette nodata
 */ 
-float comp_levels();// combina livelli  
+float comp_levels(float v0, float v1, float nodata, float peso);// combina livelli  
   /**
  *  
  *  @brief funzione che corregge per il profilo verticale
@@ -246,7 +246,7 @@ float comp_levels();// combina livelli
  * @param[in] sito radar su cui calcolare profilo
  * @return 0 se ok 1 se fallisce
 */
-int corr_vpr(); // correzione vpr 
+int corr_vpr(char*); // correzione vpr 
  /**
  *  
  *  @brief funzione che  calcola il no di quarti d'ora che intercorrono dall'ultimo profilo calcolato (combinato)  memorizzato in 'LAST_VPR'  
@@ -300,8 +300,7 @@ int get_t_ground(float *t_gr);//fornisce temperatura al suolo, da lettura file e
  *  @return ier_ana valore che indica se tutto è andato a buon fine (0) o no (1)
  *  
 */ 
-
-int analyse_VPR();
+int analyse_VPR(float *vpr_liq,int *snow,float *hliq, char *sito);
  
 /** 
  *  @brief funzione che trova la quota del massimo valore del profilo
@@ -309,8 +308,8 @@ int analyse_VPR();
  *  @param[in] sito radar su cui calcolare profilo
  *  @return 0 se ok 1 se fallisce
  */ 
+int trovo_hvprmax(int *hmax); // trova il massimo del profilo 
 
-int trovo_hvprmax();// trova il massimo del profilo 
  /**
  *  @brief   funzione che esegue interpolazione del profilo
  *  @details interpola profilo usando una funzione gaussiana+lineare  y= B*exp(-((x-E)/G)^2)+C+Fx 
@@ -319,7 +318,8 @@ int trovo_hvprmax();// trova il massimo del profilo
  *  @return ier_int codice di uscita (0=ok 1=fallito)
  *  
 */ 
-int interpola_VPR();// interpola profilo 
+int interpola_VPR(float a[], int ma); // interpola profilo 
+
 /**
  *  @brief   funzione che testa il fit dell'interpolazione del profilo
  *  @details verifica che i parametri del fit del profilo abbiano senso
@@ -404,4 +404,11 @@ void ingrasso_nuclei(float cr,int j,int k);// ingrassa nuclei convettivi
 */ 
 void merge_metodi();// fa il merge dei metodi
 
+// funzione che calcola la qualita' per Z
+float func_q_Z(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA);
+
+// funzione che calcola la qualita' per R
+float func_q_R(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA, float dZ, float sdevZ);
+
+     
 #endif //  ARCHIVIATORE_CUM_BAC_H
