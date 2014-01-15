@@ -1,5 +1,9 @@
 #ifndef ARCHIVIATORE_QCOMPONENTS_H
 #define ARCHIVIATORE_QCOMPONENTS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  *  @file
  *  @ingroup progetto_cum_bac
@@ -55,5 +59,9 @@ float qAtt( float PIA);
  *  @param stdev standard deviation della correzione
 */
 float qVpr(float dZ,float sdevZ);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //ARCHIVIATORE_QCOMPONENTS_H

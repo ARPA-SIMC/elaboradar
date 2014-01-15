@@ -2,6 +2,10 @@
 #ifndef ARCHIVIATORE_SETSTAT_H
 #define ARCHIVIATORE_SETSTAT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  *  @file
  *  @ingroup progetto_cum_bac
@@ -17,5 +21,9 @@
  *  @param n_fl nome first level
 */
 int setstat(char *sito, int mese, char *n_dem, char *n_fl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ARCHIVIATORE_SETSTAT_H

@@ -28,14 +28,9 @@
 #include <memory.h> 
 #include <unistd.h>
 #include <errno.h>
-/**
- *   @brief funzione che setta l'ambiente statico
-*/ 
-int setstat(char *sito, int mese, char *n_dem, char *n_fl);
-/**
- *   @brief funzione che setta l'ambiente di lavoro
-*/
-int setwork(char*);
+#include <setwork.h>
+#include <setstat.h>
+#include <func_Q3d.h>
 
 /**
  *  
@@ -144,7 +139,7 @@ void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *
  *  @param[in]  mode modalita' di apertura (scrittura , lettura)
  *  @return file ritorna un puntatore a file
 */ 
-FILE *controllo_apertura(char *nome_file, char *content,char *mode);
+FILE *controllo_apertura(const char *nome_file, char *content,char *mode);
 
 //funzioni associate a logging , vedere se togliere 
   /**
@@ -209,7 +204,7 @@ double attenuation(unsigned char DBZbyte, double  PIA); //ingresso:dbz in quel p
  *  @return non ritorna nulla
  *  
 */
-void caratterizzo_volume(char*);
+void caratterizzo_volume();
 
 /**
  *  
@@ -403,9 +398,6 @@ void ingrasso_nuclei(float cr,int j,int k);// ingrassa nuclei convettivi
  *  @return non ritorna valori
 */ 
 void merge_metodi();// fa il merge dei metodi
-
-// funzione che calcola la qualita' per Z
-float func_q_Z(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA);
 
 // funzione che calcola la qualita' per R
 float func_q_R(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA, float dZ, float sdevZ);

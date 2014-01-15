@@ -2,6 +2,9 @@
 #ifndef ARCHIVIATORE_FUNC_Q3D_H
 #define ARCHIVIATORE_FUNC_Q3D_H
 
+#ifdef __cplusplus
+extern "C" { 
+#endif
 
 /**
  *  @file
@@ -23,5 +26,9 @@
 *  @return valore qualita' finale
 */
 float func_q_Z(unsigned char cl,unsigned char bb,float dst,float dr,float dt,float dh,float dhst,float PIA);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //ARCHIVIATORE_FUNC_Q3D_H

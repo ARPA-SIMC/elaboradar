@@ -1,10 +1,18 @@
 
-/*----------------------------------------------------------------------------*
+/*----------------------------------------------------------------------------*/
   /*	INCLUDE file						       	      */
 /*----------------------------------------------------------------------------*/
 
 #include <cum_bac_SP20_BB_VPR.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <func_Z_R.h>
+#ifdef __cplusplus
+}
+#endif
+
 #include <Q_components.h>
 
 // libreria c 
@@ -20,10 +28,16 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 // libreria radar 
 #include <func_SP20read.h>  
 #include <radar_parameter.h> 
- 
+#ifdef __cplusplus
+}
+#endif
+
 //algoritmo 
 #include <MP_par.h> 
 #include <vpr_par.h> 
@@ -38,11 +52,17 @@
 #ifdef CLASS 
 #include <par_class.h> 
 #endif
- 
+
+#ifdef __cplusplus
+extern "C" { 
+#endif
 // nr 
 #include <nrutil.h> 
 #include <nr.h> 
- 
+#ifdef __cplusplus
+}
+#endif
+
 /*----------------------------------------------------------------------------*/ 
 /*      FINE SEZIONE 	INCLUDE				      */ 
 /*----------------------------------------------------------------------------*/  
@@ -569,7 +589,7 @@ int main (int argc, char **argv)
  
 	  //-------------calcolo qualita' e trovo il top 
 	  printf ("calcolo Q3D \n") ;     
-	  caratterizzo_volume(&sito); 
+	  caratterizzo_volume(); 
  
 	  /* //---------trovo il top (a X dbZ) */ 
 	  /* printf ("trovo top \n") ; */ 
@@ -1241,7 +1261,7 @@ int elabora_dato()
 */ 
 
 
-void caratterizzo_volume(char *sito)  
+void caratterizzo_volume()
 
 {    
   int i,l,k; 
@@ -1786,7 +1806,7 @@ void	creo_cart_z_lowris()
 void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *matrice) 
 
 { 
-  char nome_file [150]; 
+  char nome_file [512]; 
   FILE *output; 
   struct tm *tempo; 
   time_t time; 
@@ -1803,12 +1823,12 @@ void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *
   time = NormalizzoData(old_data_header.norm.maq.acq_date); 
   tempo = gmtime(&time); 
 #endif 
-  sprintf(nome_file,"%s/%04d%02d%02d%02d%02d%s",dir, 
+  snprintf(nome_file, 512, "%s/%04d%02d%02d%02d%02d%s",dir, 
 	  tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday, 
 	  tempo->tm_hour, tempo->tm_min, ext); 
  
-  output=controllo_apertura(&nome_file,content,"w"); 
-  printf("aperto file %s dimensione matrice %d\n",nome_file,size); 
+  output=controllo_apertura(nome_file,content,"w"); 
+  printf("aperto file %s dimensione matrice %zd\n",nome_file,size); 
   
   fwrite(matrice,size,1,output); 
   fclose(output); 
@@ -1818,7 +1838,7 @@ void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *
 } 
  
 /*=======================================================================================*/ 
-FILE *controllo_apertura (char *nome_file, char *content,char *mode) 
+FILE *controllo_apertura (const char *nome_file, char *content,char *mode) 
 /*=========================controllo apertura==============================================================*/ 
 { 
   FILE *file; 
@@ -1851,10 +1871,8 @@ FILE *controllo_apertura (char *nome_file, char *content,char *mode)
 } 
 
 /*=======================================================================================*/ 
-void ScrivoLog(i,stringa) 
+void ScrivoLog(int i, char* stringa) 
 /*======================scrivo log=================================================================*/ 
-     int i; 
-     char *stringa; 
 { 
   static FILE *log; 
   switch (i) 
@@ -2327,9 +2345,7 @@ int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], char
 
 
 
-float comp_levels(v0, v1, nodata, peso)  
-  
-     float v0,v1,nodata,peso; 
+float comp_levels(float v0, float v1, float nodata, float peso)  
 { 
   float result; 
   /* if ((v0<nodata+1)&&(v1<nodata+1)) result=nodata; */ 
@@ -3470,7 +3486,7 @@ void classifica_rain()
  
  
   /* ;---------------------------------- */ 
-  /* ;          FASE 0 :   
+  /* ;          FASE 0 :                  */   
      /* ;---------------------------------- */ 
   // DEFINISCO QUOTE DELLA BASE E DEL TOP DELLA BRIGHT BAND USANDO IL DATO quota del picco  DEL PRECEDENTE RUN O, SE NON PRESENTE LA QUOTA DELLO ZERO DA MODELLO
  
@@ -3625,7 +3641,8 @@ void classifica_rain()
     for (k=0; k<x_size; k++){ 
       cil[i][k]= (float *) malloc (z_size*sizeof(float)); 
       for (j=0;j<z_size;j++)  
-	cil[i][k][j]= -20. ;    } 
+	cil[i][k][j]= -20. ;
+    } 
   }	 
      
   rhi_cart= (float **) malloc (x_size*sizeof(float *)); 
@@ -3828,7 +3845,7 @@ void 	classifico_VIZ()
 	  } 
       }  
   }
-  printf("numero nuclei VIZ = %i \n",ncv);   
+  printf("numero nuclei VIZ = %li \n",ncv);   
 
   return; 
 } 
@@ -3836,6 +3853,7 @@ void 	classifico_VIZ()
  
   void 	classifico_STEINER()  
   {    
+static bool warned = false;
     int i,j,k; 
    
     unsigned char BYTE; 
@@ -3846,7 +3864,20 @@ void 	classifico_VIZ()
       k=lista_bckg[i][1]; //ra=lista_bckg[i][1]
 
       // calcolo valore BYTE nel punto
-      BYTE=vol_pol[elev_fin[j][k]][j].ray[k];
+      if (j == -999)
+      {
+        if (!warned)
+        {
+           fprintf(stderr, "elev_fin[%d][%d]\n", j, k);
+           fprintf(stderr, " = %d\n", (int)elev_fin[j][k]);
+           fprintf(stderr, "vol_pol[%d][%d].ray[%d]\n", (int)elev_fin[j][k], j, k);
+           //fprintf(stderr, " = %d\n", (int)vol_pol[elev_fin[j][k]][j].ray[k]);
+           warned = true;
+        }
+        BYTE=56;
+#warning This code used to work like this, by accident, in C: this is a workaround to maintain functional equivalence during porting to c++
+      } else 
+        BYTE=vol_pol[elev_fin[j][k]][j].ray[k];
       // calcolo diff col background 
       diff_bckgr=BYTEtoDB(BYTE)-bckgr[i]; 
       /* if (k < 160 ){ */
@@ -3912,7 +3943,7 @@ void 	classifico_VIZ()
       Z_bckgr=(double *) malloc(np*sizeof(double)); 
       bckgr=(float *) malloc(np*sizeof(float)); 
 
-      for (i=1;i<np;i++){ //M: tolto np-1 messo np
+      for (i=0;i<np;i++){ //M: tolto np-1 messo np
 	bckgr[i]=0.; 
 	Z_bckgr[i]=0;
 	convective_radius[i]=0;

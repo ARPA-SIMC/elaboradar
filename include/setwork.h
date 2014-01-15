@@ -2,6 +2,10 @@
 #ifndef ARCHIVIATORE_SETWORK_H
 #define ARCHIVIATORE_SETWORK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  *  @file
  *  @ingroup progetto_cum_bac
@@ -15,5 +19,8 @@
 */
 int setwork(char *sito);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ARCHIVIATORE_SETWORK_H
