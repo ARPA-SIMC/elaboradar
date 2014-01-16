@@ -28,14 +28,14 @@ LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm -llog4c
 CC=cc 
 CXX=g++ 
 
-CFLAGS= -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_MEDIUM)   $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+CFLAGS=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_MEDIUM)   $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 CXXFLAGS=$(CFLAGS)
 
-CFLAGS_BB= -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_SHORT)  $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+CFLAGS_BB=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_SHORT)  $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
-CFLAGS_BB_VPR=  -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+CFLAGS_BB_VPR=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
-CFLAGS_BB_VPR_CLASS=  -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR_CLASS) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+CFLAGS_BB_VPR_CLASS=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR_CLASS) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
 OBJ_BB_VPR_CLASS= cum_bac_SP20_BB_VPR_CLASS.o setstat.o setwork.o func_Q3d.o Q_components.o 
 OBJ_BB_VPR= cum_bac_SP20_BB_VPR.o setstat.o setwork.o func_Q3d.o Q_components.o 
@@ -63,7 +63,7 @@ cum_bac_SP20_BB_VPR.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h
 cum_bac_SP20_BB_VPR_CLASS: $(OBJ_BB_VPR_CLASS)
 
 cum_bac_SP20_BB_VPR_CLASS.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h ../include/par_class.h  
-	$(CXX) -c -g  $(CFLAGS_BB_VPR_CLASS) $< -o $@
+	$(CXX) -c  $(CFLAGS_BB_VPR_CLASS) $< -o $@
 
 setwork.o:setwork.cpp
 	$(CXX) -c $< $(CFLAGS) -o $@
