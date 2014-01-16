@@ -9,7 +9,6 @@ extern "C" {
 #endif
 // libreria radar
 #include <func_SP20read.h>
-#include <radar_parameter.h>
 #ifdef __cplusplus
 }
 #endif
@@ -58,6 +57,7 @@ static const int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define DIM1_ST 16
 #define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
 
+extern int elev_array[NEL];
 
 class CUM_BAC
 {
@@ -219,7 +219,8 @@ public:
 
     CUM_BAC();
 
-    int test_file(const char *tipofile);
+    bool read_sp20_volume(const char* nome_file, const char* sito, int file_type);
+    int test_file(int tipofile);
     int elabora_dato();
     void caratterizzo_volume();
     double attenuation(unsigned char DBZbyte, double  PIA);
