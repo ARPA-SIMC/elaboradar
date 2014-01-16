@@ -91,6 +91,13 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 # Compile test suite
 cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) cum_bac.o $(OBJ_COMMON)
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
+ 
+check: cbtest testdata/DBP2_070120141530_GATTATICO
+	./cbtest
+
 
 %: %.o
 	$(CXX) -o $@ $^ $(LDLIBS)
+
+%: %.xz
+	xz -cd $^ > $@
