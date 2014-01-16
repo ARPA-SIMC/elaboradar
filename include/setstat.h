@@ -20,7 +20,7 @@ extern "C" {
  *  @param n_dem nome dem
  *  @param n_fl nome first level
 */
-int setstat(char *sito, int mese, char *n_dem, char *n_fl);
+int setstat(const char *sito, int mese, char *n_dem, char *n_fl);
 
 #ifdef __cplusplus
 }
