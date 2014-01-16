@@ -5,7 +5,7 @@
 #include <errno.h> 
 #include <string.h> 
 
-int setstat(char *sito, int mese, char *n_dem, char *n_fl)
+int setstat(const char *sito, int mese, char *n_dem, char *n_fl)
 {  
   char *fl,*dem;
   int ier;
