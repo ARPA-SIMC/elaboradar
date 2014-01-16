@@ -37,9 +37,10 @@ CFLAGS_BB_VPR=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(A
 
 CFLAGS_BB_VPR_CLASS=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR_CLASS) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
-OBJ_BB_VPR_CLASS= cum_bac_SP20_BB_VPR_CLASS.o setstat.o setwork.o func_Q3d.o Q_components.o 
-OBJ_BB_VPR= cum_bac_SP20_BB_VPR.o setstat.o setwork.o func_Q3d.o Q_components.o 
-OBJ_BB= cum_bac_SP20_BB.o setstat.o setwork.o func_Q3d.o Q_components.o 
+OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o 
+OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
+OBJ_BB_VPR=cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
+OBJ_BB=cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
 OBJ= cum_bac_SP20.o 
 
 all: install
@@ -88,7 +89,7 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 	 mv  cum_bac_SP20_m $(BINDIR)
 
 # Compile test suite
-cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp))
+cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) cum_bac.o $(OBJ_COMMON)
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
 
 %: %.o
