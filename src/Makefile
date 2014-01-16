@@ -89,7 +89,7 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 
 # Compile test suite
 cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp))
-	$(CXX) -o $@ $^ $(LDLIBS)
+	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
 
 %: %.o
 	$(CXX) -o $@ $^ $(LDLIBS)
