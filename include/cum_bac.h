@@ -1,6 +1,26 @@
 #ifndef ARCHIVIATORE_CUM_BAC_CLASS_H
 #define ARCHIVIATORE_CUM_BAC_CLASS_H
 
+#include <cum_bac_SP20_BB_VPR.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+// libreria radar
+#include <func_SP20read.h>
+#include <radar_parameter.h>
+#ifdef __cplusplus
+}
+#endif
+
+
+//algoritmo
+#include <MP_par.h>
+#include <vpr_par.h>
+#include <geo_par.h>
+
+
 // Definizioni e variabili che cambiano da corto a medio
 #ifdef NEL // Se NEL è definito lo undefinisco perchè è ridefinito sotto
 #undef NEL

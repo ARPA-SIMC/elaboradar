@@ -3,7 +3,7 @@
   /*    INCLUDE file                                      */
 /*----------------------------------------------------------------------------*/
 
-#include <cum_bac_SP20_BB_VPR.h>
+#include "cum_bac.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 #include <Q_components.h>
+
 
 // libreria c
 #include <stdio.h>
@@ -27,21 +28,6 @@ extern "C" {
 #include <memory.h>
 #include <unistd.h>
 #include <errno.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-// libreria radar
-#include <func_SP20read.h>
-#include <radar_parameter.h>
-#ifdef __cplusplus
-}
-#endif
-
-//algoritmo
-#include <MP_par.h>
-#include <vpr_par.h>
-#include <geo_par.h>
 
 
 
@@ -62,8 +48,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#include "cum_bac.h"
 
 
 /*----------------------------------------------------------------------------*/
