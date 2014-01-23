@@ -228,7 +228,6 @@ public:
     void leggo_first_level();
     void creo_cart();
     void creo_matrice_conv();
-    time_t NormalizzoData(time_t time);
     void creo_cart_z_lowris();
     void scrivo_out_file_bin(const char *ext,char *content,char *dir,size_t size, void  *matrice);
     FILE *controllo_apertura(const char *nome_file, char *content,char *mode);
@@ -256,5 +255,16 @@ public:
     int trovo0term();
     bool esegui_tutto(const char* nome_file, const char* tipofile, const char* sito);
 };
+
+// Utility functions
+
+/**
+ * Check if time is inbetween a ??? interval, and return it rounded to 5-minute
+ * intervals
+ *
+ * FIXME: this is a legacy from old procedures, code using it should be
+ * reviewed to see if it is still needed.
+ */
+time_t NormalizzoData(time_t time);
 
 #endif

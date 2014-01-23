@@ -12,6 +12,7 @@ TESTGRP(read_sp20);
 template<> template<>
 void to::test<1>()
 {
+    // Test loading of a radar volume via SP20
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     CUM_BAC* cb = new CUM_BAC;
     bool res = cb->read_sp20_volume(fname, "GAT", 0);
@@ -23,6 +24,8 @@ void to::test<1>()
     wassert(actual(cb->nbeam_elev[2]) == 400);
     wassert(actual(cb->nbeam_elev[3]) == 400);
     wassert(actual(cb->nbeam_elev[4]) == 400);
+    // Check other header fields
+    wassert(actual(cb->old_data_header.norm.maq.acq_date) == 1389108600);
     // TODO: check some of the vol_pol contents
     delete cb;
 }
