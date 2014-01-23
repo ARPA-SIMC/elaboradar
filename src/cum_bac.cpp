@@ -438,4 +438,23 @@ void prendo_tempo()
     return;
 }
 
+/* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
+time_t NormalizzoData(time_t time)
+{
+    int itime;
+
+    itime = time/(NMIN*60);
+
+    /*
+       printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60));
+       printf("%s\n",ctime(&time));
+       printf("%d\n",(NMIN-MAX_TIME_DIFF)*60);
+       */
+
+    if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/
+    if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
+    //altrimenti ritorno -1
+    return -1;
+}
+
 

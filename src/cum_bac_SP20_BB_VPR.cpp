@@ -844,26 +844,6 @@ void CUM_BAC::creo_matrice_conv()
     return;
 }
 
-/* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
-time_t  CUM_BAC::NormalizzoData  (time_t time)
-{
-    int itime;
-
-    itime = time/(NMIN*60);
-
-    /*
-       printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60));
-       printf("%s\n",ctime(&time));
-       printf("%d\n",(NMIN-MAX_TIME_DIFF)*60);
-       */
-
-    if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/
-    if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
-    //altrimenti ritorno -1
-    return -1;
-}
-
-
 void CUM_BAC::creo_cart_z_lowris()
 {
     int i,j,x,y,cont;
@@ -3102,253 +3082,253 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
 
     //  ----- test su normalizzazione data ( no minuti strani)
 
-    if( NormalizzoData(old_data_header.norm.maq.acq_date) != -1 )
-    {
+    if( NormalizzoData(old_data_header.norm.maq.acq_date) == -1 )
+        return true;
 
-        /*------------------------------------------
-          | rimozione propagazione anomala e clutter |
-          ------------------------------------------*/
-        ScrivoLog(7,nome_file);
-
-
-        // --- ricavo il mese x definizione first_level e  aMP bMP ---------
-        //definisco stringa data in modo predefinito
-        Time = NormalizzoData(old_data_header.norm.maq.acq_date);
-        tempo = gmtime(&Time);
-        month=tempo->tm_mon+1;
-
-        // scrivo la variabile char date con la data in formato aaaammgghhmm
-        sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
-                tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
-
-        // ------setto ambiente statico (le first level e il nome del dem )--------------
-        setstat(sito,month, nome_dem, nome_fl);
-        printf ("nome dem %s nome fl %s\n",nome_dem, nome_fl);
+    /*------------------------------------------
+      | rimozione propagazione anomala e clutter |
+      ------------------------------------------*/
+    ScrivoLog(7,nome_file);
 
 
-        //----- sta scrivolog che salta fuori sempre !!!!!!!!!!!!!!!!!
-        ScrivoLog(1,nome_file);
+    // --- ricavo il mese x definizione first_level e  aMP bMP ---------
+    //definisco stringa data in modo predefinito
+    Time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    tempo = gmtime(&Time);
+    month=tempo->tm_mon+1;
+
+    // scrivo la variabile char date con la data in formato aaaammgghhmm
+    sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
+            tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
+
+    // ------setto ambiente statico (le first level e il nome del dem )--------------
+    setstat(sito,month, nome_dem, nome_fl);
+    printf ("nome dem %s nome fl %s\n",nome_dem, nome_fl);
+
+
+    //----- sta scrivolog che salta fuori sempre !!!!!!!!!!!!!!!!!
+    ScrivoLog(1,nome_file);
 
 
 
-        // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
-        if ( month > 4 && month < 10 )  {
-            aMP=aMP_conv;
-            bMP=bMP_conv;
-        }
-        else {
-            aMP=aMP_strat;
-            bMP=bMP_strat;
+    // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
+    if ( month > 4 && month < 10 )  {
+        aMP=aMP_conv;
+        bMP=bMP_conv;
+    }
+    else {
+        aMP=aMP_strat;
+        bMP=bMP_strat;
 
-        }
-        MP_coeff[0]=(unsigned char)(aMP/10);
-        MP_coeff[1]=(unsigned char)(bMP*10);
+    }
+    MP_coeff[0]=(unsigned char)(aMP/10);
+    MP_coeff[1]=(unsigned char)(bMP*10);
 
 
-        //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
+    //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
 #ifdef ANAPROP
-        printf ("inizio rimozione anaprop e beam blocking \n") ;
-        int ier = elabora_dato();
+    printf ("inizio rimozione anaprop e beam blocking \n") ;
+    int ier = elabora_dato();
 #endif
 
 
-        //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
+    //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
 
 #ifdef QUALITY
 
-        //-------------calcolo qualita' e trovo il top
-        printf ("calcolo Q3D \n") ;
-        caratterizzo_volume();
+    //-------------calcolo qualita' e trovo il top
+    printf ("calcolo Q3D \n") ;
+    caratterizzo_volume();
 
-        /* //---------trovo il top (a X dbZ) */
-        /* printf ("trovo top \n") ; */
-        /* ier=trovo_top(); */
+    /* //---------trovo il top (a X dbZ) */
+    /* printf ("trovo top \n") ; */
+    /* ier=trovo_top(); */
 
 
-        //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
+    //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
 #ifdef VPR
-        log_vpr=fopen(getenv("LOG_VPR"),"a+");
-        ier_t=get_t_ground(&t_ground);
-        fclose(log_vpr);
+    log_vpr=fopen(getenv("LOG_VPR"),"a+");
+    ier_t=get_t_ground(&t_ground);
+    fclose(log_vpr);
 #endif
 
 
-        //--------------se definita CLASS procedo con  classificazione -----------------//
+    //--------------se definita CLASS procedo con  classificazione -----------------//
 #ifdef CLASS
-        log_vpr=fopen(getenv("LOG_VPR"),"a+");
-        log_class=fopen(getenv("LOG_CLASS"),"a+");
-        classifica_rain();
-        fclose(log_vpr);
-        fclose(log_class);
+    log_vpr=fopen(getenv("LOG_VPR"),"a+");
+    log_class=fopen(getenv("LOG_CLASS"),"a+");
+    classifica_rain();
+    fclose(log_vpr);
+    fclose(log_class);
 #endif
 
 
-        //--------------se definito VPR procedo con calcolo VPR -----------------//
+    //--------------se definito VPR procedo con calcolo VPR -----------------//
 
 #ifdef VPR
-        log_vpr=fopen(getenv("LOG_VPR"),"a+");
-        test_vpr=fopen(getenv("TEST_VPR"),"a+");
+    log_vpr=fopen(getenv("LOG_VPR"),"a+");
+    test_vpr=fopen(getenv("TEST_VPR"),"a+");
 
-        fprintf(log_vpr,"processo file dati: %s\n",nome_file);
-        printf ("calcolo VPR \n") ;
+    fprintf(log_vpr,"processo file dati: %s\n",nome_file);
+    printf ("calcolo VPR \n") ;
 
-        //VPR  // ------------inizializzo hvprmax ---------------
+    //VPR  // ------------inizializzo hvprmax ---------------
 
-        hvprmax=INODATA;
+    hvprmax=INODATA;
 
-        //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
+    //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
 
-        //  ier_comb=combina_profili(sito,argv[4]);
-        ier_comb=combina_profili(sito);
-        printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
-        printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
-
-
-        //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
-
-        heating=profile_heating();
-        printf ("heating %i \n", heating);
-        fprintf (log_vpr,"ier_vpr %i ier_comb %i \n",ier_vpr,ier_comb);
-
-        //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
-        if (!ier_comb && heating >= WARM){
-
-            ier=corr_vpr(sito);
-            printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+    //  ier_comb=combina_profili(sito,argv[4]);
+    ier_comb=combina_profili(sito);
+    printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
+    printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
 
 
-            //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
+    //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
 
-            if ( ! ier && ! ier_vpr)
-                ier_stampa_vpr=stampa_vpr();
-        }
+    heating=profile_heating();
+    printf ("heating %i \n", heating);
+    fprintf (log_vpr,"ier_vpr %i ier_comb %i \n",ier_vpr,ier_comb);
 
-        fclose(log_vpr);
+    //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
+    if (!ier_comb && heating >= WARM){
+
+        ier=corr_vpr(sito);
+        printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+
+
+        //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
+
+        if ( ! ier && ! ier_vpr)
+            ier_stampa_vpr=stampa_vpr();
+    }
+
+    fclose(log_vpr);
 
 #endif
 #endif
 
 #ifdef CLASS
-        log_class=fopen(getenv("LOG_CLASS"),"a+");
-        for (int i=0; i<NUM_AZ_X_PPI; i++){
-            for (int k=0; k<vol_pol[0][i].b_header.max_bin; k++){
+    log_class=fopen(getenv("LOG_CLASS"),"a+");
+    for (int i=0; i<NUM_AZ_X_PPI; i++){
+        for (int k=0; k<vol_pol[0][i].b_header.max_bin; k++){
 
-                if (conv[i][k] > 0){
+            if (conv[i][k] > 0){
 
-                    vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
+                vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
 
-                }
             }
-
         }
-        fclose(log_class);
+
+    }
+    fclose(log_class);
 #endif
 
 
 #ifdef TIME
-        prendo_tempo();
+    prendo_tempo();
 #endif
 
 
-        //--------------------da rimuovere eventuale scrittura volume ripulito
+    //--------------------da rimuovere eventuale scrittura volume ripulito
 
-        /* #ifdef WRITE_DBP  */
-        /*      /\*-------------------------------------------------  */
-        /*        | eventuale scrittura del volume polare ripulito e |  */
-        /*        -------------------------------------------------*\/   */
-        /* #ifdef DECLUTTER  */
-        /*      strcat(nome_file,"_decl");  */
-        /* #else  */
-        /*      strcat(nome_file,"_anap");  */
-        /* #endif  */
-        /*      /\*exit (1);*\/  */
-        /*      ScrivoLog(8,nome_file);  */
-        /*      ier=write_dbp(nome_file);  */
-        /* #endif  */
-
-
+    /* #ifdef WRITE_DBP  */
+    /*      /\*-------------------------------------------------  */
+    /*        | eventuale scrittura del volume polare ripulito e |  */
+    /*        -------------------------------------------------*\/   */
+    /* #ifdef DECLUTTER  */
+    /*      strcat(nome_file,"_decl");  */
+    /* #else  */
+    /*      strcat(nome_file,"_anap");  */
+    /* #endif  */
+    /*      /\*exit (1);*\/  */
+    /*      ScrivoLog(8,nome_file);  */
+    /*      ier=write_dbp(nome_file);  */
+    /* #endif  */
 
 
-        //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
+
+
+    //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
 #ifndef WRITE_DBP
 
-        /*--------------------------------------------------
-          | conversione di coordinate da polare a cartesiana |
-          --------------------------------------------------*/
-        ScrivoLog(9,nome_file);
-        creo_cart();
+    /*--------------------------------------------------
+      | conversione di coordinate da polare a cartesiana |
+      --------------------------------------------------*/
+    ScrivoLog(9,nome_file);
+    creo_cart();
 
-        //------------------- STA PRENDOTEMPO!!!!!!!!!!!!!!!
+    //------------------- STA PRENDOTEMPO!!!!!!!!!!!!!!!
 #ifdef TIME
-        prendo_tempo();
+    prendo_tempo();
 #endif
 
 
 
-        //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
+    //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
 
 #ifdef Z_LOWRIS
 
-        ScrivoLog(13,nome_file);
-        creo_cart_z_lowris();
-        printf(" dopo z_lowris\n");
+    ScrivoLog(13,nome_file);
+    creo_cart_z_lowris();
+    printf(" dopo z_lowris\n");
 
-        //-------------------scritture output -----------------------
-        ScrivoLog(14,nome_file);
-        scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out),z_out);
+    //-------------------scritture output -----------------------
+    ScrivoLog(14,nome_file);
+    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out),z_out);
 
 
-        char nome_file_output[512];
-        sprintf(nome_file_output,"%s/MP_coeff",getenv("OUTPUT_Z_LOWRIS_DIR"));
-        FILE* output=controllo_apertura(nome_file_output,"file coeff MP","w");
-        fwrite(MP_coeff,sizeof(MP_coeff),1,output);
-        fclose(output);
-        printf(" dopo scrivo_z_lowris\n");
+    char nome_file_output[512];
+    sprintf(nome_file_output,"%s/MP_coeff",getenv("OUTPUT_Z_LOWRIS_DIR"));
+    FILE* output=controllo_apertura(nome_file_output,"file coeff MP","w");
+    fwrite(MP_coeff,sizeof(MP_coeff),1,output);
+    fclose(output);
+    printf(" dopo scrivo_z_lowris\n");
 
 
 
 #ifdef TIME
-        prendo_tempo();
+    prendo_tempo();
 #endif
 
 
 
 
 
-        //-------------------scritture output -----------------------
+    //-------------------scritture output -----------------------
 #ifdef QUALITY
 
-        //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
-        // temporanee
-        // in archivio
-        scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1),qual_Z_1x1);
+    //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
+    // temporanee
+    // in archivio
+    scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1),qual_Z_1x1);
 
-        //------------------ stampe extra per studio
+    //------------------ stampe extra per studio
 #ifdef STAMPE_EXTRA
-        //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-        //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
-        //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
-        //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-        scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
-        scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1),beam_blocking_1x1);
-        scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
-        scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
-        scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
-        scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
+    //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
+    //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
+    //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
+    //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
+    scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
+    scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1),beam_blocking_1x1);
+    scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
+    scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
+    scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
+    scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
 
 #endif
-        //------------------ stampe correzioni da profili verticali in formato ZLR
+    //------------------ stampe correzioni da profili verticali in formato ZLR
 #ifdef VPR
-        scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
-        //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
-        // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
+    scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
+    //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
+    // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
 #endif
 
-        //------------------se definita CLASS  stampo punti convettivi
+    //------------------se definita CLASS  stampo punti convettivi
 #ifdef CLASS
-        // in archivio?
-        // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
-        scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1),conv_1x1);
+    // in archivio?
+    // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
+    scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1),conv_1x1);
 
 #endif
 
@@ -3357,8 +3337,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
 
 #endif// ifdef Z_lOWRIS
 #endif // ifndef WRITE_DBP
-
-    }
 
     return true;
 }
