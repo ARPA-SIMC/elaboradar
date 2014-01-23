@@ -14,6 +14,7 @@ void to::test<1>()
 {
     // Test NormalizzoData
     wassert(actual(NormalizzoData(0)) == 0); // TODO: check value
+    wassert(actual(NormalizzoData(1)) == 0); // TODO: check value
 }
 
 }
