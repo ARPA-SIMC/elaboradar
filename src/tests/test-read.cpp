@@ -11,6 +11,47 @@ struct read_sp20_shar {
 };
 TESTGRP(read_sp20);
 
+namespace {
+
+/// Compute some arbitrary stats on a volume
+struct VolumeStats
+{
+    unsigned count_zeros[NEL];
+    unsigned count_ones[NEL];
+    unsigned count_others[NEL];
+    unsigned sum_others[NEL];
+
+    VolumeStats(const CUM_BAC* cb)
+    {
+        for (int iel = 0; iel < NEL; ++iel)
+        {
+            count_zeros[iel] = 0;
+            count_ones[iel] = 0;
+            count_others[iel] = 0;
+            sum_others[iel] = 0;
+
+            for (int ibeam = 0; ibeam < cb->nbeam_elev[iel]; ++ibeam)
+            {
+                for (int i = 0; i < MAX_DIM; ++i)
+                {
+                    int val = cb->vol_pol[iel][ibeam].ray[i];
+                    switch (val)
+                    {
+                        case 0: count_zeros[iel]++; break;
+                        case 1: count_ones[iel]++; break;
+                        default:
+                                count_others[iel]++;
+                                sum_others[iel] += val;
+                                break;
+                    }
+                }
+            }
+        }
+    }
+};
+
+}
+
 template<> template<>
 void to::test<1>()
 {
@@ -28,7 +69,30 @@ void to::test<1>()
     wassert(actual(cb->nbeam_elev[4]) == 400);
     // Check other header fields
     wassert(actual(cb->old_data_header.norm.maq.acq_date) == 1389108600);
-    // TODO: check some of the vol_pol contents
+
+    // Arbitrary stats on volume contents so we can check that we read data
+    // that looks correct
+    VolumeStats stats(cb);
+    wassert(actual(stats.count_zeros[0]) == 7200);
+    wassert(actual(stats.count_zeros[1]) == 7200);
+    wassert(actual(stats.count_zeros[2]) == 7200);
+    wassert(actual(stats.count_zeros[3]) == 7200);
+    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_ones[0]) == 146674);
+    wassert(actual(stats.count_ones[1]) == 184613);
+    wassert(actual(stats.count_ones[2]) == 193318);
+    wassert(actual(stats.count_ones[3]) == 196292);
+    wassert(actual(stats.count_ones[4]) == 196160);
+    wassert(actual(stats.count_others[0]) == 50926);
+    wassert(actual(stats.count_others[1]) == 12987);
+    wassert(actual(stats.count_others[2]) ==  4282);
+    wassert(actual(stats.count_others[3]) ==  1308);
+    wassert(actual(stats.count_others[4]) ==  1440);
+    wassert(actual(stats.sum_others[0]) == 4629202);
+    wassert(actual(stats.sum_others[1]) == 890666);
+    wassert(actual(stats.sum_others[2]) == 254745);
+    wassert(actual(stats.sum_others[3]) == 45968);
+    wassert(actual(stats.sum_others[4]) == 78321);
     delete cb;
 }
 
