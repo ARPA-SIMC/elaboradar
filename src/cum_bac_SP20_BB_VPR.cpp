@@ -978,15 +978,11 @@ FILE *CUM_BAC::controllo_apertura (const char *nome_file, char *content,char *mo
     }
     else
     {
-        sprintf(errori,"Errore Apertura %s %s",content, nome_file);
-
-        ScrivoLog(16,errori);
+        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
         exit(1);
     }
     if (file == NULL) {
-        sprintf(errori,"Errore Apertura %s %s",content, nome_file);
-
-        ScrivoLog(16,errori);
+        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
         exit(1);
     }
     return(file);
@@ -3059,11 +3055,8 @@ int CUM_BAC::trovo0term()
 }
 #endif
 
-bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const char* sito)
+bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sito)
 {
-    int file_type; // -- x definire n_elev e reolution e se è =1 esco
-    sscanf(tipofile, "%d", &file_type);
-
     // Legge e controlla il volume dal file SP20
     if (!read_sp20_volume(nome_file, sito, file_type))
         return false;
@@ -3089,8 +3082,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
     /*------------------------------------------
       | rimozione propagazione anomala e clutter |
       ------------------------------------------*/
-    ScrivoLog(7,nome_file);
-
+    LOG_INFO("%s %s -- Cancellazione Clutter e Propagazione Anomala", PrendiOra(), nome_file);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
@@ -3104,13 +3096,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
 
     // ------setto ambiente statico (le first level e il nome del dem )--------------
     setstat(sito,month, nome_dem, nome_fl);
-    printf ("nome dem %s nome fl %s\n",nome_dem, nome_fl);
-
-
-    //----- sta scrivolog che salta fuori sempre !!!!!!!!!!!!!!!!!
-    ScrivoLog(1,nome_file);
-
-
+    LOG_INFO("nome dem %s nome fl %s", nome_dem, nome_fl);
 
     // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
     if ( month > 4 && month < 10 )  {
@@ -3128,7 +3114,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
 #ifdef ANAPROP
-    printf ("inizio rimozione anaprop e beam blocking \n") ;
+    LOG_INFO("inizio rimozione anaprop e beam blocking");
     int ier = elabora_dato();
 #endif
 
@@ -3256,7 +3242,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
     /*--------------------------------------------------
       | conversione di coordinate da polare a cartesiana |
       --------------------------------------------------*/
-    ScrivoLog(9,nome_file);
+    LOG_INFO("%s -- Creazione Matrice Cartesiana",PrendiOra());
     creo_cart();
 
     //------------------- STA PRENDOTEMPO!!!!!!!!!!!!!!!
@@ -3270,12 +3256,11 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
 
 #ifdef Z_LOWRIS
 
-    ScrivoLog(13,nome_file);
+    LOG_INFO("%s -- Estrazione Precipitazione 1X1", PrendiOra());
     creo_cart_z_lowris();
-    printf(" dopo z_lowris\n");
 
     //-------------------scritture output -----------------------
-    ScrivoLog(14,nome_file);
+    LOG_INFO("%s -- Scrittura File Precipitazione 1X1 %s\n", PrendiOra(), nome_file);
     scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out),z_out);
 
 
@@ -3362,11 +3347,116 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, const char* tipofile, const ch
   /*   return ier; */
   /* } */
 
+/**
+ * Write a banner with program information, compile flags, environment and so on.
+ */
+static void startup_banner()
+{
+    LOG_CATEGORY("radar.banner");
+
+    /// Log initial program state
+    LOG_INFO("%s -- Lancio Programma", PrendiOra());
+    LOG_INFO("-----------------------------------------------------------------");
+    LOG_INFO("Flag di Compilazione: "
+#ifdef BOLOGNA
+            " BOLOGNA"
+#endif
+#ifdef SPC
+            " SPC"
+#endif
+#ifdef WRITE_DBP
+            " WRITE_DBP"
+#endif
+#ifdef TIME
+            " TIME"
+#endif
+#ifdef WRITE_DBP_REORDER
+            " WRITE_DBP_REORDER"
+#endif
+#ifdef DECLUTTER
+            " DECLUTTER"
+#endif
+#ifdef Z_AVERAGE
+            " Z_AVERAGE"
+#endif
+#ifdef R_AVERAGE
+            " R_AVERAGE"
+#endif
+#ifdef Z_LOWRIS
+            " Z_LOWRIS"
+#endif
+#ifdef ANAPROP
+            " ANAPROP"
+#endif
+#ifdef SHORT
+            " SHORT"
+#endif
+#ifdef MEDIUM
+            " MEDIUM"
+#endif
+#ifdef STATIC
+            " STATIC"
+#endif
+#ifdef BEAMBLOCKING
+            " BEAMBLOCKING"
+#endif
+#ifdef QUALITY
+            " QUALITY"
+#endif
+            ".");
+
+    LOG_INFO("-----------------------------------------------------------------");
+    LOG_INFO("Variabili d'Ambiente:");
+    LOG_INFO("LISTA_FILE = %s", getenv("LISTA_FILE"));
+    LOG_INFO("LAST_FILE = %s", getenv("LAST_FILE"));
+    LOG_INFO("ANAP_STAT_FILE = %s", getenv("ANAP_STAT_FILE"));
+    LOG_INFO("BLOC_STAT_FILE = %s", getenv("BLOC_STAT_FILE"));
+    LOG_INFO("ELEV_STAT_FILE = %s", getenv("ELEV_STAT_FILE"));
+    LOG_INFO("DIR_OUT_PP_BLOC = %s", getenv("DIR_OUT_PP_BLOC"));
+    LOG_INFO("FILE_DEM_SPC = %s", getenv("FILE_DEM_SPC"));
+    LOG_INFO("FILE_DEM_GAT = %s", getenv("FILE_DEM_GAT"));
+    LOG_INFO("DIR_QUALITY = %s", getenv("DIR_QUALITY"));
+    LOG_INFO("FIRST_LEVEL_FILE = %s", getenv("FIRST_LEVEL_FILE"));
+    LOG_INFO("OUTPUT_Z_DIR = %s", getenv("OUTPUT_Z_DIR"));
+    LOG_INFO("OUTPUT_RAIN_DIR = %s", getenv("OUTPUT_RAIN_DIR"));
+    LOG_INFO("OUTPUT_Z_LOWRIS_DIR = %s", getenv("OUTPUT_Z_LOWRIS_DIR"));
+    LOG_INFO("-----------------------------------------------------------------");
+
+// FIXME Vecchie descrizioni della ScrivoLog, le tengo qui finché non ho riscritto tutte le chiamate
+//        case  2: fprintf(log,"%s -- Apertura File Lista %s\n",PrendiOra(),getenv("LISTA_FILE"));
+//        case  3: fprintf(log,"%s -- Errore Apertura File Lista%s\n", PrendiOra(),getenv("LISTA_FILE"));
+//        case  4: fprintf(log,"%s -- Apertura File Dati %s\n",PrendiOra(),stringa);
+//        case  5: fprintf(log,"%s -- Lettura File Dati\n",PrendiOra());
+//        case  6: fprintf(log,"%s -- Scrittura File Ordinato %s\n",PrendiOra(),stringa);
+//        case  7: fprintf(log,"%s -- Cancellazione Clutter e Propagazione Anomala\n",PrendiOra());
+//        case  8: fprintf(log,"%s -- Scrittura File Polare Ripulito %s\n",PrendiOra(),stringa);
+//        case  9: fprintf(log,"%s -- Creazione Matrice Cartesiana \n",PrendiOra());
+//        case 13: fprintf(log,"%s -- Estrazione Precipitazione 1X1\n",PrendiOra());
+//        case 14: fprintf(log,"%s -- Scrittura File Precipitazione 1X1 %s\n",PrendiOra(),stringa);
+//        case 15: fprintf(log,"%s -- Fine Programma\n",PrendiOra());
+//        case 16: fprintf(log,"%s -- %s\n",PrendiOra(),stringa);
+//        case 17: fprintf(log,"%s -- %s scrittura file qualita'\n",PrendiOra(),stringa);
+//        case 18:
+//            if (stringa==NULL) fprintf(log,"%s -- %s manca argomento necessario al programma \n",PrendiOra(),stringa);
+//            else
+//                fprintf(log,"%s -- argomento passato al programma %s \n",PrendiOra(),stringa);
+
+    //---- assegnazioni legate a argv[1]-- nome_file, nome_file_volume
+}
+
+/// Report a command line error and quit
+void commandline_error(const char* progname, const char* msg)
+{
+    fprintf(stderr, "%s\n\n", msg);
+    fprintf(stderr, "Usage: %s volume_file file_type site_name\n", progname);
+    exit(1);
+}
+
 /* ================================ */
 int main (int argc, char **argv)
     /* ================================ */
 {
-    char *nome_file , *nome_file_volume;//nome volume nn ho capito perchè passo attraverso nome_file_volume
+    char *nome_file;
     int i,k,l;//indici azimut ,range, elevazione
     int ier,ier_test, ier_main=0;//uscite errore generico (lettura volume e succ.anap) , di test_file, del main
     FILE *output;
@@ -3376,42 +3466,30 @@ int main (int argc, char **argv)
     // Initialize logging
     Logging logging;
 
-    printf("sono in programma elaborazione\n");
-    if (argv[1]==NULL || argv[2]==NULL || argv[3]==NULL) {
-        printf("insufficiente numero di argomenti\n");
-        exit(1);
-    }
+    LOG_CATEGORY("radar.main");
 
-    //---- assegnazioni legate a argv[1]-- nome_file, nome_file_volume
+    //------- verifica n0 argomenti ------
 
-    nome_file_volume=argv[1];
+    if (argc < 4)
+        commandline_error(argv[0], "some argument is missing.");
 
-    nome_file=nome_file_volume; // ---------perchè?---------
+    nome_file = argv[1];
 
-    sito=argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni
+    int file_type; // -- x definire n_elev e reolution e se è =1 esco
+    if (sscanf(argv[2], "%d", &file_type) != 1)
+        commandline_error(argv[0], "file_type must be a number");
+
+    sito = argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni
     setwork(argv[3]);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
-    // ----- TEMPO E LOG------
+    startup_banner();
+
 #ifdef TIME
     prendo_tempo();
 #endif
 
-    // ----- sezione scrivo Log ---------
-    ScrivoLog(0,nome_file);
-    ScrivoLog(1,nome_file);
-    ScrivoLog(2,nome_file);
-
-    ScrivoLog(18,argv[1]); /*nome_file*/
-    ScrivoLog(18,argv[2]);   /* TIPO_FILE */
-    ScrivoLog(18,argv[3]);  /* SITO */
-    ScrivoLog(18,argv[4]); /* SITO_AD */
-
-    ScrivoLog(4,nome_file);
-    printf("processo file dati: %s\n",nome_file);
-    // ----- FINE TEMPO E LOG------
-
     CUM_BAC *cb = new CUM_BAC;
-    if (cb->esegui_tutto(nome_file, argv[2], sito))
+    if (cb->esegui_tutto(nome_file, file_type, sito))
         ier_main = 0;
     else
         ier_main = 1;
@@ -3419,8 +3497,7 @@ int main (int argc, char **argv)
 
     // è stato tolto il loop sui volumi
 
-    // eddaje!!!
-    ScrivoLog(15,nome_file);
+    LOG_INFO("End of processing, result: %d", ier_main);
 
     return ier_main;
 }

@@ -222,7 +222,7 @@ public:
     CUM_BAC();
 
     bool read_sp20_volume(const char* nome_file, const char* sito, int file_type);
-    int test_file(int tipofile);
+    bool test_file(int tipofile);
     int elabora_dato();
     void caratterizzo_volume();
     double attenuation(unsigned char DBZbyte, double  PIA);
@@ -255,7 +255,7 @@ public:
     void ingrasso_nuclei(float cr,int ja,int kr);
     void merge_metodi();
     int trovo0term();
-    bool esegui_tutto(const char* nome_file, const char* tipofile, const char* sito);
+    bool esegui_tutto(const char* nome_file, int file_type, const char* sito);
 };
 
 // Utility functions
