@@ -4,6 +4,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "cum_bac.h"
+#include "logging.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -3372,7 +3373,8 @@ int main (int argc, char **argv)
     char *sito;//GAT O SPC
     float a,b,c;
 
-    //------- verifica n0 argomenti ------
+    // Initialize logging
+    Logging logging;
 
     printf("sono in programma elaborazione\n");
     if (argv[1]==NULL || argv[2]==NULL || argv[3]==NULL) {

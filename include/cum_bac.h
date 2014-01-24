@@ -1,6 +1,7 @@
 #ifndef ARCHIVIATORE_CUM_BAC_CLASS_H
 #define ARCHIVIATORE_CUM_BAC_CLASS_H
 
+#include "logging.h"
 #include <cum_bac_SP20_BB_VPR.h>
 
 
@@ -62,6 +63,7 @@ extern int elev_array[NEL];
 class CUM_BAC
 {
 public:
+    log4c_category_t* logging_category;
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 
 

@@ -1,11 +1,13 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
+#include "logging.h"
 
 using namespace wibble::tests;
 
 namespace tut {
 
 struct read_sp20_shar {
+    Logging logging;
 };
 TESTGRP(read_sp20);
 
