@@ -105,6 +105,31 @@ void to::test<2>()
     cb->read_sp20_volume(fname, "GAT", 0);
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
+
+    // Check results
+    VolumeStats stats(cb);
+    wassert(actual(stats.count_zeros[0]) == 7200);
+    wassert(actual(stats.count_zeros[1]) == 7200);
+    wassert(actual(stats.count_zeros[2]) == 7200);
+    wassert(actual(stats.count_zeros[3]) == 7200);
+    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_ones[0]) == 185056);
+    wassert(actual(stats.count_ones[1]) == 184613);
+    wassert(actual(stats.count_ones[2]) == 193318);
+    wassert(actual(stats.count_ones[3]) == 196292);
+    wassert(actual(stats.count_ones[4]) == 196160);
+    wassert(actual(stats.count_others[0]) == 12544);
+    wassert(actual(stats.count_others[1]) == 12987);
+    wassert(actual(stats.count_others[2]) ==  4282);
+    wassert(actual(stats.count_others[3]) ==  1308);
+    wassert(actual(stats.count_others[4]) ==  1440);
+    wassert(actual(stats.sum_others[0]) == 984196);
+    wassert(actual(stats.sum_others[1]) == 904989);
+    wassert(actual(stats.sum_others[2]) == 254745);
+    wassert(actual(stats.sum_others[3]) ==  45968);
+    wassert(actual(stats.sum_others[4]) ==  78321);
+
+    delete cb;
 }
 
 }

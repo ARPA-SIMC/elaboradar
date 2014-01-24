@@ -93,7 +93,7 @@ cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) cum_bac.o $(OBJ_COMMON)
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
 check: cbtest testdata/DBP2_070120141530_GATTATICO
-	./cbtest
+	./cbtest $(TEST_ARGS)
 
 
 %: %.o
