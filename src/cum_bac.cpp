@@ -255,6 +255,15 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     return ier == OK;
 }
 
+/*
+ * Questa funzione al momento non va tolta. C'è del codice che va a leggere
+ * fuori da dove dovrebbe, e se togliamo questa variabile statica, il layout
+ * del programma in ram cambia sufficientemente per farlo segfaultare.
+ *
+ * Mettiamo in programma di fare qualche giro con valgrind per vedere dove sono
+ * le letture sbagliate, e una volta messe a posto finalmente possiamo togliere
+ * la ScrivoLog, che non è piú chiamata da nessuno.
+ */
 void ScrivoLog(int i, const char* stringa)
 {
     static FILE *log = 0;
