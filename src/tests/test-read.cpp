@@ -101,8 +101,14 @@ void to::test<2>()
 {
     // Test elabora_dato
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+
+    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
+    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+
     CUM_BAC* cb = new CUM_BAC;
     cb->read_sp20_volume(fname, "GAT", 0);
+    cb->setup_elaborazione(fname, "GAT");
+
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
 

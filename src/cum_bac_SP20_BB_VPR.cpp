@@ -2493,42 +2493,10 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
     /* #endif */
 
     //  ----- test su normalizzazione data ( no minuti strani)
-
     if (NormalizzoData(old_data_header.norm.maq.acq_date) == -1)
         return true;
 
-    /*------------------------------------------
-      | rimozione propagazione anomala e clutter |
-      ------------------------------------------*/
-    LOG_INFO("%s %s -- Cancellazione Clutter e Propagazione Anomala", PrendiOra(), nome_file);
-
-    // --- ricavo il mese x definizione first_level e  aMP bMP ---------
-    //definisco stringa data in modo predefinito
-    Time = NormalizzoData(old_data_header.norm.maq.acq_date);
-    tempo = gmtime(&Time);
-    month=tempo->tm_mon+1;
-
-    // scrivo la variabile char date con la data in formato aaaammgghhmm
-    sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
-            tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
-
-    // ------setto ambiente statico (le first level e il nome del dem )--------------
-    setstat(sito,month, nome_dem, nome_fl);
-    LOG_INFO("nome dem %s nome fl %s", nome_dem, nome_fl);
-
-    // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
-    if ( month > 4 && month < 10 )  {
-        aMP=aMP_conv;
-        bMP=bMP_conv;
-    }
-    else {
-        aMP=aMP_strat;
-        bMP=bMP_strat;
-
-    }
-    MP_coeff[0]=(unsigned char)(aMP/10);
-    MP_coeff[1]=(unsigned char)(bMP*10);
-
+    setup_elaborazione(nome_file, sito);
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
 #ifdef ANAPROP
