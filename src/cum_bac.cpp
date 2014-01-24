@@ -21,9 +21,7 @@ extern "C" {
 }
 #endif
 
-#ifdef QUALITY
 #include <qual_par.h>
-#endif
 
 //Definizioni per test_file
 #define NUM_MIN_BEAM 200
@@ -59,6 +57,7 @@ int elev_array[NEL];
 
 
 CUM_BAC::CUM_BAC()
+    : do_quality(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -262,10 +261,6 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     if (ier != OK)
         LOG_ERROR("Reading %s returned error code %d", nome_file, ier);
 
-#ifdef TIME
-    prendo_tempo();
-#endif
-
     //  ----- Test sul volume test_file.......  --------
     if (!test_file(file_type))
     {
@@ -295,10 +290,11 @@ int CUM_BAC::elabora_dato()
     leggo_first_level();
 
     //-------------se definita qualita' leggo dem e altezza fascio (funzioni legg_dem e leggo_hray)(mi servono per calcolare qualità)
-#ifdef QUALITY
-    leggo_dem();
-    leggo_hray();
-#endif
+    if (do_quality)
+    {
+        leggo_dem();
+        leggo_hray();
+    }
 
     //------------se definito DECLUTTER , non rimuovo anap e riscrivo  volume polare facedndo declutter solo con mappa statica.... ancora valido?
 
@@ -322,9 +318,8 @@ int CUM_BAC::elabora_dato()
 #endif
 
             }
-#ifdef QUALITY
-            elev_fin[i][k]=el_inf;
-#endif
+            if (do_quality)
+                elev_fin[i][k]=el_inf;
         }
     }
     return 0;
@@ -354,9 +349,9 @@ int CUM_BAC::elabora_dato()
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
             el_inf = first_level[i][k];
 
-#ifdef QUALITY
-            elev_fin[i][k]=el_inf;
-#endif
+            if (do_quality)
+                elev_fin[i][k]=el_inf;
+
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
             el_up = el_inf +1;
             if ( el_up >= NEL )
@@ -418,11 +413,11 @@ int CUM_BAC::elabora_dato()
                         if (el_up > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statistica cambio elevazione
 
                         //-------------------memorizzo dati di qualita '-------------
-#ifdef QUALITY
-                        dato_corrotto[i][k]=ANAP_YES;/*  risultato test: propagazione anomala*/
-                        elev_fin[i][k]=el_up;
-#endif
-
+                        if (do_quality)
+                        {
+                            dato_corrotto[i][k]=ANAP_YES;/*  risultato test: propagazione anomala*/
+                            elev_fin[i][k]=el_up;
+                        }
                     }
                     else
                         //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking e incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto e assegno a 0 indicatore anap nel raggio-----------
@@ -439,10 +434,11 @@ int CUM_BAC::elabora_dato()
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 
                         }
-#ifdef QUALITY
-                        dato_corrotto[i][k]=ANAP_OK;/* matrice risultato test: no propagazione anomala*/
-                        elev_fin[i][k]=el_inf;
-#endif
+                        if (do_quality)
+                        {
+                            dato_corrotto[i][k]=ANAP_OK;/* matrice risultato test: no propagazione anomala*/
+                            elev_fin[i][k]=el_inf;
+                        }
                         if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
 
                     }
@@ -463,10 +459,11 @@ int CUM_BAC::elabora_dato()
                         flag_anap = 1;
                         cont_anap=cont_anap+1;
                         stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
-#ifdef QUALITY
-                        dato_corrotto[i][k]=ANAP_YES;/*matrice risultato test: propagazione anomala*/
-                        elev_fin[i][k]=el_up;
-#endif
+                        if (do_quality)
+                        {
+                            dato_corrotto[i][k]=ANAP_YES;/*matrice risultato test: propagazione anomala*/
+                            elev_fin[i][k]=el_up;
+                        }
                         if (el_up > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
 #ifdef BEAMBLOCKING
                         beam_blocking[i][k]=0;
@@ -488,10 +485,12 @@ int CUM_BAC::elabora_dato()
 #endif
                         }
 
-#ifdef QUALITY
-                        dato_corrotto[i][k]=ANAP_OK;
-                        elev_fin[i][k]=el_inf;
-#endif
+                        if (do_quality)
+                        {
+                            dato_corrotto[i][k]=ANAP_OK;
+                            elev_fin[i][k]=el_inf;
+                        }
+
                         if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
                         flag_anap = 0;
 
@@ -515,18 +514,18 @@ int CUM_BAC::elabora_dato()
                     }
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
-#ifdef QUALITY
-                if (bin_high<fondo_scala)   dato_corrotto[i][k]=ANAP_NODAT;/*manca dato sotto e sopra*/
-                if (cont_anap< THR_CONT_ANAP )
-                    test_an=(bin_high>=fondo_scala); //modificato per contemplare > o >=
-                else
-                    test_an=(bin_high>fondo_scala);
+                if (do_quality)
+                {
+                    if (bin_high<fondo_scala)   dato_corrotto[i][k]=ANAP_NODAT;/*manca dato sotto e sopra*/
+                    if (cont_anap< THR_CONT_ANAP )
+                        test_an=(bin_high>=fondo_scala); //modificato per contemplare > o >=
+                    else
+                        test_an=(bin_high>fondo_scala);
 
-                // if (bin_high>=fondo_scala)  dato_corrotto[i][k]=ANAP_NOCONTROL;/*manca controllo (sotto non ho nulla)*/ //messo l=
-                if (test_an) dato_corrotto[i][k]=ANAP_NOCONTROL;
-                if (bin_high==fondo_scala) dato_corrotto[i][k]=ANAP_OK;/*non piove (oppure sono sopra livello preci...)*/
-
-#endif
+                    // if (bin_high>=fondo_scala)  dato_corrotto[i][k]=ANAP_NOCONTROL;/*manca controllo (sotto non ho nulla)*/ //messo l=
+                    if (test_an) dato_corrotto[i][k]=ANAP_NOCONTROL;
+                    if (bin_high==fondo_scala) dato_corrotto[i][k]=ANAP_OK;/*non piove (oppure sono sopra livello preci...)*/
+                }
 
 #ifdef BEAMBLOCKING
                 beam_blocking[i][k]=0;
@@ -550,21 +549,25 @@ int CUM_BAC::elabora_dato()
                         vol_pol[l][i].b_header.max_bin=vol_pol[el_inf][i].b_header.max_bin;
                     }
                 }
-#ifdef QUALITY
-                dato_corrotto[i][k]=ANAP_OK; // dubbio
-                elev_fin[i][k]=el_inf;
-#endif
+
+                if (do_quality)
+                {
+                    dato_corrotto[i][k]=ANAP_OK; // dubbio
+                    elev_fin[i][k]=el_inf;
+                }
+
                 if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
             }
             /*-----------------------------------------------------------fine di tutti gli if-----------*/
             //-----finiti tutti i controlli assegno le varibili di qualita definitive: elevazione, quota calcolata sull'elevazione reale con propagazione standard , e quota relativa al suolo calcolata con elevazione nominale e propagazione da radiosondaggio.
 
-#ifdef QUALITY
-            elevaz=(float)(vol_pol[elev_fin[i][k]][i].teta_true)*CONV_RAD;
-            // elev_fin[i][k]=first_level_static[i][k];//da togliere
-            quota[i][k]=(unsigned short)(quota_f(elevaz,k));
-            quota_rel[i][k]=(unsigned short)(hray[k][elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
-#endif
+            if (do_quality)
+            {
+                elevaz=(float)(vol_pol[elev_fin[i][k]][i].teta_true)*CONV_RAD;
+                // elev_fin[i][k]=first_level_static[i][k];//da togliere
+                quota[i][k]=(unsigned short)(quota_f(elevaz,k));
+                quota_rel[i][k]=(unsigned short)(hray[k][elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
+            }
         }
     }
 
@@ -683,8 +686,6 @@ void CUM_BAC::leggo_first_level()
 #endif
 }
 
-#ifdef QUALITY
-
 void CUM_BAC::leggo_hray( )
 {
     struct tm *tempo;
@@ -754,7 +755,6 @@ void CUM_BAC::leggo_dem()
     printf("letto dem \n");
     return ;
 }
-#endif
 
 //------------funzione quota_f-----------------------
 //---------funzione che calcola la quota in metri del centro del fascio-----------------------
