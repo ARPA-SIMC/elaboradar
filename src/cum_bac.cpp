@@ -255,7 +255,10 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     return ier == OK;
 }
 
-
+void ScrivoLog(int i, const char* stringa)
+{
+    static FILE *log = 0;
+}
 
 char *PrendiOra()
 {
