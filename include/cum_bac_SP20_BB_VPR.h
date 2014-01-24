@@ -148,15 +148,6 @@ FILE *controllo_apertura(const char *nome_file, char *content,char *mode);
  *  @return asctime(tempo) ritorna l'orario in formato asctime
 */
 char *PrendiOra();//togliere? 
-  /**
- *  
- *  @brief funzione che scrive in un file di log un messaggio 
- *  @details il messaggio è dipendente dall'intero in ingresso e  contiene la stringa d'ingresso
- *  @param[in] i intero in ingresso che condiziona la scelta del messaggio da scrivere
- *  @param[in] stringa stringa che fa parte del contenuto da scrivere nel log 
- *  @return file  non ritorna valori 
-*/  
-void ScrivoLog(int i, const char* stringa);//togliere?
 
 // funzioni per QUALITA' 
 //#ifdef QUALITY
