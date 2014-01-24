@@ -42,6 +42,7 @@ extern "C" {
 #define MAX_DIF_NEXT_OR 15       /*/ elevazione                             */
 #define MIN_VALUE_NEXT_OR 0
 #define THR_CONT_ANAP 1 /* limite in numero occorrenze anaprop sul raggio dopo i 30 km per non togliere =*/
+#define OVERBLOCKING 51 /* minimo BB non accettato*/
 
 // anaprop
 #define LIMITE_ANAP 240/* LIMITE in numero bins per cambiare controllo anaprop*/
@@ -57,7 +58,7 @@ int elev_array[NEL];
 
 
 CUM_BAC::CUM_BAC()
-    : do_quality(false), do_beamblocking(false), do_declutter(false)
+    : do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -311,12 +312,10 @@ int CUM_BAC::elabora_dato()
                 {
                     vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
-                    if (do_beamblocking)
+                    if (do_beamblocking && do_bloccorr)
                     {
-#ifndef BLOCNOCORR
-                    vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
-                    //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
-#endif
+                        vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+                        //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
                     }
 
                 }
@@ -424,13 +423,11 @@ int CUM_BAC::elabora_dato()
                         //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking e incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto e assegno a 0 indicatore anap nel raggio-----------
                     {
                         flag_anap = 0;
-                        if (do_beamblocking)
+                        if (do_beamblocking && do_bloccorr)
                         {
-#ifndef BLOCNOCORR
                             vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
                             stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
-#endif
                         }
                         for(l=0; l<=el_up; l++){
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
@@ -477,13 +474,11 @@ int CUM_BAC::elabora_dato()
                         for(l=0; l<=el_inf; l++)
                         {
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
-                            if (do_beamblocking)
+                            if (do_beamblocking && do_bloccorr)
                             {
-#ifndef BLOCNOCORR
                                 vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
                                 //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
                                 stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k];
-#endif
                             }
                         }
 
@@ -648,19 +643,19 @@ void CUM_BAC::leggo_first_level()
 
             for (j=0; j<MAX_BIN; j++) /*ciclo sul range  */
             {
-#ifndef BLOCNOCORR
-                if (first_level_static[i][j]<=bb_first_level[i][j])
-                    first_level[i][j]=bb_first_level[i][j];
-                else
-                {  beam_blocking[i][j]=0;
-                    first_level[i][j]=first_level_static[i][j]; }
-# endif
-#ifdef BLOCNOCORR
-                if (first_level_static[i][j]>bb_first_level[i][j])
-                    beam_blocking[i][j]=0;
-                if (first_level_static[i][j]<bb_first_level[i][j])
-                    beam_blocking[i][j]=OVERBLOCKING;
-#endif
+                if (do_bloccorr)
+                {
+                    if (first_level_static[i][j]<=bb_first_level[i][j])
+                        first_level[i][j]=bb_first_level[i][j];
+                    else
+                    {  beam_blocking[i][j]=0;
+                        first_level[i][j]=first_level_static[i][j]; }
+                } else {
+                    if (first_level_static[i][j]>bb_first_level[i][j])
+                        beam_blocking[i][j]=0;
+                    if (first_level_static[i][j]<bb_first_level[i][j])
+                        beam_blocking[i][j]=OVERBLOCKING;
+                }
             }
         }
         fclose(file);

@@ -77,7 +77,6 @@ extern "C" {
 /*----------------------------------------------------------------------------*/
 
 // Soglie algoritmi
-#define OVERBLOCKING 51 /* minimo BB non accettato*/
 #define THRES_ATT 0 /* minimo valore di Z in dBZ per calcolare att rate */
 #define SOGLIA_TOP 20 // soglia per trovare top
 #define MISSING 0 /*valore mancante*/
@@ -2897,6 +2896,9 @@ int main (int argc, char **argv)
 #endif
 #ifdef DECLUTTER
     cb->do_declutter = true;
+#endif
+#ifndef BLOCNOCORR
+    cb->do_bloccorr = true;
 #endif
 
     if (cb->esegui_tutto(nome_file, file_type, sito))
