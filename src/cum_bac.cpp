@@ -108,37 +108,31 @@ CUM_BAC::CUM_BAC()
     //-----  FINE INIZIALIZZAZIONI---------//
 }
 
-int CUM_BAC::test_file(int file_type)
+bool CUM_BAC::test_file(int file_type)
 {
     FILE *f_aus;
     time_t last_time; //> old_data_header.norm.maq.acq_date?
     int n_elev, resolution;// != old_data_header.norm.maq.resolution?
-    int k;
-
-    // ---- attribuisce la stringa di input (che è un numero 0-3) a un intero: file_type-----
-    printf("tipo file %1d\n",file_type);
 
     //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
 
     switch (file_type)
     {
         case SHORT_DEC:
-            if(!old_data_header.norm.maq.declutter_rsp )
+            if (!old_data_header.norm.maq.declutter_rsp)
             {
-                //---- eddaje sta scrivolog!!!!------
-                sprintf(errori,"File Senza Declutter Dinamico--cos' è???");
-                ScrivoLog(16,errori);
+                LOG_WARN("File Senza Declutter Dinamico--cos' è???");
+                return false;
             }
             resolution=2;
             n_elev=4;
             break;
             //------------se tipo =1 esco
         case SHORT_FULL_VOLUME://-----??? DUBBIO
-            if(old_data_header.norm.maq.declutter_rsp )
+            if (old_data_header.norm.maq.declutter_rsp)
             {
-                sprintf(errori,"File con Declutter Dinamico");
-                ScrivoLog(16,errori);
-                return 0;
+                LOG_WARN("File con Declutter Dinamico");
+                return false;
             }
             resolution=2;
             n_elev=4;
@@ -146,7 +140,7 @@ int CUM_BAC::test_file(int file_type)
         case SHORT_HAIL://-----??? DA BUTTARE NON ESISTE PIÙ
             resolution=2;
             n_elev=3;
-            printf("CASO SHORT_HAIL\n");
+            LOG_INFO("CASO SHORT_HAIL");
             break;
         case MEDIUM_PULSE:
             resolution=4;
@@ -155,36 +149,27 @@ int CUM_BAC::test_file(int file_type)
     }
 
     //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
-    if(old_data_header.norm.maq.resolution != resolution)
+    if (old_data_header.norm.maq.resolution != resolution)
     {
-        sprintf(errori,"File Risoluzione Sbagliata %1d", old_data_header.norm.maq.resolution);
-        ScrivoLog(16,errori);
-        return 0;
+        LOG_ERROR("File Risoluzione Sbagliata %1d", old_data_header.norm.maq.resolution);
+        return false;
     }
     //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
 
-    for(k=0; k<n_elev; k++) /* testo solo le prime 4 elevazioni */
+    for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
+        LOG_INFO("Numero beam presenti : %4d  -- elevazione%2d\n", nbeam_elev[k], k);
 
-        printf(" numero beam presenti : %4d  -- elevazione%2d\n",
-                nbeam_elev[k],k);
-
-        if(nbeam_elev[k] <  NUM_MIN_BEAM)
+        if (nbeam_elev[k] <  NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
         {
             //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            sprintf(errori,"Trovati Pochi Beam Elevazione %2d - num.: %3d",k,nbeam_elev[k]);
-            printf("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,nbeam_elev[k]);
-            ScrivoLog(16,errori);
-            exit (1);
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,nbeam_elev[k]);
+            return false;
         }
     }                                                             /*end for*/
-    sprintf(errori,"primi test passati");
-    ScrivoLog(16,errori);
-
 
     //--------verifico la presenza del file contenente l'ultima data processata-------
-
 
     const char* last_file = getenv("LAST_FILE");
     if (last_file != NULL)
@@ -204,9 +189,8 @@ int CUM_BAC::test_file(int file_type)
             if(old_data_header.norm.maq.acq_date <= last_time)
             {
                 fclose(f_aus);
-                sprintf(errori,"File Vecchio");
-                ScrivoLog(16,errori);
-                //return 0;
+                LOG_WARN("File Vecchio");
+                //return false;
             }
             /*----------------------------
               |  aggiorno la data nel file |
@@ -230,7 +214,7 @@ int CUM_BAC::test_file(int file_type)
         }
     }
     // ------- se ok status di uscita:1
-    return 1;
+    return true;
 }
 
 bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file_type)
@@ -246,173 +230,31 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
             elev_array[i] = elev_array_spc[i];
     }
 
+    LOG_INFO("Reading %s for site %s and file type %d", nome_file, sito, file_type);
 
-    int tipo_dati_richiesti = INDEX_Z;
     //--------lettura volume------
+    int tipo_dati_richiesti = INDEX_Z;
     int ier = read_dbp_SP20((char*)nome_file,vol_pol,&old_data_header,
                             tipo_dati_richiesti,nbeam_elev);
 
-    // ----- TEMPO E LOG------
-    //  -----Scrivolog --------
-    printf("fatta lettura\n");
-    ScrivoLog(5,nome_file);
+    if (ier != OK)
+        LOG_ERROR("Reading %s returned error code %d", nome_file, ier);
 
 #ifdef TIME
     prendo_tempo();
 #endif
-    // ----- FINE TEMPO E LOG------
-
-
-    //--test legato a argv[2]
 
     //  ----- Test sul volume test_file.......  --------
-    int ier_test=test_file(file_type);
+    if (!test_file(file_type))
+    {
+        LOG_ERROR("test_file failed");
+        return false;
+    }
 
-    printf("ier -- test  %d  %d\n",ier,ier_test);
-
-    return ier == OK && ier_test;
+    return ier == OK;
 }
 
 
-void ScrivoLog(int i, const char* stringa)
-    /*======================scrivo log=================================================================*/
-{
-    static FILE *log = 0;
-    if (!log)
-    {
-        const char* log_fname = getenv("LOG_FILE");
-        // If LOG_FILE is not set, just do not log
-        if (log_fname == NULL)
-            return;
-        log=fopen(log_fname, "a");
-        if(log==NULL)
-        {
-            printf(" impossibile aprire il file di log \n");
-            exit(1);
-        }
-    }
-    switch (i)
-    {
-        case  0:
-            fprintf(log,"%s -- Lancio Programma\n",PrendiOra());
-            break;
-        case  1:
-            fprintf(log,"-----------------------------------------------------------------\n");
-            fprintf(log,"Flag di Compilazione\n");
-#ifdef BOLOGNA
-            fprintf(log," BOLOGNA ");
-#endif
-#ifdef SPC
-            fprintf(log," SPC ");
-#endif
-#ifdef WRITE_DBP
-            fprintf(log," WRITE_DBP ");
-#endif
-#ifdef TIME
-            fprintf(log," TIME ");
-#endif
-#ifdef WRITE_DBP_REORDER
-            fprintf(log," WRITE_DBP_REORDER ");
-#endif
-#ifdef DECLUTTER
-            fprintf(log," DECLUTTER ");
-#endif
-#ifdef Z_AVERAGE
-            fprintf(log," Z_AVERAGE ");
-#endif
-#ifdef R_AVERAGE
-            fprintf(log," R_AVERAGE ");
-#endif
-#ifdef Z_LOWRIS
-            fprintf(log," Z_LOWRIS ");
-#endif
-#ifdef ANAPROP
-            fprintf(log," ANAPROP");
-#endif
-#ifdef SHORT
-            fprintf(log," SHORT");
-#endif
-#ifdef MEDIUM
-            fprintf(log," MEDIUM");
-#endif
-#ifdef STATIC
-            fprintf(log," STATIC");
-#endif
-#ifdef BEAMBLOCKING
-            fprintf(log," BEAMBLOCKING");
-#endif
-#ifdef QUALITY
-            fprintf(log," QUALITY");
-#endif
-
-            fprintf(log,"\n");
-            fprintf(log,"-----------------------------------------------------------------\n");
-            fprintf(log,"Variabili d'Ambiente\n");
-            fprintf(log,"LISTA_FILE = %s\n",getenv("LISTA_FILE"));
-            fprintf(log,"LAST_FILE = %s\n",getenv("LAST_FILE"));
-            fprintf(log,"ANAP_STAT_FILE = %s\n",getenv("ANAP_STAT_FILE"));
-            fprintf(log,"BLOC_STAT_FILE = %s\n",getenv("BLOC_STAT_FILE"));
-            fprintf(log,"ELEV_STAT_FILE = %s\n",getenv("ELEV_STAT_FILE"));
-            fprintf(log,"DIR_OUT_PP_BLOC = %s\n",getenv("DIR_OUT_PP_BLOC"));
-            fprintf(log,"FILE_DEM_SPC = %s\n",getenv("FILE_DEM_SPC"));
-            fprintf(log,"FILE_DEM_GAT = %s\n",getenv("FILE_DEM_GAT"));
-            fprintf(log,"DIR_QUALITY = %s\n",getenv("DIR_QUALITY"));
-            fprintf(log,"FIRST_LEVEL_FILE = %s\n",getenv("FIRST_LEVEL_FILE"));
-            fprintf(log,"OUTPUT_Z_DIR = %s\n",getenv("OUTPUT_Z_DIR"));
-            fprintf(log,"OUTPUT_RAIN_DIR = %s\n",getenv("OUTPUT_RAIN_DIR"));
-            fprintf(log,"OUTPUT_Z_LOWRIS_DIR = %s\n",getenv("OUTPUT_Z_LOWRIS_DIR"));
-            fprintf(log,"-----------------------------------------------------------------\n");
-            break;
-        case  2:
-            fprintf(log,"%s -- Apertura File Lista %s\n",PrendiOra(),getenv("LISTA_FILE"));
-            break;
-        case  3:
-            fprintf(log,"%s -- Errore Apertura File Lista%s\n",
-                    PrendiOra(),getenv("LISTA_FILE"));
-            break;
-        case  4:
-            fprintf(log,"%s -- Apertura File Dati %s\n",PrendiOra(),stringa);
-            break;
-        case  5:
-            fprintf(log,"%s -- Lettura File Dati\n",PrendiOra());
-            break;
-        case  6:
-            fprintf(log,"%s -- Scrittura File Ordinato %s\n",PrendiOra(),stringa);
-            break;
-        case  7:
-            fprintf(log,"%s -- Cancellazione Clutter e Propagazione Anomala\n",PrendiOra());
-            break;
-        case  8:
-            fprintf(log,"%s -- Scrittura File Polare Ripulito %s\n",PrendiOra(),stringa);
-            break;
-        case  9:
-            fprintf(log,"%s -- Creazione Matrice Cartesiana \n",PrendiOra());
-            break;
-        case 13:
-            fprintf(log,"%s -- Estrazione Precipitazione 1X1\n",PrendiOra());
-            break;
-        case 14:
-            fprintf(log,"%s -- Scrittura File Precipitazione 1X1 %s\n",PrendiOra(),stringa);
-            break;
-        case 15:
-            fprintf(log,"%s -- Fine Programma\n",PrendiOra());
-            fclose(log);
-            break;
-        case 16:
-            fprintf(log,"%s -- %s\n",PrendiOra(),stringa);
-            break;
-        case 17:
-            fprintf(log,"%s -- %s scrittura file qualita'\n",PrendiOra(),stringa);
-            break;
-        case 18:
-            if (stringa==NULL) fprintf(log,"%s -- %s manca argomento necessario al programma \n",PrendiOra(),stringa);
-            else
-                fprintf(log,"%s -- argomento passato al programma %s \n",PrendiOra(),stringa);
-            break;
-
-    }
-
-}                        /*end funzione ScrivoLog(i,stringa)*/
 
 char *PrendiOra()
 {
@@ -427,16 +269,17 @@ char *PrendiOra()
 }
 
 void prendo_tempo()
-
 {
     static time_t time_tot = 0,time1 = 0,time2 = 0;
+    LOG_CATEGORY("radar.timing");
 
     if(time1 == 0){
         time1=time(&time1);
         time_tot = time1;
     }
     time2 = time(&time2);
-    printf(" tempo parziale %ld ---- totale %ld\n",time2-time1, time2-time_tot);
+
+    LOG_INFO("tempo parziale %ld ---- totale %ld\n", time2-time1, time2-time_tot);
     time1=time2;
     return;
 }
