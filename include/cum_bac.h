@@ -218,6 +218,7 @@ public:
 
     bool read_sp20_volume(const char* nome_file, const char* sito, int file_type);
     bool test_file(int tipofile);
+    void setup_elaborazione(const char* nome_file, const char* sito);
     int elabora_dato();
     void caratterizzo_volume();
     double attenuation(unsigned char DBZbyte, double  PIA);
@@ -227,7 +228,7 @@ public:
     void creo_matrice_conv();
     void creo_cart_z_lowris();
     void scrivo_out_file_bin(const char *ext,char *content,char *dir,size_t size, void  *matrice);
-    FILE *controllo_apertura(const char *nome_file, char *content,char *mode);
+    FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
     void leggo_hray();
     void leggo_dem();
     int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], const char *sito);
