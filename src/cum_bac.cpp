@@ -191,13 +191,14 @@ bool CUM_BAC::test_file(int file_type)
                 fclose(f_aus);
                 LOG_WARN("File Vecchio");
                 //return false;
+            } else {
+                /*----------------------------
+                  |  aggiorno la data nel file |
+                  ----------------------------*/
+                rewind(f_aus);
+                fwrite(&old_data_header.norm.maq.acq_date,4,1,f_aus);
+                fclose(f_aus);
             }
-            /*----------------------------
-              |  aggiorno la data nel file |
-              ----------------------------*/
-            rewind(f_aus);
-            fwrite(&old_data_header.norm.maq.acq_date,4,1,f_aus);
-            fclose(f_aus);
         }
         //-------- fin qui tutto un pezzo per dire che se il file è più vecchio dell'ultimo do' errore -----------
 
