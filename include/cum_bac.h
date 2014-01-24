@@ -69,6 +69,7 @@ public:
 
     /// Feature set required for this run
     bool do_quality;
+    bool do_beamblocking;
 
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 

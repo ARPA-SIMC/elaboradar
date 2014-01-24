@@ -57,7 +57,7 @@ int elev_array[NEL];
 
 
 CUM_BAC::CUM_BAC()
-    : do_quality(false)
+    : do_quality(false), do_beamblocking(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -310,12 +310,13 @@ int CUM_BAC::elabora_dato()
             {
                 vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
                 //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
-#ifdef BEAMBLOCKING
+                if (do_beamblocking)
+                {
 #ifndef BLOCNOCORR
                 vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
                 //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
 #endif
-#endif
+                }
 
             }
             if (do_quality)
@@ -405,9 +406,9 @@ int CUM_BAC::elabora_dato()
                         } //
 
                         //--------azzero beam_blocking ( ho cambiato elevazione, non ho disponible il bbeam blocking all' elev superiore)--------------
-#ifdef BEAMBLOCKING
-                        beam_blocking[i][k]=0;/* beam blocking azzerato */
-#endif
+                        if (do_beamblocking)
+                            beam_blocking[i][k]=0;/* beam blocking azzerato */
+
                         //--------------------incremento la statitica anaprop e di cambio elevazione-------------
                         stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
                         if (el_up > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statistica cambio elevazione
@@ -423,13 +424,14 @@ int CUM_BAC::elabora_dato()
                         //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking e incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto e assegno a 0 indicatore anap nel raggio-----------
                     {
                         flag_anap = 0;
-#ifdef BEAMBLOCKING
+                        if (do_beamblocking)
+                        {
 #ifndef BLOCNOCORR
-                        vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
-                        //    vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
-                        stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
+                            vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+                            //    vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
+                            stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
 #endif
-#endif
+                        }
                         for(l=0; l<=el_up; l++){
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 
@@ -465,9 +467,8 @@ int CUM_BAC::elabora_dato()
                             elev_fin[i][k]=el_up;
                         }
                         if (el_up > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
-#ifdef BEAMBLOCKING
-                        beam_blocking[i][k]=0;
-#endif
+                        if (do_beamblocking)
+                            beam_blocking[i][k]=0;
                     }
 
                     //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static[i][k]-----------
@@ -476,13 +477,14 @@ int CUM_BAC::elabora_dato()
                         for(l=0; l<=el_inf; l++)
                         {
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
-#ifdef BEAMBLOCKING
+                            if (do_beamblocking)
+                            {
 #ifndef BLOCNOCORR
-                            vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
-                            //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
-                            stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k];
+                                vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+                                //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
+                                stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k];
 #endif
-#endif
+                            }
                         }
 
                         if (do_quality)
@@ -527,9 +529,8 @@ int CUM_BAC::elabora_dato()
                     if (bin_high==fondo_scala) dato_corrotto[i][k]=ANAP_OK;/*non piove (oppure sono sopra livello preci...)*/
                 }
 
-#ifdef BEAMBLOCKING
-                beam_blocking[i][k]=0;
-#endif
+                if (do_beamblocking)
+                    beam_blocking[i][k]=0;
             }
 
             //----------------se bin_low == fondo_scala riempio matrice vol_pol con dato a el_inf (mi resta il dubbio di quest'if se seve o basti un else ) azzero matrice anap (dato ok)
@@ -604,66 +605,67 @@ void CUM_BAC::leggo_first_level()
     printf ("letta mappa statica \n");
 #endif
 
-#ifdef BEAMBLOCKING
-    /*----------------------------
-      Leggo file elevazioni per BB
-      ----------------------------*/
-    // perchè c'è doppia definizione di tempo ?? misteri..
-    //definisco stringa data in modo predefinito
+    if (do_beamblocking)
+    {
+        /*----------------------------
+          Leggo file elevazioni per BB
+          ----------------------------*/
+        // perchè c'è doppia definizione di tempo ?? misteri..
+        //definisco stringa data in modo predefinito
 #ifdef SHORT
-    time = NormalizzoData(old_data_header.norm.maq.acq_date); /* arrotonda ai 5 minuti di precisione*/
-    tempo = gmtime(&time);
+        time = NormalizzoData(old_data_header.norm.maq.acq_date); /* arrotonda ai 5 minuti di precisione*/
+        tempo = gmtime(&time);
 #endif
 #ifdef MEDIUM
-    tempo = gmtime(&old_data_header.norm.maq.acq_date);
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
-    tempo = gmtime(&time);
+        tempo = gmtime(&old_data_header.norm.maq.acq_date);
+        time = NormalizzoData(old_data_header.norm.maq.acq_date);
+        tempo = gmtime(&time);
 #endif
 
-    sprintf(first_level_bb_file,"%s/%04d%02d%02d%02d%02dmat_el.bin",
-            getenv("DIR_OUT_PP_BLOC"),
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
-    file=controllo_apertura(first_level_bb_file," elev BB ","r");
-    for(i=0; i<NUM_AZ_X_PPI; i++)
-        fread(&bb_first_level[i][0],MAX_BIN,1,file);
-    fclose(file);
-    printf ("letta mappa elevazioni da prog beam blocking\n");
-    /*------------------------
-      Leggo file valore di BB
-      ------------------------*/
-    sprintf(bb_value_file,"%s/%04d%02d%02d%02d%02dmat_bloc.bin",
-            getenv("DIR_OUT_PP_BLOC"),
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
+        sprintf(first_level_bb_file,"%s/%04d%02d%02d%02d%02dmat_el.bin",
+                getenv("DIR_OUT_PP_BLOC"),
+                tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
+                tempo->tm_hour, tempo->tm_min);
+        file=controllo_apertura(first_level_bb_file," elev BB ","r");
+        for(i=0; i<NUM_AZ_X_PPI; i++)
+            fread(&bb_first_level[i][0],MAX_BIN,1,file);
+        fclose(file);
+        printf ("letta mappa elevazioni da prog beam blocking\n");
+        /*------------------------
+          Leggo file valore di BB
+          ------------------------*/
+        sprintf(bb_value_file,"%s/%04d%02d%02d%02d%02dmat_bloc.bin",
+                getenv("DIR_OUT_PP_BLOC"),
+                tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
+                tempo->tm_hour, tempo->tm_min);
 
-    file=controllo_apertura(bb_value_file," elev BB ","r");
+        file=controllo_apertura(bb_value_file," elev BB ","r");
 
-    /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
-       altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
-    for(i=0; i<NUM_AZ_X_PPI; i++){   /*ciclo sugli azimut*/
-        fread(&beam_blocking[i][0],MAX_BIN,1,file);
+        /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
+           altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
+        for(i=0; i<NUM_AZ_X_PPI; i++){   /*ciclo sugli azimut*/
+            fread(&beam_blocking[i][0],MAX_BIN,1,file);
 
-        for (j=0; j<MAX_BIN; j++) /*ciclo sul range  */
-        {
+            for (j=0; j<MAX_BIN; j++) /*ciclo sul range  */
+            {
 #ifndef BLOCNOCORR
-            if (first_level_static[i][j]<=bb_first_level[i][j])
-                first_level[i][j]=bb_first_level[i][j];
-            else
-            {  beam_blocking[i][j]=0;
-                first_level[i][j]=first_level_static[i][j]; }
+                if (first_level_static[i][j]<=bb_first_level[i][j])
+                    first_level[i][j]=bb_first_level[i][j];
+                else
+                {  beam_blocking[i][j]=0;
+                    first_level[i][j]=first_level_static[i][j]; }
 # endif
 #ifdef BLOCNOCORR
-            if (first_level_static[i][j]>bb_first_level[i][j])
-                beam_blocking[i][j]=0;
-            if (first_level_static[i][j]<bb_first_level[i][j])
-                beam_blocking[i][j]=OVERBLOCKING;
+                if (first_level_static[i][j]>bb_first_level[i][j])
+                    beam_blocking[i][j]=0;
+                if (first_level_static[i][j]<bb_first_level[i][j])
+                    beam_blocking[i][j]=OVERBLOCKING;
 #endif
+            }
         }
+        fclose(file);
+        printf ("letta mappa beam blocking \n");
     }
-    fclose(file);
-    printf ("letta mappa beam blocking \n");
-#endif
 
     /*-------------------------------
       patch per espandere il clutter
