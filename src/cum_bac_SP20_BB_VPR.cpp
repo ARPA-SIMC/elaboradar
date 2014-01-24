@@ -3421,27 +3421,6 @@ static void startup_banner()
     LOG_INFO("OUTPUT_RAIN_DIR = %s", getenv("OUTPUT_RAIN_DIR"));
     LOG_INFO("OUTPUT_Z_LOWRIS_DIR = %s", getenv("OUTPUT_Z_LOWRIS_DIR"));
     LOG_INFO("-----------------------------------------------------------------");
-
-// FIXME Vecchie descrizioni della ScrivoLog, le tengo qui finché non ho riscritto tutte le chiamate
-//        case  2: fprintf(log,"%s -- Apertura File Lista %s\n",PrendiOra(),getenv("LISTA_FILE"));
-//        case  3: fprintf(log,"%s -- Errore Apertura File Lista%s\n", PrendiOra(),getenv("LISTA_FILE"));
-//        case  4: fprintf(log,"%s -- Apertura File Dati %s\n",PrendiOra(),stringa);
-//        case  5: fprintf(log,"%s -- Lettura File Dati\n",PrendiOra());
-//        case  6: fprintf(log,"%s -- Scrittura File Ordinato %s\n",PrendiOra(),stringa);
-//        case  7: fprintf(log,"%s -- Cancellazione Clutter e Propagazione Anomala\n",PrendiOra());
-//        case  8: fprintf(log,"%s -- Scrittura File Polare Ripulito %s\n",PrendiOra(),stringa);
-//        case  9: fprintf(log,"%s -- Creazione Matrice Cartesiana \n",PrendiOra());
-//        case 13: fprintf(log,"%s -- Estrazione Precipitazione 1X1\n",PrendiOra());
-//        case 14: fprintf(log,"%s -- Scrittura File Precipitazione 1X1 %s\n",PrendiOra(),stringa);
-//        case 15: fprintf(log,"%s -- Fine Programma\n",PrendiOra());
-//        case 16: fprintf(log,"%s -- %s\n",PrendiOra(),stringa);
-//        case 17: fprintf(log,"%s -- %s scrittura file qualita'\n",PrendiOra(),stringa);
-//        case 18:
-//            if (stringa==NULL) fprintf(log,"%s -- %s manca argomento necessario al programma \n",PrendiOra(),stringa);
-//            else
-//                fprintf(log,"%s -- argomento passato al programma %s \n",PrendiOra(),stringa);
-
-    //---- assegnazioni legate a argv[1]-- nome_file, nome_file_volume
 }
 
 /// Report a command line error and quit
