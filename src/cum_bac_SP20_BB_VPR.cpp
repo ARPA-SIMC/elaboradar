@@ -2895,6 +2895,9 @@ int main (int argc, char **argv)
 #ifdef BEAMBLOCKING
     cb->do_beamblocking = true;
 #endif
+#ifdef DECLUTTER
+    cb->do_declutter = true;
+#endif
 
     if (cb->esegui_tutto(nome_file, file_type, sito))
         ier_main = 0;

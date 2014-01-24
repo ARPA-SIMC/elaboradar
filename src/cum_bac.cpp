@@ -57,7 +57,7 @@ int elev_array[NEL];
 
 
 CUM_BAC::CUM_BAC()
-    : do_quality(false), do_beamblocking(false)
+    : do_quality(false), do_beamblocking(false), do_declutter(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -298,34 +298,34 @@ int CUM_BAC::elabora_dato()
 
     //------------se definito DECLUTTER , non rimuovo anap e riscrivo  volume polare facedndo declutter solo con mappa statica.... ancora valido?
 
-#ifdef DECLUTTER
-    for(i=0; i<NUM_AZ_X_PPI; i++)
+    if (do_declutter)
     {
-        for(k=0; k<vol_pol[0][i].b_header.max_bin; k++)
+        for(i=0; i<NUM_AZ_X_PPI; i++)
         {
-            //---assegno el_inf a mappa statica
-            el_inf = first_level_static[i][k];
-            //---ricopio valori a mappa statica sotto
-            for(l=0; l<=el_inf; l++)
+            for(k=0; k<vol_pol[0][i].b_header.max_bin; k++)
             {
-                vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
-                //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
-                if (do_beamblocking)
+                //---assegno el_inf a mappa statica
+                el_inf = first_level_static[i][k];
+                //---ricopio valori a mappa statica sotto
+                for(l=0; l<=el_inf; l++)
                 {
+                    vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
+                    //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
+                    if (do_beamblocking)
+                    {
 #ifndef BLOCNOCORR
-                vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
-                //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
+                    vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+                    //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
 #endif
+                    }
+
                 }
-
+                if (do_quality)
+                    elev_fin[i][k]=el_inf;
             }
-            if (do_quality)
-                elev_fin[i][k]=el_inf;
         }
+        return 0;
     }
-    return 0;
-
-#endif
 
     //------------se non definito DECLUTTER inizio rimozione propagazione anomala al livello mappa dinamica e elaborazioni accessorie
 
