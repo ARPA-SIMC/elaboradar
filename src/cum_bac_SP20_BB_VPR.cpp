@@ -2887,6 +2887,12 @@ int main (int argc, char **argv)
 #endif
 
     CUM_BAC *cb = new CUM_BAC;
+
+    // Set feature flags
+#ifdef QUALITY
+    cb->do_quality = true;
+#endif
+
     if (cb->esegui_tutto(nome_file, file_type, sito))
         ier_main = 0;
     else
