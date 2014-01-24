@@ -21,6 +21,10 @@ extern "C" {
 }
 #endif
 
+#ifdef QUALITY
+#include <qual_par.h>
+#endif
+
 //Definizioni per test_file
 #define NUM_MIN_BEAM 200
 #define SHORT_DEC         0
@@ -44,6 +48,12 @@ extern "C" {
 // anaprop
 #define LIMITE_ANAP 240/* LIMITE in numero bins per cambiare controllo anaprop*/
 
+#define DTOR  M_PI/180. /* esternalizzo?*/ //fattore conversione gradi-radianti
+#define CONV_RAD 360./4096.*DTOR  // fattore conversione unità angolare radar-radianti
+
+// parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
+#define NSCAN 6
+
 /// This needs to be a global variable, as it is expected by libsp20
 int elev_array[NEL];
 
@@ -52,25 +62,18 @@ CUM_BAC::CUM_BAC()
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
-#ifdef VPR
     t_ground=NODATAVPR;
     chisqfin=100; //???puo' essere def in anal
     rmsefin=100;
-#endif
-#ifdef CLASS
     ncv=0;ncs=0;np=0;
     htbb=-9999.; hbbb=-9999.;
-#endif
     memset(vol_pol,0,sizeof(vol_pol));
     memset(cart,0,sizeof(cart));
-  #ifdef ZLR_MEDIA
     memset(cartm,0.,sizeof(cartm));
-  #endif
     memset(z_out,0,sizeof(z_out));
     memset(nbeam_elev,0,sizeof(nbeam_elev));
     memset (first_level,0,sizeof(first_level));
     memset (first_level_static,0,sizeof(first_level_static));
-  #ifdef QUALITY
     memset(dato_corrotto,0,sizeof(dato_corrotto));
     memset(dato_corr_xy,0,sizeof(dato_corr_xy));
     memset(dato_corr_1x1,0,sizeof(dato_corr_1x1));
@@ -91,7 +94,6 @@ CUM_BAC::CUM_BAC()
     memset(top,0,sizeof(top));
     memset(topxy,0,sizeof(topxy));
     memset(top_1x1,0,sizeof(top_1x1));
-  #ifdef VPR
     memset(corr_1x1,0,sizeof(corr_1x1));
     memset(neve_cart,0,sizeof(neve_cart));
     memset(neve_1x1,0,sizeof(neve_1x1));
@@ -103,7 +105,6 @@ CUM_BAC::CUM_BAC()
         for(int k=0; k<MAX_BIN; k++)
       flag_vpr[l][i][k]=0;
 
-  #ifdef CLASS
     for (int k=0; k<NUM_AZ_X_PPI*MAX_BIN;k++ ){
       lista_conv[k][0]=-999;
       lista_conv[k][1]=-999;
@@ -112,13 +113,8 @@ CUM_BAC::CUM_BAC()
     }
 
     memset(stratiform,0,sizeof(stratiform));
-  #endif
 
-  #endif
-  #endif
-  #ifdef BEAMBLOCKING
     memset(bb_first_level,0,sizeof(bb_first_level));
-  #endif
 
     memset(stat_anap_tot,0,sizeof(stat_anap_tot));
     memset(stat_anap,0,sizeof(stat_anap));
@@ -687,6 +683,93 @@ void CUM_BAC::leggo_first_level()
 #endif
 }
 
+#ifdef QUALITY
+
+void CUM_BAC::leggo_hray( )
+{
+    struct tm *tempo;
+    time_t time;
+    FILE *file;
+    int i,j;
+    char nome_file_hray [150];
+
+    /*--------------------------
+      Leggo quota centro fascio
+      --------------------------*/
+    //definisco stringa data in modo predefinito
+#ifdef SHORT
+    time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    tempo = gmtime(&time);
+#endif
+#ifdef MEDIUM
+    tempo = gmtime(&old_data_header.norm.maq.acq_date);
+    time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    tempo = gmtime(&time);
+#endif
+    sprintf(nome_file_hray,"%s/%04d%02d%02d%02d%02dh_ray.txt",
+            getenv("DIR_OUT_PP_BLOC"),
+            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
+            tempo->tm_hour, tempo->tm_min);
+
+    file=controllo_apertura(nome_file_hray,"File hray","r");
+    fscanf(file,"%f ",&dtrs);
+
+    for(i=0; i<MAX_BIN; i++){
+        for(j=0; j<NSCAN;j++)
+            fscanf(file,"%f ",&hray[i][j]);
+    }
+    fclose(file);
+    sprintf(nome_file_hray,"%s/%04d%02d%02d%02d%02dh_rayinf.txt",
+            getenv("DIR_OUT_PP_BLOC"),
+            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
+            tempo->tm_hour, tempo->tm_min);
+
+    file=controllo_apertura(nome_file_hray,"File hray inf","r");
+    fscanf(file,"%f ",&dtrs);
+    for(i=0; i<MAX_BIN; i++){
+        for(j=0; j<NSCAN;j++)
+            fscanf(file,"%f ",&hray_inf[i][j]);
+    }
+    fclose(file);
+    sprintf(errori,"lette hray\n");
+
+    return  ;
+}
+
+void CUM_BAC::leggo_dem()
+{
+    FILE *file;
+    int i,j;
+    /*---------------------
+      Leggo dem
+      ---------------------*/
+    //        file_dem=controllo_apertura(getenv("FILE_DEM"),"File dem","r");
+
+    file=controllo_apertura(nome_dem,"File dem","r");
+    for(i=0; i<MAX_BIN; i++){
+        for(j=0; j<NUM_AZ_X_PPI;j++)
+            fscanf(file,"%f ",&dem[j][i]);
+    }
+    fclose(file);
+    printf("letto dem \n");
+    return ;
+}
+#endif
+
+//------------funzione quota_f-----------------------
+//---------funzione che calcola la quota in metri del centro del fascio-----------------------
+//--------distanza=k*dimensionecella +semidimensionecella in metri ----------------------
+//--------quota=f(distinkm, rstinkm, elevazinrad) in metri
+float CUM_BAC::quota_f(float elevaz, int k) // quota funzione di elev(radianti) e range
+{
+    float dist;
+    float q_st;
+    dist=k*(size_cell[old_data_header.norm.maq.resolution])+(size_cell[old_data_header.norm.maq.resolution])/2.;
+    q_st=(sqrt(pow(dist/1000.,2)+(rst*rst)+2.0*dist/1000.*rst*sin(elevaz))-rst)*1000.; /*quota in prop. standard da elevazione reale  */;
+
+    return q_st;
+}
+
 void CUM_BAC::ScrivoStatistica()
 {
     int az,ran;
@@ -736,6 +819,33 @@ void CUM_BAC::ScrivoStatistica()
     }
 
     return ;
+}
+
+FILE *CUM_BAC::controllo_apertura (const char *nome_file, char *content,char *mode)
+{
+    FILE *file;
+    int ier_ap=0;
+
+    //printf("controllo apertura %s\n",nome_file);
+
+    if (strcmp(mode,"r") == 0)
+        ier_ap=access(nome_file,R_OK);
+    else ier_ap=0;
+
+    if (!ier_ap) {
+        if (strcmp(mode,"r") == 0) file = fopen(nome_file,"r");
+        else file=fopen(nome_file,"w");
+    }
+    else
+    {
+        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
+        exit(1);
+    }
+    if (file == NULL) {
+        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
+        exit(1);
+    }
+    return(file);
 }
 
 

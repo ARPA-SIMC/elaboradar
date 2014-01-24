@@ -28,14 +28,20 @@ LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs
 CC=cc 
 CXX=g++ 
 
-CFLAGS=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_MEDIUM)   $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R) $(shell log4c-config --cflags)
+# Common CFLAGS for old and new code
+CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) $(shell log4c-config --cflags)
+
+# CFLAGS for old code
+CFLAGS_LEGACY=$(CFLAGS_COMMON) $(COMMON_DFLAGS_MEDIUM)
+
+# CFLAGS for all current code
+CFLAGS=$(CFLAGS_COMMON) $(COMMON_DFLAGS_SHORT)
 CXXFLAGS=$(CFLAGS)
 
-CFLAGS_BB=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_SHORT)  $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
-
-CFLAGS_BB_VPR=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
-
-CFLAGS_BB_VPR_CLASS=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR_CLASS) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+# CFLAGS variations used to recompile cum_bac_SP20_BB_VPR.cpp in various flavours
+CFLAGS_BB=$(CFLAGS) -I$(INCLUDEDIR_NR_C)
+CFLAGS_BB_VPR=$(CFLAGS) $(ADDED_DFLAGS_VPR) -I$(INCLUDEDIR_NR_C)
+CFLAGS_BB_VPR_CLASS=$(CFLAGS) $(ADDED_DFLAGS_VPR_CLASS) -I$(INCLUDEDIR_NR_C)
 
 OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o utils.o logging.o
 OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
@@ -49,16 +55,16 @@ cum_bac_SP20_m: $(OBJ)
 	$(CXX) -o $@ $^ $(LDLIBS) 
 
 cum_bac_SP20.o:cum_bac_SP20.cpp $(INCLUDEDIR_SP20)/func_SP20read.h  
-	$(CXX) -c  $(CFLAGS) $< -o $@ 
+	$(CXX) -c  $(CFLAGS_LEGACY) $< -o $@ 
 
 cum_bac_SP20_BB: $(OBJ_BB)
 
-cum_bac_SP20_BB.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h  
+cum_bac_SP20_BB.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h
 	$(CXX) -c  $(CFLAGS_BB) $< -o $@
 
 cum_bac_SP20_BB_VPR: $(OBJ_BB_VPR)
 
-cum_bac_SP20_BB_VPR.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h 
+cum_bac_SP20_BB_VPR.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h
 	$(CXX) -c  $(CFLAGS_BB_VPR) $< -o $@
 
 cum_bac_SP20_BB_VPR_CLASS: $(OBJ_BB_VPR_CLASS)
@@ -79,7 +85,7 @@ Q_components.o:Q_components.cpp ../include/qual_par.h
 	$(CXX) -c $< $(CFLAGS) -o $@
 
 clean: 
-	$(RM) $(OBJ_BB_VPR) $(OBJ) $(OBJ_BB_VPR_CLASS) *.o $(BINDIR)/*
+	$(RM) $(OBJ_BB_VPR) $(OBJ) $(OBJ_BB_VPR_CLASS) *.o $(BINDIR)/* tests/*.o
 
 install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_SP20_m
 	[ -d $(BINDIR) ] || mkdir -p $(BINDIR)
