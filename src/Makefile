@@ -23,12 +23,12 @@ LDLIBS_SP20= -L$(libSP20_DIR) -lSP20_utility
 LDLIBS_ZR= -L$(libZR_DIR) -lfunc_Z_R
 LDLIBS_NR=-L$(libNR_DIR) -lNR_C_ANSI
 
-LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm -llog4c
+LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs)
 
 CC=cc 
 CXX=g++ 
 
-CFLAGS=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_MEDIUM)   $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
+CFLAGS=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_MEDIUM)   $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R) $(shell log4c-config --cflags)
 CXXFLAGS=$(CFLAGS)
 
 CFLAGS_BB=-g -I../include -Wall  -fstack-protector $(COMMON_DFLAGS_SHORT)  $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
@@ -37,7 +37,7 @@ CFLAGS_BB_VPR=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(A
 
 CFLAGS_BB_VPR_CLASS=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR_CLASS) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
-OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o 
+OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o logging.o
 OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
 OBJ_BB_VPR=cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
 OBJ_BB=cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)

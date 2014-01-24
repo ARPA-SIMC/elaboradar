@@ -1,4 +1,5 @@
 #include "cum_bac.h"
+#include "logging.h"
 
 #include <cstring>
 
@@ -24,6 +25,8 @@ int elev_array[NEL];
 
 CUM_BAC::CUM_BAC()
 {
+    logging_category = log4c_category_get("radar.cum_bac");
+
 #ifdef VPR
     t_ground=NODATAVPR;
     chisqfin=100; //???puo' essere def in anal
