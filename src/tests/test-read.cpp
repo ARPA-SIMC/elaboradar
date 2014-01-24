@@ -96,4 +96,15 @@ void to::test<1>()
     delete cb;
 }
 
+template<> template<>
+void to::test<2>()
+{
+    // Test elabora_dato
+    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    CUM_BAC* cb = new CUM_BAC;
+    cb->read_sp20_volume(fname, "GAT", 0);
+    int ier = cb->elabora_dato();
+    wassert(actual(ier) == 0);
+}
+
 }

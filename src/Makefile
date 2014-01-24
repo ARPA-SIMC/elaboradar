@@ -37,7 +37,7 @@ CFLAGS_BB_VPR=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(A
 
 CFLAGS_BB_VPR_CLASS=-g -I../include -Wall -fstack-protector $(COMMON_DFLAGS_SHORT) $(ADDED_DFLAGS_VPR_CLASS) $(IFLAGS) -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_NR_C) -I$(INCLUDEDIR_Z_R)
 
-OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o logging.o
+OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o utils.o logging.o
 OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
 OBJ_BB_VPR=cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
 OBJ_BB=cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
