@@ -53,6 +53,8 @@ static const int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define MAX_TIME_DIFF 1
 #endif
 
+// dimensioni cella a seconda del tipo di acquisizione
+static const float size_cell[]={62.5,125.,250.,500.,1000.,2000.};
 
 //Dimensioni matrici statistica
 #define DIM1_ST 16
@@ -90,9 +92,7 @@ public:
     unsigned char cart[MAX_BIN*2][MAX_BIN*2];
     double  cartm[MAX_BIN*2][MAX_BIN*2];  /* Z media dei bins adiacenti al punto */
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
-    #ifdef Z_LOWRIS
     unsigned char z_out[CART_DIM_ZLR][CART_DIM_ZLR];
-    #endif
 
     //variabili tempo per ottenere mese.. aggiunti nel main per leggere stagione dal nome file e ricavere MP coeff */
     struct tm *tempo;
@@ -115,12 +115,9 @@ public:
     unsigned char first_level[NUM_AZ_X_PPI][MAX_BIN]; //mappa dinamica complessiva
     unsigned char first_level_static[NUM_AZ_X_PPI][MAX_BIN];//mappa statica
 
-    #ifdef BEAMBLOCKING
     unsigned char bb_first_level[NUM_AZ_X_PPI][MAX_BIN];  /* mappa di elevazioni da beam blocking (input)*/
     unsigned char beam_blocking [NUM_AZ_X_PPI][MAX_BIN];   /* mappa di beam blocking (input)*/
-    #endif
 
-    #ifdef QUALITY
     //variabili legate a propagazione e beam blocking, da prog_bb
     float hray[MAX_BIN][NEL];  /*quota centro fascio in funzione della distanza e elevazione*/
     float hray_inf[MAX_BIN][NEL]; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
@@ -155,7 +152,6 @@ public:
     unsigned char topxy[MAX_BIN*2][MAX_BIN*2];
     unsigned char  top_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
 
-    #ifdef VPR
     // uscite  vpr: correzione VPR , come sopra
     unsigned char  corr_polar[NUM_AZ_X_PPI][MAX_BIN];/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
     unsigned char  corr_cart[MAX_BIN*2][MAX_BIN*2];
@@ -181,10 +177,6 @@ public:
     //obsol.
     float stdev;// obsol.
 
-
-    #endif
-
-    #ifdef CLASS
     //matrici per classificazione: cappi
     unsigned char cappi[NUM_AZ_X_PPI][MAX_BIN];
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
@@ -209,10 +201,6 @@ public:
     float *convective_radius;
     float htbb, hbbb;
     FILE *log_class;
-
-
-    #endif
-    #endif
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;

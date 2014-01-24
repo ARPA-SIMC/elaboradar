@@ -85,9 +85,6 @@ extern "C" {
 /*extern char *sys_errlist[];  ANNA 17-2-2006 sostituito con strerror che sta in string.h */
 extern int errno;
 
-// dimensioni cella a seconda del tipo di acquisizione
-const float size_cell[]={62.5,125.,250.,500.,1000.,2000.};
-
 /* comstart lineargauss
    comend
 */
@@ -497,107 +494,8 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,char *content,char *dir,size_
     return;
 }
 
-FILE *CUM_BAC::controllo_apertura (const char *nome_file, char *content,char *mode)
-{
-    FILE *file;
-    int ier_ap=0;
-
-    //printf("controllo apertura %s\n",nome_file);
-
-    if (strcmp(mode,"r") == 0)
-        ier_ap=access(nome_file,R_OK);
-    else ier_ap=0;
-
-    if (!ier_ap) {
-        if (strcmp(mode,"r") == 0) file = fopen(nome_file,"r");
-        else file=fopen(nome_file,"w");
-    }
-    else
-    {
-        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
-        exit(1);
-    }
-    if (file == NULL) {
-        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
-        exit(1);
-    }
-    return(file);
-}
-
 /*=======================================================================================*/
 
-#ifdef QUALITY
-
-void CUM_BAC::leggo_hray( )
-{
-    struct tm *tempo;
-    time_t time;
-    FILE *file;
-    int i,j;
-    char nome_file_hray [150];
-
-    /*--------------------------
-      Leggo quota centro fascio
-      --------------------------*/
-    //definisco stringa data in modo predefinito
-#ifdef SHORT
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
-    tempo = gmtime(&time);
-#endif
-#ifdef MEDIUM
-    tempo = gmtime(&old_data_header.norm.maq.acq_date);
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
-    tempo = gmtime(&time);
-#endif
-    sprintf(nome_file_hray,"%s/%04d%02d%02d%02d%02dh_ray.txt",
-            getenv("DIR_OUT_PP_BLOC"),
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
-
-    file=controllo_apertura(nome_file_hray,"File hray","r");
-    fscanf(file,"%f ",&dtrs);
-
-    for(i=0; i<MAX_BIN; i++){
-        for(j=0; j<NSCAN;j++)
-            fscanf(file,"%f ",&hray[i][j]);
-    }
-    fclose(file);
-    sprintf(nome_file_hray,"%s/%04d%02d%02d%02d%02dh_rayinf.txt",
-            getenv("DIR_OUT_PP_BLOC"),
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
-
-    file=controllo_apertura(nome_file_hray,"File hray inf","r");
-    fscanf(file,"%f ",&dtrs);
-    for(i=0; i<MAX_BIN; i++){
-        for(j=0; j<NSCAN;j++)
-            fscanf(file,"%f ",&hray_inf[i][j]);
-    }
-    fclose(file);
-    sprintf(errori,"lette hray\n");
-
-    return  ;
-}
-
-void CUM_BAC::leggo_dem()
-{
-    FILE *file;
-    int i,j;
-    /*---------------------
-      Leggo dem
-      ---------------------*/
-    //        file_dem=controllo_apertura(getenv("FILE_DEM"),"File dem","r");
-
-    file=controllo_apertura(nome_dem,"File dem","r");
-    for(i=0; i<MAX_BIN; i++){
-        for(j=0; j<NUM_AZ_X_PPI;j++)
-            fscanf(file,"%f ",&dem[j][i]);
-    }
-    fclose(file);
-    printf("letto dem \n");
-    return ;
-}
-#endif
 
 
 #ifdef VPR
@@ -1883,21 +1781,6 @@ int CUM_BAC::testfit(float a[], float chisq, float chisqin)
 }
 
 #endif
-
-//------------funzione quota_f-----------------------
-//---------funzione che calcola la quota in metri del centro del fascio-----------------------
-//--------distanza=k*dimensionecella +semidimensionecella in metri ----------------------
-//--------quota=f(distinkm, rstinkm, elevazinrad) in metri
-
-float CUM_BAC::quota_f(float elevaz, int k) // quota funzione di elev(radianti) e range
-{
-    float dist;
-    float q_st;
-    dist=k*(size_cell[old_data_header.norm.maq.resolution])+(size_cell[old_data_header.norm.maq.resolution])/2.;
-    q_st=(sqrt(pow(dist/1000.,2)+(rst*rst)+2.0*dist/1000.*rst*sin(elevaz))-rst)*1000.; /*quota in prop. standard da elevazione reale  */;
-
-    return q_st;
-}
 
 #ifdef CLASS
 void CUM_BAC::classifica_rain()
