@@ -3076,7 +3076,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
 
     //  ----- test su normalizzazione data ( no minuti strani)
 
-    if( NormalizzoData(old_data_header.norm.maq.acq_date) == -1 )
+    if (NormalizzoData(old_data_header.norm.maq.acq_date) == -1)
         return true;
 
     /*------------------------------------------
