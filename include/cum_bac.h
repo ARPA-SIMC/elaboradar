@@ -2,6 +2,7 @@
 #define ARCHIVIATORE_CUM_BAC_CLASS_H
 
 #include "logging.h"
+#include "assets.h"
 #include <cum_bac_SP20_BB_VPR.h>
 
 
@@ -66,6 +67,8 @@ class CUM_BAC
 {
 public:
     log4c_category_t* logging_category;
+
+    Assets assets;
 
     /// Feature set required for this run
     bool do_quality;

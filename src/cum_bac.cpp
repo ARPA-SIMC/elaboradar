@@ -134,7 +134,9 @@ void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
     /*------------------------------------------
       | rimozione propagazione anomala e clutter |
       ------------------------------------------*/
-    LOG_INFO("%s %s -- Cancellazione Clutter e Propagazione Anomala", PrendiOra(), nome_file);
+    LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
+
+    assets.configure(sito, old_data_header.norm.maq.acq_date);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
