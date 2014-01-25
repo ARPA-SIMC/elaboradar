@@ -54,6 +54,11 @@ public:
      * goes wrong.
      */
     FILE* open_file_first_level();
+
+    /**
+     * Read the value inside the first level dimension file
+     */
+    int read_file_first_level_dim();
 };
 
 #endif
