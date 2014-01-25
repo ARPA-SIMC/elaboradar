@@ -797,9 +797,6 @@ void CUM_BAC::ScrivoStatistica()
     unsigned char statistica[DIM1_ST][DIM2_ST];
     unsigned char statistica_bl[DIM1_ST][DIM2_ST];
     unsigned char statistica_el[DIM1_ST][DIM2_ST];
-    struct tm *tempo;
-    time_t Time;
-    // char date[20];
 
     printf ("scrivo statistica ");
     memset(statistica,255,DIM1_ST*DIM2_ST);
