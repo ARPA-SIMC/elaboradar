@@ -122,10 +122,6 @@ CUM_BAC::CUM_BAC()
     memset(stat_elev,0,sizeof(stat_elev));
 
 
-    // ----- alloco i puntatori ---------
-    nome_fl=(char *)malloc(200*sizeof(char));
-    nome_dem=(char *)malloc(200*sizeof(char));
-
     //-----  FINE INIZIALIZZAZIONI---------//
 }
 
@@ -147,10 +143,6 @@ void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
     // scrivo la variabile char date con la data in formato aaaammgghhmm
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
-
-    // ------setto ambiente statico (le first level e il nome del dem )--------------
-    setstat(sito,month, nome_dem, nome_fl);
-    LOG_INFO("nome dem %s nome fl %s", nome_dem, nome_fl);
 
     // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
     if ( month > 4 && month < 10 )  {
@@ -628,7 +620,7 @@ void CUM_BAC::leggo_first_level()
     fscanf(file,"%i ",&dim);
     fclose(file);
     //leggo mappa statica con dimensioni appena lette
-    file=controllo_apertura(nome_fl," mappa statica","r");
+    file = assets.open_file_first_level();
     for(i=0; i<NUM_AZ_X_PPI; i++)
         fread(&first_level_static[i][0],dim,1,file);
     // copio mappa statica su matrice first_level
@@ -773,20 +765,15 @@ void CUM_BAC::leggo_hray( )
 
 void CUM_BAC::leggo_dem()
 {
-    FILE *file;
-    int i,j;
     /*---------------------
       Leggo dem
       ---------------------*/
-    //        file_dem=controllo_apertura(getenv("FILE_DEM"),"File dem","r");
-
-    file=controllo_apertura(nome_dem,"File dem","r");
-    for(i=0; i<MAX_BIN; i++){
-        for(j=0; j<NUM_AZ_X_PPI;j++)
+    FILE *file = assets.open_file_dem();
+    for (int i=0; i<MAX_BIN; i++){
+        for (int j=0; j<NUM_AZ_X_PPI;j++)
             fscanf(file,"%f ",&dem[j][i]);
     }
     fclose(file);
-    printf("letto dem \n");
     return ;
 }
 

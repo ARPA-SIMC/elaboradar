@@ -1,8 +1,12 @@
 #include "utils.h"
 #include "logging.h"
 #include <cstdlib>
+#include <string>
+#include <stdexcept>
 #include <cstring>
 #include <cerrno>
+
+using namespace std;
 
 FILEFromEnv::FILEFromEnv()
     : fd(0)
@@ -48,4 +52,32 @@ FILEFromEnv::~FILEFromEnv()
     {
         fclose(fd);
     }
+}
+
+const char* getenv_default(const char* envname, const char* default_value)
+{
+    const char* res = getenv(envname);
+    if (res) return res;
+    return default_value;
+}
+
+FILE* fopen_checked(const char* fname, const char* mode, const char* description)
+{
+    FILE* res = fopen(fname, mode);
+    if (!res)
+    {
+        string errmsg("cannot open ");
+        if (description)
+        {
+            errmsg += description;
+            errmsg += " ";
+        }
+        errmsg += fname;
+        errmsg += " (";
+        errmsg += mode;
+        errmsg += "): ";
+        errmsg += strerror(errno);
+        throw runtime_error(errmsg);
+    }
+    return res;
 }

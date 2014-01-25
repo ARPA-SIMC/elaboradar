@@ -88,8 +88,6 @@ public:
 
     char errori[256];
 
-    //nomi files input
-    char *nome_fl,*nome_dem;
     //dato di base volume polare, struttura definita in libSP20
     struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
 

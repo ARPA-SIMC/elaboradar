@@ -29,7 +29,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <setwork.h>
-#include <setstat.h>
 #include <func_Q3d.h>
 
 /**
