@@ -604,7 +604,7 @@ int CUM_BAC::elabora_dato()
 void CUM_BAC::leggo_first_level()
 {
     FILE *file;
-    int i,j,dim;
+    int i,j;
     char first_level_bb_file[200],bb_value_file[200];
     struct tm *tempo;
     time_t time;
@@ -613,11 +613,8 @@ void CUM_BAC::leggo_first_level()
     /*-------------------
       Leggo mappa  statica
       -------------------*/
-    //controllo apertura file dimensioni mappa statica
-    file=controllo_apertura(getenv("FIRST_LEVEL_DIM_FILE")," dimensioni mappa statica","r");
-    //lettura dimensioni matrice mappa statica da file esterno
-    fscanf(file,"%i ",&dim);
-    fclose(file);
+    // lettura dimensioni matrice mappa statica da file esterno
+    int dim = assets.read_file_first_level_dim();
     //leggo mappa statica con dimensioni appena lette
     file = assets.open_file_first_level();
     for(i=0; i<NUM_AZ_X_PPI; i++)
