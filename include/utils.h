@@ -38,6 +38,27 @@ public:
      * Returns the file name, if a file is open
      */
     const char* name() const { return fname.c_str(); }
+
+private:
+    // Disallow copy of FILEFromEnv objects
+    FILEFromEnv(const FILEFromEnv&);
+    FILEFromEnv& operator=(const FILEFromEnv*);
 };
+
+/**
+ * A wrapper of getenv, that returns 'default_value' if the given environment
+ * name is not defined.
+ */
+const char* getenv_default(const char* envname, const char* default_value);
+
+/**
+ * A wrapper of fopen that throws an exception if it cannot open the file.
+ *
+ * If description is provided, it is used in the error message to say what is
+ * the file that we were trying to open.
+ *
+ * It always return a valid, open FILE pointer.
+ */
+FILE* fopen_checked(const char* fname, const char* mode, const char* description=0);
 
 #endif

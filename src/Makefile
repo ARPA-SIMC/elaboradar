@@ -43,7 +43,7 @@ CFLAGS_BB=$(CFLAGS) -I$(INCLUDEDIR_NR_C)
 CFLAGS_BB_VPR=$(CFLAGS) $(ADDED_DFLAGS_VPR) -I$(INCLUDEDIR_NR_C)
 CFLAGS_BB_VPR_CLASS=$(CFLAGS) $(ADDED_DFLAGS_VPR_CLASS) -I$(INCLUDEDIR_NR_C)
 
-OBJ_COMMON=setstat.o setwork.o func_Q3d.o Q_components.o utils.o assets.o logging.o
+OBJ_COMMON=setwork.o func_Q3d.o Q_components.o utils.o assets.o logging.o
 OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
 OBJ_BB_VPR=cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
 OBJ_BB=cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
@@ -73,9 +73,6 @@ cum_bac_SP20_BB_VPR_CLASS.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20
 	$(CXX) -c  $(CFLAGS_BB_VPR_CLASS) $< -o $@
 
 setwork.o:setwork.cpp
-	$(CXX) -c $< $(CFLAGS) -o $@
-
-setstat.o: setstat.cpp
 	$(CXX) -c $< $(CFLAGS) -o $@
 
 func_Q3d.o:func_Q3d.cpp ../include/qual_par.h
