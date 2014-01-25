@@ -316,7 +316,6 @@ int CUM_BAC::elabora_dato()
 
 
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
-    printf("leggo first level \n");
     leggo_first_level();
 
     //-------------se definita qualita' leggo dem e altezza fascio (funzioni legg_dem e leggo_hray)(mi servono per calcolare qualità)
@@ -596,7 +595,7 @@ int CUM_BAC::elabora_dato()
         }
     }
 
-    printf ("fatta elabora_dato\n");
+    LOG_INFO("elabora_dato completed");
     ScrivoStatistica();
 
     return 0;
@@ -626,7 +625,6 @@ void CUM_BAC::leggo_first_level()
     // copio mappa statica su matrice first_level
     memcpy(first_level,first_level_static,sizeof(first_level));
     fclose(file);
-    printf ("letta mappa statica \n");
 #endif
 
     if (do_beamblocking)
@@ -798,7 +796,7 @@ void CUM_BAC::ScrivoStatistica()
     unsigned char statistica_bl[DIM1_ST][DIM2_ST];
     unsigned char statistica_el[DIM1_ST][DIM2_ST];
 
-    printf ("scrivo statistica ");
+    LOG_INFO("scrivo statistica");
     memset(statistica,255,DIM1_ST*DIM2_ST);
     memset(statistica_bl,255,DIM1_ST*DIM2_ST);
     memset(statistica_el,255,DIM1_ST*DIM2_ST);
