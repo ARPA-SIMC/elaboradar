@@ -2869,10 +2869,15 @@ int main (int argc, char **argv)
     cb->do_bloccorr = true;
 #endif
 
-    if (cb->esegui_tutto(nome_file, file_type, sito))
-        ier_main = 0;
-    else
+    try {
+        if (cb->esegui_tutto(nome_file, file_type, sito))
+            ier_main = 0;
+        else
+            ier_main = 1;
+    } catch (std::exception& e) {
+        LOG_ERROR("Errore nella processazione: %s", e.what());
         ier_main = 1;
+    }
     delete cb;
 
     // è stato tolto il loop sui volumi
