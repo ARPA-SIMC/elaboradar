@@ -38,7 +38,7 @@ FILE* Assets::open_file_dem()
         case SITE_SPC: fname = getenv_default("FILE_DEM_SPC", "../../PP+BLOC/dati/dem_SanPi.txt"); break;
         case SITE_GAT: fname = getenv_default("FILE_DEM_GAT", "../../PP+BLOC/dati/dem_Gatta.txt"); break;
     }
-
+    LOG_INFO("Opening dem file %s", fname);
     return fopen_checked(fname, "rt", "file dem");
 }
 
@@ -67,6 +67,6 @@ FILE* Assets::open_file_first_level()
                 break;
         }
     }
-
+    LOG_INFO("Opening mappa statica %s", fname);
     return fopen_checked(fname, "rb", "mappa statica");
 }
