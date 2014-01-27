@@ -604,10 +604,6 @@ int CUM_BAC::elabora_dato()
 void CUM_BAC::leggo_first_level()
 {
     FILE *file;
-    int i,j;
-    char first_level_bb_file[200],bb_value_file[200];
-    struct tm *tempo;
-    time_t time;
 
 #ifdef STATIC
     /*-------------------
@@ -617,7 +613,7 @@ void CUM_BAC::leggo_first_level()
     int dim = assets.read_file_first_level_dim();
     //leggo mappa statica con dimensioni appena lette
     file = assets.open_file_first_level();
-    for(i=0; i<NUM_AZ_X_PPI; i++)
+    for(int i=0; i<NUM_AZ_X_PPI; i++)
         fread(&first_level_static[i][0],dim,1,file);
     // copio mappa statica su matrice first_level
     memcpy(first_level,first_level_static,sizeof(first_level));
@@ -629,43 +625,20 @@ void CUM_BAC::leggo_first_level()
         /*----------------------------
           Leggo file elevazioni per BB
           ----------------------------*/
-        // perchè c'è doppia definizione di tempo ?? misteri..
-        //definisco stringa data in modo predefinito
-#ifdef SHORT
-        time = NormalizzoData(old_data_header.norm.maq.acq_date); /* arrotonda ai 5 minuti di precisione*/
-        tempo = gmtime(&time);
-#endif
-#ifdef MEDIUM
-        tempo = gmtime(&old_data_header.norm.maq.acq_date);
-        time = NormalizzoData(old_data_header.norm.maq.acq_date);
-        tempo = gmtime(&time);
-#endif
-
-        sprintf(first_level_bb_file,"%s/%04d%02d%02d%02d%02dmat_el.bin",
-                getenv("DIR_OUT_PP_BLOC"),
-                tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-                tempo->tm_hour, tempo->tm_min);
-        file=controllo_apertura(first_level_bb_file," elev BB ","r");
-        for(i=0; i<NUM_AZ_X_PPI; i++)
+        file = assets.open_file_first_level_bb_el();
+        for(int i=0; i<NUM_AZ_X_PPI; i++)
             fread(&bb_first_level[i][0],MAX_BIN,1,file);
         fclose(file);
-        printf ("letta mappa elevazioni da prog beam blocking\n");
         /*------------------------
           Leggo file valore di BB
           ------------------------*/
-        sprintf(bb_value_file,"%s/%04d%02d%02d%02d%02dmat_bloc.bin",
-                getenv("DIR_OUT_PP_BLOC"),
-                tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-                tempo->tm_hour, tempo->tm_min);
-
-        file=controllo_apertura(bb_value_file," elev BB ","r");
-
+        file = assets.open_file_first_level_bb_bloc();
         /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
            altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
-        for(i=0; i<NUM_AZ_X_PPI; i++){   /*ciclo sugli azimut*/
+        for(int i=0; i<NUM_AZ_X_PPI; i++){   /*ciclo sugli azimut*/
             fread(&beam_blocking[i][0],MAX_BIN,1,file);
 
-            for (j=0; j<MAX_BIN; j++) /*ciclo sul range  */
+            for (int j=0; j<MAX_BIN; j++) /*ciclo sul range  */
             {
                 if (do_bloccorr)
                 {
@@ -683,7 +656,6 @@ void CUM_BAC::leggo_first_level()
             }
         }
         fclose(file);
-        printf ("letta mappa beam blocking \n");
     }
 
     /*-------------------------------
@@ -694,9 +666,9 @@ void CUM_BAC::leggo_first_level()
         unsigned char first_level_tmp[NUM_AZ_X_PPI][MAX_BIN];
         int k;
         memcpy(first_level_tmp,first_level,sizeof(first_level));
-        for (i=NUM_AZ_X_PPI; i<800; i++)
+        for (int i=NUM_AZ_X_PPI; i<800; i++)
         {
-            for (j=0; j<MAX_BIN; j++)
+            for (int j=0; j<MAX_BIN; j++)
             {
                 for (k=i-1; k<i+2; k++)
                     if(first_level[i%NUM_AZ_X_PPI][j] < first_level_tmp[k%NUM_AZ_X_PPI][j])

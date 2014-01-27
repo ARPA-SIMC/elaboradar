@@ -28,6 +28,8 @@ void Assets::configure(const char* sito, time_t acq_time)
     conf_year = tempo->tm_year + 1900;
     conf_month = tempo->tm_mon + 1;
     conf_day = tempo->tm_mday;
+    conf_hour = tempo->tm_hour;
+    conf_minute = tempo->tm_min;
 }
 
 FILE* Assets::open_file_dem()
@@ -103,4 +105,30 @@ int Assets::read_file_first_level_dim()
     fclose(fd);
 
     return dim;
+}
+
+FILE* Assets::open_file_first_level_bb_el()
+{
+    const char* dir = getenv("DIR_OUT_PP_BLOC");
+    if (!dir) throw runtime_error("DIR_OUT_PP_BLOC is not set");
+
+    char fname[1024];
+    sprintf(fname, "%s/%04d%02d%02d%02d%02dmat_el.bin", dir,
+            conf_year, conf_month, conf_day, conf_hour, conf_minute);
+
+    LOG_INFO("Opening elev BB %s", fname);
+    return fopen_checked(fname, "rb", "elev BB");
+}
+
+FILE* Assets::open_file_first_level_bb_bloc()
+{
+    const char* dir = getenv("DIR_OUT_PP_BLOC");
+    if (!dir) throw runtime_error("DIR_OUT_PP_BLOC is not set");
+
+    char fname[1024];
+    sprintf(fname, "%s/%04d%02d%02d%02d%02dmat_bloc.bin", dir,
+            conf_year, conf_month, conf_day, conf_hour, conf_minute);
+
+    LOG_INFO("Opening elev BB %s", fname);
+    return fopen_checked(fname, "rb", "elev BB");
 }

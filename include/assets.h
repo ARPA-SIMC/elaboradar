@@ -25,6 +25,8 @@ protected:
     int conf_year;
     int conf_month;
     int conf_day;
+    int conf_hour;
+    int conf_minute;
 
 public:
     Assets();
@@ -59,6 +61,22 @@ public:
      * Read the value inside the first level dimension file
      */
     int read_file_first_level_dim();
+
+    /**
+     * Open the first level elevation BB el file.
+     *
+     * The result is always a valid file: it throws an exception if something
+     * goes wrong.
+     */
+    FILE* open_file_first_level_bb_el();
+
+    /**
+     * Open the first level elevation BB bloc file.
+     *
+     * The result is always a valid file: it throws an exception if something
+     * goes wrong.
+     */
+    FILE* open_file_first_level_bb_bloc();
 };
 
 #endif
