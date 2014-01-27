@@ -208,7 +208,7 @@ bool CUM_BAC::test_file(int file_type)
 
     for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
-        LOG_INFO("Numero beam presenti : %4d  -- elevazione%2d\n", nbeam_elev[k], k);
+        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", nbeam_elev[k], k);
 
         if (nbeam_elev[k] <  NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!

@@ -99,7 +99,7 @@ void to::test<1>()
 template<> template<>
 void to::test<2>()
 {
-    // Test elabora_dato
+    // Test elabora_dato, con tutti i do_* a false
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
 
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
@@ -135,6 +135,53 @@ void to::test<2>()
     wassert(actual(stats.sum_others[2]) == 222441);
     wassert(actual(stats.sum_others[3]) ==  41842);
     wassert(actual(stats.sum_others[4]) ==  78321);
+
+    delete cb;
+}
+
+template<> template<>
+void to::test<3>()
+{
+    // Test elabora_dato, con tutti i do_* a true
+    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+
+    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
+    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+
+    CUM_BAC* cb = new CUM_BAC;
+    cb->do_quality = true;
+    cb->do_beamblocking = true;
+    cb->do_declutter = true;
+    cb->do_bloccorr = true;
+    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->setup_elaborazione(fname, "GAT");
+
+    int ier = cb->elabora_dato();
+    wassert(actual(ier) == 0);
+
+    // Check results
+    VolumeStats stats(cb);
+    wassert(actual(stats.count_zeros[0]) == 7200);
+    wassert(actual(stats.count_zeros[1]) == 7200);
+    wassert(actual(stats.count_zeros[2]) == 7200);
+    wassert(actual(stats.count_zeros[3]) == 7200);
+    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_ones[0]) == 177082);
+    wassert(actual(stats.count_ones[1]) == 190387);
+    wassert(actual(stats.count_ones[2]) == 193646);
+    wassert(actual(stats.count_ones[3]) == 196318);
+    wassert(actual(stats.count_ones[4]) == 196160);
+    wassert(actual(stats.count_others[0]) == 20518);
+    wassert(actual(stats.count_others[1]) ==  7213);
+    wassert(actual(stats.count_others[2]) ==  3954);
+    wassert(actual(stats.count_others[3]) ==  1282);
+    wassert(actual(stats.count_others[4]) ==  1440);
+    wassert(actual(stats.sum_others[0]) == 1525814);
+    wassert(actual(stats.sum_others[1]) ==  476555);
+    wassert(actual(stats.sum_others[2]) ==  245904);
+    wassert(actual(stats.sum_others[3]) ==   45719);
+    wassert(actual(stats.sum_others[4]) ==   78321);
 
     delete cb;
 }

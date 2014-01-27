@@ -95,7 +95,7 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) cum_bac.o $(OBJ_COMMON)
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
-check: cbtest testdata/DBP2_070120141530_GATTATICO testdata/201401231530_temp.Ngrad
+check: cbtest testdata/DBP2_070120141530_GATTATICO testdata/201401231530_temp.Ngrad testdata/201401071530mat_el.bin testdata/201401071530mat_bloc.bin testdata/201401071530h_ray.txt testdata/201401071530h_rayinf.txt
 	./cbtest $(TEST_ARGS)
 
 
