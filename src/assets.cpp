@@ -109,26 +109,40 @@ int Assets::read_file_first_level_dim()
 
 FILE* Assets::open_file_first_level_bb_el()
 {
-    const char* dir = getenv("DIR_OUT_PP_BLOC");
-    if (!dir) throw runtime_error("DIR_OUT_PP_BLOC is not set");
-
-    char fname[1024];
-    sprintf(fname, "%s/%04d%02d%02d%02d%02dmat_el.bin", dir,
-            conf_year, conf_month, conf_day, conf_hour, conf_minute);
-
-    LOG_INFO("Opening elev BB %s", fname);
-    return fopen_checked(fname, "rb", "elev BB");
+    string fname = fname_out_pp_bloc("mat_el.bin");
+    LOG_INFO("Opening elev BB %s", fname.c_str());
+    return fopen_checked(fname.c_str(), "rb", "elev BB");
 }
 
 FILE* Assets::open_file_first_level_bb_bloc()
+{
+    string fname = fname_out_pp_bloc("mat_bloc.bin");
+    LOG_INFO("Opening elev BB %s", fname.c_str());
+    return fopen_checked(fname.c_str(), "rb", "elev BB");
+}
+
+FILE* Assets::open_file_hray()
+{
+    string fname = fname_out_pp_bloc("h_ray.txt");
+    LOG_INFO("Opening hray %s", fname.c_str());
+    return fopen_checked(fname.c_str(), "rb", "hray");
+}
+
+FILE* Assets::open_file_hray_inf()
+{
+    string fname = fname_out_pp_bloc("h_rayinf.txt");
+    LOG_INFO("Opening hray inf %s", fname.c_str());
+    return fopen_checked(fname.c_str(), "rb", "hray inf");
+}
+
+std::string Assets::fname_out_pp_bloc(const char* suffix) const
 {
     const char* dir = getenv("DIR_OUT_PP_BLOC");
     if (!dir) throw runtime_error("DIR_OUT_PP_BLOC is not set");
 
     char fname[1024];
-    sprintf(fname, "%s/%04d%02d%02d%02d%02dmat_bloc.bin", dir,
-            conf_year, conf_month, conf_day, conf_hour, conf_minute);
+    sprintf(fname, "%s/%04d%02d%02d%02d%02d%s", dir,
+            conf_year, conf_month, conf_day, conf_hour, conf_minute, suffix);
 
-    LOG_INFO("Opening elev BB %s", fname);
-    return fopen_checked(fname, "rb", "elev BB");
+    return fname;
 }
