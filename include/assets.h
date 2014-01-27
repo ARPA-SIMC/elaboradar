@@ -77,6 +77,26 @@ public:
      * goes wrong.
      */
     FILE* open_file_first_level_bb_bloc();
+
+    /**
+     * Open the hray file.
+     *
+     * The result is always a valid file: it throws an exception if something
+     * goes wrong.
+     */
+    FILE* open_file_hray();
+
+    /**
+     * Open the hray inf file.
+     *
+     * The result is always a valid file: it throws an exception if something
+     * goes wrong.
+     */
+    FILE* open_file_hray_inf();
+
+protected:
+    /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
+    std::string fname_out_pp_bloc(const char* suffix) const;
 };
 
 #endif

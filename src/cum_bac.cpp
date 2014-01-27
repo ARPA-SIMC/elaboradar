@@ -681,51 +681,26 @@ void CUM_BAC::leggo_first_level()
 
 void CUM_BAC::leggo_hray( )
 {
-    struct tm *tempo;
-    time_t time;
     FILE *file;
-    int i,j;
-    char nome_file_hray [150];
 
     /*--------------------------
       Leggo quota centro fascio
       --------------------------*/
-    //definisco stringa data in modo predefinito
-#ifdef SHORT
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
-    tempo = gmtime(&time);
-#endif
-#ifdef MEDIUM
-    tempo = gmtime(&old_data_header.norm.maq.acq_date);
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
-    tempo = gmtime(&time);
-#endif
-    sprintf(nome_file_hray,"%s/%04d%02d%02d%02d%02dh_ray.txt",
-            getenv("DIR_OUT_PP_BLOC"),
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
-
-    file=controllo_apertura(nome_file_hray,"File hray","r");
+    file = assets.open_file_hray();
     fscanf(file,"%f ",&dtrs);
-
-    for(i=0; i<MAX_BIN; i++){
-        for(j=0; j<NSCAN;j++)
+    for(int i=0; i<MAX_BIN; i++){
+        for(int j=0; j<NSCAN;j++)
             fscanf(file,"%f ",&hray[i][j]);
     }
     fclose(file);
-    sprintf(nome_file_hray,"%s/%04d%02d%02d%02d%02dh_rayinf.txt",
-            getenv("DIR_OUT_PP_BLOC"),
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
 
-    file=controllo_apertura(nome_file_hray,"File hray inf","r");
+    file = assets.open_file_hray_inf();
     fscanf(file,"%f ",&dtrs);
-    for(i=0; i<MAX_BIN; i++){
-        for(j=0; j<NSCAN;j++)
+    for(int i=0; i<MAX_BIN; i++){
+        for(int j=0; j<NSCAN;j++)
             fscanf(file,"%f ",&hray_inf[i][j]);
     }
     fclose(file);
-    sprintf(errori,"lette hray\n");
 
     return  ;
 }
