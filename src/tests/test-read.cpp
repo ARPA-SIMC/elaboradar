@@ -50,6 +50,66 @@ struct VolumeStats
     }
 };
 
+template<typename T>
+struct ArrayStats
+{
+    bool first;
+    T min;
+    T max;
+    double avg;
+
+    ArrayStats() : first(true) {}
+
+    template<int A, int B>
+    void fill2(const T (&arr)[A][B])
+    {
+        for (int i = 0; i < A; ++i)
+            for (int j = 0; j < B; ++j)
+            {
+                if (first)
+                {
+                    min = arr[i][j];
+                    max = arr[i][j];
+                    avg = min / (A * B);
+                    first = false;
+                }
+                else
+                {
+                    if (arr[i][j] < min)
+                        min = arr[i][j];
+                    if (arr[i][j] > max)
+                        max = arr[i][j];
+                    avg += (double)arr[i][j] / (A * B);
+                }
+            }
+    }
+
+    template<int A, int B, int C>
+    void fill3(const T (&arr)[A][B][C])
+    {
+        for (int i = 0; i < A; ++i)
+            for (int j = 0; j < B; ++j)
+                for (int k = 0; k < C; ++k)
+                {
+                    if (first)
+                    {
+                        min = arr[i][j][k];
+                        max = arr[i][j][k];
+                        avg = min / (A * B * C);
+                        first = false;
+                    }
+                    else
+                    {
+                        if (arr[i][j][k] < min)
+                            min = arr[i][j][k];
+                        if (arr[i][j][k] > max)
+                            max = arr[i][j][k];
+                        avg += (double)arr[i][j][k] / (A * B * C);
+                    }
+                }
+    }
+};
+
 }
 
 template<> template<>
@@ -136,6 +196,26 @@ void to::test<2>()
     wassert(actual(stats.sum_others[3]) ==  41842);
     wassert(actual(stats.sum_others[4]) ==  78321);
 
+    cb->caratterizzo_volume();
+
+    ArrayStats<unsigned char> qual_stats;
+    qual_stats.fill3(cb->qual);
+    wassert(actual((unsigned)qual_stats.min) == 0);
+    wassert(actual((unsigned)qual_stats.max) == 99);
+    wassert(actual((unsigned)(qual_stats.avg * 100)) == 4234);
+
+    ArrayStats<unsigned char> vpr_stats;
+    qual_stats.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)vpr_stats.min) == 0);
+    wassert(actual((unsigned)vpr_stats.max) == 0);
+    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 0);
+
+    ArrayStats<unsigned char> top_stats;
+    qual_stats.fill2(cb->top);
+    wassert(actual((unsigned)top_stats.min) == 0);
+    wassert(actual((unsigned)top_stats.max) == 0);
+    wassert(actual((unsigned)(top_stats.avg * 100)) == 0);
+
     delete cb;
 }
 
@@ -154,6 +234,7 @@ void to::test<3>()
     cb->do_beamblocking = true;
     cb->do_declutter = true;
     cb->do_bloccorr = true;
+    cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
     cb->setup_elaborazione(fname, "GAT");
 
@@ -182,6 +263,26 @@ void to::test<3>()
     wassert(actual(stats.sum_others[2]) ==  245904);
     wassert(actual(stats.sum_others[3]) ==   45719);
     wassert(actual(stats.sum_others[4]) ==   78321);
+
+    cb->caratterizzo_volume();
+
+    ArrayStats<unsigned char> qual_stats;
+    qual_stats.fill3(cb->qual);
+    wassert(actual((unsigned)qual_stats.min) == 0);
+    wassert(actual((unsigned)qual_stats.max) == 99);
+    wassert(actual((unsigned)(qual_stats.avg * 100)) == 5955);
+
+    ArrayStats<unsigned char> vpr_stats;
+    qual_stats.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)vpr_stats.min) == 0);
+    wassert(actual((unsigned)vpr_stats.max) == 0);
+    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 0);
+
+    ArrayStats<unsigned char> top_stats;
+    qual_stats.fill2(cb->top);
+    wassert(actual((unsigned)top_stats.min) == 0);
+    wassert(actual((unsigned)top_stats.max) == 0);
+    wassert(actual((unsigned)(top_stats.avg * 100)) == 0);
 
     delete cb;
 }
