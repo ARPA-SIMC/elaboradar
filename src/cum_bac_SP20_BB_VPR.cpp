@@ -77,182 +77,11 @@ extern "C" {
 /*----------------------------------------------------------------------------*/
 
 // Soglie algoritmi
-#define THRES_ATT 0 /* minimo valore di Z in dBZ per calcolare att rate */
-#define SOGLIA_TOP 20 // soglia per trovare top
 #define MISSING 0 /*valore mancante*/
 
 /*extern char *sys_errlist[];  ANNA 17-2-2006 sostituito con strerror che sta in string.h */
 extern int errno;
 
-/* comstart lineargauss
-   comend
-*/
-void lineargauss(float x, float a[], float *y, float dyda[],int na)
-
-{
-  float fac, ex, arg;
-
-  *y=0.0;
-  arg=(x-a[2])/a[3];
-  ex=exp(-arg*arg);
-  fac=a[1]*ex*2.0*arg;
-  *y+=a[1]*ex+a[4]+a[5]*x;
-  dyda[1]=ex;
-  dyda[2]=fac/a[3];
-  dyda[3]=fac*arg/a[3];
-  dyda[4]=1.;
-  dyda[5]=x;
-}
-
-
-#ifdef QUALITY
-/*
-   comstart caratterizzo_volume
-   idx calcola qualita' volume polare
-   calcola qualita' volume polare
-   NB il calcolo è fatto considerando q=0 al di sotto della mappa dinamica.
-   per ora drrs=dist nche nel caso di Gattatico, mentre dtrs è letto da file
-   si puo' scegliere tra qualita' rispetto a Z e rispetto a R, in realtà per ora sono uguali.
-
-   double PIA;  path integrated attenuation
-   float dh: dimensione verticale bin calcolata tramite approcio geo-ottico
-   float drrs: distanza radiosondaggio,
-   float dtrs: tempo dal radiosondaggio
-   float dist: distanza dal radar
-   float quo:  quota bin
-   float el:   elevazione
-   float rst:  raggio equivalente in condizioni standard
-   float dZ:   correzione vpr
-   float sdevZ:  stand. dev. correzione vpr
-   unsigned char bb: beam blocking
-   unsigned char cl: indice clutter da anaprop
-
-//--- nb. non ho il valore di bb sotto_bb_first_level
-comend
-*/
-void CUM_BAC::caratterizzo_volume()
-{
-    int i,l,k;
-    double PIA;
-    float dh=1.,dhst=1.,drrs=1.,dist=1.,elevaz;
-    unsigned char bb=0,cl=0 ;
-
-    //----------ciclo su NSCAN(=6), cioè sul numero di elevazioni (nominali) per le quali ho calcolato il beam blocking
-    /* a questo punto servono: bb, cl,  PIA, dtrs e drrs radiosond, quota, hsup e hinf beam-----------------*/
-
-    //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
-
-    for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
-    {
-        for (i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
-        {
-            //-----elevazione reale letta da file* fattore di conversione 360/4096
-            elevaz=(float)(vol_pol[l][i].teta_true)*CONV_RAD;//--- elev reale
-
-            //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
-            PIA=0.;
-
-            for (k=0; k<vol_pol[0][i].b_header.max_bin; k++)/*ciclo range*/
-            {
-                //---------distanza in m dal radar (250*k+125 x il corto..)
-                dist= k*size_cell[old_data_header.norm.maq.resolution]+size_cell[old_data_header.norm.maq.resolution]/2.;/*distanza radar */
-
-                //-----distanza dal radiosondaggio (per GAT si finge che sia colocato ..), perchè? (verificare che serva )
-                drrs=dist;
-                /* if (!(strcmp(sito,"GAT")) ) {  */
-                /*     drrs=dist; */
-                /* } */
-                /* if (!(strcmp(sito,"SPC")) ) {  */
-                /*     drrs=dist; */
-                /* } */
-
-
-                //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                if (l == elev_fin[i][k]) att_cart[i][k]=DBtoBYTE(PIA);
-                PIA=attenuation(vol_pol[l][i].ray[k],PIA);
-
-                //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
-                dhst =quota_f(elevaz+0.45*DTOR,k)-quota_f(elevaz-0.45*DTOR,k);
-
-
-                //----qui si fa un po' di mischione: finchè ho il dato dal programma di beam blocking uso il dh con propagazione da radiosondaggio, alle elevazioni superiori assegno dh=dhst  e calcolo quota come se fosse prop. standard, però uso le elevazioni nominali
-
-                if (l<NSCAN-1   ) {
-                    dh=hray_inf[k][l+1]-hray_inf[k][l]; /* differenza tra limite sup e inf lobo centrale secondo appoccio geo-ott*/
-                }
-                else {
-                    dh=dhst; /* non ho le altezze oltre nscan-1 pero' suppongo che a tali elevazioni la prop. si possa considerare standard*/
-                    hray[k][l]=quota_f(elevaz,k);//non lo assegno
-
-                }
-
-                if (l-elev_fin[i][k] <0) {
-                    cl=ANAP_YES;
-                    bb=BBMAX;
-                }
-                if (l == elev_fin[i][k] ) {
-                    cl=dato_corrotto[i][k];  /*cl al livello della mappa dinamica*/
-                    bb=beam_blocking[i][k];  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così
-                }
-                if (l-elev_fin[i][k] >0 ) {
-                    cl=0;       /*per come viene scelta la mappa dinamica si suppone che al livello superiore cl=0 e bb=0*/
-                    bb=0;   // sarebbe if (l-bb_first_level[i][k] >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa
-                }
-
-                //------dato che non ho il valore di beam blocking sotto i livelli che ricevo in ingresso ada progrmma beam blocking e
-                //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%)
-                //--------------assegno qualità zero sotto il livello di elev_fin (si può discutere...), potrei usare first_level_static confrontare e in caso sia sotto porre cl=1
-                if (l-elev_fin[i][k] <0) {
-                    qual[l][i][k]=0;
-                    cl=2;
-                }
-                //--------bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.----------
-                else {
-
-                    //-----------calcolo la qualità----------
-                    qual[l][i][k]=(unsigned char)(func_q_Z(cl,bb,dist,drrs,dtrs,dh,dhst,PIA)*100);
-                }
-
-                if(qual[l][i][k]==0) qual[l][i][k]=1;//????a che serve???
-#ifdef VPR
-                /* sezione PREPARAZIONE DATI VPR*/
-                if(cl==0 && bb<BBMAX_VPR )   /*pongo le condizioni per individuare l'area visibile per calcolo VPR, riduco il bb ammesso (BBMAX_VPR=20)*/ //riveder.....?????
-                    flag_vpr[l][i][k]=1;
-#endif
-                //------------trovo il top per soglia
-                if (BYTEtoDB(vol_pol[l][i].ray[k]) > SOGLIA_TOP )
-                    top[i][k]=(unsigned char)((quota_f(elevaz,k))/100.); //top in ettometri
-
-            }
-
-        }
-    }
-
-    return;
-}
-#endif
-
-
-double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic,1984 for rain as reported in cost 717 final document*/
-{
-    double Zhh,att_rate,R;/* PIA diventa att_tot devo decidere infatti se PIA sarà 3d percio' temp. uso  nomi diversi*/
-    double att_tot;
-
-    //---ricevo in ingresso il dato e l'attenuazione fino  quel punto
-    //---la formula recita che l'attenuazione è pari una funzione di Z reale (quindi corretta dell'attenuazione precedente). ovviamente devo avere un segnale per correggere.
-    //--------- CALCOL
-    att_tot=PIA;
-    Zhh=(double)(BYTEtoZ(DBZbyte));
-    if (10*log10(Zhh) > THRES_ATT )
-    {
-        Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
-        R=pow((Zhh/aMP),(1.0/bMP));
-        att_rate=0.0018*pow(R,1.05);
-        att_tot=att_tot+2.*att_rate*0.001*size_cell[old_data_header.norm.maq.resolution];
-        if (att_tot>BYTEtoDB(254)) att_tot=BYTEtoDB(254);
-    }
-    return att_tot;
-}
 
 
 void CUM_BAC::creo_cart()
@@ -2867,6 +2696,9 @@ int main (int argc, char **argv)
 #endif
 #ifndef BLOCNOCORR
     cb->do_bloccorr = true;
+#endif
+#ifndef VPR
+    cb->do_vpr = true;
 #endif
 
     try {

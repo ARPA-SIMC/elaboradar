@@ -75,6 +75,7 @@ public:
     bool do_beamblocking;
     bool do_declutter;
     bool do_bloccorr;
+    bool do_vpr;
 
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 
@@ -222,6 +223,7 @@ public:
     void setup_elaborazione(const char* nome_file, const char* sito);
     int elabora_dato();
     void caratterizzo_volume();
+    /* Doviak,Zrnic,1984 for rain as reported in cost 717 final document*/
     double attenuation(unsigned char DBZbyte, double  PIA);
     void ScrivoStatistica();
     void leggo_first_level();
@@ -265,5 +267,8 @@ public:
  * reviewed to see if it is still needed.
  */
 time_t NormalizzoData(time_t time);
+
+/// Linear gauss
+void lineargauss(float x, float a[], float *y, float dyda[],int na);
 
 #endif
