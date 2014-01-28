@@ -474,7 +474,9 @@ int CUM_BAC::elabora_dato()
                         flag_anap = 0;
                         if (do_beamblocking && do_bloccorr)
                         {
-                            vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+
+                            vol_pol[el_inf][i].ray[k]=DBtoBYTE(BeamBlockingCorrection(vol_pol[l][i].ray[k],beam_blocking[i][k]));
+                            //vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
                             stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
                         }
@@ -527,7 +529,8 @@ int CUM_BAC::elabora_dato()
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k];
                             if (do_beamblocking && do_bloccorr)
                             {
-                                vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+                                vol_pol[l][i].ray[k]=DBtoBYTE(BeamBlockingCorrection(vol_pol[l][i].ray[k],beam_blocking[i][k]));
+                                //vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
                                 //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
                                 stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k];
                             }
