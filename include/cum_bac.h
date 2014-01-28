@@ -254,6 +254,10 @@ public:
     void merge_metodi();
     int trovo0term();
     bool esegui_tutto(const char* nome_file, int file_type, const char* sito);
+// added function to calculate beamblocking correction
+//
+    float BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking);
+
 };
 
 // Utility functions

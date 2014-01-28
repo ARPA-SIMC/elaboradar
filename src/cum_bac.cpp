@@ -362,7 +362,8 @@ int CUM_BAC::elabora_dato()
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
                     {
-                        vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
+                        vol_pol[l][i].ray[k]=DBtoBYTE(BeamBlockingCorrection(vol_pol[l][i].ray[k],beam_blocking[i][k]));
+                        //vol_pol[l][i].ray[k]=DBtoBYTE(BYTEtoDB(vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100:tab.));
                         //vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5);
                     }
 
@@ -501,7 +502,7 @@ int CUM_BAC::elabora_dato()
                     {
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
                         for(l=0; l<el_up; l++){
-                            vol_pol[l][i].ray[k]=1;
+           //                 vol_pol[l][i].ray[k]=1;
                             vol_pol[l][i].ray[k]=vol_pol[el_up][i].ray[k];  //ALTERN
                         }
                         //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
@@ -2967,3 +2968,7 @@ void lineargauss(float x, float a[], float *y, float dyda[],int na)
   dyda[5]=x;
 }
 
+
+float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking){
+   return ( BYTEtoDB(bin_val)-10*log10(1.-(float)beamblocking/100.));
+}
