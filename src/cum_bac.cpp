@@ -1017,7 +1017,7 @@ void CUM_BAC::classifica_rain()
     // Lettura quota massimo da VPR  calcolo base e top bright band
     LOG_INFO("data= %s",date);
     // calcolo il gap
-    gap=profile_gap(getenv("LAST_VPR"));
+    gap = assets.read_profile_gap();
     //-- se gap < memory leggo hmax da VPR
     if (gap<=MEMORY){
         ier_ap=access(getenv("VPR_HMAX"),R_OK);
@@ -1263,25 +1263,6 @@ void CUM_BAC::classifica_rain()
     //  }
     merge_metodi();
     return ;
-}
-
-long int CUM_BAC::profile_gap(char nomefile[])
-{
-    LOG_CATEGORY("radar.vpr");
-    FILE *file;
-    time_t last_time;
-    long int gap1;
-
-    gap1=(long int)(100 );
-    file = fopen(nomefile,"r");
-    if(file != NULL ){ /*contemplo la prima iterazione dopo installazione*/
-        fread(&last_time,4,1,file);
-        fclose(file);
-        gap1=abs(old_data_header.norm.maq.acq_date-last_time)/900;
-        LOG_INFO("old_data_header.norm.maq.acq_date last_time gap %d %ld %ld",old_data_header.norm.maq.acq_date,last_time,gap1);
-    }
-
-    return(gap1);
 }
 
 int CUM_BAC::trovo0term()
@@ -1761,7 +1742,7 @@ int CUM_BAC::combina_profili(const char *sito)
         /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
         /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
 
-        gap=profile_gap(getenv("LAST_VPR"));
+        gap = assets.read_profile_gap();
 
 
         /*------leggo il profilo vecchio più recente di MEMORY ----*/

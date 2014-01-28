@@ -27,6 +27,8 @@ void Assets::configure(const char* sito, time_t acq_time)
         throw domain_error(errmsg + " is not a valid radar site name");
     }
 
+    conf_acq_time = acq_time;
+
     struct tm* tempo = gmtime(&acq_time);
     conf_year = tempo->tm_year + 1900;
     conf_month = tempo->tm_mon + 1;
@@ -156,14 +158,14 @@ float Assets::read_t_ground()
     const char* fname = getenv("FILE_T");
     if (!fname)
     {
-       LOG_ERROR("FILE_T is not set");
+       LOG_ERROR("$FILE_T is not set");
        return NODATAVPR;
     }
 
     FILE* file_t = fopen(fname, "rt");
     if (!file_t)
     {
-        LOG_ERROR("Cannot open FILE_T=%s: %s", fname, strerror(errno));
+        LOG_ERROR("Cannot open $FILE_T=%s: %s", fname, strerror(errno));
         return NODATAVPR;
     }
 
@@ -195,7 +197,7 @@ float Assets::read_t_ground()
 
     if (icount == 0)
     {
-        LOG_ERROR("Temperature data not found in FILE_T=%s", fname);
+        LOG_ERROR("Temperature data not found in $FILE_T=%s", fname);
         return NODATAVPR;
     }
 
@@ -203,3 +205,34 @@ float Assets::read_t_ground()
     LOG_INFO("ho %i stazioni dati affidabili e la t media è %f\n", icount, media_t);
     return media_t;
 }
+
+long int Assets::read_profile_gap()
+{
+    LOG_CATEGORY("radar.vpr");
+    const char* fname = getenv("LAST_VPR");
+    if (!fname)
+    {
+        LOG_ERROR("$LAST_VPR is not set");
+        return 100;
+    }
+
+    FILE *file = fopen(fname, "rb");
+    if (!file)
+    {
+        LOG_ERROR("Cannot open $LAST_VPR=%s: %s", fname, strerror(errno));
+        return 100;
+    }
+
+    // FIXME: time_t può essere 64 bit, qui viene sempre troncato.
+    // FIXME: l'ideale sarebbe, in questo caso, usare fprintf/fscanf invece di
+    // FIXME: fread/fwrite
+    time_t last_time;
+    fread(&last_time, 4, 1, file);
+    fclose(file);
+
+    long int gap1 = abs(conf_acq_time - last_time)/900;
+    LOG_INFO("old_data_header.norm.maq.acq_date last_time gap %d %ld %ld", conf_acq_time, last_time, gap1);
+
+    return gap1;
+}
+
