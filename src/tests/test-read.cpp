@@ -165,6 +165,7 @@ void to::test<2>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->read_sp20_volume(fname, "GAT", 0);
@@ -228,6 +229,7 @@ void to::test<3>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;

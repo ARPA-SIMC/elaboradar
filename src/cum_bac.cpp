@@ -158,6 +158,10 @@ void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
     }
     MP_coeff[0]=(unsigned char)(aMP/10);
     MP_coeff[1]=(unsigned char)(bMP*10);
+
+    //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
+    if (do_vpr)
+        t_ground = assets.read_t_ground();
 }
 
 bool CUM_BAC::test_file(int file_type)

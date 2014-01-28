@@ -49,7 +49,7 @@ OBJ_BB_VPR=cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
 OBJ_BB=cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
 OBJ= cum_bac_SP20.o 
 
-TESTFILES = DBP2_070120141530_GATTATICO 201401231530_temp.Ngrad 201401071530mat_el.bin 201401071530mat_bloc.bin 201401071530h_ray.txt 201401071530h_rayinf.txt
+TESTFILES = DBP2_070120141530_GATTATICO 201401231530_temp.Ngrad 201401071530mat_el.bin 201401071530mat_bloc.bin 201401071530h_ray.txt 201401071530h_rayinf.txt temperature.txt
 
 all: install
 
@@ -98,7 +98,7 @@ cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) cum_bac.o $(OBJ_COMMON)
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
 check: cbtest $(addprefix testdata/,$(TESTFILES))
-	./cbtest $(TEST_ARGS)
+	$(DEBUGGER) ./cbtest $(TEST_ARGS)
 
 %: %.o
 	$(CXX) -o $@ $^ $(LDLIBS)

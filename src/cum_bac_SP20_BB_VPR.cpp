@@ -1078,7 +1078,7 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
     float vprmax,h0start,peak,soglia;
 
 
-    if (! ier_t ){
+    if (!isnan(t_ground)){
 
         printf("trovo hvprmax  a partire da 400 m sotto lo zero dell'adiabatica secca\n");
         h0start=t_ground/9.8*1000 ;
@@ -1188,7 +1188,7 @@ int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito)
     //ier_max=trovo_hvprmax(&hvprmax);
 
 
-    if (ier_t) //1  se non ho nè T nè il massimo esco altrimenti tipo_profilo=0
+    if (isnan(t_ground)) //1  se non ho nè T nè il massimo esco altrimenti tipo_profilo=0
     {
         fprintf(log_vpr,"non ho T,...  \n");
 
@@ -1355,60 +1355,6 @@ int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito)
     fclose(file);
 
     return (ier_ana);
-}
-
-int CUM_BAC::get_t_ground(float *t_gr)
-# include <geo_par.h>
-{
-    int icount,ierr,ier_file_t;
-    float t,media_t,lon,lat,radar_lat,radar_lon;
-    FILE *file_t;
-    char *sito;
-    /*apertura file T*/
-    ierr=1;
-    media_t=NODATAVPR-1;
-
-    ier_file_t=access(getenv("FILE_T"),R_OK);
-    if (!ier_file_t) {
-        file_t=fopen(getenv("FILE_T"),"r");
-        media_t=0;
-        icount=0;
-
-        sito=getenv("SITO");
-
-        if (!(strcmp(sito,"SPC"))) { // spostata qui
-            radar_lat=SPC_LAT;
-            radar_lon=SPC_LON; }
-        if (!(strcmp(sito,"GAT"))) {
-            radar_lat=GAT_LAT;
-            radar_lon=GAT_LON; }
-
-        while (1) {
-            if(fscanf(file_t,"%f %f %f \n",&lon,&lat,&t) == EOF) break;
-            if (fabs(radar_lat-lat)<=maxdlat && fabs(radar_lon-lon)<=maxdlon) {
-                icount+=1;
-                media_t+=t-273.15;
-            }
-        }
-        fclose(file_t);
-    }
-    else {
-        fprintf(log_vpr,"non trovo file delle temperature al suolo vicino al radar %s \n",getenv("FILE_T"));
-        return(ierr);
-    }
-    if (icount>0)
-    {
-        media_t/=(float)(icount);
-        fprintf(log_vpr,"ho %i stazioni dati affidabili e la t media è  %f\n",icount,media_t);
-        *t_gr=media_t;
-        ierr=0;
-    }
-    else {
-        ierr=1;
-        fprintf(log_vpr,"non trovo dati di temperatura\n");
-    }
-
-    return(ierr);
 }
 
 /*
@@ -2336,79 +2282,71 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
 
     //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
 
-#ifdef QUALITY
+    if (do_quality)
+    {
+        //-------------calcolo qualita' e trovo il top
+        printf ("calcolo Q3D \n") ;
+        caratterizzo_volume();
 
-    //-------------calcolo qualita' e trovo il top
-    printf ("calcolo Q3D \n") ;
-    caratterizzo_volume();
-
-    /* //---------trovo il top (a X dbZ) */
-    /* printf ("trovo top \n") ; */
-    /* ier=trovo_top(); */
-
-
-    //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
-#ifdef VPR
-    log_vpr=fopen(getenv("LOG_VPR"),"a+");
-    ier_t=get_t_ground(&t_ground);
-    fclose(log_vpr);
-#endif
+        /* //---------trovo il top (a X dbZ) */
+        /* printf ("trovo top \n") ; */
+        /* ier=trovo_top(); */
 
 
-    //--------------se definita CLASS procedo con  classificazione -----------------//
+        //--------------se definita CLASS procedo con  classificazione -----------------//
 #ifdef CLASS
-    log_vpr=fopen(getenv("LOG_VPR"),"a+");
-    log_class=fopen(getenv("LOG_CLASS"),"a+");
-    classifica_rain();
-    fclose(log_vpr);
-    fclose(log_class);
+        log_vpr=fopen(getenv("LOG_VPR"),"a+");
+        log_class=fopen(getenv("LOG_CLASS"),"a+");
+        classifica_rain();
+        fclose(log_vpr);
+        fclose(log_class);
 #endif
 
 
-    //--------------se definito VPR procedo con calcolo VPR -----------------//
+        //--------------se definito VPR procedo con calcolo VPR -----------------//
 
 #ifdef VPR
-    log_vpr=fopen(getenv("LOG_VPR"),"a+");
-    test_vpr=fopen(getenv("TEST_VPR"),"a+");
+        log_vpr=fopen(getenv("LOG_VPR"),"a+");
+        test_vpr=fopen(getenv("TEST_VPR"),"a+");
 
-    fprintf(log_vpr,"processo file dati: %s\n",nome_file);
-    printf ("calcolo VPR \n") ;
+        fprintf(log_vpr,"processo file dati: %s\n",nome_file);
+        printf ("calcolo VPR \n") ;
 
-    //VPR  // ------------inizializzo hvprmax ---------------
+        //VPR  // ------------inizializzo hvprmax ---------------
 
-    hvprmax=INODATA;
+        hvprmax=INODATA;
 
-    //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
+        //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
 
-    //  ier_comb=combina_profili(sito,argv[4]);
-    ier_comb=combina_profili(sito);
-    printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
-    printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
-
-
-    //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
-
-    heating=profile_heating();
-    printf ("heating %i \n", heating);
-    fprintf (log_vpr,"ier_vpr %i ier_comb %i \n",ier_vpr,ier_comb);
-
-    //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
-    if (!ier_comb && heating >= WARM){
-
-        ier=corr_vpr(sito);
-        printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+        //  ier_comb=combina_profili(sito,argv[4]);
+        ier_comb=combina_profili(sito);
+        printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
+        printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
 
 
-        //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
+        //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
 
-        if ( ! ier && ! ier_vpr)
-            ier_stampa_vpr=stampa_vpr();
+        heating=profile_heating();
+        printf ("heating %i \n", heating);
+        fprintf (log_vpr,"ier_vpr %i ier_comb %i \n",ier_vpr,ier_comb);
+
+        //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
+        if (!ier_comb && heating >= WARM){
+
+            ier=corr_vpr(sito);
+            printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+
+
+            //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
+
+            if ( ! ier && ! ier_vpr)
+                ier_stampa_vpr=stampa_vpr();
+        }
+
+        fclose(log_vpr);
+
+#endif
     }
-
-    fclose(log_vpr);
-
-#endif
-#endif
 
 #ifdef CLASS
     log_class=fopen(getenv("LOG_CLASS"),"a+");
