@@ -703,10 +703,10 @@ int main (int argc, char **argv)
 #ifndef BLOCNOCORR
     cb->do_bloccorr = true;
 #endif
-#ifndef VPR
+#ifdef VPR
     cb->do_vpr = true;
 #endif
-#ifndef CLASS
+#ifdef CLASS
     cb->do_class = true;
 #endif
 
