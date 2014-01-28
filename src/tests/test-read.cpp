@@ -299,6 +299,20 @@ void to::test<3>()
 
     cb->classifica_rain();
 
+    ArrayStats<unsigned char> cappi_stats;
+    cappi_stats.fill2(cb->cappi);
+    wassert(actual((unsigned)cappi_stats.first).isfalse());
+    wassert(actual((unsigned)cappi_stats.min) == 0);
+    wassert(actual((unsigned)cappi_stats.max) == 106);
+    wassert(actual((unsigned)(cappi_stats.avg * 100)) == 138);
+
+    ArrayStats<unsigned char> stratiform_stats;
+    stratiform_stats.fill2(cb->stratiform);
+    wassert(actual((unsigned)stratiform_stats.first).isfalse());
+    wassert(actual((unsigned)stratiform_stats.min) == 0);
+    wassert(actual((unsigned)stratiform_stats.max) == 106);
+    wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 106);
+
     delete cb;
 }
 
