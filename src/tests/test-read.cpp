@@ -201,21 +201,24 @@ void to::test<2>()
 
     ArrayStats<unsigned char> qual_stats;
     qual_stats.fill3(cb->qual);
+    wassert(actual((unsigned)qual_stats.first).isfalse());
     wassert(actual((unsigned)qual_stats.min) == 0);
     wassert(actual((unsigned)qual_stats.max) == 99);
     wassert(actual((unsigned)(qual_stats.avg * 100)) == 4234);
 
     ArrayStats<unsigned char> vpr_stats;
-    qual_stats.fill3(cb->flag_vpr);
+    vpr_stats.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
     wassert(actual((unsigned)vpr_stats.max) == 0);
     wassert(actual((unsigned)(vpr_stats.avg * 100)) == 0);
 
     ArrayStats<unsigned char> top_stats;
-    qual_stats.fill2(cb->top);
+    top_stats.fill2(cb->top);
+    wassert(actual((unsigned)top_stats.first).isfalse());
     wassert(actual((unsigned)top_stats.min) == 0);
-    wassert(actual((unsigned)top_stats.max) == 0);
-    wassert(actual((unsigned)(top_stats.avg * 100)) == 0);
+    wassert(actual((unsigned)top_stats.max) == 37);
+    wassert(actual((unsigned)(top_stats.avg * 100)) == 5);
 
     delete cb;
 }
@@ -270,21 +273,24 @@ void to::test<3>()
 
     ArrayStats<unsigned char> qual_stats;
     qual_stats.fill3(cb->qual);
+    wassert(actual((unsigned)qual_stats.first).isfalse());
     wassert(actual((unsigned)qual_stats.min) == 0);
     wassert(actual((unsigned)qual_stats.max) == 99);
     wassert(actual((unsigned)(qual_stats.avg * 100)) == 5955);
 
     ArrayStats<unsigned char> vpr_stats;
-    qual_stats.fill3(cb->flag_vpr);
+    vpr_stats.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
-    wassert(actual((unsigned)vpr_stats.max) == 0);
-    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 0);
+    wassert(actual((unsigned)vpr_stats.max) == 1);
+    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 92);
 
     ArrayStats<unsigned char> top_stats;
-    qual_stats.fill2(cb->top);
+    top_stats.fill2(cb->top);
+    wassert(actual((unsigned)top_stats.first).isfalse());
     wassert(actual((unsigned)top_stats.min) == 0);
-    wassert(actual((unsigned)top_stats.max) == 0);
-    wassert(actual((unsigned)(top_stats.avg * 100)) == 0);
+    wassert(actual((unsigned)top_stats.max) == 35);
+    wassert(actual((unsigned)(top_stats.avg * 100)) == 10);
 
     delete cb;
 }
