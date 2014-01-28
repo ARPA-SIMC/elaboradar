@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cerrno>
+#include <stdint.h>
 #include <stdexcept>
 
 using namespace std;
@@ -226,7 +227,7 @@ long int Assets::read_profile_gap()
     // FIXME: time_t può essere 64 bit, qui viene sempre troncato.
     // FIXME: l'ideale sarebbe, in questo caso, usare fprintf/fscanf invece di
     // FIXME: fread/fwrite
-    time_t last_time;
+    uint32_t last_time;
     fread(&last_time, 4, 1, file);
     fclose(file);
 
@@ -236,3 +237,13 @@ long int Assets::read_profile_gap()
     return gap1;
 }
 
+void Assets::write_last_vpr()
+{
+    LOG_CATEGORY("radar.vpr");
+    const char* fname = getenv("LAST_VPR");
+    if (!fname) throw runtime_error("$LAST_VPR is not set");
+    FILE* out = fopen_checked(fname, "wb", "ultimo VPR");
+    uint32_t val = conf_acq_time;
+    fwrite(&val, 4, 1, out);
+    fclose(out);
+}

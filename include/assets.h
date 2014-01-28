@@ -103,6 +103,9 @@ public:
     /// Read the gap in seconds between the time in $LAST_VPR and the current acquisition time
     long int read_profile_gap();
 
+    /// Write the acquisition time in $LAST_VPR file
+    void write_last_vpr();
+
 protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
