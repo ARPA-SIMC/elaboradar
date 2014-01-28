@@ -463,7 +463,9 @@ int CUM_BAC::elabora_dato()
                             //    vol_pol[l][i].ray[k]=vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
                             stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
                         }
-                        for(l=0; l<=el_up; l++){
+// 20140128 - errore nel limite superiore ciclo
+// for(l=0; l<=el_up; l++){
+                        for(l=0; l<el_inf; l++){
                             vol_pol[l][i].ray[k]=vol_pol[el_inf][i].ray[k]; // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 
                         }
