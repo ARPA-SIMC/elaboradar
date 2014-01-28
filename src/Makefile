@@ -29,7 +29,7 @@ CC=cc
 CXX=g++ 
 
 # Common CFLAGS for old and new code
-CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) $(shell log4c-config --cflags)
+CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags)
 
 # CFLAGS for old code
 CFLAGS_LEGACY=$(CFLAGS_COMMON) $(COMMON_DFLAGS_MEDIUM)
@@ -39,9 +39,9 @@ CFLAGS=$(CFLAGS_COMMON) $(COMMON_DFLAGS_SHORT)
 CXXFLAGS=$(CFLAGS)
 
 # CFLAGS variations used to recompile cum_bac_SP20_BB_VPR.cpp in various flavours
-CFLAGS_BB=$(CFLAGS) -I$(INCLUDEDIR_NR_C)
-CFLAGS_BB_VPR=$(CFLAGS) $(ADDED_DFLAGS_VPR) -I$(INCLUDEDIR_NR_C)
-CFLAGS_BB_VPR_CLASS=$(CFLAGS) $(ADDED_DFLAGS_VPR_CLASS) -I$(INCLUDEDIR_NR_C)
+CFLAGS_BB=$(CFLAGS)
+CFLAGS_BB_VPR=$(CFLAGS) $(ADDED_DFLAGS_VPR)
+CFLAGS_BB_VPR_CLASS=$(CFLAGS) $(ADDED_DFLAGS_VPR_CLASS)
 
 OBJ_COMMON=setwork.o func_Q3d.o Q_components.o utils.o assets.o logging.o
 OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)

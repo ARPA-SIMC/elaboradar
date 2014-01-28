@@ -242,6 +242,7 @@ void to::test<3>()
     cb->do_declutter = true;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
+    cb->do_class = true;
     cb->read_sp20_volume(fname, "GAT", 0);
     cb->setup_elaborazione(fname, "GAT");
 
@@ -295,6 +296,8 @@ void to::test<3>()
     wassert(actual((unsigned)top_stats.min) == 0);
     wassert(actual((unsigned)top_stats.max) == 35);
     wassert(actual((unsigned)(top_stats.avg * 100)) == 10);
+
+    cb->classifica_rain();
 
     delete cb;
 }

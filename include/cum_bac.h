@@ -76,6 +76,7 @@ public:
     bool do_declutter;
     bool do_bloccorr;
     bool do_vpr;
+    bool do_class;
 
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 
@@ -182,7 +183,7 @@ public:
     float chisqfin; //???puo' essere def in anal
     float rmsefin;
     // files vpr
-    FILE *log_vpr,*test_vpr;
+    FILE *test_vpr;
     //obsol.
     float stdev;// obsol.
 
@@ -209,7 +210,6 @@ public:
     long int ncv,ncs,np;
     float *convective_radius;
     float htbb, hbbb;
-    FILE *log_class;
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
