@@ -1957,9 +1957,7 @@ int CUM_BAC::profile_heating()
         heating=heating-gap+2; /*se il profilo è stato aggiornato, ho riscaldamento , in caso arrivi sopra WARM riparto da MEMORY  */
         if (heating>=WARM) heating=MEMORY;  /* se heating raggiunge WARM allora lo pongo uguale a MEMORY     */
 
-        file = controllo_apertura(getenv("LAST_VPR")," ultimo vpr ","w");
-        fwrite(&old_data_header.norm.maq.acq_date,4,1,file);
-        fclose(file);
+        assets.write_last_vpr();
     }
     if (heating<0) heating=0;
 
