@@ -1078,8 +1078,8 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
     float vprmax,h0start,peak,soglia;
 
 
-    if (!isnan(t_ground)){
-
+    if (t_ground != NODATAVPR)
+    {
         printf("trovo hvprmax  a partire da 400 m sotto lo zero dell'adiabatica secca\n");
         h0start=t_ground/9.8*1000 ;
         istart=h0start/TCK_VPR -2;
@@ -1188,7 +1188,7 @@ int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito)
     //ier_max=trovo_hvprmax(&hvprmax);
 
 
-    if (isnan(t_ground)) //1  se non ho nè T nè il massimo esco altrimenti tipo_profilo=0
+    if (t_ground == NODATAVPR) //1  se non ho nè T nè il massimo esco altrimenti tipo_profilo=0
     {
         fprintf(log_vpr,"non ho T,...  \n");
 

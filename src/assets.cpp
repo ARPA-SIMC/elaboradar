@@ -157,17 +157,17 @@ float Assets::read_t_ground()
     if (!fname)
     {
        LOG_ERROR("FILE_T is not set");
-       return NAN;
+       return NODATAVPR;
     }
 
     FILE* file_t = fopen(fname, "rt");
     if (!file_t)
     {
         LOG_ERROR("Cannot open FILE_T=%s: %s", fname, strerror(errno));
-        return NAN;
+        return NODATAVPR;
     }
 
-    float media_t = NODATAVPR - 1;
+    float media_t = 0;
     int icount = 0;
     float radar_lat, radar_lon, lon, lat, t;
 
@@ -196,7 +196,7 @@ float Assets::read_t_ground()
     if (icount == 0)
     {
         LOG_ERROR("Temperature data not found in FILE_T=%s", fname);
-        return NAN;
+        return NODATAVPR;
     }
 
     media_t /= (float)icount;

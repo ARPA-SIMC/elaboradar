@@ -171,6 +171,8 @@ void to::test<2>()
     cb->read_sp20_volume(fname, "GAT", 0);
     cb->setup_elaborazione(fname, "GAT");
 
+    wassert(actual(cb->t_ground) == NODATAVPR);
+
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
 
@@ -242,6 +244,8 @@ void to::test<3>()
     cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
     cb->setup_elaborazione(fname, "GAT");
+
+    wassert(actual((int)(cb->t_ground * 100)) == 1010);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
