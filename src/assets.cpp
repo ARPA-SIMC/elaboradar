@@ -1,7 +1,10 @@
 #include "assets.h"
 #include "utils.h"
+#include "geo_par.h"
+#include "vpr_par.h"
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 #include <cerrno>
 #include <stdexcept>
 
@@ -145,4 +148,58 @@ std::string Assets::fname_out_pp_bloc(const char* suffix) const
             conf_year, conf_month, conf_day, conf_hour, conf_minute, suffix);
 
     return fname;
+}
+
+float Assets::read_t_ground()
+{
+    LOG_CATEGORY("radar.vpr");
+    const char* fname = getenv("FILE_T");
+    if (!fname)
+    {
+       LOG_ERROR("FILE_T is not set");
+       return NAN;
+    }
+
+    FILE* file_t = fopen_checked(fname, "rt", "file delle temperature al suolo vicino al radar");
+    if (!file_t)
+    {
+        LOG_ERROR("Cannot open FILE_T=%s: %s", fname, strerror(errno));
+        return NAN;
+    }
+
+    float media_t = NODATAVPR - 1;
+    int icount = 0;
+    float radar_lat, radar_lon, lon, lat, t;
+
+    switch (conf_site)
+    {
+        case SITE_GAT:
+            radar_lat=GAT_LAT;
+            radar_lon=GAT_LON;
+            break;
+        case SITE_SPC:
+            radar_lat=SPC_LAT;
+            radar_lon=SPC_LON;
+            break;
+    }
+
+    while (1) {
+        if(fscanf(file_t,"%f %f %f \n",&lon,&lat,&t) == EOF) break;
+        if (fabs(radar_lat-lat)<=maxdlat && fabs(radar_lon-lon)<=maxdlon) {
+            ++icount;
+            media_t += t - 273.15;
+        }
+    }
+
+    fclose(file_t);
+
+    if (icount == 0)
+    {
+        LOG_ERROR("Temperature data not found in FILE_T=%s", fname);
+        return NAN;
+    }
+
+    media_t /= (float)icount;
+    LOG_INFO("ho %i stazioni dati affidabili e la t media è %f\n", icount, media_t);
+    return media_t;
 }

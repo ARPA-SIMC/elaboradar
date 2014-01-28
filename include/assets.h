@@ -94,6 +94,11 @@ public:
      */
     FILE* open_file_hray_inf();
 
+    /**
+     * Load ground temperature
+     */
+    float read_t_ground();
+
 protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;

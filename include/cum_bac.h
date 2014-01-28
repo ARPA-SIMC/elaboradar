@@ -174,7 +174,7 @@ public:
     float vpr[NMAXLAYER];/* vpr */
     long int gap; /* distanza temporale dall'ultimo file vpr */
     long int area_vpr[NMAXLAYER]; /*area degli strati*/
-    int ier_vpr, ier_comb,ier_max,ier_stampa_vpr,ier_t;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
+    int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
     int hvprmax; /* quota picco vpr */
     int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
     float t_ground;
@@ -243,7 +243,6 @@ public:
     int corr_vpr(const char *sito);
     int trovo_hvprmax(int *hmax);
     int analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito);
-    int get_t_ground(float *t_gr);
     int interpola_VPR(float a[], int ma);
     int testfit(float a[], float chisq, float chisqin);
     float quota_f(float elevaz, int k);
