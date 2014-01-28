@@ -185,18 +185,18 @@ void to::test<2>()
     wassert(actual(stats.count_zeros[4]) == 7200);
     wassert(actual(stats.count_ones[0]) == 192288);
     wassert(actual(stats.count_ones[1]) == 193052);
-    wassert(actual(stats.count_ones[2]) == 194509);
-    wassert(actual(stats.count_ones[3]) == 196573);
+    wassert(actual(stats.count_ones[2]) == 194525);
+    wassert(actual(stats.count_ones[3]) == 196576);
     wassert(actual(stats.count_ones[4]) == 196160);
     wassert(actual(stats.count_others[0]) == 5312);
     wassert(actual(stats.count_others[1]) == 4548);
-    wassert(actual(stats.count_others[2]) == 3091);
-    wassert(actual(stats.count_others[3]) == 1027);
+    wassert(actual(stats.count_others[2]) == 3075);
+    wassert(actual(stats.count_others[3]) == 1024);
     wassert(actual(stats.count_others[4]) == 1440);
     wassert(actual(stats.sum_others[0]) == 493518);
-    wassert(actual(stats.sum_others[1]) == 367575);
-    wassert(actual(stats.sum_others[2]) == 222441);
-    wassert(actual(stats.sum_others[3]) ==  41842);
+    wassert(actual(stats.sum_others[1]) == 358463);
+    wassert(actual(stats.sum_others[2]) == 220768);
+    wassert(actual(stats.sum_others[3]) ==  41677);
     wassert(actual(stats.sum_others[4]) ==  78321);
 
     cb->caratterizzo_volume();
@@ -219,7 +219,7 @@ void to::test<2>()
     top_stats.fill2(cb->top);
     wassert(actual((unsigned)top_stats.first).isfalse());
     wassert(actual((unsigned)top_stats.min) == 0);
-    wassert(actual((unsigned)top_stats.max) == 37);
+    wassert(actual((unsigned)top_stats.max) == 35);
     wassert(actual((unsigned)(top_stats.avg * 100)) == 5);
 
     delete cb;
@@ -298,5 +298,75 @@ void to::test<3>()
 
     delete cb;
 }
+
+template<> template<>
+void to::test<4>()
+{
+    // Test elabora_dato, con tutti i do_* a true
+    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+
+    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
+    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+
+    CUM_BAC* cb = new CUM_BAC;
+    cb->do_quality = true;
+    cb->do_beamblocking = true;
+    cb->do_declutter = false;
+    cb->do_bloccorr = true;
+    cb->do_vpr = true;
+    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->setup_elaborazione(fname, "GAT");
+
+    int ier = cb->elabora_dato();
+    wassert(actual(ier) == 0);
+
+    // Check results
+    VolumeStats stats(cb);
+
+    wassert(actual(stats.count_zeros[0]) == 7200);
+    wassert(actual(stats.count_zeros[1]) == 7200);
+    wassert(actual(stats.count_zeros[2]) == 7200);
+    wassert(actual(stats.count_zeros[3]) == 7200);
+    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_ones[0]) == 193092);
+    wassert(actual(stats.count_ones[1]) == 193930);
+    wassert(actual(stats.count_ones[2]) == 194527);
+    wassert(actual(stats.count_ones[3]) == 196577);
+    wassert(actual(stats.count_ones[4]) == 196160);
+    wassert(actual(stats.count_others[0]) ==  4508);
+    wassert(actual(stats.count_others[1]) ==  3670);
+    wassert(actual(stats.count_others[2]) ==  3073);
+    wassert(actual(stats.count_others[3]) ==  1023);
+    wassert(actual(stats.count_others[4]) ==  1440);
+    wassert(actual(stats.sum_others[0]) ==  385721);
+    wassert(actual(stats.sum_others[1]) ==  276535);
+    wassert(actual(stats.sum_others[2]) ==  220710);
+    wassert(actual(stats.sum_others[3]) ==   41674);
+    wassert(actual(stats.sum_others[4]) ==   78321);
+
+    cb->caratterizzo_volume();
+
+    ArrayStats<unsigned char> qual_stats;
+    qual_stats.fill3(cb->qual);
+    wassert(actual((unsigned)qual_stats.min) == 0);
+    wassert(actual((unsigned)qual_stats.max) == 99);
+    wassert(actual((unsigned)(qual_stats.avg * 100)) == 5874);
+
+    ArrayStats<unsigned char> vpr_stats;
+    vpr_stats.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)vpr_stats.min) == 0);
+    wassert(actual((unsigned)vpr_stats.max) == 1);
+    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 91);
+
+    ArrayStats<unsigned char> top_stats;
+    top_stats.fill2(cb->top);
+    wassert(actual((unsigned)top_stats.min) == 0);
+    wassert(actual((unsigned)top_stats.max) == 35);
+    wassert(actual((unsigned)(top_stats.avg * 100)) == 3);
+
+    delete cb;
+}
+
 
 }
