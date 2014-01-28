@@ -236,7 +236,6 @@ public:
     void leggo_dem();
     int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], const char *sito);
     float comp_levels(float v0, float v1, float nodata, float peso);
-    long int profile_gap(char nomefile[]);
     int combina_profili(const char *sito);
     int profile_heating();
     int stampa_vpr();

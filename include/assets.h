@@ -22,6 +22,7 @@ protected:
         SITE_GAT,
         SITE_SPC,
     } conf_site;
+    time_t conf_acq_time;
     int conf_year;
     int conf_month;
     int conf_day;
@@ -98,6 +99,9 @@ public:
      * Load ground temperature
      */
     float read_t_ground();
+
+    /// Read the gap in seconds between the time in $LAST_VPR and the current acquisition time
+    long int read_profile_gap();
 
 protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
