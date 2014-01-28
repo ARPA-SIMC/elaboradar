@@ -160,7 +160,7 @@ float Assets::read_t_ground()
        return NAN;
     }
 
-    FILE* file_t = fopen_checked(fname, "rt", "file delle temperature al suolo vicino al radar");
+    FILE* file_t = fopen(fname, "rt");
     if (!file_t)
     {
         LOG_ERROR("Cannot open FILE_T=%s: %s", fname, strerror(errno));
