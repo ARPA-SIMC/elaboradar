@@ -1240,17 +1240,11 @@ void CUM_BAC::classifica_rain()
 
                 }
                 cil[iaz][i][j]=rhi_cart[i][j];
-                jbb=ceil((htbb)/RES_HOR_CIL);
-                if (j == jbb ) cappi[iaz][i] = DBtoBYTE(cil[iaz][i][j]);
+             
 
             }
         }
     }
-
-
-    //output = fopen("CAPPI","w");
-    //fwrite(cappi,sizeof(cappi),1,output);
-    //fclose(output);
 
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
@@ -2454,7 +2448,6 @@ int flag_vpr[][][]: flag che indica l'usabilità della cella polare in termini d
 long int *cv,*ct:  volume del settore libero,volume precipitante
 float vpr1[]: vpr istantaneo
 long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del singolo bin
-cappi1100[1200*MAX_BIN]: vettore volumi buoni tra 1000 e 1200 m
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
@@ -2567,11 +2560,6 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
                     //------incremento l'area dello strato----------
                     area_vpr[ilay]=area_vpr[ilay]+area;
 
-                    /* //------cappi 1100 m */
-                    /* if (abs(quota_true_st-1100)<TCK_VPR/2) { */
-                    /*   cappi1100[icounter]=vol_rain;     */
-                    /*   icounter=icounter+1; */
-                    /* }   */
                 }
             }
         }
