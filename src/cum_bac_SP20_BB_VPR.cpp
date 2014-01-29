@@ -167,7 +167,7 @@ void CUM_BAC::creo_cart()
 #ifdef CLASS
                             if (irange<x_size)
                                 conv_cart[x][y]=conv[iaz%NUM_AZ_X_PPI][irange];
-                            cappi_cart[x][y]=cappi[iaz%NUM_AZ_X_PPI][irange];
+                           
 
 #endif
                         }
@@ -252,9 +252,7 @@ void CUM_BAC::creo_cart_z_lowris()
 #endif
 #ifdef CLASS
                             conv_1x1[i][j]=conv_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                            //  if (conv_1x1[i][j] >= CONV_VAL && BYTEtoDB(z)>THRES_ALLERT1) conv_1x1[i][j]=CONV_VAL+80;
-                            // if (conv_1x1[i][j] >= CONV_VAL && BYTEtoDB(z)>THRES_ALLERT2) conv_1x1[i][j]=CONV_VAL+150;
-                            cappi_1x1[i][j]=cappi_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                           
 
 #endif
 
