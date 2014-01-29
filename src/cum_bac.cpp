@@ -2,6 +2,7 @@
 #include "logging.h"
 #include "utils.h"
 #include <cstring>
+#include <stdexcept>
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +69,8 @@ extern "C" {
 
 // parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
 #define NSCAN 6
+
+using namespace std;
 
 /// This needs to be a global variable, as it is expected by libsp20
 int elev_array[NEL];
@@ -1045,7 +1048,7 @@ void CUM_BAC::classifica_rain()
 
         }
         else{
-            printf("attenzione, non ho trovat zero termico ne da vpr ne da radiosondaggio \n");
+            LOG_INFO("attenzione, non ho trovat zero termico ne da vpr ne da radiosondaggio");
             htbb=0; // discutibile così faccio tutto con VIZ
             hbbb=0;
         }
@@ -1292,7 +1295,7 @@ void CUM_BAC::classifico_VIZ()
     // kmax=ceil(z_size/resol[1]);
     if (t_ground < T_MAX_ML) kmax=0;/////se t suolo dentro t melting layer pongo kmax=00 e in tal modo non classifico
     if (ktbb>z_size) ktbb=z_size;
-    printf ("kmax= %i \n kbbb= %i \n ktbb= %i \n  z_size= %i \n ",kmax,kbbb,ktbb,z_size);
+    LOG_DEBUG("kmax= %i \n kbbb= %i \n ktbb= %i \n  z_size= %i",kmax,kbbb,ktbb,z_size);
 
     //inizializzazione vettori e matrici
     for (i=0; i<NUM_AZ_X_PPI; i++){
@@ -1378,7 +1381,7 @@ void CUM_BAC::classifico_VIZ()
             }
         }
     }
-    printf("numero nuclei VIZ = %li \n",ncv);
+    LOG_DEBUG("numero nuclei VIZ = %li",ncv);
 
     return;
 }
@@ -1426,7 +1429,7 @@ void  CUM_BAC::classifico_STEINER()
 
             // ingrasso il nucleo
             cr=convective_radius[i];
-            printf (" %f cr \n", cr);
+            LOG_DEBUG(" %f cr", cr);
             ingrasso_nuclei(cr,j,k);
             ncs=ncs+1;
 
@@ -1466,7 +1469,7 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
 
     // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
     delta_nr=(int)(STEINER_RADIUS*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
-    printf("delta_nrange per analisi Steiner = %i \n",delta_nr);
+    LOG_DEBUG("delta_nrange per analisi Steiner = %i",delta_nr);
 
 
 
@@ -1598,7 +1601,7 @@ void CUM_BAC::ingrasso_nuclei(float cr,int ja,int kr)
     jmin=ja-daz;
     jmax=ja+daz;
 
-    printf ("dr cr kmin kmax  %d %f %d %d %d %d \n", dr,cr, kmin,kmax,jmin,jmax);
+    LOG_DEBUG("dr cr kmin kmax  %d %f %d %d %d %d", dr,cr, kmin,kmax,jmin,jmax);
 
     if (kmin>0) {
         if (kmax>x_size) kmax=x_size;
@@ -1610,7 +1613,7 @@ void CUM_BAC::ingrasso_nuclei(float cr,int ja,int kr)
                     conv_STEINER[j][k]=CONV_VAL;
                 }
             }
-            printf ("jmin %d \n", jmin);
+            LOG_DEBUG("jmin %d", jmin);
             jmin=0;
 
         }
@@ -1622,7 +1625,7 @@ void CUM_BAC::ingrasso_nuclei(float cr,int ja,int kr)
                     conv_STEINER[j][k]=CONV_VAL;
                 }
             }
-            printf ("jmax %d \n", jmax);
+            LOG_DEBUG("jmax %d", jmax);
             jmax=NUM_AZ_X_PPI;
         }
         for (j=jmin; j<jmax ; j++) {
@@ -1716,8 +1719,8 @@ int CUM_BAC::combina_profili(const char *sito)
 
     cv=( long int *)malloc(sizeof(long int));
     ct=( long int *)malloc(sizeof(long int));
-    if (ct == NULL) printf("malloc fallita per ct\n");
-    if (cv == NULL) printf("malloc fallita per cv\n");
+    if (ct == NULL) throw runtime_error("malloc fallita per ct");
+    if (cv == NULL) throw runtime_error("malloc fallita per cv");
     *cv=0;
     *ct=0;
 
@@ -2144,14 +2147,14 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
 
     if (t_ground != NODATAVPR)
     {
-        printf("trovo hvprmax  a partire da 400 m sotto lo zero dell'adiabatica secca\n");
+        LOG_DEBUG("trovo hvprmax  a partire da 400 m sotto lo zero dell'adiabatica secca");
         h0start=t_ground/9.8*1000 ;
         istart=h0start/TCK_VPR -2;
         if (istart< livmin/TCK_VPR) istart=livmin/TCK_VPR;
-        printf("t_ground h0start istart %f %f %i  \n",t_ground,h0start,istart);
+        LOG_DEBUG("t_ground h0start istart %f %f %i",t_ground,h0start,istart);
     }
     else {
-        printf("trovo hvprmax  a partire da livmin\n");
+        LOG_DEBUG("trovo hvprmax  a partire da livmin");
         istart=livmin/TCK_VPR+1;
     }
 
@@ -2169,13 +2172,13 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
     if (vpr[istart] >soglia && vpr[istart+4] > soglia){
         peak=10*log10(vpr[istart]/vpr[istart+4]);//inizializzo il picco
-        printf("peak1 = %f\n",peak);
+        LOG_DEBUG("peak1 = %f",peak);
     }
     //----se picco > MINIMO il punto è ok
     if(peak> MIN_PEAK_VPR){
         imax=istart;
         vprmax=vpr[imax];
-        printf("il primo punto soddisfa le condizioni di picco \n");
+        LOG_DEBUG("il primo punto soddisfa le condizioni di picco");
     }
     for (i=istart+1;i<NMAXLAYER-4;i++) //la ricerca è un po' diversa dall'originale.. trovo il picco + alto con valore  rispetto a 4 sopra > soglia
     {
@@ -2193,11 +2196,11 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
         foundlivmax=1;
         peak=10*log10(vpr[imax]/vpr[imax+4]);
         *hmax=imax*TCK_VPR+TCK_VPR/2;
-        printf("trovato ilaymax %i %i \n",*hmax,imax);
-        printf (" picco in dbR %f  \n",peak);
+        LOG_DEBUG("trovato ilaymax %i %i",*hmax,imax);
+        LOG_DEBUG(" picco in dbR %f",peak);
     }
 
-    printf("exit status trovo_hvprmax %i \n",foundlivmax);
+    LOG_DEBUG("exit status trovo_hvprmax %i",foundlivmax);
     return (foundlivmax);
 }
 
