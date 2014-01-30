@@ -138,8 +138,8 @@ void CUM_BAC::creo_cart()
                     }
                     cont=0;
                     for(iaz = az_min; iaz<az_max; iaz++){
-                        if(cart[x][y]<=vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]){
-                            cart[x][y] = vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange];
+                        if(cart[x][y]<=volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]){
+                            cart[x][y] = volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange];
                             topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
 #ifdef QUALITY
                             qual_Z_cart[x][y]=qual[elev_fin[iaz%NUM_AZ_X_PPI][irange]][iaz%NUM_AZ_X_PPI][irange];
@@ -161,8 +161,8 @@ void CUM_BAC::creo_cart()
 #endif
                         }
 #ifdef ZLR_MEDIA
-                        if (vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange] > 0){
-                            cartm[x][y]=cartm[x][y]+BYTEtoZ(vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]);
+                        if (volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange] > 0){
+                            cartm[x][y]=cartm[x][y]+BYTEtoZ(volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]);
                             cont=cont+1;
                         }
 #endif
@@ -412,11 +412,11 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
 
 #ifdef CLASS
     for (int i=0; i<NUM_AZ_X_PPI; i++){
-        for (int k=0; k<vol_pol[0][i].b_header.max_bin; k++){
+        for (int k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++){
 
             if (conv[i][k] > 0){
 
-                vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
+                volume.vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(volume.vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
 
             }
         }
@@ -547,11 +547,11 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
   /*   FILE *file0; */
 
   /*   for(i=0; i<NUM_AZ_X_PPI; i++){ */
-  /*     for (k=0; k<vol_pol[0][i].b_header.max_bin; k++){ */
+  /*     for (k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++){ */
   /*       for (l=first_level_static[i][k]; l<NEL; l++)     */
   /*    {  */
-  /*      if (BYTEtoDB(vol_pol[l][i].ray[k]) > 10. ) */
-  /*        top[i][k]=(unsigned char)(quota_f((float)(vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);{ //top in ettometri */
+  /*      if (BYTEtoDB(volume.vol_pol[l][i].ray[k]) > 10. ) */
+  /*        top[i][k]=(unsigned char)(quota_f((float)(volume.vol_pol[l][i].teta_true)*CONV_RAD+0.45*DTOR,k)/100.);{ //top in ettometri */
   /*        if (l >= NEL -1 ) top[i][k]=0; */
   /*      } */
   /*    } */

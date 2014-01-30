@@ -34,7 +34,7 @@ struct VolumeStats
             {
                 for (int i = 0; i < MAX_DIM; ++i)
                 {
-                    int val = cb.vol_pol[iel][ibeam].ray[i];
+                    int val = cb.volume.vol_pol[iel][ibeam].ray[i];
                     switch (val)
                     {
                         case 0: count_zeros[iel]++; break;
@@ -123,30 +123,30 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const CUM_BAC& cb)
     wassert(actual(cb.nbeam_elev[7]) == 0);
 
     // Ensure that the beam sizes are what we expect
-    wassert(actual(cb.vol_pol[0][0].b_header.max_bin) == 494);
-    wassert(actual(cb.vol_pol[1][0].b_header.max_bin) == 494);
-    wassert(actual(cb.vol_pol[2][0].b_header.max_bin) == 494);
-    wassert(actual(cb.vol_pol[3][0].b_header.max_bin) == 494);
-    wassert(actual(cb.vol_pol[4][0].b_header.max_bin) == 494);
-    wassert(actual(cb.vol_pol[5][0].b_header.max_bin) == 494);
-    wassert(actual(cb.vol_pol[6][0].b_header.max_bin) == 0);
+    wassert(actual(cb.volume.vol_pol[0][0].b_header.max_bin) == 494);
+    wassert(actual(cb.volume.vol_pol[1][0].b_header.max_bin) == 494);
+    wassert(actual(cb.volume.vol_pol[2][0].b_header.max_bin) == 494);
+    wassert(actual(cb.volume.vol_pol[3][0].b_header.max_bin) == 494);
+    wassert(actual(cb.volume.vol_pol[4][0].b_header.max_bin) == 494);
+    wassert(actual(cb.volume.vol_pol[5][0].b_header.max_bin) == 494);
+    wassert(actual(cb.volume.vol_pol[6][0].b_header.max_bin) == 0);
 
     // Ensure that the beam azimuth are what we expect
-    wassert(actual(cb.vol_pol[0][0].b_header.alfa) == 0);
-    wassert(actual(cb.vol_pol[0][1].b_header.alfa) == 10);
-    wassert(actual(cb.vol_pol[1][1].b_header.alfa) == 10);
-    wassert(actual(cb.vol_pol[2][1].b_header.alfa) == 10);
-    wassert(actual(cb.vol_pol[3][1].b_header.alfa) == 10);
-    wassert(actual(cb.vol_pol[4][1].b_header.alfa) == 10);
-    wassert(actual(cb.vol_pol[5][1].b_header.alfa) == 10);
-    wassert(actual(cb.vol_pol[6][1].b_header.alfa) == 0);
+    wassert(actual(cb.volume.vol_pol[0][0].b_header.alfa) == 0);
+    wassert(actual(cb.volume.vol_pol[0][1].b_header.alfa) == 10);
+    wassert(actual(cb.volume.vol_pol[1][1].b_header.alfa) == 10);
+    wassert(actual(cb.volume.vol_pol[2][1].b_header.alfa) == 10);
+    wassert(actual(cb.volume.vol_pol[3][1].b_header.alfa) == 10);
+    wassert(actual(cb.volume.vol_pol[4][1].b_header.alfa) == 10);
+    wassert(actual(cb.volume.vol_pol[5][1].b_header.alfa) == 10);
+    wassert(actual(cb.volume.vol_pol[6][1].b_header.alfa) == 0);
 
     // Check other header fields
     wassert(actual(cb.volume.acq_date) == 1389108600);
     wassert(actual(cb.volume.size_cell) == 250);
 
     // for (int i = 0; i < 200; ++i)
-    //     printf("%d ", (int)cb.vol_pol[0][0].ray[i]);
+    //     printf("%d ", (int)cb.volume.vol_pol[0][0].ray[i]);
     // printf("\n");
 
     // Arbitrary stats on volume contents so we can check that we read data

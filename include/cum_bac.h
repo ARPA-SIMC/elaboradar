@@ -70,10 +70,10 @@ public:
     double size_cell;
     bool declutter_rsp; // ?
 
-    Volume()
-        : acq_date(0), size_cell(0), declutter_rsp(false)
-    {
-    }
+    //dato di base volume polare, struttura definita in libSP20
+    struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
+
+    Volume();
 };
 
 class CUM_BAC
@@ -99,9 +99,6 @@ public:
     /*-----------------------------------------------------------
       Variabili globali
       ------------------------------------------------------------*/
-
-    //dato di base volume polare, struttura definita in libSP20
-    struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
 
     //numero raggi per elevazione
     int nbeam_elev[NEL];
