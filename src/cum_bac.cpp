@@ -3,6 +3,8 @@
 #include "utils.h"
 #include <cstring>
 #include <stdexcept>
+#include <memory>
+#include <radarlib/radar.hpp>
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,8 +71,6 @@ extern "C" {
 
 // parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
 #define NSCAN 6
-
-using namespace std;
 
 /// This needs to be a global variable, as it is expected by libsp20
 int elev_array[NEL];
@@ -330,6 +330,188 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     }
 
     return ier == OK;
+}
+
+bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file_type)
+{
+    using namespace OdimH5v21;
+    using namespace Radar;
+    using namespace std;
+
+    // ----- definisco array delle elevazioni che è diverso per i due siti ---------
+    if (!(strcmp(sito,"SPC")) ) {
+        for (int i = 0; i < NEL; ++i)
+            elev_array[i] = elev_array_spc[i];
+    }
+
+    if (!(strcmp(sito,"GAT")) ) {
+        for (int i = 0; i < NEL; ++i)
+            elev_array[i] = elev_array_gat[i];
+    }
+
+    LOG_INFO("Reading %s for site %s and file type %d", nome_file, sito, file_type);
+
+    auto_ptr<OdimFactory> factory(new OdimFactory());
+    auto_ptr<PolarVolume> volume(factory->openPolarVolume(nome_file));
+
+    this->volume.acq_date = volume->getDateTime();
+
+    std::vector<double> elevationAngles = volume->getElevationAngles();
+
+    // Make sure that we can store all the levels in the scan
+    if (elevationAngles.size() > NEL)
+    {
+        LOG_INFO("%zd elevation angles found, but we can only store %d", elevationAngles.size(), NEL);
+        throw runtime_error("number of elevation angles too big");
+    }
+
+    // Check that the levels match what we want
+    for (unsigned i = 0; i < elevationAngles.size(); ++i)
+    {
+        double v = elevationAngles[i] * 4096.0 / 360.0;
+        if (v <= elev_array[i] - 5 || elev_array[i] + 5 <= v)
+        {
+            LOG_ERROR("elevation %d does not match our expectation: we want %d but we got %f", i, elev_array[i], v);
+            throw runtime_error("elevation mismatch");
+        }
+    }
+
+    // Take note of what levels we found
+    std::vector<bool> found(elevationAngles.size(), false);
+
+    int scan_count = volume->getScanCount();
+    for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
+    {
+        auto_ptr<PolarScan> scan(volume->getScan(src_elev));
+        double elevation = scan->getEAngle();
+
+        // Get the index for this elevation
+        unsigned elev_idx = 0;
+        for ( ; elev_idx < elevationAngles.size(); ++elev_idx)
+            if (elevation == elevationAngles[elev_idx])
+                break;
+
+        // Not what we are looking for: skip
+        if (elev_idx == elevationAngles.size())
+        {
+            LOG_WARN("skipping scan with unwanted elevation angle %f", elevation);
+            continue;
+        }
+
+        // We have already seen this elevation
+        if (found[elev_idx])
+        {
+            LOG_WARN("skipping duplicate scan for elevation angle %f", elevation);
+            continue;
+        }
+
+        // Pick the best quantity among the ones available
+        auto_ptr<PolarScanData> data;
+        if (scan->hasQuantityData(PRODUCT_QUANTITY_DBZH))
+            data.reset(scan->getQuantityData(PRODUCT_QUANTITY_DBZH));
+        else if (scan->hasQuantityData(PRODUCT_QUANTITY_TH))
+        {
+            LOG_WARN("no DBZH found for elevation angle %f: using TH", elevation);
+            data.reset(scan->getQuantityData(PRODUCT_QUANTITY_TH));
+        }
+        else
+        {
+            LOG_WARN("no DBZH or TH found for elevation angle %f", elevation);
+            continue;
+        }
+
+        // Get and validate the azimuth angles for this scan
+        std::vector<AZAngles> azangles = scan->getAzimuthAngles();
+        int nrays = data->getNumRays();
+        if (azangles.size() != nrays)
+        {
+            LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), nrays);
+            throw runtime_error("mismatch between number of azumuth angles and number of rays");
+        }
+
+        int beam_size = data->getNumBins();
+        if (beam_size > MAX_DIM)
+        {
+            LOG_ERROR("elevation %f has beams of %d elements, but the maximum we can store is %d", elevation, beam_size, MAX_DIM);
+            throw runtime_error("beam size too big");
+        }
+
+        // Read all scan beam data
+        RayMatrix<float> matrix;
+        data->readTranslatedData(matrix);
+
+        //printf("Offset %f, gain %f\n", data->getOffset(), data->getGain());
+        //double offset = data->getOffset();
+        //double gain = data->getGain();
+
+        std::vector<bool> angles_seen(400, false);
+        for (int src_az = 0; src_az < nrays; ++src_az)
+        {
+            double azimut = (azangles[src_az].start + azangles[src_az].stop) / 2;
+            //printf("AZA %d %f-%f\n", src_az, azangles[src_az].start, azangles[src_az].stop);
+            int az_idx = ((int)round(azimut / .9)) % 400;
+            if (angles_seen[az_idx])
+                continue;
+            //printf("AZA %d %f\n", az_idx, azimut);
+            //printf("Ray %d,%d goes on vol_pol[%d][%d]\n", src_elev, src_az, elev_idx, az_idx);
+
+            // Copy beam data into vol_pol
+            for (int ri = 0; ri < beam_size; ++ri)
+            {
+                //printf("%d %f %d\n", ri, (double)matrix.elem(src_az, ri), (int)DBtoBYTE(matrix.elem(src_az, ri)));
+                float sample = matrix.elem(src_az, ri);
+                vol_pol[elev_idx][az_idx].ray[ri] = DBtoBYTE(sample);
+            }
+            vol_pol[elev_idx][az_idx].b_header.max_bin = beam_size;
+            vol_pol[elev_idx][az_idx].b_header.alfa = round((double)az_idx * 0.9 * 4096. / 360.);
+
+            angles_seen[az_idx] = true;
+        }
+
+        nbeam_elev[elev_idx] = 400;
+        found[elev_idx] = true;
+    }
+    //throw runtime_error("unimplemented");
+
+
+    /*
+    int numRaggi»···»···= scan->getNumRays();
+    NUM_AZ_X_PPI
+
+    NEL
+
+        se due scan per stessa elecvazione, prendo il primo
+
+        guardare se il passo di griglia è 0.9 o dare errore
+        sennò prendere il beam che ha l'angolo piú vicino
+
+        fill_bin in sp20lib
+
+        leggere DBZH o TH (fare poi DBtoBYTE)
+        */
+
+    /*
+    struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
+    T_MDB_data_header   old_data_header;
+
+    //--------lettura volume------
+    int tipo_dati_richiesti = INDEX_Z;
+    int ier = read_dbp_SP20((char*)nome_file,vol_pol,&old_data_header,
+                            tipo_dati_richiesti,nbeam_elev);
+
+    if (ier != OK)
+        LOG_ERROR("Reading %s returned error code %d", nome_file, ier);
+
+    //  ----- Test sul volume test_file.......  --------
+    if (!test_file(file_type))
+    {
+        LOG_ERROR("test_file failed");
+        return false;
+    }
+    */
+
+    //return ier == OK;
+    return true;
 }
 
 int CUM_BAC::elabora_dato()
