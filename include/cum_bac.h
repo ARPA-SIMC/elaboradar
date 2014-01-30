@@ -67,7 +67,7 @@ class Volume
 {
 public:
     time_t acq_date;
-    float size_cell;
+    double size_cell;
     bool declutter_rsp; // ?
 
     Volume()

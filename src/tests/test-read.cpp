@@ -144,7 +144,6 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const CUM_BAC& cb)
     // Check other header fields
     wassert(actual(cb.volume.acq_date) == 1389108600);
     wassert(actual(cb.volume.size_cell) == 250);
-    wassert(actual(cb.volume.declutter_rsp).istrue());
 
     // for (int i = 0; i < 200; ++i)
     //     printf("%d ", (int)cb.vol_pol[0][0].ray[i]);
