@@ -106,9 +106,6 @@ public:
       Variabili globali
       ------------------------------------------------------------*/
 
-    //numero raggi per elevazione
-    int nbeam_elev[NEL];
-
     //matrici per ricampionamento cartesiano
     float azimut[MAX_BIN][MAX_BIN];
     float range[MAX_BIN][MAX_BIN];
