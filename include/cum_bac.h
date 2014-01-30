@@ -73,7 +73,13 @@ public:
     //dato di base volume polare, struttura definita in libSP20
     struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
 
+    //numero raggi per elevazione
+    int nbeam_elev[NEL];
+
     Volume();
+
+    void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
+    void merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati);
 };
 
 class CUM_BAC

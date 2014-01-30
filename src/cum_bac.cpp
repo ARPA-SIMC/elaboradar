@@ -78,7 +78,59 @@ int elev_array[NEL];
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
-    memset(vol_pol,0,sizeof(vol_pol));
+    memset(vol_pol, 0, sizeof(vol_pol));
+    memset(nbeam_elev, 0, sizeof(nbeam_elev));
+}
+
+void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned char* data)
+{
+    int teta = theta / FATT_MOLT_EL;
+
+    int el_num = elevation_index_MDB(teta);
+    if (el_num > NEL) return;
+
+    int alfa = alpha / FATT_MOLT_AZ;
+    if (alfa >= 4096) return;
+
+    int az_num = azimut_index_MDB(alfa);
+    merge_beam(&vol_pol[el_num][az_num], theta, alpha, az_num, el_num, size, data);
+    if(az_num*0.9 - alpha < 0.)
+    {
+        int new_az_num = (az_num + 1) % 400;
+        merge_beam(&vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
+    }
+    else if(az_num*0.9 - alpha > 0.)
+    {
+        int new_az_num = (az_num -1+400) %400;
+        merge_beam(&vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
+    }
+}
+
+void Volume::merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati)
+{
+    if (raggio->flag == 0)
+    {
+        for (unsigned i = 0; i < size; i++)
+        {
+            if(dati[i])
+                raggio->ray[i] = dati[i];
+            else
+                raggio->ray[i] = 1;
+        }
+        nbeam_elev[el_num]++;
+    }
+    else
+        for (unsigned i = 0; i < size; i++)
+            if(raggio->ray[i]<dati[i])
+                raggio->ray[i]=dati[i];
+
+    raggio->flag=1;
+    raggio->b_header.alfa =(short)(az_num*.9/FATT_MOLT_AZ);
+    raggio->b_header.teta = elev_array[el_num];
+    raggio->alfa_true = alpha / FATT_MOLT_AZ;
+    raggio->teta_true = theta / FATT_MOLT_EL;
+    raggio->b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
+    raggio->b_header.max_bin = size;
 }
 
 CUM_BAC::CUM_BAC()
@@ -313,7 +365,6 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, sito, file_type);
 
     //--------lettura volume------
-    int tipo_dati_richiesti = INDEX_Z;
     T_MDB_data_header   old_data_header;
 
     // Replicato qui la read_dbp_SP20, per poi metterci mano e condividere codice con la lettura di ODIM
@@ -335,31 +386,16 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     T_MDB_ap_beam_header  old_beam_header;
     unsigned char dati[MAX_DIM];
     const int tipo_dati = INDEX_Z;
-    int kk=0;
     while(1)
     {
-        kk++;
         if(read_ray_SP20(&old_beam_header,dati,sp20_in,tipo_dati)==NO_OK) break;
-        int el_num = elevation_index_MDB(old_beam_header.teta);
-
-        if(el_num < NEL && old_beam_header.alfa < 4096)
-        {
-            int az_num = azimut_index_MDB(old_beam_header.alfa);
-            fill_beam(&volume.vol_pol[el_num][az_num],az_num,el_num,old_beam_header,dati,nbeam_elev);
-            if(az_num*0.9-old_beam_header.alfa*FATT_MOLT_AZ < 0.)
-            {
-                int new_az_num = (az_num +1) %400;
-                fill_beam(&volume.vol_pol[el_num][new_az_num], new_az_num,el_num,old_beam_header,dati,nbeam_elev);
-            }
-            else if(az_num*0.9-old_beam_header.alfa*FATT_MOLT_AZ > 0.)
-            {
-                int new_az_num = (az_num -1+400) %400;
-                fill_beam(&volume.vol_pol[el_num][new_az_num], new_az_num, el_num, old_beam_header,dati,nbeam_elev);
-            }
-        }
+        volume.fill_beam(old_beam_header.teta * FATT_MOLT_EL, old_beam_header.alfa * FATT_MOLT_AZ, old_beam_header.max_bin, dati);
     }
 
     fclose(sp20_in);
+
+    // FIXME: remove it when we migrate the code to use volume.nbeam_elev
+    memcpy(nbeam_elev, volume.nbeam_elev, sizeof(nbeam_elev));
 
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
