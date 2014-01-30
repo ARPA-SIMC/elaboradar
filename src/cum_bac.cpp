@@ -455,8 +455,6 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
         }
     }
 
-    // Take note of what levels we found
-    std::vector<bool> found(elevationAngles.size(), false);
     double range_scale;
 
     // Iterate all scans
@@ -477,26 +475,6 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
                         src_elev, elevation, rs, range_scale);
                 throw runtime_error("rangeScale mismatch");
             }
-        }
-
-        // Get the index for this elevation
-        unsigned elev_idx = 0;
-        for ( ; elev_idx < elevationAngles.size(); ++elev_idx)
-            if (elevation == elevationAngles[elev_idx])
-                break;
-
-        // Not what we are looking for: skip
-        if (elev_idx == elevationAngles.size())
-        {
-            LOG_WARN("skipping scan with unwanted elevation angle %f", elevation);
-            continue;
-        }
-
-        // We have already seen this elevation
-        if (found[elev_idx])
-        {
-            LOG_WARN("skipping duplicate scan for elevation angle %f", elevation);
-            continue;
         }
 
         // Pick the best quantity among the ones available
@@ -538,32 +516,19 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
         //double offset = data->getOffset();
         //double gain = data->getGain();
 
+        unsigned char* beam = new unsigned char[beam_size];
+
         std::vector<bool> angles_seen(400, false);
         for (int src_az = 0; src_az < nrays; ++src_az)
         {
             double azimut = (azangles[src_az].start + azangles[src_az].stop) / 2;
-            //printf("AZA %d %f-%f\n", src_az, azangles[src_az].start, azangles[src_az].stop);
-            int az_idx = ((int)round(azimut / .9)) % 400;
-            if (angles_seen[az_idx])
-                continue;
-            //printf("AZA %d %f\n", az_idx, azimut);
-            //printf("Ray %d,%d goes on vol_pol[%d][%d]\n", src_elev, src_az, elev_idx, az_idx);
-
-            // Copy beam data into vol_pol
-            for (int ri = 0; ri < beam_size; ++ri)
-            {
-                //printf("%d %f %d\n", ri, (double)matrix.elem(src_az, ri), (int)DBtoBYTE(matrix.elem(src_az, ri)));
-                float sample = matrix.elem(src_az, ri);
-                this->volume.vol_pol[elev_idx][az_idx].ray[ri] = DBtoBYTE(sample);
-            }
-            this->volume.vol_pol[elev_idx][az_idx].b_header.max_bin = beam_size;
-            this->volume.vol_pol[elev_idx][az_idx].b_header.alfa = round((double)az_idx * 0.9 * 4096. / 360.);
-
-            angles_seen[az_idx] = true;
+            // Convert back to bytes, to fit into vol_pol as it is now
+            for (unsigned i = 0; i < beam_size; ++i)
+                beam[i] = DBtoBYTE(matrix.elem(src_az, i));
+            this->volume.fill_beam(elevation, azimut, beam_size, beam);
         }
 
-        this->volume.nbeam_elev[elev_idx] = 400;
-        found[elev_idx] = true;
+        delete[] beam;
     }
 
     this->volume.size_cell = range_scale;
