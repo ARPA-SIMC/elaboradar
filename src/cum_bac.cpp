@@ -381,12 +381,25 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
 
     // Take note of what levels we found
     std::vector<bool> found(elevationAngles.size(), false);
+    double range_scale;
 
     int scan_count = volume->getScanCount();
     for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
     {
         auto_ptr<PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
+
+        if (src_elev == 0)
+            range_scale = scan->getRangeScale();
+        else {
+            double rs = scan->getRangeScale();
+            if (rs != range_scale)
+            {
+                LOG_ERROR("scan %d (elevation %f) has rangeScale %f that is different from %f in the previous scans",
+                        src_elev, elevation, rs, range_scale);
+                throw runtime_error("rangeScale mismatch");
+            }
+        }
 
         // Get the index for this elevation
         unsigned elev_idx = 0;
@@ -474,6 +487,8 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
         nbeam_elev[elev_idx] = 400;
         found[elev_idx] = true;
     }
+
+    this->volume.size_cell = range_scale;
     //throw runtime_error("unimplemented");
 
 
