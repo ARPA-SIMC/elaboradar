@@ -39,18 +39,6 @@ extern "C" {
 #include <par_class.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-// nr
-#include <nrutil.h>
-#include <nr.h>
-
-#ifdef __cplusplus
-}
-#endif
-
-
 /*----------------------------------------------------------------------------*/
 /*      FINE SEZIONE    INCLUDE                   */
 /*----------------------------------------------------------------------------*/
@@ -83,7 +71,8 @@ extern "C" {
 extern int errno;
 
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 void CUM_BAC::creo_cart()
 {
     int i,j,quad,x,y,irange,az,iaz,az_min,az_max,cont;
@@ -191,6 +180,7 @@ void CUM_BAC::creo_cart()
                 }
             }
 }
+#pragma GCC diagnostic pop
 
 void CUM_BAC::creo_matrice_conv()
 {
@@ -206,6 +196,9 @@ void CUM_BAC::creo_matrice_conv()
     return;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wunused-variable"
 void CUM_BAC::creo_cart_z_lowris()
 {
     int i,j,x,y,cont;
@@ -288,8 +281,9 @@ void CUM_BAC::creo_cart_z_lowris()
                 }
         }
 }
+#pragma GCC diagnostic pop
 
-void CUM_BAC::scrivo_out_file_bin (const char *ext,char *content,char *dir,size_t size, void  *matrice)
+void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const char *dir,size_t size, const void  *matrice)
 {
     char nome_file [512];
     FILE *output;
@@ -655,11 +649,8 @@ int main (int argc, char **argv)
     /* ================================ */
 {
     char *nome_file;
-    int i,k,l;//indici azimut ,range, elevazione
-    int ier,ier_test, ier_main=0;//uscite errore generico (lettura volume e succ.anap) , di test_file, del main
-    FILE *output;
+    int ier_main=0;//uscite errore generico (lettura volume e succ.anap) , di test_file, del main
     char *sito;//GAT O SPC
-    float a,b,c;
 
     // Initialize logging
     Logging logging;
