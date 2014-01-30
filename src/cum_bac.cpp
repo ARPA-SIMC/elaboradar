@@ -84,6 +84,13 @@ Volume::Volume()
 
 void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned char* data)
 {
+    if (alpha < 0.5)
+    {
+        printf("fbeam ϑ%f α%f %u", theta, alpha, size);
+        for (unsigned i = 0; i < 20; ++i)
+            printf(" %d", (int)data[i]);
+        printf("\n");
+    }
     int teta = theta / FATT_MOLT_EL;
 
     int el_num = elevation_index_MDB(teta);
