@@ -232,6 +232,7 @@ public:
     CUM_BAC();
 
     bool read_sp20_volume(const char* nome_file, const char* sito, int file_type);
+    bool read_odim_volume(const char* nome_file, const char* sito, int file_type);
     bool test_file(int tipofile);
     void setup_elaborazione(const char* nome_file, const char* sito);
     int elabora_dato();
