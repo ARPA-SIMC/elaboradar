@@ -67,9 +67,11 @@ class Volume
 {
 public:
     time_t acq_date;
+    float size_cell;
+    bool declutter_rsp; // ?
 
     Volume()
-        : acq_date(0)
+        : acq_date(0), size_cell(0), declutter_rsp(false)
     {
     }
 };
@@ -99,7 +101,6 @@ public:
       ------------------------------------------------------------*/
 
     T_MDB_ap_beam_header  old_beam_header;  /* queste due dichiarazioni le metto qui perchè sono sfaticato*/
-    T_MDB_data_header   old_data_header;
 
     char errori[256];
 
