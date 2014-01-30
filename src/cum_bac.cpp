@@ -383,12 +383,14 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
     std::vector<bool> found(elevationAngles.size(), false);
     double range_scale;
 
+    // Iterate all scans
     int scan_count = volume->getScanCount();
     for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
     {
         auto_ptr<PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
 
+        // Read and and validate resolution information
         if (src_elev == 0)
             range_scale = scan->getRangeScale();
         else {
