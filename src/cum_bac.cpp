@@ -185,46 +185,46 @@ bool CUM_BAC::test_file(int file_type)
 {
     FILE *f_aus;
     time_t last_time; //> volume.acq_date?
-    int n_elev, resolution;// != old_data_header.norm.maq.resolution?
+    int n_elev, expected_size_cell;// != volume.resolution?
 
     //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
 
     switch (file_type)
     {
         case SHORT_DEC:
-            if (!old_data_header.norm.maq.declutter_rsp)
+            if (!volume.declutter_rsp)
             {
                 LOG_WARN("File Senza Declutter Dinamico--cos' è???");
                 return false;
             }
-            resolution=2;
+            expected_size_cell = 250;
             n_elev=4;
             break;
             //------------se tipo =1 esco
         case SHORT_FULL_VOLUME://-----??? DUBBIO
-            if (old_data_header.norm.maq.declutter_rsp)
+            if (volume.declutter_rsp)
             {
                 LOG_WARN("File con Declutter Dinamico");
                 return false;
             }
-            resolution=2;
+            expected_size_cell = 250;
             n_elev=4;
             break;
         case SHORT_HAIL://-----??? DA BUTTARE NON ESISTE PIÙ
-            resolution=2;
+            expected_size_cell = 250;
             n_elev=3;
             LOG_INFO("CASO SHORT_HAIL");
             break;
         case MEDIUM_PULSE:
-            resolution=4;
+            expected_size_cell = 1000;
             n_elev=4;
             break;
     }
 
     //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
-    if (old_data_header.norm.maq.resolution != resolution)
+    if (volume.size_cell != expected_size_cell)
     {
-        LOG_ERROR("File Risoluzione Sbagliata %1d", old_data_header.norm.maq.resolution);
+        LOG_ERROR("File Risoluzione/size_cell Sbagliata %f", (double)volume.size_cell);
         return false;
     }
     //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
@@ -310,6 +310,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
 
     //--------lettura volume------
     int tipo_dati_richiesti = INDEX_Z;
+    T_MDB_data_header   old_data_header;
     int ier = read_dbp_SP20((char*)nome_file,vol_pol,&old_data_header,
                             tipo_dati_richiesti,nbeam_elev);
 
@@ -321,6 +322,8 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 
     volume.acq_date = old_data_header.norm.maq.acq_date;
+    volume.size_cell = size_cell[old_data_header.norm.maq.resolution];
+    volume.declutter_rsp = (bool)old_data_header.norm.maq.declutter_rsp;
 
     //  ----- Test sul volume test_file.......  --------
     if (!test_file(file_type))
@@ -946,7 +949,7 @@ float CUM_BAC::quota_f(float elevaz, int k) // quota funzione di elev(radianti) 
 {
     float dist;
     float q_st;
-    dist=k*(size_cell[old_data_header.norm.maq.resolution])+(size_cell[old_data_header.norm.maq.resolution])/2.;
+    dist=k*(volume.size_cell)+(volume.size_cell)/2.;
     q_st=(sqrt(pow(dist/1000.,2)+(rst*rst)+2.0*dist/1000.*rst*sin(elevaz))-rst)*1000.; /*quota in prop. standard da elevazione reale  */;
 
     return q_st;
@@ -1076,7 +1079,7 @@ void CUM_BAC::caratterizzo_volume()
             for (k=0; k<vol_pol[0][i].b_header.max_bin; k++)/*ciclo range*/
             {
                 //---------distanza in m dal radar (250*k+125 x il corto..)
-                dist= k*size_cell[old_data_header.norm.maq.resolution]+size_cell[old_data_header.norm.maq.resolution]/2.;/*distanza radar */
+                dist= k*volume.size_cell+volume.size_cell/2.;/*distanza radar */
 
                 //-----distanza dal radiosondaggio (per GAT si finge che sia colocato ..), perchè? (verificare che serva )
                 drrs=dist;
@@ -1168,7 +1171,7 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
         Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
         R=pow((Zhh/aMP),(1.0/bMP));
         att_rate=0.0018*pow(R,1.05);
-        att_tot=att_tot+2.*att_rate*0.001*size_cell[old_data_header.norm.maq.resolution];
+        att_tot=att_tot+2.*att_rate*0.001*volume.size_cell;
         if (att_tot>BYTEtoDB(254)) att_tot=BYTEtoDB(254);
     }
     return att_tot;
@@ -1258,8 +1261,8 @@ void CUM_BAC::classifica_rain()
     /*  Metodo 1 - -Calcolo le coordinate di ogni punto del RHI mediante utilizzo di cicli */
 
     // estremi x e z (si procede per rhi)
-    range_min=0.5*size_cell[old_data_header.norm.maq.resolution]/1000.;
-    range_max=(MAX_BIN-0.5)*size_cell[old_data_header.norm.maq.resolution]/1000.;
+    range_min=0.5*volume.size_cell/1000.;
+    range_max=(MAX_BIN-0.5)*volume.size_cell/1000.;
 
     xmin=floor(range_min*cos(elev_array[NEL-1]*CONV_RAD)); // distanza orizzontale minima dal radar
     zmin=pow(pow(range_min,2.)+pow(4./3*a,2.)+2.*range_min*4./3.*a*sin(elev_array[0]*CONV_RAD),.5) -4./3.*a+h_radar; // quota  minima in prop standard
@@ -1287,7 +1290,7 @@ void CUM_BAC::classifica_rain()
         w_tot[k]=(float *) malloc(w_z_size*sizeof(float));
 
     for (i=0; i<MAX_BIN; i++){
-        range[i]=(i+0.5)*size_cell[old_data_header.norm.maq.resolution]/1000.;
+        range[i]=(i+0.5)*volume.size_cell/1000.;
 
         for (k=0; k<NEL; k++){
             zz[i][k]=pow(pow(range[i],2.)+pow(4./3*a,2.)+2.*range[i]*4./3.*a*sin(elev_array[k]*CONV_RAD),.5) -4./3.*a+h_radar;// quota
@@ -1658,7 +1661,7 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
     }
 
     // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
-    delta_nr=(int)(STEINER_RADIUS*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+    delta_nr=(int)(STEINER_RADIUS*1000./volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
     LOG_DEBUG("delta_nrange per analisi Steiner = %i",delta_nr);
 
 
@@ -1687,7 +1690,7 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
                 if (kmax>MAX_BIN) kmax=MAX_BIN;
 
                 //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
-                delta_naz=ceil(11./((lista_bckg[i][1]*size_cell[old_data_header.norm.maq.resolution]/1000.+size_cell[old_data_header.norm.maq.resolution]/2000.)/(AMPLITUDE*DTOR)));
+                delta_naz=ceil(11./((lista_bckg[i][1]*volume.size_cell/1000.+volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
                 if (delta_naz>NUM_AZ_X_PPI/2)
                     delta_naz=NUM_AZ_X_PPI/2;
 
@@ -1782,12 +1785,12 @@ void CUM_BAC::ingrasso_nuclei(float cr,int ja,int kr)
     int daz, dr,jmin,jmax,kmin,kmax,j,k;
 
 
-    dr=(int)(cr*1000./size_cell[old_data_header.norm.maq.resolution]);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+    dr=(int)(cr*1000./volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
 
     kmin=kr-dr;
     kmax=kr+dr;
 
-    daz=ceil(cr/((kr*size_cell[old_data_header.norm.maq.resolution]/1000.+size_cell[old_data_header.norm.maq.resolution]/2000.)/(AMPLITUDE*DTOR)));
+    daz=ceil(cr/((kr*volume.size_cell/1000.+volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
     jmin=ja-daz;
     jmax=ja+daz;
 
@@ -2689,7 +2692,7 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
         for (int k=0; k<MAX_BIN; k++)/*ciclo range*/
         {
             //-------------calcolo distanza-----------
-            dist=k*(long int)(size_cell[old_data_header.norm.maq.resolution])+(int)(size_cell[old_data_header.norm.maq.resolution])/2.;
+            dist=k*(long int)(volume.size_cell)+(int)(volume.size_cell)/2.;
 
             //-----ciclo settore azimut???
             for (iA=iaz_min; iA<iaz_max; iA++)//ciclo sulle unità di azimut  (0,9°)    ---------
@@ -2729,7 +2732,7 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 #endif
 
                 // ------per calcolare l'area del pixel lo considero un rettangolo dim bin x ampiezzamediafascio x flag vpr/1000 per evitare problemi di memoria?
-                area=size_cell[old_data_header.norm.maq.resolution]*dist_plain*AMPLITUDE*DTOR*flag_vpr[l][i][k]/1000.; // divido per  mille per evitare nr troppo esagerato
+                area=volume.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr[l][i][k]/1000.; // divido per  mille per evitare nr troppo esagerato
 
                 // ------incremento il volume totale di area
 
