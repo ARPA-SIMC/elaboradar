@@ -146,7 +146,6 @@ CUM_BAC::CUM_BAC()
     memset(cart,0,sizeof(cart));
     memset(cartm,0.,sizeof(cartm));
     memset(z_out,0,sizeof(z_out));
-    memset(nbeam_elev,0,sizeof(nbeam_elev));
     memset (first_level,0,sizeof(first_level));
     memset (first_level_static,0,sizeof(first_level_static));
     memset(dato_corrotto,0,sizeof(dato_corrotto));
@@ -287,13 +286,13 @@ bool CUM_BAC::test_file(int file_type)
 
     for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
-        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", nbeam_elev[k], k);
+        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.nbeam_elev[k], k);
 
-        if (nbeam_elev[k] <  NUM_MIN_BEAM)
+        if (volume.nbeam_elev[k] <  NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
         {
             //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,nbeam_elev[k]);
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.nbeam_elev[k]);
             return false;
         }
     }                                                             /*end for*/
@@ -393,9 +392,6 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     }
 
     fclose(sp20_in);
-
-    // FIXME: remove it when we migrate the code to use volume.nbeam_elev
-    memcpy(nbeam_elev, volume.nbeam_elev, sizeof(nbeam_elev));
 
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
@@ -566,7 +562,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
             angles_seen[az_idx] = true;
         }
 
-        nbeam_elev[elev_idx] = 400;
+        this->volume.nbeam_elev[elev_idx] = 400;
         found[elev_idx] = true;
     }
 
@@ -597,7 +593,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
     //--------lettura volume------
     int tipo_dati_richiesti = INDEX_Z;
     int ier = read_dbp_SP20((char*)nome_file,volume.vol_pol,&old_data_header,
-                            tipo_dati_richiesti,nbeam_elev);
+                            tipo_dati_richiesti,volume.nbeam_elev);
 
     if (ier != OK)
         LOG_ERROR("Reading %s returned error code %d", nome_file, ier);

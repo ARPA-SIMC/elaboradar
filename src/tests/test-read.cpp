@@ -21,7 +21,7 @@ struct VolumeStats
     unsigned count_others[NEL];
     unsigned sum_others[NEL];
 
-    VolumeStats(const CUM_BAC& cb)
+    VolumeStats(const Volume& v)
     {
         for (int iel = 0; iel < NEL; ++iel)
         {
@@ -30,11 +30,11 @@ struct VolumeStats
             count_others[iel] = 0;
             sum_others[iel] = 0;
 
-            for (int ibeam = 0; ibeam < cb.nbeam_elev[iel]; ++ibeam)
+            for (int ibeam = 0; ibeam < v.nbeam_elev[iel]; ++ibeam)
             {
                 for (int i = 0; i < MAX_DIM; ++i)
                 {
-                    int val = cb.volume.vol_pol[iel][ibeam].ray[i];
+                    int val = v.vol_pol[iel][ibeam].ray[i];
                     switch (val)
                     {
                         case 0: count_zeros[iel]++; break;
@@ -110,48 +110,48 @@ struct ArrayStats
     }
 };
 
-void test_0120141530gat(WIBBLE_TEST_LOCPRM, const CUM_BAC& cb)
+void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
 {
     // Ensure that nbeam_elev has been filled with the right values
-    wassert(actual(cb.nbeam_elev[0]) == 400);
-    wassert(actual(cb.nbeam_elev[1]) == 400);
-    wassert(actual(cb.nbeam_elev[2]) == 400);
-    wassert(actual(cb.nbeam_elev[3]) == 400);
-    wassert(actual(cb.nbeam_elev[4]) == 400);
-    wassert(actual(cb.nbeam_elev[5]) == 400);
-    wassert(actual(cb.nbeam_elev[6]) == 0);
-    wassert(actual(cb.nbeam_elev[7]) == 0);
+    wassert(actual(v.nbeam_elev[0]) == 400);
+    wassert(actual(v.nbeam_elev[1]) == 400);
+    wassert(actual(v.nbeam_elev[2]) == 400);
+    wassert(actual(v.nbeam_elev[3]) == 400);
+    wassert(actual(v.nbeam_elev[4]) == 400);
+    wassert(actual(v.nbeam_elev[5]) == 400);
+    wassert(actual(v.nbeam_elev[6]) == 0);
+    wassert(actual(v.nbeam_elev[7]) == 0);
 
     // Ensure that the beam sizes are what we expect
-    wassert(actual(cb.volume.vol_pol[0][0].b_header.max_bin) == 494);
-    wassert(actual(cb.volume.vol_pol[1][0].b_header.max_bin) == 494);
-    wassert(actual(cb.volume.vol_pol[2][0].b_header.max_bin) == 494);
-    wassert(actual(cb.volume.vol_pol[3][0].b_header.max_bin) == 494);
-    wassert(actual(cb.volume.vol_pol[4][0].b_header.max_bin) == 494);
-    wassert(actual(cb.volume.vol_pol[5][0].b_header.max_bin) == 494);
-    wassert(actual(cb.volume.vol_pol[6][0].b_header.max_bin) == 0);
+    wassert(actual(v.vol_pol[0][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[1][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[2][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[3][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[4][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[5][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[6][0].b_header.max_bin) == 0);
 
     // Ensure that the beam azimuth are what we expect
-    wassert(actual(cb.volume.vol_pol[0][0].b_header.alfa) == 0);
-    wassert(actual(cb.volume.vol_pol[0][1].b_header.alfa) == 10);
-    wassert(actual(cb.volume.vol_pol[1][1].b_header.alfa) == 10);
-    wassert(actual(cb.volume.vol_pol[2][1].b_header.alfa) == 10);
-    wassert(actual(cb.volume.vol_pol[3][1].b_header.alfa) == 10);
-    wassert(actual(cb.volume.vol_pol[4][1].b_header.alfa) == 10);
-    wassert(actual(cb.volume.vol_pol[5][1].b_header.alfa) == 10);
-    wassert(actual(cb.volume.vol_pol[6][1].b_header.alfa) == 0);
+    wassert(actual(v.vol_pol[0][0].b_header.alfa) == 0);
+    wassert(actual(v.vol_pol[0][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[1][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[2][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[3][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[4][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[5][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[6][1].b_header.alfa) == 0);
 
     // Check other header fields
-    wassert(actual(cb.volume.acq_date) == 1389108600);
-    wassert(actual(cb.volume.size_cell) == 250);
+    wassert(actual(v.acq_date) == 1389108600);
+    wassert(actual(v.size_cell) == 250);
 
     // for (int i = 0; i < 200; ++i)
-    //     printf("%d ", (int)cb.volume.vol_pol[0][0].ray[i]);
+    //     printf("%d ", (int)v.vol_pol[0][0].ray[i]);
     // printf("\n");
 
     // Arbitrary stats on volume contents so we can check that we read data
     // that looks correct
-    VolumeStats stats(cb);
+    VolumeStats stats(v);
     wassert(actual(stats.count_zeros[0]) == 7200);
     wassert(actual(stats.count_zeros[1]) == 7200);
     wassert(actual(stats.count_zeros[2]) == 7200);
@@ -194,7 +194,7 @@ void to::test<1>()
     // Ensure that reading was successful
     wassert(actual(res).istrue());
     // Check the contents of what we read
-    wruntest(test_0120141530gat, *cb);
+    wruntest(test_0120141530gat, cb->volume);
     delete cb;
 }
 
@@ -208,7 +208,7 @@ void to::test<2>()
     // Ensure that reading was successful
     wassert(actual(res).istrue());
     // Check the contents of what we read
-    wruntest(test_0120141530gat, *cb);
+    wruntest(test_0120141530gat, cb->volume);
     delete cb;
 }
 
@@ -233,7 +233,7 @@ void to::test<3>()
     wassert(actual(ier) == 0);
 
     // Check results
-    VolumeStats stats(*cb);
+    VolumeStats stats(cb->volume);
     wassert(actual(stats.count_zeros[0]) == 7200);
     wassert(actual(stats.count_zeros[1]) == 7200);
     wassert(actual(stats.count_zeros[2]) == 7200);
@@ -308,7 +308,7 @@ void to::test<4>()
     wassert(actual(ier) == 0);
 
     // Check results
-    VolumeStats stats(*cb);
+    VolumeStats stats(cb->volume);
     wassert(actual(stats.count_zeros[0]) == 7200);
     wassert(actual(stats.count_zeros[1]) == 7200);
     wassert(actual(stats.count_zeros[2]) == 7200);
@@ -388,7 +388,7 @@ void to::test<5>()
     wassert(actual(ier) == 0);
 
     // Check results
-    VolumeStats stats(*cb);
+    VolumeStats stats(cb->volume);
 
     wassert(actual(stats.count_zeros[0]) == 7200);
     wassert(actual(stats.count_zeros[1]) == 7200);
