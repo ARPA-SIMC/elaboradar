@@ -303,7 +303,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
 
     if (!(strcmp(sito,"GAT")) ) {
         for (int i = 0; i < NEL; ++i)
-            elev_array[i] = elev_array_spc[i];
+            elev_array[i] = elev_array_gat[i];
     }
 
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, sito, file_type);
