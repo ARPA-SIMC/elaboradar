@@ -84,13 +84,6 @@ Volume::Volume()
 
 void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned char* data)
 {
-    if (alpha < 0.5)
-    {
-        printf("fbeam ϑ%f α%f %u", theta, alpha, size);
-        for (unsigned i = 0; i < 20; ++i)
-            printf(" %d", (int)data[i]);
-        printf("\n");
-    }
     int teta = theta / FATT_MOLT_EL;
 
     int el_num = elevation_index_MDB(teta);
@@ -100,6 +93,15 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
     if (alfa >= 4096) return;
 
     int az_num = azimut_index_MDB(alfa);
+
+    if (az_num == 0)
+    {
+        printf("fbeam ϑ%f→%d α%f→%d %u", theta, el_num, alpha, az_num, size);
+        for (unsigned i = 0; i < 20; ++i)
+            printf(" %d", (int)data[i]);
+        printf("\n");
+    }
+
     merge_beam(&vol_pol[el_num][az_num], theta, alpha, az_num, el_num, size, data);
     if(az_num*0.9 - alpha < 0.)
     {
