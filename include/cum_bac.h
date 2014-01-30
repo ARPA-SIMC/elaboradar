@@ -63,6 +63,17 @@ static const float size_cell[]={62.5,125.,250.,500.,1000.,2000.};
 
 extern int elev_array[NEL];
 
+class Volume
+{
+public:
+    time_t acq_date;
+
+    Volume()
+        : acq_date(0)
+    {
+    }
+};
+
 class CUM_BAC
 {
 public:
@@ -77,6 +88,8 @@ public:
     bool do_bloccorr;
     bool do_vpr;
     bool do_class;
+
+    Volume volume;
 
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 

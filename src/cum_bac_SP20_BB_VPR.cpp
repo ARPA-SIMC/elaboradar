@@ -300,12 +300,12 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,char *content,char *dir,size_
     /*----------------------------------------------------------------------------*/
     //definisco stringa data in modo predefinito
 #ifdef SHORT
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    time = NormalizzoData(volume.acq_date);
     tempo = gmtime(&time);
 #endif
 #ifdef MEDIUM
-    tempo = gmtime(&old_data_header.norm.maq.acq_date);
-    time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    tempo = gmtime(&volume.acq_date);
+    time = NormalizzoData(volume.acq_date);
     tempo = gmtime(&time);
 #endif
     snprintf(nome_file, 512, "%s/%04d%02d%02d%02d%02d%s",dir,
@@ -343,7 +343,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
     /* #endif */
 
     //  ----- test su normalizzazione data ( no minuti strani)
-    if (NormalizzoData(old_data_header.norm.maq.acq_date) == -1)
+    if (NormalizzoData(volume.acq_date) == -1)
         return true;
 
     setup_elaborazione(nome_file, sito);
