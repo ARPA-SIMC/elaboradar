@@ -315,11 +315,51 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     //--------lettura volume------
     int tipo_dati_richiesti = INDEX_Z;
     T_MDB_data_header   old_data_header;
-    int ier = read_dbp_SP20((char*)nome_file,volume.vol_pol,&old_data_header,
-                            tipo_dati_richiesti,nbeam_elev);
 
-    if (ier != OK)
-        LOG_ERROR("Reading %s returned error code %d", nome_file, ier);
+    // Replicato qui la read_dbp_SP20, per poi metterci mano e condividere codice con la lettura di ODIM
+
+    FILE* sp20_in = fopen_checked(nome_file, "rb", "input sp20 file");
+
+    if (ReadHeaderSP20toMDB(&old_data_header, sp20_in) == NO_OK)
+    {
+        fclose(sp20_in);
+        throw std::runtime_error("errore lettura header SP20");
+    }
+
+    /*--------
+      ATTENZIONE PRENDO LA DATA DAL NOME DEL FILE
+      -------*/
+    struct tm data_nome;
+    old_data_header.norm.maq.acq_date=get_date_from_name(&old_data_header,&data_nome,nome_file);
+
+    T_MDB_ap_beam_header  old_beam_header;
+    unsigned char dati[MAX_DIM];
+    const int tipo_dati = INDEX_Z;
+    int kk=0;
+    while(1)
+    {
+        kk++;
+        if(read_ray_SP20(&old_beam_header,dati,sp20_in,tipo_dati)==NO_OK) break;
+        int el_num = elevation_index_MDB(old_beam_header.teta);
+
+        if(el_num < NEL && old_beam_header.alfa < 4096)
+        {
+            int az_num = azimut_index_MDB(old_beam_header.alfa);
+            fill_beam(&volume.vol_pol[el_num][az_num],az_num,el_num,old_beam_header,dati,nbeam_elev);
+            if(az_num*0.9-old_beam_header.alfa*FATT_MOLT_AZ < 0.)
+            {
+                int new_az_num = (az_num +1) %400;
+                fill_beam(&volume.vol_pol[el_num][new_az_num], new_az_num,el_num,old_beam_header,dati,nbeam_elev);
+            }
+            else if(az_num*0.9-old_beam_header.alfa*FATT_MOLT_AZ > 0.)
+            {
+                int new_az_num = (az_num -1+400) %400;
+                fill_beam(&volume.vol_pol[el_num][new_az_num], new_az_num, el_num, old_beam_header,dati,nbeam_elev);
+            }
+        }
+    }
+
+    fclose(sp20_in);
 
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
@@ -336,7 +376,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
         return false;
     }
 
-    return ier == OK;
+    return true;
 }
 
 bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file_type)
