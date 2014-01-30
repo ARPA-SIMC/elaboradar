@@ -100,10 +100,6 @@ public:
       Variabili globali
       ------------------------------------------------------------*/
 
-    T_MDB_ap_beam_header  old_beam_header;  /* queste due dichiarazioni le metto qui perchè sono sfaticato*/
-
-    char errori[256];
-
     //dato di base volume polare, struttura definita in libSP20
     struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
 
@@ -245,7 +241,7 @@ public:
     void creo_cart();
     void creo_matrice_conv();
     void creo_cart_z_lowris();
-    void scrivo_out_file_bin(const char *ext,char *content,char *dir,size_t size, void  *matrice);
+    void scrivo_out_file_bin(const char *ext, const char *content, const char *dir,size_t size, const void  *matrice);
     FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
     void leggo_hray();
     void leggo_dem();

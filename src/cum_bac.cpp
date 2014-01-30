@@ -528,6 +528,9 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
     }
     */
 
+    // TODO: look for the equivalent of declutter_rsp and check its consistency
+    // like in test_file
+
     //return ier == OK;
     return true;
 }
