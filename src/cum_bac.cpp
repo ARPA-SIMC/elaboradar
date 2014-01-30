@@ -151,11 +151,11 @@ void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
       ------------------------------------------*/
     LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
 
-    assets.configure(sito, old_data_header.norm.maq.acq_date);
+    assets.configure(sito, volume.acq_date);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
-    Time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    Time = NormalizzoData(volume.acq_date);
     tempo = gmtime(&Time);
     month=tempo->tm_mon+1;
 
@@ -184,7 +184,7 @@ void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
 bool CUM_BAC::test_file(int file_type)
 {
     FILE *f_aus;
-    time_t last_time; //> old_data_header.norm.maq.acq_date?
+    time_t last_time; //> volume.acq_date?
     int n_elev, resolution;// != old_data_header.norm.maq.resolution?
 
     //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
@@ -259,7 +259,7 @@ bool CUM_BAC::test_file(int file_type)
               -------------------------------------*/
             f_aus = fopen(last_file, "r+");
             fread(&last_time,4,1,f_aus);
-            if(old_data_header.norm.maq.acq_date <= last_time)
+            if(volume.acq_date <= last_time)
             {
                 fclose(f_aus);
                 LOG_WARN("File Vecchio");
@@ -269,7 +269,8 @@ bool CUM_BAC::test_file(int file_type)
                   |  aggiorno la data nel file |
                   ----------------------------*/
                 rewind(f_aus);
-                fwrite(&old_data_header.norm.maq.acq_date,4,1,f_aus);
+                unsigned int acq_date = volume.acq_date;
+                fwrite(&acq_date,4,1,f_aus);
                 fclose(f_aus);
             }
         }
@@ -283,7 +284,8 @@ bool CUM_BAC::test_file(int file_type)
               |  data del volume in esame            |
               --------------------------------------*/
             f_aus = fopen(last_file, "w");
-            fwrite(&old_data_header.norm.maq.acq_date,4,1,f_aus);
+            unsigned int acq_date = volume.acq_date;
+            fwrite(&acq_date,4,1,f_aus);
             fclose(f_aus);
         }
     }
@@ -313,6 +315,12 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
 
     if (ier != OK)
         LOG_ERROR("Reading %s returned error code %d", nome_file, ier);
+
+    // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
+    // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
+    //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
+
+    volume.acq_date = old_data_header.norm.maq.acq_date;
 
     //  ----- Test sul volume test_file.......  --------
     if (!test_file(file_type))
@@ -1712,15 +1720,15 @@ int CUM_BAC::combina_profili(const char *sito)
 
 
     /* questo per fare ciclo sul vpr vecchio*/
-    Time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    Time = NormalizzoData(volume.acq_date);
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
 
     cv=( long int *)malloc(sizeof(long int));
     ct=( long int *)malloc(sizeof(long int));
-    if (ct == NULL) throw runtime_error("malloc fallita per ct");
-    if (cv == NULL) throw runtime_error("malloc fallita per cv");
+    if (ct == NULL) throw std::runtime_error("malloc fallita per ct");
+    if (cv == NULL) throw std::runtime_error("malloc fallita per cv");
     *cv=0;
     *ct=0;
 
@@ -2381,7 +2389,7 @@ int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito)
 
     /* nome data */
     //definisco stringa data in modo predefinito
-    Time = NormalizzoData(old_data_header.norm.maq.acq_date);
+    Time = NormalizzoData(volume.acq_date);
     tempo = gmtime(&Time);
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
