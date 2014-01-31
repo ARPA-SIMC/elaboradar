@@ -503,6 +503,8 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
 
         // Get and validate the azimuth angles for this scan
         std::vector<AZAngles> azangles = scan->getAzimuthAngles();
+	int rpm_sign = scan->getDirection();	
+	
         int nrays = data->getNumRays();
         if (azangles.size() != nrays)
         {
@@ -530,7 +532,8 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
         std::vector<bool> angles_seen(400, false);
         for (int src_az = 0; src_az < nrays; ++src_az)
         {
-            double azimut = (azangles[src_az].start + azangles[src_az].stop) / 2;
+            double azimut = azangles[src_az].averagedAngle(rpm_sign);
+   //        printf("fbeam ϑ%5.1f α1%6.1f α2%6.1f α%6.1f sign %2d\n", elevation, azangles[src_az].start,  azangles[src_az].stop, azimut, rpm_sign);
             // Convert back to bytes, to fit into vol_pol as it is now
             for (unsigned i = 0; i < beam_size; ++i)
                 beam[i] = DBtoBYTE(matrix.elem(src_az, i));
