@@ -468,26 +468,27 @@ void to::test<5>()
 
     // Check results
     VolumeStats stats(cb->volume);
+    //stats.PrintStats();
 
     wassert(actual(stats.count_zeros[0]) == 7200);
     wassert(actual(stats.count_zeros[1]) == 7200);
     wassert(actual(stats.count_zeros[2]) == 7200);
     wassert(actual(stats.count_zeros[3]) == 7200);
     wassert(actual(stats.count_zeros[4]) == 7200);
-    wassert(actual(stats.count_ones[0]) == 193092);
-    wassert(actual(stats.count_ones[1]) == 193930);
-    wassert(actual(stats.count_ones[2]) == 194527);
-    wassert(actual(stats.count_ones[3]) == 196577);
+    wassert(actual(stats.count_ones[0]) == 193091);
+    wassert(actual(stats.count_ones[1]) == 193929);
+    wassert(actual(stats.count_ones[2]) == 194526);
+    wassert(actual(stats.count_ones[3]) == 196576);
     wassert(actual(stats.count_ones[4]) == 196160);
-    wassert(actual(stats.count_others[0]) ==  4508);
-    wassert(actual(stats.count_others[1]) ==  3670);
-    wassert(actual(stats.count_others[2]) ==  3073);
-    wassert(actual(stats.count_others[3]) ==  1023);
+    wassert(actual(stats.count_others[0]) ==  4509);
+    wassert(actual(stats.count_others[1]) ==  3671);
+    wassert(actual(stats.count_others[2]) ==  3074);
+    wassert(actual(stats.count_others[3]) ==  1024);
     wassert(actual(stats.count_others[4]) ==  1440);
-    wassert(actual(stats.sum_others[0]) ==  385721);
-    wassert(actual(stats.sum_others[1]) ==  276535);
-    wassert(actual(stats.sum_others[2]) ==  220710);
-    wassert(actual(stats.sum_others[3]) ==   41674);
+    wassert(actual(stats.sum_others[0]) ==  387010);
+    wassert(actual(stats.sum_others[1]) ==  276931);
+    wassert(actual(stats.sum_others[2]) ==  220729);
+    wassert(actual(stats.sum_others[3]) ==   41677);
     wassert(actual(stats.sum_others[4]) ==   78321);
 
     cb->caratterizzo_volume();
