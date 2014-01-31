@@ -31,6 +31,6 @@ void to::test<2>()
 {
     // Test BeamBlockingCorrection
     CUM_BAC* cb = new CUM_BAC;
-    wassert(actual(DBtoBYTE(cb->BeamBlockingCorrection(128,50))) == 137);
+    wassert(actual(DBtoBYTE(cb->BeamBlockingCorrection(128,50))) == 138);
 }
 }
