@@ -1,6 +1,7 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
 #include "logging.h"
+#include <stdio.h>
 
 using namespace wibble::tests;
 
@@ -47,6 +48,12 @@ struct VolumeStats
                 }
             }
         }
+    }
+    void PrintStats(){	
+	printf("Nel   Zeros    Ones  Others     Sum\n"); 
+	for (int iel =0; iel<NEL; ++iel){
+	    printf("%4d%8d%8d%8d%8d\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
+	}
     }
 };
 
@@ -110,7 +117,79 @@ struct ArrayStats
     }
 };
 
-void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
+void test_0120141530gat_odim(WIBBLE_TEST_LOCPRM, const Volume& v)
+{
+    // Ensure that nbeam_elev has been filled with the right values
+    wassert(actual(v.nbeam_elev[0]) == 400);
+    wassert(actual(v.nbeam_elev[1]) == 400);
+    wassert(actual(v.nbeam_elev[2]) == 400);
+    wassert(actual(v.nbeam_elev[3]) == 400);
+    wassert(actual(v.nbeam_elev[4]) == 400);
+    wassert(actual(v.nbeam_elev[5]) == 400);
+    wassert(actual(v.nbeam_elev[6]) == 0);
+    wassert(actual(v.nbeam_elev[7]) == 0);
+
+    // Ensure that the beam sizes are what we expect
+    wassert(actual(v.vol_pol[0][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[1][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[2][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[3][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[4][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[5][0].b_header.max_bin) == 494);
+    wassert(actual(v.vol_pol[6][0].b_header.max_bin) == 0);
+
+    // Ensure that the beam azimuth are what we expect
+    wassert(actual(v.vol_pol[0][0].b_header.alfa) == 0);
+    wassert(actual(v.vol_pol[0][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[1][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[2][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[3][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[4][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[5][1].b_header.alfa) == 10);
+    wassert(actual(v.vol_pol[6][1].b_header.alfa) == 0);
+
+    // Check other header fields
+    wassert(actual(v.acq_date) == 1389108600);
+    wassert(actual(v.size_cell) == 250);
+
+    // for (int i = 0; i < 200; ++i)
+    //     printf("%d ", (int)v.vol_pol[0][0].ray[i]);
+    // printf("\n");
+
+    // Arbitrary stats on volume contents so we can check that we read data
+    // that looks correct
+    VolumeStats stats(v);
+    wassert(actual(stats.count_zeros[0]) == 7200);
+    wassert(actual(stats.count_zeros[1]) == 7200);
+    wassert(actual(stats.count_zeros[2]) == 7200);
+    wassert(actual(stats.count_zeros[3]) == 7200);
+    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_zeros[5]) == 7200);
+    wassert(actual(stats.count_zeros[6]) == 0);
+    wassert(actual(stats.count_ones[0]) == 145970);
+    wassert(actual(stats.count_ones[1]) == 184986);
+    wassert(actual(stats.count_ones[2]) == 193941);
+    wassert(actual(stats.count_ones[3]) == 196293);
+    wassert(actual(stats.count_ones[4]) == 196158);
+    wassert(actual(stats.count_ones[5]) == 196158);
+    wassert(actual(stats.count_ones[6]) == 0);
+    wassert(actual(stats.count_others[0]) == 51630);
+    wassert(actual(stats.count_others[1]) == 12614);
+    wassert(actual(stats.count_others[2]) ==  3659);
+    wassert(actual(stats.count_others[3]) ==  1307);
+    wassert(actual(stats.count_others[4]) ==  1442);
+    wassert(actual(stats.count_others[5]) ==  1442);
+    wassert(actual(stats.count_others[6]) ==     0);
+    wassert(actual(stats.sum_others[0]) == 4663175);
+    wassert(actual(stats.sum_others[1]) == 858438);
+    wassert(actual(stats.sum_others[2]) == 206212);
+    wassert(actual(stats.sum_others[3]) == 45942);
+    wassert(actual(stats.sum_others[4]) == 78314);
+    wassert(actual(stats.sum_others[5]) == 88163);
+    wassert(actual(stats.sum_others[6]) == 0);
+}
+
+void test_0120141530gat_sp20(WIBBLE_TEST_LOCPRM, const Volume& v)
 {
     // Ensure that nbeam_elev has been filled with the right values
     wassert(actual(v.nbeam_elev[0]) == 400);
@@ -194,7 +273,7 @@ void to::test<1>()
     // Ensure that reading was successful
     wassert(actual(res).istrue());
     // Check the contents of what we read
-    wruntest(test_0120141530gat, cb->volume);
+    wruntest(test_0120141530gat_sp20, cb->volume);
     delete cb;
 }
 
@@ -208,7 +287,7 @@ void to::test<2>()
     // Ensure that reading was successful
     wassert(actual(res).istrue());
     // Check the contents of what we read
-    wruntest(test_0120141530gat, cb->volume);
+    wruntest(test_0120141530gat_odim, cb->volume);
     delete cb;
 }
 
@@ -314,20 +393,20 @@ void to::test<4>()
     wassert(actual(stats.count_zeros[2]) == 7200);
     wassert(actual(stats.count_zeros[3]) == 7200);
     wassert(actual(stats.count_zeros[4]) == 7200);
-    wassert(actual(stats.count_ones[0]) == 177082);
-    wassert(actual(stats.count_ones[1]) == 190387);
-    wassert(actual(stats.count_ones[2]) == 193646);
-    wassert(actual(stats.count_ones[3]) == 196318);
+    wassert(actual(stats.count_ones[0]) == 176003);
+    wassert(actual(stats.count_ones[1]) == 190293);
+    wassert(actual(stats.count_ones[2]) == 193588);
+    wassert(actual(stats.count_ones[3]) == 196292);
     wassert(actual(stats.count_ones[4]) == 196160);
-    wassert(actual(stats.count_others[0]) == 20518);
-    wassert(actual(stats.count_others[1]) ==  7213);
-    wassert(actual(stats.count_others[2]) ==  3954);
-    wassert(actual(stats.count_others[3]) ==  1282);
+    wassert(actual(stats.count_others[0]) == 21597);
+    wassert(actual(stats.count_others[1]) ==  7307);
+    wassert(actual(stats.count_others[2]) ==  4012);
+    wassert(actual(stats.count_others[3]) ==  1308);
     wassert(actual(stats.count_others[4]) ==  1440);
-    wassert(actual(stats.sum_others[0]) == 1525814);
-    wassert(actual(stats.sum_others[1]) ==  476555);
-    wassert(actual(stats.sum_others[2]) ==  245904);
-    wassert(actual(stats.sum_others[3]) ==   45719);
+    wassert(actual(stats.sum_others[0]) == 1538560);
+    wassert(actual(stats.sum_others[1]) ==  478421);
+    wassert(actual(stats.sum_others[2]) ==  246658);
+    wassert(actual(stats.sum_others[3]) ==   45968);
     wassert(actual(stats.sum_others[4]) ==   78321);
 
     cb->caratterizzo_volume();
