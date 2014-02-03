@@ -1662,6 +1662,7 @@ void  CUM_BAC::classifico_STEINER()
     float diff_bckgr,cr;
 
     for(i=0; i<np; i++){
+      if ( lista_bckg[i][0] >= 0 && lista_bckg[i][1] >= 0 ){
         j=lista_bckg[i][0]; //az=lista_bckg[i][0]
         k=lista_bckg[i][1]; //ra=lista_bckg[i][1]
 
@@ -1701,7 +1702,7 @@ void  CUM_BAC::classifico_STEINER()
 
         }
     }
-
+    }
     return;
 }
 
