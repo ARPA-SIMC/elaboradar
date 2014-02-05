@@ -166,26 +166,26 @@ void test_0120141530gat_odim(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(stats.count_zeros[4]) == 7200);
     wassert(actual(stats.count_zeros[5]) == 7200);
     wassert(actual(stats.count_zeros[6]) == 0);
-    wassert(actual(stats.count_ones[0]) == 145970);
-    wassert(actual(stats.count_ones[1]) == 184986);
-    wassert(actual(stats.count_ones[2]) == 193941);
+    wassert(actual(stats.count_ones[0]) == 145968);
+    wassert(actual(stats.count_ones[1]) == 184983);
+    wassert(actual(stats.count_ones[2]) == 193940);
     wassert(actual(stats.count_ones[3]) == 196293);
     wassert(actual(stats.count_ones[4]) == 196158);
     wassert(actual(stats.count_ones[5]) == 196158);
     wassert(actual(stats.count_ones[6]) == 0);
-    wassert(actual(stats.count_others[0]) == 51630);
-    wassert(actual(stats.count_others[1]) == 12614);
-    wassert(actual(stats.count_others[2]) ==  3659);
+    wassert(actual(stats.count_others[0]) == 51632);
+    wassert(actual(stats.count_others[1]) == 12617);
+    wassert(actual(stats.count_others[2]) ==  3660);
     wassert(actual(stats.count_others[3]) ==  1307);
     wassert(actual(stats.count_others[4]) ==  1442);
     wassert(actual(stats.count_others[5]) ==  1442);
     wassert(actual(stats.count_others[6]) ==     0);
-    wassert(actual(stats.sum_others[0]) == 4663175);
-    wassert(actual(stats.sum_others[1]) == 858438);
-    wassert(actual(stats.sum_others[2]) == 206212);
-    wassert(actual(stats.sum_others[3]) == 45942);
-    wassert(actual(stats.sum_others[4]) == 78314);
-    wassert(actual(stats.sum_others[5]) == 88163);
+    wassert(actual(stats.sum_others[0]) == 4681454);
+    wassert(actual(stats.sum_others[1]) == 861785);
+    wassert(actual(stats.sum_others[2]) == 206928);
+    wassert(actual(stats.sum_others[3]) == 46041);
+    wassert(actual(stats.sum_others[4]) == 78508);
+    wassert(actual(stats.sum_others[5]) == 88416);
     wassert(actual(stats.sum_others[6]) == 0);
 }
 
