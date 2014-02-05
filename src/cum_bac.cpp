@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <memory>
 #include <radarlib/radar.hpp>
+#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -535,8 +536,19 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
             double azimut = azangles[src_az].averagedAngle(rpm_sign);
    //        printf("fbeam ϑ%5.1f α1%6.1f α2%6.1f α%6.1f sign %2d\n", elevation, azangles[src_az].start,  azangles[src_az].stop, azimut, rpm_sign);
             // Convert back to bytes, to fit into vol_pol as it is now
-            for (unsigned i = 0; i < beam_size; ++i)
-                beam[i] = DBtoBYTE(matrix.elem(src_az, i));
+	    for (unsigned i = 0; i < beam_size; ++i){
+// QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
+// DEVE ESSERE RIMOSSO A FINE LAVORO E RIATTIVATA QUESTA LINEA DI CODICE ORA COMMENTATA	
+             //   beam[i] = DBtoBYTE(matrix.elem(src_az, i));
+        typedef unsigned char byte; 
+			float ret = (matrix.elem(src_az, i)- (-20.0) ) / 0.3125f;
+			if( ret < 0 )
+				beam[i] = 0;
+			else if( ret > 255 )
+				beam[i] = 255;
+			else
+				beam[i] = byte(ret + 0.5f);
+	    }
             this->volume.fill_beam(elevation, azimut, beam_size, beam);
         }
 
