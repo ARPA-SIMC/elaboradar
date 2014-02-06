@@ -35,6 +35,10 @@ public:
 
     Volume();
 
+    void read_sp20(const char* nome_file);
+    void read_odim(const char* nome_file);
+
+protected:
     void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
     void merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati);
 };

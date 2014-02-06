@@ -45,9 +45,6 @@ static const int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define MAX_TIME_DIFF 1
 #endif
 
-// dimensioni cella a seconda del tipo di acquisizione
-static const float size_cell[]={62.5,125.,250.,500.,1000.,2000.};
-
 //Dimensioni matrici statistica
 #define DIM1_ST 16
 #define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
