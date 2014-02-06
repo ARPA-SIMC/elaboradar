@@ -412,7 +412,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
 
 #ifdef CLASS
     for (int i=0; i<NUM_AZ_X_PPI; i++){
-        for (int k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++){
+        for (int k=0; k<volume.vol_pol[0][i].ray.size(); k++){
 
             if (conv[i][k] > 0){
 
@@ -547,7 +547,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
   /*   FILE *file0; */
 
   /*   for(i=0; i<NUM_AZ_X_PPI; i++){ */
-  /*     for (k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++){ */
+  /*     for (k=0; k<volume.vol_pol[0][i].ray.size(); k++){ */
   /*       for (l=first_level_static[i][k]; l<NEL; l++)     */
   /*    {  */
   /*      if (BYTEtoDB(volume.vol_pol[l][i].ray[k]) > 10. ) */
