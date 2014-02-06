@@ -248,6 +248,8 @@ void Volume::read_odim(const char* nome_file)
         for (int src_az = 0; src_az < nrays; ++src_az)
         {
             double azimut = azangles[src_az].averagedAngle(rpm_sign);
+            // FIXME: reproduce a bad truncation from the eldes sp20 converter
+            azimut = (int)(azimut / FATT_MOLT_AZ) * FATT_MOLT_AZ;
             // printf("fbeam ϑ%5.1f α1%6.1f α2%6.1f α%6.1f sign %2d\n", elevation, azangles[src_az].start,  azangles[src_az].stop, azimut, rpm_sign);
             // Convert back to bytes, to fit into vol_pol as it is now
             for (unsigned i = 0; i < beam_size; ++i){
