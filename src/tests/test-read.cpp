@@ -2,6 +2,7 @@
 #include "cum_bac.h"
 #include "logging.h"
 #include <stdio.h>
+#include <vector>
 
 using namespace wibble::tests;
 using namespace cumbac;
@@ -515,5 +516,57 @@ void to::test<5>()
     delete cb;
 }
 
+template<> template<>
+void to::test<6>()
+{
+    using namespace std;
+    Volume vsp20;
+    Volume vodim;
+
+    // FIXME: get rid of the static elev_array as soon as it is convenient to do so
+    for (unsigned i = 0; i < NEL; ++i)
+        elev_array[i] = elev_array_gat[i];
+
+    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO");
+    vodim.read_odim("testdata/MSG1400715300U.101.h5");
+
+    for (unsigned ie = 0; ie < NEL; ++ie)
+    {
+        WIBBLE_TEST_INFO(testinfo);
+        testinfo() << "elevation " << ie;
+
+        wassert(actual(vsp20.nbeam_elev[ie]) == vodim.nbeam_elev[ie]);
+        if (vsp20.nbeam_elev[ie] == 0) continue;
+
+        for (unsigned ia = 0; ia < vsp20.nbeam_elev[ie]; ++ia)
+        {
+            testinfo() << "elevation " << ie << " angle " << ia;
+
+            wassert(actual(vsp20.vol_pol[ie][ia].b_header.max_bin) == vodim.vol_pol[ie][ia].b_header.max_bin);
+
+            vector<unsigned char> vals_sp20;
+            vector<unsigned char> vals_odim;
+            for (unsigned ib = 0; ib < vsp20.vol_pol[ie][ia].b_header.max_bin; ++ib)
+            {
+                if (vsp20.vol_pol[ie][ia].ray[ib] != vodim.vol_pol[ie][ia].ray[ib])
+                {
+                    vals_sp20.push_back(vsp20.vol_pol[ie][ia].ray[ib]);
+                    vals_odim.push_back(vodim.vol_pol[ie][ia].ray[ib]);
+                }
+            }
+            if (!vals_sp20.empty())
+            {
+                printf("sp20 vp[%u][%u]:", ie, ia);
+                for (vector<unsigned char>::const_iterator i = vals_sp20.begin(); i != vals_sp20.end(); ++i)
+                    printf(" %d", (int)*i);
+                printf("\n");
+                printf("odim vp[%u][%u]:", ie, ia);
+                for (vector<unsigned char>::const_iterator i = vals_odim.begin(); i != vals_odim.end(); ++i)
+                    printf(" %d", (int)*i);
+                printf("\n");
+            }
+        }
+    }
+}
 
 }
