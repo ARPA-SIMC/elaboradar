@@ -4,16 +4,7 @@
 #include "logging.h"
 #include "assets.h"
 #include <cum_bac_SP20_BB_VPR.h>
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-// libreria radar
-#include <func_SP20read.h>
-#ifdef __cplusplus
-}
-#endif
+#include "volume.h"
 
 
 //algoritmo
@@ -61,27 +52,6 @@ static const float size_cell[]={62.5,125.,250.,500.,1000.,2000.};
 #define DIM1_ST 16
 #define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
 
-extern int elev_array[NEL];
-
-class Volume
-{
-public:
-    time_t acq_date;
-    double size_cell;
-    bool declutter_rsp; // ?
-
-    //dato di base volume polare, struttura definita in libSP20
-    struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
-
-    //numero raggi per elevazione
-    int nbeam_elev[NEL];
-
-    Volume();
-
-    void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
-    void merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati);
-};
-
 class CUM_BAC
 {
 public:
@@ -97,7 +67,7 @@ public:
     bool do_vpr;
     bool do_class;
 
-    Volume volume;
+    cumbac::Volume volume;
 
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 

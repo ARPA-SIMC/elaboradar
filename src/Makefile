@@ -44,10 +44,10 @@ CFLAGS_BB_VPR=$(CFLAGS) $(ADDED_DFLAGS_VPR)
 CFLAGS_BB_VPR_CLASS=$(CFLAGS) $(ADDED_DFLAGS_VPR_CLASS)
 
 OBJ_COMMON=setwork.o func_Q3d.o Q_components.o utils.o assets.o logging.o
-OBJ_BB_VPR_CLASS=cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
-OBJ_BB_VPR=cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
-OBJ_BB=cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
-OBJ= cum_bac_SP20.o 
+OBJ_BB_VPR_CLASS=volume.o cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
+OBJ_BB_VPR=volume.o cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
+OBJ_BB=volume.o cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
+OBJ=cum_bac_SP20.o
 
 TESTFILES = DBP2_070120141530_GATTATICO 201401231530_temp.Ngrad 201401071530mat_el.bin 201401071530mat_bloc.bin 201401071530h_ray.txt 201401071530h_rayinf.txt temperature.txt
 
@@ -94,7 +94,7 @@ install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_S
 	 mv  cum_bac_SP20_m $(BINDIR)
 
 # Compile test suite
-cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) cum_bac.o $(OBJ_COMMON)
+cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) volume.o cum_bac.o $(OBJ_COMMON)
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
 check: cbtest $(addprefix testdata/,$(TESTFILES))
