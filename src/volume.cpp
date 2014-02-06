@@ -13,6 +13,12 @@ int elev_array[NEL];
 
 namespace cumbac {
 
+Ray::Ray()
+    : alfa_true(0), teta_true(0)
+{
+    memset(&b_header, 0, sizeof(b_header));
+}
+
 void LoadLog::print(FILE* out)
 {
     if (entries.empty())
@@ -33,7 +39,6 @@ void LoadLog::print(FILE* out)
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
-    memset(vol_pol, 0, sizeof(vol_pol));
     memset(nbeam_elev, 0, sizeof(nbeam_elev));
 }
 
@@ -59,46 +64,52 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
     }
     */
 
-    merge_beam(&vol_pol[el_num][az_num], theta, alpha, az_num, el_num, size, data);
+    merge_beam(vol_pol[el_num][az_num], theta, alpha, az_num, el_num, size, data);
     if(az_num*0.9 - alpha < 0.)
     {
         int new_az_num = (az_num + 1) % 400;
-        merge_beam(&vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
+        merge_beam(vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
     }
     else if(az_num*0.9 - alpha > 0.)
     {
         int new_az_num = (az_num -1+400) %400;
-        merge_beam(&vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
+        merge_beam(vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
     }
 }
 
-void Volume::merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati)
+void Volume::merge_beam(Ray& raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati)
 {
     load_log[el_num][az_num].log(theta, alpha);
 
-    if (raggio->flag == 0)
+    if (raggio.ray.empty())
     {
+        raggio.ray.reserve(size);
+
         for (unsigned i = 0; i < size; i++)
         {
-            if(dati[i])
-                raggio->ray[i] = dati[i];
+            if (dati[i])
+                raggio.ray.push_back(dati[i]);
             else
-                raggio->ray[i] = 1;
+                raggio.ray.push_back(1);
         }
         nbeam_elev[el_num]++;
     }
     else
-        for (unsigned i = 0; i < size; i++)
-            if(raggio->ray[i]<dati[i])
-                raggio->ray[i]=dati[i];
+    {
+        if (raggio.ray.size() != size)
+            throw runtime_error("attempted to merge two beams of different size");
 
-    raggio->flag=1;
-    raggio->b_header.alfa =(short)(az_num*.9/FATT_MOLT_AZ);
-    raggio->b_header.teta = elev_array[el_num];
-    raggio->alfa_true = alpha / FATT_MOLT_AZ;
-    raggio->teta_true = theta / FATT_MOLT_EL;
-    raggio->b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
-    raggio->b_header.max_bin = size;
+        for (unsigned i = 0; i < size; i++)
+            if(raggio.ray[i] < dati[i])
+                raggio.ray[i] = dati[i];
+    }
+
+    raggio.b_header.alfa =(short)(az_num*.9/FATT_MOLT_AZ);
+    raggio.b_header.teta = elev_array[el_num];
+    raggio.alfa_true = alpha / FATT_MOLT_AZ;
+    raggio.teta_true = theta / FATT_MOLT_EL;
+    raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
+    raggio.b_header.max_bin = size;
 }
 
 void Volume::read_sp20(const char* nome_file)

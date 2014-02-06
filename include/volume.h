@@ -46,6 +46,15 @@ struct LoadLog
     void print(FILE* out);
 };
 
+struct Ray
+{
+    std::vector<unsigned char> ray;
+    T_MDB_ap_beam_header b_header;
+    short alfa_true, teta_true;
+
+    Ray();
+};
+
 class Volume
 {
 public:
@@ -54,7 +63,7 @@ public:
     bool declutter_rsp; // ?
 
     //dato di base volume polare, struttura definita in libSP20
-    struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
+    Ray vol_pol[NEL][NUM_AZ_X_PPI];
 
     // Log of what has been loaded on each beam
     LoadLog load_log[NEL][NUM_AZ_X_PPI];
@@ -69,7 +78,7 @@ public:
 
 protected:
     void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
-    void merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati);
+    void merge_beam(Ray& raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati);
 };
 
 

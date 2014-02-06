@@ -620,15 +620,15 @@ int CUM_BAC::elabora_dato()
             {
                 for(l=0; l<el_up; l++)
                 {
-                    volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_up][i].ray[k];
-                    if(!volume.vol_pol[l][i].flag)
+                    if(!volume.vol_pol[l][i].ray.empty())
                     {
-                        volume.vol_pol[l][i].flag = 1;
+                        volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].b_header.max_bin);
                         volume.vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
                         volume.vol_pol[l][i].b_header.teta = elev_array[l];
                         volume.vol_pol[l][i].b_header.tipo_gran=volume.vol_pol[el_up][i].b_header.tipo_gran;
                         volume.vol_pol[l][i].b_header.max_bin=volume.vol_pol[el_up][i].b_header.max_bin;
                     }
+                    volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_up][i].ray[k];
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
                 if (do_quality)
@@ -655,15 +655,15 @@ int CUM_BAC::elabora_dato()
 
                 for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
-                    volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
-                    if(!volume.vol_pol[l][i].flag)
+                    if(!volume.vol_pol[l][i].ray.empty())
                     {
-                        volume.vol_pol[l][i].flag = 1;
+                        volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].b_header.max_bin);
                         volume.vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
                         volume.vol_pol[l][i].b_header.teta = elev_array[l];  //perchè ridefinisce ??
                         volume.vol_pol[l][i].b_header.tipo_gran=volume.vol_pol[el_inf][i].b_header.tipo_gran;
                         volume.vol_pol[l][i].b_header.max_bin=volume.vol_pol[el_inf][i].b_header.max_bin;
                     }
+                    volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
                 }
 
                 if (do_quality)
@@ -948,6 +948,10 @@ void CUM_BAC::caratterizzo_volume()
 
             for (k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++)/*ciclo range*/
             {
+                unsigned char sample = 0;
+                if (volume.nbeam_elev[l] != 0)
+                    sample = volume.vol_pol[l][i].ray[k];
+
                 //---------distanza in m dal radar (250*k+125 x il corto..)
                 dist= k*volume.size_cell+volume.size_cell/2.;/*distanza radar */
 
@@ -963,7 +967,7 @@ void CUM_BAC::caratterizzo_volume()
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
                 if (l == elev_fin[i][k]) att_cart[i][k]=DBtoBYTE(PIA);
-                PIA=attenuation(volume.vol_pol[l][i].ray[k],PIA);
+                PIA=attenuation(sample,PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
                 dhst =quota_f(elevaz+0.45*DTOR,k)-quota_f(elevaz-0.45*DTOR,k);
@@ -1015,7 +1019,7 @@ void CUM_BAC::caratterizzo_volume()
                         flag_vpr[l][i][k]=1;
                 }
                 //------------trovo il top per soglia
-                if (BYTEtoDB(volume.vol_pol[l][i].ray[k]) > SOGLIA_TOP )
+                if (BYTEtoDB(sample) > SOGLIA_TOP )
                     top[i][k]=(unsigned char)((quota_f(elevaz,k))/100.); //top in ettometri
 
             }

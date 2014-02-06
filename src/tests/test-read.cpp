@@ -35,7 +35,7 @@ struct VolumeStats
 
             for (int ibeam = 0; ibeam < v.nbeam_elev[iel]; ++ibeam)
             {
-                for (int i = 0; i < MAX_DIM; ++i)
+                for (size_t i = 0; i < v.vol_pol[iel][ibeam].ray.size(); ++i)
                 {
                     int val = v.vol_pol[iel][ibeam].ray[i];
                     switch (val)
@@ -161,12 +161,12 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     // Arbitrary stats on volume contents so we can check that we read data
     // that looks correct
     VolumeStats stats(v);
-    wassert(actual(stats.count_zeros[0]) == 7200);
-    wassert(actual(stats.count_zeros[1]) == 7200);
-    wassert(actual(stats.count_zeros[2]) == 7200);
-    wassert(actual(stats.count_zeros[3]) == 7200);
-    wassert(actual(stats.count_zeros[4]) == 7200);
-    wassert(actual(stats.count_zeros[5]) == 7200);
+    wassert(actual(stats.count_zeros[0]) == 0);
+    wassert(actual(stats.count_zeros[1]) == 0);
+    wassert(actual(stats.count_zeros[2]) == 0);
+    wassert(actual(stats.count_zeros[3]) == 0);
+    wassert(actual(stats.count_zeros[4]) == 0);
+    wassert(actual(stats.count_zeros[5]) == 0);
     wassert(actual(stats.count_zeros[6]) == 0);
     wassert(actual(stats.count_ones[0]) == 146674);
     wassert(actual(stats.count_ones[1]) == 184613);
@@ -243,11 +243,11 @@ void to::test<3>()
 
     // Check results
     VolumeStats stats(cb->volume);
-    wassert(actual(stats.count_zeros[0]) == 7200);
-    wassert(actual(stats.count_zeros[1]) == 7200);
-    wassert(actual(stats.count_zeros[2]) == 7200);
-    wassert(actual(stats.count_zeros[3]) == 7200);
-    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_zeros[0]) == 0);
+    wassert(actual(stats.count_zeros[1]) == 0);
+    wassert(actual(stats.count_zeros[2]) == 0);
+    wassert(actual(stats.count_zeros[3]) == 0);
+    wassert(actual(stats.count_zeros[4]) == 0);
     wassert(actual(stats.count_ones[0]) == 192288);
     wassert(actual(stats.count_ones[1]) == 193052);
     wassert(actual(stats.count_ones[2]) == 194525);
@@ -318,11 +318,11 @@ void to::test<4>()
 
     // Check results
     VolumeStats stats(cb->volume);
-    wassert(actual(stats.count_zeros[0]) == 7200);
-    wassert(actual(stats.count_zeros[1]) == 7200);
-    wassert(actual(stats.count_zeros[2]) == 7200);
-    wassert(actual(stats.count_zeros[3]) == 7200);
-    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_zeros[0]) == 0);
+    wassert(actual(stats.count_zeros[1]) == 0);
+    wassert(actual(stats.count_zeros[2]) == 0);
+    wassert(actual(stats.count_zeros[3]) == 0);
+    wassert(actual(stats.count_zeros[4]) == 0);
     wassert(actual(stats.count_ones[0]) == 176003);
     wassert(actual(stats.count_ones[1]) == 190293);
     wassert(actual(stats.count_ones[2]) == 193588);
@@ -400,11 +400,11 @@ void to::test<5>()
     VolumeStats stats(cb->volume);
     //stats.PrintStats();
 
-    wassert(actual(stats.count_zeros[0]) == 7200);
-    wassert(actual(stats.count_zeros[1]) == 7200);
-    wassert(actual(stats.count_zeros[2]) == 7200);
-    wassert(actual(stats.count_zeros[3]) == 7200);
-    wassert(actual(stats.count_zeros[4]) == 7200);
+    wassert(actual(stats.count_zeros[0]) == 0);
+    wassert(actual(stats.count_zeros[1]) == 0);
+    wassert(actual(stats.count_zeros[2]) == 0);
+    wassert(actual(stats.count_zeros[3]) == 0);
+    wassert(actual(stats.count_zeros[4]) == 0);
     wassert(actual(stats.count_ones[0]) == 193091);
     wassert(actual(stats.count_ones[1]) == 193929);
     wassert(actual(stats.count_ones[2]) == 194526);
