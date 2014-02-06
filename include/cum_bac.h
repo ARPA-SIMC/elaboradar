@@ -6,6 +6,15 @@
 #include <cum_bac_SP20_BB_VPR.h>
 #include "volume.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+// libreria radar
+#include <func_SP20read.h>
+#ifdef __cplusplus
+}
+#endif
+
 
 //algoritmo
 #include <MP_par.h>

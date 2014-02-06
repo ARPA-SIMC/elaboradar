@@ -304,7 +304,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     volume.read_sp20(nome_file);
 
     /*
-    printf("fbeam ϑ%f α%f", volume.vol_pol[0][0].b_header.teta, volume.vol_pol[0][0].b_header.alfa);
+    printf("fbeam ϑ%f α%f", volume.vol_pol[0][0].teta, volume.vol_pol[0][0].alfa);
     for (unsigned i = 0; i < 20; ++i)
         printf(" %d", (int)volume.vol_pol[0][0].ray[i]);
     printf("\n");
@@ -338,7 +338,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
     volume.read_odim(nome_file);
 
     /*
-    printf("fbeam ϑ%f α%f", this->volume.vol_pol[0][0].b_header.teta, this->volume.vol_pol[0][0].b_header.alfa);
+    printf("fbeam ϑ%f α%f", this->volume.vol_pol[0][0].teta, this->volume.vol_pol[0][0].alfa);
     for (unsigned i = 0; i < 20; ++i)
         printf(" %d", (int)this->volume.vol_pol[0][0].ray[i]);
     printf("\n");
@@ -623,9 +623,8 @@ int CUM_BAC::elabora_dato()
                     if(!volume.vol_pol[l][i].ray.empty())
                     {
                         volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].ray.size());
-                        volume.vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
-                        volume.vol_pol[l][i].b_header.teta = elev_array[l];
-                        volume.vol_pol[l][i].b_header.tipo_gran=volume.vol_pol[el_up][i].b_header.tipo_gran;
+                        volume.vol_pol[l][i].alfa =(short)(i*.9/FATT_MOLT_AZ);
+                        volume.vol_pol[l][i].teta = elev_array[l];
                     }
                     volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_up][i].ray[k];
                 }
@@ -657,9 +656,8 @@ int CUM_BAC::elabora_dato()
                     if(!volume.vol_pol[l][i].ray.empty())
                     {
                         volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].ray.size());
-                        volume.vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
-                        volume.vol_pol[l][i].b_header.teta = elev_array[l];  //perchè ridefinisce ??
-                        volume.vol_pol[l][i].b_header.tipo_gran=volume.vol_pol[el_inf][i].b_header.tipo_gran;
+                        volume.vol_pol[l][i].alfa =(short)(i*.9/FATT_MOLT_AZ);
+                        volume.vol_pol[l][i].teta = elev_array[l];  //perchè ridefinisce ??
                     }
                     volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
                 }

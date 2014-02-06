@@ -141,14 +141,14 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(v.vol_pol[6][0].ray.size()) == 0);
 
     // Ensure that the beam azimuth are what we expect
-    wassert(actual(v.vol_pol[0][0].b_header.alfa) == 0);
-    wassert(actual(v.vol_pol[0][1].b_header.alfa) == 10);
-    wassert(actual(v.vol_pol[1][1].b_header.alfa) == 10);
-    wassert(actual(v.vol_pol[2][1].b_header.alfa) == 10);
-    wassert(actual(v.vol_pol[3][1].b_header.alfa) == 10);
-    wassert(actual(v.vol_pol[4][1].b_header.alfa) == 10);
-    wassert(actual(v.vol_pol[5][1].b_header.alfa) == 10);
-    wassert(actual(v.vol_pol[6][1].b_header.alfa) == 0);
+    wassert(actual(v.vol_pol[0][0].alfa) == 0);
+    wassert(actual(v.vol_pol[0][1].alfa) == 10);
+    wassert(actual(v.vol_pol[1][1].alfa) == 10);
+    wassert(actual(v.vol_pol[2][1].alfa) == 10);
+    wassert(actual(v.vol_pol[3][1].alfa) == 10);
+    wassert(actual(v.vol_pol[4][1].alfa) == 10);
+    wassert(actual(v.vol_pol[5][1].alfa) == 10);
+    wassert(actual(v.vol_pol[6][1].alfa) == 0);
 
     // Check other header fields
     wassert(actual(v.acq_date) == 1389108600);
