@@ -132,13 +132,13 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(v.nbeam_elev[7]) == 0);
 
     // Ensure that the beam sizes are what we expect
-    wassert(actual(v.vol_pol[0][0].b_header.max_bin) == 494);
-    wassert(actual(v.vol_pol[1][0].b_header.max_bin) == 494);
-    wassert(actual(v.vol_pol[2][0].b_header.max_bin) == 494);
-    wassert(actual(v.vol_pol[3][0].b_header.max_bin) == 494);
-    wassert(actual(v.vol_pol[4][0].b_header.max_bin) == 494);
-    wassert(actual(v.vol_pol[5][0].b_header.max_bin) == 494);
-    wassert(actual(v.vol_pol[6][0].b_header.max_bin) == 0);
+    wassert(actual(v.vol_pol[0][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[1][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[2][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[3][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[4][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[5][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[6][0].ray.size()) == 0);
 
     // Ensure that the beam azimuth are what we expect
     wassert(actual(v.vol_pol[0][0].b_header.alfa) == 0);
@@ -471,11 +471,11 @@ void to::test<6>()
         {
             testinfo() << "elevation " << ie << " angle " << ia;
 
-            wassert(actual(vsp20.vol_pol[ie][ia].b_header.max_bin) == vodim.vol_pol[ie][ia].b_header.max_bin);
+            wassert(actual(vsp20.vol_pol[ie][ia].ray.size()) == vodim.vol_pol[ie][ia].ray.size());
 
             vector<unsigned char> vals_sp20;
             vector<unsigned char> vals_odim;
-            for (unsigned ib = 0; ib < vsp20.vol_pol[ie][ia].b_header.max_bin; ++ib)
+            for (unsigned ib = 0; ib < vsp20.vol_pol[ie][ia].ray.size(); ++ib)
             {
                 if (vsp20.vol_pol[ie][ia].ray[ib] != vodim.vol_pol[ie][ia].ray[ib])
                 {
