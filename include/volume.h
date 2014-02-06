@@ -1,6 +1,9 @@
 #ifndef ARCHIVIATORE_VOLUME_CLASS_H
 #define ARCHIVIATORE_VOLUME_CLASS_H
 
+#include <vector>
+#include <cstdio>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,6 +23,29 @@ extern int elev_array[NEL];
 
 namespace cumbac {
 
+struct LoadLogEntry
+{
+    double theta;
+    double alpha;
+
+    LoadLogEntry(double theta, double alpha)
+        : theta(theta), alpha(alpha)
+    {
+    }
+};
+
+struct LoadLog
+{
+    std::vector<LoadLogEntry> entries;
+
+    void log(double theta, double alpha)
+    {
+        entries.push_back(LoadLogEntry(theta, alpha));
+    }
+
+    void print(FILE* out);
+};
+
 class Volume
 {
 public:
@@ -29,6 +55,9 @@ public:
 
     //dato di base volume polare, struttura definita in libSP20
     struct VOL_POL vol_pol[NEL][NUM_AZ_X_PPI];
+
+    // Log of what has been loaded on each beam
+    LoadLog load_log[NEL][NUM_AZ_X_PPI];
 
     //numero raggi per elevazione
     int nbeam_elev[NEL];

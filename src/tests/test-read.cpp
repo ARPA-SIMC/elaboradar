@@ -564,6 +564,8 @@ void to::test<6>()
                 for (vector<unsigned char>::const_iterator i = vals_odim.begin(); i != vals_odim.end(); ++i)
                     printf(" %d", (int)*i);
                 printf("\n");
+                printf("sp20 vp[%u][%u] load log: ", ie, ia); vsp20.load_log[ie][ia].print(stdout);
+                printf("odim vp[%u][%u] load log: ", ie, ia); vodim.load_log[ie][ia].print(stdout);
             }
         }
     }
