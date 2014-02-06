@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 using namespace wibble::tests;
+using namespace cumbac;
 
 namespace tut {
 
