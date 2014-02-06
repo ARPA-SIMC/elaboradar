@@ -165,8 +165,22 @@ double eldes_converter_azimut(double start, double stop)
     azAvg &= 0x1FFF;
 
     double res = (double)azAvg * 360.0 / 8192.0;
-    //printf("%f-%f → %u-%u → %u * %f = %f\n", start, stop, (unsigned)azStart, (unsigned)azStop, (unsigned)azAvg, (float)FATT_MOLT_AZ, res);
+    // Further truncate to 12 bits
+    res = (int)(res / FATT_MOLT_AZ) * FATT_MOLT_AZ;
     return res;
+}
+
+unsigned char eldes_counter_to_db(unsigned short val)
+{
+    const int minScale = -20;
+    float fVal = -31.5f + val * ((96.0f + 31.5f) / 65535);
+    float ret = (fVal - minScale) / 0.3125f;
+    if( ret < 0 )
+        return 0;
+    else if( ret > 255 )
+        return 255;
+    else
+        return (unsigned char)(ret + 0.5f);
 }
 
 void Volume::read_odim(const char* nome_file)
@@ -258,37 +272,31 @@ void Volume::read_odim(const char* nome_file)
         }
 
         // Read all scan beam data
-        RayMatrix<float> matrix;
-        data->readTranslatedData(matrix);
 
-        //printf("Offset %f, gain %f\n", data->getOffset(), data->getGain());
-        //double offset = data->getOffset();
-        //double gain = data->getGain();
+        // RayMatrix<float> matrix;
+        // data->readTranslatedData(matrix);
+        RayMatrix<unsigned short> matrix;
+        matrix.resize(nrays, beam_size);
+        //data->readData(matrix);
+        data->readData(const_cast<unsigned short*>(matrix.get()));
 
         unsigned char* beam = new unsigned char[beam_size];
+        double offset = data->getOffset();
+        double gain = data->getGain();
 
         std::vector<bool> angles_seen(400, false);
         for (int src_az = 0; src_az < nrays; ++src_az)
         {
-            //double azimut = azangles[src_az].averagedAngle(rpm_sign);
             // FIXME: reproduce a bad truncation from the eldes sp20 converte
+            //double azimut = azangles[src_az].averagedAngle(rpm_sign);
             double azimut = eldes_converter_azimut(azangles[src_az].start, azangles[src_az].stop);
-            // azimut = (int)(azimut / FATT_MOLT_AZ) * FATT_MOLT_AZ;
-            // printf("fbeam ϑ%5.1f α1%6.1f α2%6.1f α%6.1f sign %2d\n", elevation, azangles[src_az].start,  azangles[src_az].stop, azimut, rpm_sign);
 
             // Convert back to bytes, to fit into vol_pol as it is now
             for (unsigned i = 0; i < beam_size; ++i){
-                // QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
+                // FIXME: QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
                 // DEVE ESSERE RIMOSSO A FINE LAVORO E RIATTIVATA QUESTA LINEA DI CODICE ORA COMMENTATA
-                //   beam[i] = DBtoBYTE(matrix.elem(src_az, i));
-                typedef unsigned char byte;
-                float ret = (matrix.elem(src_az, i)- (-20.0) ) / 0.3125f;
-                if( ret < 0 )
-                    beam[i] = 0;
-                else if( ret > 255 )
-                    beam[i] = 255;
-                else
-                    beam[i] = byte(ret + 0.5f);
+                // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
+                beam[i] = eldes_counter_to_db(matrix.elem(src_az, i));
             }
             fill_beam(elevation, azimut, beam_size, beam);
         }
