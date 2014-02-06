@@ -410,20 +410,8 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
         }
     }
 
-#ifdef CLASS
-    for (int i=0; i<NUM_AZ_X_PPI; i++){
-        for (int k=0; k<volume.vol_pol[0][i].ray.size(); k++){
-
-            if (conv[i][k] > 0){
-
-                volume.vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(volume.vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
-
-            }
-        }
-
-    }
-#endif
-
+    if (do_class)
+        class_conv_fixme_find_a_name();
 
 #ifdef TIME
     prendo_tempo();

@@ -934,18 +934,30 @@ void CUM_BAC::caratterizzo_volume()
 
     for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
+        int count_beams = volume.nbeam_elev[l];
+
         for (i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
+            int beam_size;
             //-----elevazione reale letta da file* fattore di conversione 360/4096
-            elevaz=(float)(volume.vol_pol[l][i].teta_true)*CONV_RAD;//--- elev reale
+            if (i < count_beams)
+            {
+                elevaz=(float)(volume.vol_pol[l][i].teta_true)*CONV_RAD;//--- elev reale
+                beam_size = volume.vol_pol[0][i].ray.size();
+            }
+            else
+            {
+                elevaz = 0;
+                beam_size = volume.vol_pol[0][0].ray.size();
+            }
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
 
-            for (k=0; k<volume.vol_pol[0][i].ray.size(); k++)/*ciclo range*/
+            for (k=0; k<beam_size; k++)/*ciclo range*/
             {
                 unsigned char sample = 0;
-                if (volume.nbeam_elev[l] != 0)
+                if (count_beams != 0)
                     sample = volume.vol_pol[l][i].ray[k];
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)
@@ -1255,11 +1267,15 @@ void CUM_BAC::classifica_rain()
         }
 
         for (i=0;i<NEL;i++){
-            // volume.vol_pol[i][iaz].ray.size() sostituito da volume.vol_pol[0][iaz].ray.size()
-            for (k=0;k<volume.vol_pol[i][iaz].ray.size();k++){
-                RHI_beam[i][k]=BYTEtoDB(volume.vol_pol[i][iaz].ray[k]);
-            }
-            for (k=volume.vol_pol[0][iaz].ray.size();k<MAX_BIN;k++)
+            if (iaz < volume.nbeam_elev[i])
+            {
+                // volume.vol_pol[i][iaz].ray.size() sostituito da volume.vol_pol[0][iaz].ray.size()
+                for (k=0;k<volume.vol_pol[i][iaz].ray.size();k++){
+                    RHI_beam[i][k]=BYTEtoDB(volume.vol_pol[i][iaz].ray[k]);
+                }
+                for (k=volume.vol_pol[0][iaz].ray.size();k<MAX_BIN;k++)
+                    RHI_beam[i][k]=BYTEtoDB(0);
+            } else
                 RHI_beam[i][k]=BYTEtoDB(0);
         }
 
@@ -2926,6 +2942,21 @@ int CUM_BAC::testfit(float a[], float chisq, float chisqin)
     if (a[5]>0 ) return 1;
     if (chisq>chisqin ) return 1;
     return 0;
+}
+
+void CUM_BAC::class_conv_fixme_find_a_name()
+{
+    for (int i=0; i<NUM_AZ_X_PPI; i++){
+        for (int k=0; k<volume.vol_pol[0][i].ray.size(); k++){
+
+            if (conv[i][k] > 0){
+
+                volume.vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(volume.vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
+
+            }
+        }
+
+    }
 }
 
 /*
