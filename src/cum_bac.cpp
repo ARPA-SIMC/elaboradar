@@ -417,7 +417,7 @@ int CUM_BAC::elabora_dato()
     {
         for(i=0; i<NUM_AZ_X_PPI; i++)
         {
-            for(k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++)
+            for(k=0; k<volume.vol_pol[0][i].ray.size(); k++)
             {
                 //---assegno el_inf a mappa statica
                 el_inf = first_level_static[i][k];
@@ -457,7 +457,7 @@ int CUM_BAC::elabora_dato()
     {
         flag_anap = 0;
         cont_anap=0;// aggiunto per risolvere problema di uso con preci shallow
-        for(k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++)
+        for(k=0; k<volume.vol_pol[0][i].ray.size(); k++)
             //------------- incremento statistica tot ------------------
         {
             stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
@@ -622,11 +622,10 @@ int CUM_BAC::elabora_dato()
                 {
                     if(!volume.vol_pol[l][i].ray.empty())
                     {
-                        volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].b_header.max_bin);
+                        volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].ray.size());
                         volume.vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
                         volume.vol_pol[l][i].b_header.teta = elev_array[l];
                         volume.vol_pol[l][i].b_header.tipo_gran=volume.vol_pol[el_up][i].b_header.tipo_gran;
-                        volume.vol_pol[l][i].b_header.max_bin=volume.vol_pol[el_up][i].b_header.max_bin;
                     }
                     volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_up][i].ray[k];
                 }
@@ -657,11 +656,10 @@ int CUM_BAC::elabora_dato()
                 {
                     if(!volume.vol_pol[l][i].ray.empty())
                     {
-                        volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].b_header.max_bin);
+                        volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].ray.size());
                         volume.vol_pol[l][i].b_header.alfa =(short)(i*.9/FATT_MOLT_AZ);
                         volume.vol_pol[l][i].b_header.teta = elev_array[l];  //perchè ridefinisce ??
                         volume.vol_pol[l][i].b_header.tipo_gran=volume.vol_pol[el_inf][i].b_header.tipo_gran;
-                        volume.vol_pol[l][i].b_header.max_bin=volume.vol_pol[el_inf][i].b_header.max_bin;
                     }
                     volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
                 }
@@ -946,7 +944,7 @@ void CUM_BAC::caratterizzo_volume()
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
 
-            for (k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++)/*ciclo range*/
+            for (k=0; k<volume.vol_pol[0][i].ray.size(); k++)/*ciclo range*/
             {
                 unsigned char sample = 0;
                 if (volume.nbeam_elev[l] != 0)
@@ -1259,11 +1257,11 @@ void CUM_BAC::classifica_rain()
         }
 
         for (i=0;i<NEL;i++){
-            // volume.vol_pol[i][iaz].b_header.max_bin sostituito da volume.vol_pol[0][iaz].b_header.max_bin
-            for (k=0;k<volume.vol_pol[i][iaz].b_header.max_bin;k++){
+            // volume.vol_pol[i][iaz].ray.size() sostituito da volume.vol_pol[0][iaz].ray.size()
+            for (k=0;k<volume.vol_pol[i][iaz].ray.size();k++){
                 RHI_beam[i][k]=BYTEtoDB(volume.vol_pol[i][iaz].ray[k]);
             }
-            for (k=volume.vol_pol[0][iaz].b_header.max_bin;k<MAX_BIN;k++)
+            for (k=volume.vol_pol[0][iaz].ray.size();k<MAX_BIN;k++)
                 RHI_beam[i][k]=BYTEtoDB(0);
         }
 
@@ -1274,7 +1272,7 @@ void CUM_BAC::classifica_rain()
         /* ;---------------------------------- */
 
         for (iel=0;iel<NEL;iel++){
-            for (ibin=0;ibin<volume.vol_pol[0][iaz].b_header.max_bin;ibin++) {
+            for (ibin=0;ibin<volume.vol_pol[0][iaz].ray.size();ibin++) {
 
                 for(kx=0;kx<w_x_size;kx++){
                     for(kz=0;kz<w_z_size;kz++){
@@ -1283,7 +1281,7 @@ void CUM_BAC::classifica_rain()
                 }
             }
 
-            for (ibin=0;ibin<volume.vol_pol[0][iaz].b_header.max_bin;ibin++) {
+            for (ibin=0;ibin<volume.vol_pol[0][iaz].ray.size();ibin++) {
                 imin=im[ibin][iel];
                 imax=ix[ibin][iel];
                 jmin=jm[ibin][iel];
@@ -2112,7 +2110,7 @@ int CUM_BAC::corr_vpr(const char *sito)
 
     //correzione vpr
     for (i=0; i<NUM_AZ_X_PPI; i++){
-        for (k=0; k<volume.vol_pol[0][i].b_header.max_bin; k++){
+        for (k=0; k<volume.vol_pol[0][i].ray.size(); k++){
             corr=0.;
             /* trovo elevazione reale e quota bin*/
             //elevaz=(float)(volume.vol_pol[elev_fin[i][k]][i].teta_true)*CONV_RAD;
