@@ -146,6 +146,29 @@ void Volume::read_sp20(const char* nome_file)
     declutter_rsp = (bool)old_data_header.norm.maq.declutter_rsp;
 }
 
+double eldes_converter_azimut(double start, double stop)
+{
+    unsigned short azStart = (int)(start / 360.0 * 8192);
+    unsigned short azStop = (int)(stop / 360.0 * 8192);
+
+    //calcolo la media di azimuth e elevazione
+    unsigned short azAvg = (azStart + azStop) / 2;
+
+    //4096 e' la meta (cioe' 180 gradi) di un intero a 13 bit
+    //13 bit a 1 (360 gradi) corrispondono al valore 8191
+    //se si supera 4096 si sottrae 4096 sia per az che per ele
+    //se sono a cavallo di 180 gradi·
+    if( (azStart > (4096 + 2048) && azStop < 2048) ||
+        (azStart < 2048 && azStop > (4096 + 2048)) )
+        azAvg += 4095;
+
+    azAvg &= 0x1FFF;
+
+    double res = (double)azAvg * 360.0 / 8192.0;
+    //printf("%f-%f → %u-%u → %u * %f = %f\n", start, stop, (unsigned)azStart, (unsigned)azStop, (unsigned)azAvg, (float)FATT_MOLT_AZ, res);
+    return res;
+}
+
 void Volume::read_odim(const char* nome_file)
 {
     LOG_CATEGORY("radar.io");
@@ -247,10 +270,12 @@ void Volume::read_odim(const char* nome_file)
         std::vector<bool> angles_seen(400, false);
         for (int src_az = 0; src_az < nrays; ++src_az)
         {
-            double azimut = azangles[src_az].averagedAngle(rpm_sign);
-            // FIXME: reproduce a bad truncation from the eldes sp20 converter
-            azimut = (int)(azimut / FATT_MOLT_AZ) * FATT_MOLT_AZ;
+            //double azimut = azangles[src_az].averagedAngle(rpm_sign);
+            // FIXME: reproduce a bad truncation from the eldes sp20 converte
+            double azimut = eldes_converter_azimut(azangles[src_az].start, azangles[src_az].stop);
+            // azimut = (int)(azimut / FATT_MOLT_AZ) * FATT_MOLT_AZ;
             // printf("fbeam ϑ%5.1f α1%6.1f α2%6.1f α%6.1f sign %2d\n", elevation, azangles[src_az].start,  azangles[src_az].stop, azimut, rpm_sign);
+
             // Convert back to bytes, to fit into vol_pol as it is now
             for (unsigned i = 0; i < beam_size; ++i){
                 // QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
