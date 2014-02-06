@@ -2,16 +2,8 @@
 #define ARCHIVIATORE_VOLUME_CLASS_H
 
 #include <vector>
+#include <ctime>
 #include <cstdio>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-// libreria radar
-#include <func_SP20read.h>
-#ifdef __cplusplus
-}
-#endif
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NEL 15                // n0 elevazioni massimo
@@ -49,8 +41,8 @@ struct LoadLog
 struct Ray
 {
     std::vector<unsigned char> ray;
-    T_MDB_ap_beam_header b_header;
     short alfa_true, teta_true;
+    short teta, alfa;
 
     Ray();
 };

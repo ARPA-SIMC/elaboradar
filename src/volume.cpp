@@ -6,6 +6,15 @@
 #include <memory>
 #include <cstring>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+// libreria radar
+#include <func_SP20read.h>
+#ifdef __cplusplus
+}
+#endif
+
 using namespace std;
 
 /// This needs to be a global variable, as it is expected by libsp20
@@ -14,9 +23,8 @@ int elev_array[NEL];
 namespace cumbac {
 
 Ray::Ray()
-    : alfa_true(0), teta_true(0)
+    : alfa_true(0), teta_true(0), teta(0), alfa(0)
 {
-    memset(&b_header, 0, sizeof(b_header));
 }
 
 void LoadLog::print(FILE* out)
@@ -104,12 +112,11 @@ void Volume::merge_beam(Ray& raggio, double theta, double alpha, int az_num, int
                 raggio.ray[i] = dati[i];
     }
 
-    raggio.b_header.alfa =(short)(az_num*.9/FATT_MOLT_AZ);
-    raggio.b_header.teta = elev_array[el_num];
+    raggio.alfa =(short)(az_num*.9/FATT_MOLT_AZ);
+    raggio.teta = elev_array[el_num];
     raggio.alfa_true = alpha / FATT_MOLT_AZ;
     raggio.teta_true = theta / FATT_MOLT_EL;
-    raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
-    raggio.b_header.max_bin = size;
+    //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
 }
 
 void Volume::read_sp20(const char* nome_file)
