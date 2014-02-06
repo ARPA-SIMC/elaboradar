@@ -27,6 +27,11 @@ Ray::Ray()
 {
 }
 
+PolarScan::PolarScan()
+{
+    //resize(NUM_AZ_X_PPI);
+}
+
 void LoadLog::print(FILE* out)
 {
     if (entries.empty())
@@ -72,21 +77,26 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
     }
     */
 
-    merge_beam(vol_pol[el_num][az_num], theta, alpha, az_num, el_num, size, data);
+    merge_beam(el_num, az_num, theta, alpha, size, data);
     if(az_num*0.9 - alpha < 0.)
     {
         int new_az_num = (az_num + 1) % 400;
-        merge_beam(vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
+        merge_beam(el_num, new_az_num, theta, alpha, size, data);
     }
     else if(az_num*0.9 - alpha > 0.)
     {
         int new_az_num = (az_num -1+400) %400;
-        merge_beam(vol_pol[el_num][new_az_num], theta, alpha, new_az_num, el_num, size, data);
+        merge_beam(el_num, new_az_num, theta, alpha, size, data);
     }
 }
 
-void Volume::merge_beam(Ray& raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati)
+void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati)
 {
+    // if (az_num >= vol_pol[el_num].size())
+    //     vol_pol[el_num].resize(az_num + 1);
+
+    Ray& raggio = vol_pol[el_num][az_num];
+
     load_log[el_num][az_num].log(theta, alpha);
 
     if (raggio.ray.empty())
@@ -205,12 +215,12 @@ void Volume::read_odim(const char* nome_file)
 {
     LOG_CATEGORY("radar.io");
 
-    using namespace OdimH5v21;
+    namespace odim = OdimH5v21;
     using namespace Radar;
     using namespace std;
 
-    auto_ptr<OdimFactory> factory(new OdimFactory());
-    auto_ptr<PolarVolume> volume(factory->openPolarVolume(nome_file));
+    auto_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
+    auto_ptr<odim::PolarVolume> volume(factory->openPolarVolume(nome_file));
 
     acq_date = volume->getDateTime();
 
@@ -240,7 +250,7 @@ void Volume::read_odim(const char* nome_file)
     int scan_count = volume->getScanCount();
     for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
     {
-        auto_ptr<PolarScan> scan(volume->getScan(src_elev));
+        auto_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
 
         // Read and and validate resolution information
@@ -257,13 +267,13 @@ void Volume::read_odim(const char* nome_file)
         }
 
         // Pick the best quantity among the ones available
-        auto_ptr<PolarScanData> data;
-        if (scan->hasQuantityData(PRODUCT_QUANTITY_DBZH))
-            data.reset(scan->getQuantityData(PRODUCT_QUANTITY_DBZH));
-        else if (scan->hasQuantityData(PRODUCT_QUANTITY_TH))
+        auto_ptr<odim::PolarScanData> data;
+        if (scan->hasQuantityData(odim::PRODUCT_QUANTITY_DBZH))
+            data.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_DBZH));
+        else if (scan->hasQuantityData(odim::PRODUCT_QUANTITY_TH))
         {
             LOG_WARN("no DBZH found for elevation angle %f: using TH", elevation);
-            data.reset(scan->getQuantityData(PRODUCT_QUANTITY_TH));
+            data.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_TH));
         }
         else
         {
@@ -272,7 +282,7 @@ void Volume::read_odim(const char* nome_file)
         }
 
         // Get and validate the azimuth angles for this scan
-        std::vector<AZAngles> azangles = scan->getAzimuthAngles();
+        std::vector<odim::AZAngles> azangles = scan->getAzimuthAngles();
         int rpm_sign = scan->getDirection();
 
         int nrays = data->getNumRays();
@@ -293,7 +303,7 @@ void Volume::read_odim(const char* nome_file)
 
         // RayMatrix<float> matrix;
         // data->readTranslatedData(matrix);
-        RayMatrix<unsigned short> matrix;
+        odim::RayMatrix<unsigned short> matrix;
         matrix.resize(nrays, beam_size);
         //data->readData(matrix);
         data->readData(const_cast<unsigned short*>(matrix.get()));

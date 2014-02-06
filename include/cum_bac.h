@@ -232,6 +232,7 @@ public:
     int interpola_VPR(float a[], int ma);
     int testfit(float a[], float chisq, float chisqin);
     float quota_f(float elevaz, int k);
+    void class_conv_fixme_find_a_name();
     void classifica_rain();
     void classifico_VIZ();
     void classifico_STEINER();
