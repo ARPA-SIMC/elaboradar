@@ -303,10 +303,12 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
 
     volume.read_sp20(nome_file);
 
+    /*
     printf("fbeam ϑ%f α%f", volume.vol_pol[0][0].b_header.teta, volume.vol_pol[0][0].b_header.alfa);
     for (unsigned i = 0; i < 20; ++i)
         printf(" %d", (int)volume.vol_pol[0][0].ray[i]);
     printf("\n");
+    */
 
     //  ----- Test sul volume test_file.......  --------
     if (!test_file(file_type))
@@ -335,10 +337,12 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file
 
     volume.read_odim(nome_file);
 
+    /*
     printf("fbeam ϑ%f α%f", this->volume.vol_pol[0][0].b_header.teta, this->volume.vol_pol[0][0].b_header.alfa);
     for (unsigned i = 0; i < 20; ++i)
         printf(" %d", (int)this->volume.vol_pol[0][0].ray[i]);
     printf("\n");
+    */
 
     /*
     int numRaggi»···»···= scan->getNumRays();

@@ -6,10 +6,29 @@
 #include <memory>
 #include <cstring>
 
+using namespace std;
+
 /// This needs to be a global variable, as it is expected by libsp20
 int elev_array[NEL];
 
 namespace cumbac {
+
+void LoadLog::print(FILE* out)
+{
+    if (entries.empty())
+    {
+        fprintf(out, "no beams loaded\n");
+        return;
+    }
+
+    for (vector<LoadLogEntry>::const_iterator i = entries.begin(); i != entries.end(); ++i)
+    {
+        if (i != entries.begin())
+            fprintf(out, ", ");
+        fprintf(out, "ϑ%.2f α%.2f", i->theta, i->alpha);
+    }
+    fprintf(out, "\n");
+}
 
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
@@ -30,6 +49,7 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
 
     int az_num = azimut_index_MDB(alfa);
 
+    /*
     if (az_num == 0)
     {
         printf("fbeam ϑ%f→%d α%f→%d %u", theta, el_num, alpha, az_num, size);
@@ -37,6 +57,7 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
             printf(" %d", (int)data[i]);
         printf("\n");
     }
+    */
 
     merge_beam(&vol_pol[el_num][az_num], theta, alpha, az_num, el_num, size, data);
     if(az_num*0.9 - alpha < 0.)
@@ -53,6 +74,8 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
 
 void Volume::merge_beam(VOL_POL* raggio, double theta, double alpha, int az_num, int el_num, unsigned size, const unsigned char* dati)
 {
+    load_log[el_num][az_num].log(theta, alpha);
+
     if (raggio->flag == 0)
     {
         for (unsigned i = 0; i < size; i++)
