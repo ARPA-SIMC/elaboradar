@@ -98,7 +98,11 @@ cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) volume.o cum_bac.o $(OBJ_C
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
 check: cbtest $(addprefix testdata/,$(TESTFILES))
-	$(DEBUGGER) ./cbtest $(TEST_ARGS)
+	if [ -z "$(VERBOSE)" ]; then \
+		$(DEBUGGER) ./cbtest $(TEST_ARGS) ; \
+	else \
+		LOG4C_RCPATH=testdata/log4c_verbose $(DEBUGGER) ./cbtest $(TEST_ARGS) ; \
+	fi
 
 %: %.o
 	$(CXX) -o $@ $^ $(LDLIBS)
