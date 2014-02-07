@@ -81,34 +81,16 @@ CUM_BAC::CUM_BAC()
     rmsefin=100;
     ncv=0;ncs=0;np=0;
     htbb=-9999.; hbbb=-9999.;
-    memset(cart,0,sizeof(cart));
-    memset(cartm,0.,sizeof(cartm));
-    memset(z_out,0,sizeof(z_out));
     memset (first_level,0,sizeof(first_level));
     memset (first_level_static,0,sizeof(first_level_static));
     memset(dato_corrotto,0,sizeof(dato_corrotto));
-    memset(dato_corr_xy,0,sizeof(dato_corr_xy));
-    memset(dato_corr_1x1,0,sizeof(dato_corr_1x1));
     memset(beam_blocking,0,sizeof(beam_blocking));
-    memset(beam_blocking_xy,0,sizeof(beam_blocking_xy));
-    memset(beam_blocking_1x1,0,sizeof(beam_blocking_1x1));
     memset(att_cart,DBtoBYTE(0.),sizeof(att_cart));
     memset(quota_rel,0,sizeof(quota_rel));
     memset(quota,0,sizeof(quota));
-    memset(quota_cart,0,sizeof(quota_cart));
-    memset(quota_1x1,0,sizeof(quota_1x1));
     memset(elev_fin,0,sizeof(elev_fin));
-    memset(elev_fin_xy,0,sizeof(elev_fin_xy));
-    memset(elev_fin_1x1,0,sizeof(elev_fin_1x1));
     memset(qual,0,sizeof(qual));
-    memset(qual_Z_cart,0,sizeof(qual_Z_cart));
-    memset(qual_Z_1x1,0,sizeof(qual_Z_1x1));
     memset(top,0,sizeof(top));
-    memset(topxy,0,sizeof(topxy));
-    memset(top_1x1,0,sizeof(top_1x1));
-    memset(corr_1x1,0,sizeof(corr_1x1));
-    memset(neve_cart,0,sizeof(neve_cart));
-    memset(neve_1x1,0,sizeof(neve_1x1));
     memset(neve,0,sizeof(neve));
     for (int i=0; i<NMAXLAYER; i++)
       vpr[i]=NODATAVPR;
@@ -904,39 +886,43 @@ FILE *CUM_BAC::controllo_apertura (const char *nome_file, const char *content, c
    per ora drrs=dist nche nel caso di Gattatico, mentre dtrs è letto da file
    si puo' scegliere tra qualita' rispetto a Z e rispetto a R, in realtà per ora sono uguali.
 
-   double PIA;  path integrated attenuation
-   float dh: dimensione verticale bin calcolata tramite approcio geo-ottico
-   float drrs: distanza radiosondaggio,
-   float dtrs: tempo dal radiosondaggio
-   float dist: distanza dal radar
    float quo:  quota bin
    float el:   elevazione
    float rst:  raggio equivalente in condizioni standard
    float dZ:   correzione vpr
    float sdevZ:  stand. dev. correzione vpr
-   unsigned char bb: beam blocking
-   unsigned char cl: indice clutter da anaprop
 
 //--- nb. non ho il valore di bb sotto_bb_first_level
 comend
 */
 void CUM_BAC::caratterizzo_volume()
 {
-    int i,l,k;
+    // path integrated attenuation
     double PIA;
-    float dh=1.,dhst=1.,drrs=1.,dist=1.,elevaz;
-    unsigned char bb=0,cl=0 ;
+    // dimensione verticale bin calcolata tramite approcio geo-ottico
+    float dh=1.;
+    // distanza radiosondaggio,
+    float dhst=1.;
+    // tempo dal radiosondaggio
+    float drrs=1.;
+    // distanza dal radar
+    float dist=1.;
+    float elevaz;
+    // beam blocking
+    unsigned char bb=0;
+    // indice clutter da anaprop
+    unsigned char cl=0;
 
     //----------ciclo su NSCAN(=6), cioè sul numero di elevazioni (nominali) per le quali ho calcolato il beam blocking
     /* a questo punto servono: bb, cl,  PIA, dtrs e drrs radiosond, quota, hsup e hinf beam-----------------*/
 
     //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
 
-    for (l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
+    for (int l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
         int count_beams = volume.nbeam_elev[l];
 
-        for (i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
+        for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
             int beam_size;
             //-----elevazione reale letta da file* fattore di conversione 360/4096
@@ -954,7 +940,7 @@ void CUM_BAC::caratterizzo_volume()
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
 
-            for (k=0; k<beam_size; k++)/*ciclo range*/
+            for (int k=0; k<beam_size; k++)/*ciclo range*/
             {
                 unsigned char sample = 0;
                 if (count_beams != 0)
@@ -1016,6 +1002,7 @@ void CUM_BAC::caratterizzo_volume()
                 else {
 
                     //-----------calcolo la qualità----------
+                    // FIXME: qui tronca: meglio un round?
                     qual[l][i][k]=(unsigned char)(func_q_Z(cl,bb,dist,drrs,dtrs,dh,dhst,PIA)*100);
                 }
 

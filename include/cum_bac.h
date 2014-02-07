@@ -58,6 +58,51 @@ static const int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define DIM1_ST 16
 #define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
 
+template<typename T, unsigned SX, unsigned SY=SX>
+struct Image
+{
+    T data[SY][SX];
+
+    Image()
+    {
+        for (unsigned y = 0; y < SY; ++y)
+            for (unsigned x = 0; x < SX; ++x)
+                data[y][x] = 0;
+    }
+
+    T* operator[](unsigned y) { return data[y]; }
+    const T* operator[](unsigned y) const { return data[y]; }
+
+    T min() const
+    {
+        T res = data[0][0];
+        for (unsigned y = 0; y < SY; ++y)
+            for (unsigned x = 0; x < SX; ++x)
+                if (data[y][x] < res)
+                    res = data[y][x];
+        return res;
+    }
+
+    T max() const
+    {
+        T res = data[0][0];
+        for (unsigned y = 0; y < SY; ++y)
+            for (unsigned x = 0; x < SX; ++x)
+                if (data[y][x] > res)
+                    res = data[y][x];
+        return res;
+    }
+
+    T avg() const
+    {
+        double res = 0;
+        for (unsigned y = 0; y < SY; ++y)
+            for (unsigned x = 0; x < SX; ++x)
+                res += (double)data[y][x] / (double)(SX * SY);
+        return (T)round(res);
+    }
+};
+
 class CUM_BAC
 {
 public:
@@ -86,10 +131,10 @@ public:
     //matrici per ricampionamento cartesiano
     float azimut[MAX_BIN][MAX_BIN];
     float range[MAX_BIN][MAX_BIN];
-    unsigned char cart[MAX_BIN*2][MAX_BIN*2];
-    double  cartm[MAX_BIN*2][MAX_BIN*2];  /* Z media dei bins adiacenti al punto */
+    Image<unsigned char, MAX_BIN*2> cart;
+    Image<double, MAX_BIN*2> cartm;  /* Z media dei bins adiacenti al punto */
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
-    unsigned char z_out[CART_DIM_ZLR][CART_DIM_ZLR];
+    Image<unsigned char, CART_DIM_ZLR> z_out;
 
     //variabili tempo per ottenere mese.. aggiunti nel main per leggere stagione dal nome file e ricavere MP coeff */
     struct tm *tempo;
@@ -127,36 +172,36 @@ public:
     //quota centro fascio polare, cartesiana max risoluzione e cartesiana 1x1
     unsigned short quota_rel[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
     unsigned short quota[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
-    unsigned short quota_cart[MAX_BIN*2][MAX_BIN*2];/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
-    unsigned char quota_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
+    Image<unsigned short, MAX_BIN*2> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
+    Image<unsigned char, CART_DIM_ZLR> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
     //beam blocking cartesiano max resol e 1x1
-    unsigned char beam_blocking_xy[MAX_BIN*2][MAX_BIN*2]; //beamblocking cartesiano max resol
-    unsigned char beam_blocking_1x1[CART_DIM_ZLR][CART_DIM_ZLR];//beam blocking cartesiano 1x1
+    Image<unsigned char, MAX_BIN*2> beam_blocking_xy; //beamblocking cartesiano max resol
+    Image<unsigned char, CART_DIM_ZLR> beam_blocking_1x1;//beam blocking cartesiano 1x1
     //uscite anaprop
     unsigned char dato_corrotto[NUM_AZ_X_PPI][MAX_BIN]; /*uscita controllo anaprop in coordinate azimut range */
-    unsigned char dato_corr_xy[MAX_BIN*2][MAX_BIN*2]; //uscite anap  cartesiano max resol
-    unsigned char dato_corr_1x1[CART_DIM_ZLR][CART_DIM_ZLR]; //uscite anap cartesiano  1x1
+    Image<unsigned char, MAX_BIN*2> dato_corr_xy; //uscite anap  cartesiano max resol
+    Image<unsigned char, CART_DIM_ZLR> dato_corr_1x1; //uscite anap cartesiano  1x1
     //elevazioni finali come sopra
     unsigned char elev_fin[NUM_AZ_X_PPI][MAX_BIN]; /* elevazione finale in coordinate azimut range  */
-    unsigned char elev_fin_xy[MAX_BIN*2][MAX_BIN*2];
-    unsigned char elev_fin_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
+    Image<unsigned char, MAX_BIN*2> elev_fin_xy;
+    Image<unsigned char, CART_DIM_ZLR> elev_fin_1x1;
     // metrici qualita' come sopra
     unsigned char qual[NEL][NUM_AZ_X_PPI][MAX_BIN]; /* qualita volume polare */
-    unsigned char qual_Z_cart[MAX_BIN*2][MAX_BIN*2]; /* qualita della Z in formato 1024*1024, risoluzione minima */
-    unsigned char qual_Z_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* qualita della Z in formato 256*256, risoluzione ZLR */
+    Image<unsigned char, MAX_BIN*2> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
+    Image<unsigned char, CART_DIM_ZLR> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra
     unsigned char top[NUM_AZ_X_PPI][MAX_BIN];
-    unsigned char topxy[MAX_BIN*2][MAX_BIN*2];
-    unsigned char  top_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
+    Image<unsigned char, MAX_BIN*2> topxy;
+    Image<unsigned char, CART_DIM_ZLR> top_1x1;
 
     // uscite  vpr: correzione VPR , come sopra
     unsigned char  corr_polar[NUM_AZ_X_PPI][MAX_BIN];/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
-    unsigned char  corr_cart[MAX_BIN*2][MAX_BIN*2];
-    unsigned char corr_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
+    Image<unsigned char, MAX_BIN*2> corr_cart;
+    Image<unsigned char, CART_DIM_ZLR> corr_1x1;
     // uscite vpr: neve, come sopra
     unsigned char neve[NUM_AZ_X_PPI][MAX_BIN];/* matrice az-range che memorizza punti di neve*/
-    unsigned char neve_cart[MAX_BIN*2][MAX_BIN*2];/* neve formato 1024*1024, risoluzione minima */
-    unsigned char neve_1x1[CART_DIM_ZLR][CART_DIM_ZLR];/* neve in formato 256*256, risoluzione ZLR */
+    Image<unsigned char, MAX_BIN*2> neve_cart;/* neve formato 1024*1024, risoluzione minima */
+    Image<unsigned char, CART_DIM_ZLR> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
     // dati per vpr
     unsigned char flag_vpr[NEL][NUM_AZ_X_PPI][MAX_BIN];/* punti del volume polare ok per calcolo VPR*/
     float vpr[NMAXLAYER];/* vpr */
@@ -179,7 +224,8 @@ public:
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
     unsigned char *conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
     // uscite: matrici class max resol e 1x1
-    unsigned char conv_cart[MAX_BIN*2][MAX_BIN*2], conv_1x1[CART_DIM_ZLR][CART_DIM_ZLR];
+    Image<unsigned char, MAX_BIN*2> conv_cart;
+    Image<unsigned char, CART_DIM_ZLR> conv_1x1;
     //uscite:matrici cappi max resol e 1x1
     unsigned char cappi_1x1[CART_DIM_ZLR][CART_DIM_ZLR],cappi_cart[MAX_BIN*2][MAX_BIN*2],stratiform[NUM_AZ_X_PPI][MAX_BIN];
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
