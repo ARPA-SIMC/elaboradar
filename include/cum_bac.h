@@ -72,6 +72,7 @@ public:
     bool do_bloccorr;
     bool do_vpr;
     bool do_class;
+    bool do_zlr_media;
 
     cumbac::Volume volume;
 

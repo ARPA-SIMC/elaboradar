@@ -72,7 +72,7 @@ extern "C" {
 #define NSCAN 6
 
 CUM_BAC::CUM_BAC()
-    : do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false)
+    : do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -1805,7 +1805,7 @@ int CUM_BAC::combina_profili(const char *sito)
     *ct=0;
 
     ier_vpr=func_vpr(cv,ct,vpr1,area_vpr,sito); // ho fatto func_vpr, il profilo istantaneo
-    LOG_INFO("fatta func vpr");
+    LOG_INFO("fatta func vpr %d", ier_vpr);
 
 
     /*modalità VPR combinato*/
@@ -1827,7 +1827,7 @@ int CUM_BAC::combina_profili(const char *sito)
 
         file=fopen(getenv("VPR0_FILE"),"r");
         if(file == NULL ) {
-            LOG_WARN("non esiste file vpr vecchio",getenv("VPR0_FILE"));
+            LOG_WARN("non esiste file vpr vecchio: %s",getenv("VPR0_FILE"));
 
             //----se file non esiste assegno gap=100----
             gap=100;
@@ -2627,13 +2627,16 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
-                if (BYTEtoDB(volume.vol_pol[l][i].ray[k])> THR_VPR &&  flag_vpr[l][i][k]>0 )
+                unsigned char sample = 0;
+                if (k < volume.vol_pol[l][i].ray.size())
+                    sample = volume.vol_pol[l][i].ray[k];
+                if (BYTEtoDB(sample)> THR_VPR &&  flag_vpr[l][i][k]>0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area
-                    vol_rain=(long int)(BYTE_to_mp_func(volume.vol_pol[l][i].ray[k],aMP,bMP)*area);//peso ogni cella con la sua area
+                    vol_rain=(long int)(BYTE_to_mp_func(sample,aMP,bMP)*area);//peso ogni cella con la sua area
 
                     //-------incremento l'area precipitante totale ct,aggiungendo però,cosa che avevo messo male una THR solo per ct, cioè per il peso
-                    if (BYTEtoDB(volume.vol_pol[l][i].ray[k])> THR_PDF)
+                    if (BYTEtoDB(sample)> THR_PDF)
                         *ct=*ct+(long int)(area);
 
                     //------se l'area in quello strato è già maggiore di 0 allora incremento il volume dello strato altrimenti lo scrivo ex novo. poi vpr1 andrà diviso per l'area
@@ -2642,7 +2645,6 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 
                     //------incremento l'area dello strato----------
                     area_vpr[ilay]=area_vpr[ilay]+area;
-
                 }
             }
         }
@@ -2958,6 +2960,219 @@ void CUM_BAC::class_conv_fixme_find_a_name()
 
     }
 }
+
+void CUM_BAC::creo_cart()
+{
+    int i,j,quad,x,y,irange,az,iaz,az_min,az_max,cont;
+    static int flag = 1;
+
+    if(flag)
+    {
+        creo_matrice_conv();
+        flag = 0;
+    }
+
+    for(i=0; i<MAX_BIN *2; i++)
+        for(j=0; j<MAX_BIN *2; j++)
+            cart[i][j] = MISSING;
+
+    /*
+       Stampa di controllo
+       for(i=0; i<MAX_BIN*2; i++)
+       for(j=MAX_BIN-10; j<MAX_BIN+10; j++)
+       if (i<10 || i> MAX_BIN*2-10)
+       printf("%3d  %3d  %3d\n",i,j,cart[i][j]);
+       */
+
+    for(quad=0; quad<4; quad++)
+        for(i=0; i<MAX_BIN; i++)
+            for(j=0; j<MAX_BIN; j++)
+            {
+                irange = (int)range[i][j];
+                if(range[i][j] - irange >= .5) irange++;
+                if(irange < MAX_BIN)        {
+                    switch(quad)
+                    {
+                        case 0:
+                            x = MAX_BIN + i;
+                            y = MAX_BIN + j;
+                            az = azimut[i][j];
+                            break;
+                        case 1:
+                            x = MAX_BIN + j;
+                            y = MAX_BIN - i;
+                            az = azimut[i][j] + 90.;
+                            break;
+                        case 2:
+                            x = MAX_BIN - i;
+                            y = MAX_BIN - j;
+                            az = azimut[i][j] + 180.;
+                            break;
+                        case 3:
+                            x = MAX_BIN - j;
+                            y = MAX_BIN + i;
+                            az = azimut[i][j]+270.;
+                            break;
+                    }
+
+                    az_min = (int)((az - .45)/.9);
+                    az_max = ceil((az + .45)/.9);
+
+
+                    if(az_min < 0)
+                    {
+                        az_min = az_min + NUM_AZ_X_PPI;
+                        az_max = az_max + NUM_AZ_X_PPI;
+                    }
+                    cont=0;
+                    for(iaz = az_min; iaz<az_max; iaz++){
+                        if(cart[x][y]<=volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]){
+                            cart[x][y] = volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange];
+                            topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
+                            if (do_quality)
+                            {
+                                qual_Z_cart[x][y]=qual[elev_fin[iaz%NUM_AZ_X_PPI][irange]][iaz%NUM_AZ_X_PPI][irange];
+                                quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
+                                dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
+                                beam_blocking_xy[x][y]=beam_blocking[iaz%NUM_AZ_X_PPI][irange];
+                                elev_fin_xy[x][y]=elev_fin[iaz%NUM_AZ_X_PPI][irange];
+                                /*neve_cart[x][y]=qual_Z_cart[x][y];*/
+                                if (do_vpr)
+                                {
+                                    neve_cart[x][y]=(neve[iaz%NUM_AZ_X_PPI][irange])?0:1;
+                                    corr_cart[x][y]=corr_polar[iaz%NUM_AZ_X_PPI][irange];
+                                }
+                            }
+                            if (do_class)
+                            {
+                                if (irange<x_size)
+                                    conv_cart[x][y]=conv[iaz%NUM_AZ_X_PPI][irange];
+                            }
+                        }
+                        if (do_zlr_media)
+                        {
+                            if (volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange] > 0){
+                                cartm[x][y]=cartm[x][y]+BYTEtoZ(volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]);
+                                cont=cont+1;
+                            }
+                        }
+                    }
+
+                    if (do_zlr_media)
+                    {
+                        if (cont > 0) cartm[x][y]=cartm[x][y]/(float)(cont);
+                    }
+                    /*
+                     *****  per scrivere in griglia cartesiana************
+                     bloc_xy[MAX_BIN*2-y][x]=beam_blocking[(int)((float)(az)/.9)][irange];
+                     elev_xy[MAX_BIN*2-y][x]=elev_fin[(int)((float)(az)/.9)][irange];
+                     dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange];
+                     elev_fin_xy[MAX_BIN*2-y][x]=first_level[(int)((float)(az)/.9)][irange];
+                     dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange]; */
+                }
+            }
+}
+
+void CUM_BAC::creo_cart_z_lowris()
+{
+    int i,j,x,y,cont;
+    unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1,Zr1x1;
+    unsigned short q1x1;
+    float zm;
+
+    //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
+    // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
+    for(i=0; i<CART_DIM_ZLR; i++)
+        for(j=0; j<CART_DIM_ZLR; j++)
+        {
+            //reinizializzo tutte le variabili calcolate dentro la funzione .
+            z = 0;
+            q = 0;
+            zm = 0.;
+            dc1x1=0;
+            el1x1=0;
+            q1x1=0;
+            c1x1=0;
+            bl1x1=0;
+            cont=0;
+            traw=0;
+            for(x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
+                for(y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
+                    //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
+                {
+                    if(cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] != MISSING)
+                        if(cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] > z){
+                            z= cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                            traw=topxy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                            if (do_quality)
+                            {
+                                q=qual_Z_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                q1x1=quota_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                dc1x1=dato_corr_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                el1x1=elev_fin_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                bl1x1=beam_blocking_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+
+                                if (do_vpr)
+                                {
+                                    c1x1=corr_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                    nv= neve_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                }
+                            }
+
+                            if (do_class)
+                            {
+                                conv_1x1[i][j]=conv_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                            }
+
+                            if (do_zlr_media)
+                            {
+                                if (cartm[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] > 0) {
+                                    zm = zm + cartm[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                    cont=cont+1;
+                                }
+                            }
+                        }
+                    z_out[i][j]=z;
+                    if (do_quality)
+                    {
+                        qual_Z_1x1[i][j]=q;
+                        quota_1x1[i][j]=128+(unsigned char)(q1x1/100);
+                        dato_corr_1x1[i][j]=dc1x1;
+                        elev_fin_1x1[i][j]=el1x1;
+                        beam_blocking_1x1[i][j]=bl1x1;
+                    }
+                    top_1x1[i][j]=traw;
+
+                    if (do_vpr)
+                    {
+                        neve_1x1[i][j]=nv;
+                        corr_1x1[i][j]=c1x1;
+                    }
+
+                    if (do_zlr_media)
+                    {
+                        if (cont >0 ) {
+                            z_out[i][j]=(unsigned char)((10*log10(zm/(float)(cont))+20.)/80.*255);
+                        }
+                        if (cont =0 ) z_out[i][j]=MISSING;
+                    }
+                }
+        }
+}
+
+void CUM_BAC::creo_matrice_conv()
+{
+    int i,j;
+
+    for(i=0; i<MAX_BIN; i++)
+        for(j=0; j<MAX_BIN; j++)
+        {
+            range[i][j] = hypot(i+.5,j+.5);
+            azimut[i][j] = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
+        }
+    return;
+}
+
 
 /*
  * Questa funzione al momento non va tolta. C'è del codice che va a leggere
