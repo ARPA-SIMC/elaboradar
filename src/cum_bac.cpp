@@ -406,7 +406,12 @@ int CUM_BAC::elabora_dato()
                 //---ricopio valori a mappa statica sotto
                 for(l=0; l<=el_inf; l++)
                 {
-                    volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
+                    // Enrico: cerca di non leggere/scrivere fuori dal volume effettivo
+                    if (k >= volume.vol_pol[l][i].ray.size()) continue;
+                    if (k < volume.vol_pol[el_inf][i].ray.size())
+                        volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
+                    else
+                        volume.vol_pol[l][i].ray[k]=0;
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
                     {
@@ -942,8 +947,9 @@ void CUM_BAC::caratterizzo_volume()
 
             for (int k=0; k<beam_size; k++)/*ciclo range*/
             {
+                // Enrico: cerca di non leggere fuori dal volume effettivo
                 unsigned char sample = 0;
-                if (count_beams != 0)
+                if (count_beams != 0 && k < volume.vol_pol[l][i].ray.size())
                     sample = volume.vol_pol[l][i].ray[k];
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)

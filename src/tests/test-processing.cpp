@@ -309,7 +309,6 @@ void to::test<6>()
     // out qual
     // out flag_vpr
     // out top
-
     ArrayStats<unsigned char> stats_qual;
     stats_qual.fill3(cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
@@ -318,14 +317,12 @@ void to::test<6>()
     wassert(actual((unsigned)stats_qual.min) == 0);
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
-
     ArrayStats<unsigned char> stats_flag_vpr;
     stats_flag_vpr.fill3(cb->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
     wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
-
     ArrayStats<unsigned char> stats_top;
     stats_top.fill2(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
@@ -391,8 +388,6 @@ void to::test<6>()
     wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
     wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
 
-    // TODO: scrivo_out_file_bin
-
     delete cb;
 }
 
@@ -422,6 +417,28 @@ void to::test<7>()
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
+    ArrayStats<unsigned char> stats_qual;
+    stats_qual.fill3(cb->qual);
+    wassert(actual((unsigned)stats_qual.first).isfalse());
+    wassert(actual((unsigned)stats_qual.count_zeros) == 108000);
+    wassert(actual((unsigned)stats_qual.count_ones) == 141553);
+    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.max) == 99);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
+    ArrayStats<unsigned char> stats_flag_vpr;
+    stats_flag_vpr.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 251320);
+    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 2820680);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 91);
+    ArrayStats<unsigned char> stats_top;
+    stats_top.fill2(cb->top);
+    wassert(actual((unsigned)stats_top.first).isfalse());
+    wassert(actual((unsigned)stats_top.count_zeros) == 203210);
+    wassert(actual((unsigned)stats_top.count_ones) == 4);
+    wassert(actual((unsigned)stats_top.min) == 0);
+    wassert(actual((unsigned)stats_top.max) == 35);
+    wassert(actual((unsigned)(stats_top.avg * 100)) == 10);
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
@@ -437,9 +454,60 @@ void to::test<7>()
     // TODO: cb->stampa_vpr()
 
     cb->creo_cart();
-    cb->creo_cart_z_lowris();
+    wassert(actual((unsigned)cb->cart.min()) == 0);
+    wassert(actual((unsigned)cb->cart.avg()) == 10);
+    wassert(actual((unsigned)cb->cart.max()) == 226);
+    wassert(actual(cb->cartm.min()) == 0);
+    wassert(actual(cb->cartm.max()) == 0);
+    wassert(actual((unsigned)cb->topxy.min()) == 0);
+    wassert(actual((unsigned)cb->topxy.avg()) == 0);
+    wassert(actual((unsigned)cb->topxy.max()) == 35);
+    wassert(actual((unsigned)cb->qual_Z_cart.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 30);
+    wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
+    wassert(actual((unsigned)cb->quota_cart.min()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
+    wassert(actual((unsigned)cb->elev_fin_xy.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
+    wassert(actual((unsigned)cb->neve_cart.min()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 1);
+    wassert(actual((unsigned)cb->corr_cart.min()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.max()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.min()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.max()) == 0);
 
-    // TODO: scrivo_out_file_bin
+    cb->creo_cart_z_lowris();
+    wassert(actual((unsigned)cb->z_out.min()) == 0);
+    wassert(actual((unsigned)cb->z_out.avg()) == 17);
+    wassert(actual((unsigned)cb->z_out.max()) == 226);
+    wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 29);
+    wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 98);
+    wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.max()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.max()) == 35);
+    wassert(actual((unsigned)cb->neve_1x1.min()) == 1);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 192);
+    wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
 
     delete cb;
 }
@@ -470,6 +538,28 @@ void to::test<8>()
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
+    ArrayStats<unsigned char> stats_qual;
+    stats_qual.fill3(cb->qual);
+    wassert(actual((unsigned)stats_qual.first).isfalse());
+    wassert(actual((unsigned)stats_qual.count_zeros) == 108000);
+    wassert(actual((unsigned)stats_qual.count_ones) == 141553);
+    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.max) == 99);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
+    ArrayStats<unsigned char> stats_flag_vpr;
+    stats_flag_vpr.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 251320);
+    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 2820680);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 91);
+    ArrayStats<unsigned char> stats_top;
+    stats_top.fill2(cb->top);
+    wassert(actual((unsigned)stats_top.first).isfalse());
+    wassert(actual((unsigned)stats_top.count_zeros) == 203210);
+    wassert(actual((unsigned)stats_top.count_ones) == 4);
+    wassert(actual((unsigned)stats_top.min) == 0);
+    wassert(actual((unsigned)stats_top.max) == 35);
+    wassert(actual((unsigned)(stats_top.avg * 100)) == 10);
 
     cb->classifica_rain();
 
@@ -489,7 +579,60 @@ void to::test<8>()
     cb->class_conv_fixme_find_a_name();
 
     cb->creo_cart();
+    wassert(actual((unsigned)cb->cart.min()) == 0);
+    wassert(actual((unsigned)cb->cart.avg()) == 10);
+    wassert(actual((unsigned)cb->cart.max()) == 226);
+    wassert(actual(cb->cartm.min()) == 0);
+    wassert(actual(cb->cartm.max()) == 0);
+    wassert(actual((unsigned)cb->topxy.min()) == 0);
+    wassert(actual((unsigned)cb->topxy.avg()) == 0);
+    wassert(actual((unsigned)cb->topxy.max()) == 35);
+    wassert(actual((unsigned)cb->qual_Z_cart.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 30);
+    wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
+    wassert(actual((unsigned)cb->quota_cart.min()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
+    wassert(actual((unsigned)cb->elev_fin_xy.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
+    wassert(actual((unsigned)cb->neve_cart.min()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 1);
+    wassert(actual((unsigned)cb->corr_cart.min()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.max()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.min()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.max()) == 0);
+
     cb->creo_cart_z_lowris();
+    wassert(actual((unsigned)cb->z_out.min()) == 0);
+    wassert(actual((unsigned)cb->z_out.avg()) == 17);
+    wassert(actual((unsigned)cb->z_out.max()) == 226);
+    wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 29);
+    wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 98);
+    wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.max()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.max()) == 35);
+    wassert(actual((unsigned)cb->neve_1x1.min()) == 1);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 192);
+    wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
 
     // TODO: scrivo_out_file_bin
 
@@ -499,44 +642,14 @@ void to::test<8>()
 template<> template<>
 void to::test<9>()
 {
-    // versione ' m' che corrisponde al parametro algo_medio FIXME: serve?
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
-    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-
-    CUM_BAC* cb = new CUM_BAC;
-    cb->do_quality = false;
-    cb->do_beamblocking = false;
-    cb->do_declutter = false;
-    cb->do_class = true;
-    cb->do_bloccorr = false;
-    cb->do_vpr = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
-
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
-
-    // FIXME: anche con quality = false?
-    //cb->caratterizzo_volume();
-
-    cb->creo_cart();
-    cb->creo_cart_z_lowris();
-
-    // TODO: scrivo_out_file_bin
-
-    delete cb;
-}
-
-template<> template<>
-void to::test<10>()
-{
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    unlink("testdata/vpr_heat_GAT");
+    setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -552,8 +665,84 @@ void to::test<10>()
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
+    ArrayStats<unsigned char> stats_qual;
+    stats_qual.fill3(cb->qual);
+    wassert(actual((unsigned)stats_qual.first).isfalse());
+    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
+    wassert(actual((unsigned)stats_qual.count_ones) == 162505);
+    wassert(actual((unsigned)stats_qual.min) == 1);
+    wassert(actual((unsigned)stats_qual.max) == 99);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5888);
+    ArrayStats<unsigned char> stats_flag_vpr;
+    stats_flag_vpr.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
+    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
+    ArrayStats<unsigned char> stats_top;
+    stats_top.fill2(cb->top);
+    wassert(actual((unsigned)stats_top.first).isfalse());
+    wassert(actual((unsigned)stats_top.count_zeros) == 111644);
+    wassert(actual((unsigned)stats_top.count_ones) == 423);
+    wassert(actual((unsigned)stats_top.min) == 0);
+    wassert(actual((unsigned)stats_top.max) == 75);
+    wassert(actual((unsigned)(stats_top.avg * 100)) == 565);
+
     cb->creo_cart();
+    wassert(actual((unsigned)cb->cart.min()) == 0);
+    wassert(actual((unsigned)cb->cart.avg()) == 55);
+    wassert(actual((unsigned)cb->cart.max()) == 255);
+    wassert(actual(cb->cartm.min()) == 0);
+    wassert(actual(cb->cartm.max()) == 0);
+    wassert(actual((unsigned)cb->topxy.min()) == 0);
+    wassert(actual((unsigned)cb->topxy.avg()) == 3);
+    wassert(actual((unsigned)cb->topxy.max()) == 75);
+    wassert(actual((unsigned)cb->qual_Z_cart.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 26);
+    wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
+    wassert(actual((unsigned)cb->quota_cart.min()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 14);
+    wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
+    wassert(actual((unsigned)cb->elev_fin_xy.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
+    wassert(actual((unsigned)cb->neve_cart.min()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.min()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.max()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.min()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.max()) == 0);
+
     cb->creo_cart_z_lowris();
+    wassert(actual((unsigned)cb->z_out.min()) == 0);
+    wassert(actual((unsigned)cb->z_out.avg()) == 66);
+    wassert(actual((unsigned)cb->z_out.max()) == 255);
+    wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 25);
+    wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 97);
+    wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 15);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.max()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.avg()) == 3);
+    wassert(actual((unsigned)cb->top_1x1.max()) == 75);
+    wassert(actual((unsigned)cb->neve_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
 
     // TODO: scrivo_out_file_bin
 
