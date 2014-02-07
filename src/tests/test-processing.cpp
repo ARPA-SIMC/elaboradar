@@ -23,31 +23,41 @@ struct ArrayStats
     T min;
     T max;
     double avg;
+    unsigned count_zeros;
+    unsigned count_ones;
 
-    ArrayStats() : first(true) {}
+    ArrayStats() : first(true), count_zeros(0), count_ones(0) {}
+
+    void count_sample(const T& sample, unsigned item_count)
+    {
+        if (sample == 0)
+            ++count_zeros;
+        else if (sample == 1)
+            ++count_ones;
+
+        if (first)
+        {
+            min = sample;
+            max = sample;
+            avg = (double)min / item_count;
+            first = false;
+        }
+        else
+        {
+            if (sample < min)
+                min = sample;
+            if (sample > max)
+                max = sample;
+            avg += (double)sample / item_count;
+        }
+    }
 
     template<int A, int B>
     void fill2(const T (&arr)[A][B])
     {
         for (int i = 0; i < A; ++i)
             for (int j = 0; j < B; ++j)
-            {
-                if (first)
-                {
-                    min = arr[i][j];
-                    max = arr[i][j];
-                    avg = min / (A * B);
-                    first = false;
-                }
-                else
-                {
-                    if (arr[i][j] < min)
-                        min = arr[i][j];
-                    if (arr[i][j] > max)
-                        max = arr[i][j];
-                    avg += (double)arr[i][j] / (A * B);
-                }
-            }
+                count_sample(arr[i][j], A * B);
     }
 
     template<int A, int B, int C>
@@ -56,23 +66,7 @@ struct ArrayStats
         for (int i = 0; i < A; ++i)
             for (int j = 0; j < B; ++j)
                 for (int k = 0; k < C; ++k)
-                {
-                    if (first)
-                    {
-                        min = arr[i][j][k];
-                        max = arr[i][j][k];
-                        avg = min / (A * B * C);
-                        first = false;
-                    }
-                    else
-                    {
-                        if (arr[i][j][k] < min)
-                            min = arr[i][j][k];
-                        if (arr[i][j][k] > max)
-                            max = arr[i][j][k];
-                        avg += (double)arr[i][j][k] / (A * B * C);
-                    }
-                }
+                    count_sample(arr[i][j][k], A * B * C);
     }
 };
 
@@ -307,8 +301,95 @@ void to::test<6>()
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
+    // in hray_inf
+    // out hray
+    // in dato_corrotto
+    // in beam_blocking
+    // in elev_fin
+    // out qual
+    // out flag_vpr
+    // out top
+
+    ArrayStats<unsigned char> stats_qual;
+    stats_qual.fill3(cb->qual);
+    wassert(actual((unsigned)stats_qual.first).isfalse());
+    wassert(actual((unsigned)stats_qual.count_zeros) == 108000);
+    wassert(actual((unsigned)stats_qual.count_ones) == 141553);
+    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.max) == 99);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
+
+    ArrayStats<unsigned char> stats_flag_vpr;
+    stats_flag_vpr.fill3(cb->flag_vpr);
+    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
+    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
+
+    ArrayStats<unsigned char> stats_top;
+    stats_top.fill2(cb->top);
+    wassert(actual((unsigned)stats_top.first).isfalse());
+    wassert(actual((unsigned)stats_top.count_zeros) == 203210);
+    wassert(actual((unsigned)stats_top.count_ones) == 4);
+    wassert(actual((unsigned)stats_top.min) == 0);
+    wassert(actual((unsigned)stats_top.max) == 35);
+    wassert(actual((unsigned)(stats_top.avg * 100)) == 10);
+
     cb->creo_cart();
+    wassert(actual((unsigned)cb->cart.min()) == 0);
+    wassert(actual((unsigned)cb->cart.avg()) == 10);
+    wassert(actual((unsigned)cb->cart.max()) == 226);
+    wassert(actual(cb->cartm.min()) == 0);
+    wassert(actual(cb->cartm.max()) == 0);
+    wassert(actual((unsigned)cb->topxy.min()) == 0);
+    wassert(actual((unsigned)cb->topxy.avg()) == 0);
+    wassert(actual((unsigned)cb->topxy.max()) == 35);
+    wassert(actual((unsigned)cb->qual_Z_cart.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 30);
+    wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
+    wassert(actual((unsigned)cb->quota_cart.min()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
+    wassert(actual((unsigned)cb->elev_fin_xy.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
+    wassert(actual((unsigned)cb->neve_cart.min()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.min()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.max()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.min()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.max()) == 0);
+
     cb->creo_cart_z_lowris();
+    wassert(actual((unsigned)cb->z_out.min()) == 0);
+    wassert(actual((unsigned)cb->z_out.avg()) == 17);
+    wassert(actual((unsigned)cb->z_out.max()) == 226);
+    wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 29);
+    wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 98);
+    wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.max()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.max()) == 35);
+    wassert(actual((unsigned)cb->neve_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
 
     // TODO: scrivo_out_file_bin
 

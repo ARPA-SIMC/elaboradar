@@ -251,7 +251,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
 
     //-------------------scritture output -----------------------
     LOG_INFO("%s -- Scrittura File Precipitazione 1X1 %s\n", PrendiOra(), nome_file);
-    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out),z_out);
+    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out.data),z_out.data);
 
 
     char nome_file_output[512];
@@ -272,43 +272,43 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
 
 
     //-------------------scritture output -----------------------
-#ifdef QUALITY
+    if (do_quality)
+    {
+        //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
+        // temporanee
+        // in archivio
+        scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1.data),qual_Z_1x1.data);
 
-    //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
-    // temporanee
-    // in archivio
-    scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1),qual_Z_1x1);
-
-    //------------------ stampe extra per studio
+        //------------------ stampe extra per studio
 #ifdef STAMPE_EXTRA
-    //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-    //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
-    //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
-    //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-    scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
-    scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1),beam_blocking_1x1);
-    scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1),dato_corr_1x1); //flag di propagazione anomala
-    scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1),quota_1x1);// m/100 +128
-    scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1),elev_fin_1x1);
-    scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1),top_1x1);
+        //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
+        //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
+        //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
+        //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
+        scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin.data),elev_fin.data);
+        scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1.data),beam_blocking_1x1.data);
+        scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1.data),dato_corr_1x1.data); //flag di propagazione anomala
+        scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1.data),quota_1x1.data);// m/100 +128
+        scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1.data),elev_fin_1x1.data);
+        scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1.data),top_1x1.data);
 
 #endif
-    //------------------ stampe correzioni da profili verticali in formato ZLR
-#ifdef VPR
-    scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1),corr_1x1);
-    //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
-    // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
-#endif
+        //------------------ stampe correzioni da profili verticali in formato ZLR
+        if (do_vpr)
+        {
+            scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1.data),corr_1x1.data);
+            //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
+            // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
+        }
 
-    //------------------se definita CLASS  stampo punti convettivi
-#ifdef CLASS
-    // in archivio?
-    // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
-    scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1),conv_1x1);
-
-#endif
-
-#endif
+        //------------------se definita CLASS  stampo punti convettivi
+        if (do_class)
+        {
+            // in archivio?
+            // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
+            scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1.data),conv_1x1.data);
+        }
+    }
 
 
 #endif// ifdef Z_lOWRIS
