@@ -1278,8 +1278,13 @@ void CUM_BAC::classifica_rain()
         /* ;   Costruzione RHI */
         /* ;---------------------------------- */
 
+        // Enrico: non sforare se il raggio è piú lungo di MAX_BIN
+        unsigned ray_size = volume.vol_pol[0][iaz].ray.size();
+        if (ray_size > MAX_BIN)
+            ray_size = MAX_BIN;
+
         for (iel=0;iel<NEL;iel++){
-            for (ibin=0;ibin<volume.vol_pol[0][iaz].ray.size();ibin++) {
+            for (ibin=0;ibin<ray_size;ibin++) {
 
                 for(kx=0;kx<w_x_size;kx++){
                     for(kz=0;kz<w_z_size;kz++){
