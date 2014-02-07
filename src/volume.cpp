@@ -49,6 +49,14 @@ void LoadLog::print(FILE* out)
     fprintf(out, "\n");
 }
 
+void VolumeStats::print(FILE* out)
+{
+    fprintf(out, "Nel   Zeros    Ones  Others     Sum\n"); 
+    for (int iel =0; iel<NEL; ++iel){
+        fprintf(out, "%4d%8d%8d%8d%8d\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
+    }
+}
+
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
@@ -333,6 +341,34 @@ void Volume::read_odim(const char* nome_file)
     }
 
     size_cell = range_scale;
+}
+
+void Volume::compute_stats(VolumeStats& stats) const
+{
+    for (int iel = 0; iel < NEL; ++iel)
+    {
+        stats.count_zeros[iel] = 0;
+        stats.count_ones[iel] = 0;
+        stats.count_others[iel] = 0;
+        stats.sum_others[iel] = 0;
+
+        for (int ibeam = 0; ibeam < nbeam_elev[iel]; ++ibeam)
+        {
+            for (size_t i = 0; i < vol_pol[iel][ibeam].ray.size(); ++i)
+            {
+                int val = vol_pol[iel][ibeam].ray[i];
+                switch (val)
+                {
+                    case 0: stats.count_zeros[iel]++; break;
+                    case 1: stats.count_ones[iel]++; break;
+                    default:
+                            stats.count_others[iel]++;
+                            stats.sum_others[iel] += val;
+                            break;
+                }
+            }
+        }
+    }
 }
 
 }

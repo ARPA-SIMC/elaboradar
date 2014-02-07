@@ -52,6 +52,16 @@ struct PolarScan : public std::vector<Ray>
     PolarScan();
 };
 
+struct VolumeStats
+{
+    unsigned count_zeros[NEL];
+    unsigned count_ones[NEL];
+    unsigned count_others[NEL];
+    unsigned sum_others[NEL];
+
+    void print(FILE* out);
+};
+
 class Volume
 {
 public:
@@ -73,6 +83,8 @@ public:
 
     void read_sp20(const char* nome_file);
     void read_odim(const char* nome_file);
+
+    void compute_stats(VolumeStats& stats) const;
 
 protected:
     void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
