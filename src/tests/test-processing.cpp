@@ -323,6 +323,7 @@ void to::test<7>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -339,8 +340,10 @@ void to::test<7>()
 
     cb->caratterizzo_volume();
 
+    // la combina_profili restituisce 1 se non riesce a costruire un profilo
+    // perchè non piove o piove poco
     ier = cb->combina_profili("GAT");
-    wassert(actual(ier) == 0); // TODO: cosa deve dare?
+    wassert(actual(ier) == 1);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0); // TODO: cosa deve dare?
@@ -366,6 +369,7 @@ void to::test<8>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -384,8 +388,10 @@ void to::test<8>()
 
     cb->classifica_rain();
 
+    // la combina_profili restituisce 1 se non riesce a costruire un profilo
+    // perchè non piove o piove poco
     ier = cb->combina_profili("GAT");
-    wassert(actual(ier) == 0); // TODO: cosa deve dare?
+    wassert(actual(ier) == 1); // TODO: cosa deve dare?
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0); // TODO: cosa deve dare?
