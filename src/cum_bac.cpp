@@ -3024,8 +3024,13 @@ void CUM_BAC::creo_cart()
                     }
                     cont=0;
                     for(iaz = az_min; iaz<az_max; iaz++){
-                        if(cart[x][y]<=volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]){
-                            cart[x][y] = volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange];
+                        // Enrico: cerca di non leggere fuori dal volume effettivo
+                        unsigned char sample = 0;
+                        if (irange < volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray.size())
+                            sample = volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange];
+
+                        if(cart[x][y] <= sample){
+                            cart[x][y] = sample;
                             topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
                             if (do_quality)
                             {
@@ -3050,7 +3055,7 @@ void CUM_BAC::creo_cart()
                         if (do_zlr_media)
                         {
                             if (volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange] > 0){
-                                cartm[x][y]=cartm[x][y]+BYTEtoZ(volume.vol_pol[0][iaz%NUM_AZ_X_PPI].ray[irange]);
+                                cartm[x][y]=cartm[x][y]+BYTEtoZ(sample);
                                 cont=cont+1;
                             }
                         }
