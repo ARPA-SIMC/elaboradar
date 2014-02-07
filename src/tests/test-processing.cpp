@@ -286,6 +286,9 @@ void to::test<6>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    unlink("testdata/vpr_heat_GAT");
+    setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -363,7 +366,7 @@ void to::test<6>()
 
     cb->creo_cart_z_lowris();
     wassert(actual((unsigned)cb->z_out.min()) == 0);
-    wassert(actual((unsigned)cb->z_out.avg()) == 17);
+    wassert(actual((unsigned)cb->z_out.avg()) == 16);
     wassert(actual((unsigned)cb->z_out.max()) == 226);
     wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
     wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 29);
@@ -484,7 +487,7 @@ void to::test<7>()
 
     cb->creo_cart_z_lowris();
     wassert(actual((unsigned)cb->z_out.min()) == 0);
-    wassert(actual((unsigned)cb->z_out.avg()) == 17);
+    wassert(actual((unsigned)cb->z_out.avg()) == 16);
     wassert(actual((unsigned)cb->z_out.max()) == 226);
     wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
     wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 29);
@@ -609,7 +612,7 @@ void to::test<8>()
 
     cb->creo_cart_z_lowris();
     wassert(actual((unsigned)cb->z_out.min()) == 0);
-    wassert(actual((unsigned)cb->z_out.avg()) == 17);
+    wassert(actual((unsigned)cb->z_out.avg()) == 16);
     wassert(actual((unsigned)cb->z_out.max()) == 226);
     wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
     wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 29);
@@ -649,6 +652,8 @@ void to::test<9>()
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
     unlink("testdata/vpr_heat_GAT");
+    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
+    unlink("testdata/ultimo_vpr");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
@@ -757,9 +762,14 @@ void to::test<10>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("FILE_T", "testdata/temperature.txt", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
     unlink("testdata/vpr_heat_GAT");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
+    unlink("testdata/ultimo_vpr");
+    setenv("LAST_VPR", "testdata/last_vpr", 1);
+    unlink("testdata/last_vpr");
+    setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -778,14 +788,15 @@ void to::test<10>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
+    cb->test_vpr=fopen("testdata/test_vpr","a+");
     ier = cb->combina_profili("GAT");
-    wassert(actual(ier) == 1);
+    wassert(actual(ier) == 0);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0);
 
     ier = cb->corr_vpr("GAT");
-    wassert(actual(ier) == 1);
+    wassert(actual(ier) == 0);
 
     // TODO: cb->stampa_vpr()
 
@@ -805,9 +816,14 @@ void to::test<11>()
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("FILE_T", "testdata/temperature.txt", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
     unlink("testdata/vpr_heat_GAT");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
+    unlink("testdata/ultimo_vpr");
+    setenv("LAST_VPR", "testdata/last_vpr", 1);
+    unlink("testdata/last_vpr");
+    setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -828,14 +844,15 @@ void to::test<11>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
+    cb->test_vpr=fopen("testdata/test_vpr","a+");
     ier = cb->combina_profili("GAT");
-    wassert(actual(ier) == 1);
+    wassert(actual(ier) == 0);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0);
 
     ier = cb->corr_vpr("GAT");
-    wassert(actual(ier) == 1); // TODO: cosa deve dare?
+    wassert(actual(ier) == 0);
 
     // TODO: cb->stampa_vpr()
 
