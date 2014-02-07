@@ -348,10 +348,10 @@ void to::test<7>()
     wassert(actual(ier) == 1);
 
     cb->heating = cb->profile_heating();
-    wassert(actual(cb->heating) == 0); // TODO: cosa deve dare?
+    wassert(actual(cb->heating) == 0);
 
     ier = cb->corr_vpr("GAT");
-    wassert(actual(ier) == 0); // TODO: cosa deve dare?
+    wassert(actual(ier) == 1);
 
     // TODO: cb->stampa_vpr()
 
@@ -395,13 +395,13 @@ void to::test<8>()
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
     ier = cb->combina_profili("GAT");
-    wassert(actual(ier) == 1); // TODO: cosa deve dare?
+    wassert(actual(ier) == 1);
 
     cb->heating = cb->profile_heating();
-    wassert(actual(cb->heating) == 0); // TODO: cosa deve dare?
+    wassert(actual(cb->heating) == 0);
 
     ier = cb->corr_vpr("GAT");
-    wassert(actual(ier) == 0); // TODO: cosa deve dare?
+    wassert(actual(ier) == 1); // TODO: cosa deve dare?
 
     // TODO: cb->stampa_vpr()
 
@@ -438,7 +438,7 @@ void to::test<9>()
     wassert(actual(ier) == 0);
 
     // FIXME: anche con quality = false?
-    cb->caratterizzo_volume();
+    //cb->caratterizzo_volume();
 
     cb->creo_cart();
     cb->creo_cart_z_lowris();
