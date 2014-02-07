@@ -324,6 +324,8 @@ void to::test<7>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    unlink("testdata/vpr_heat_GAT");
+    setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
@@ -370,6 +372,8 @@ void to::test<8>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    unlink("testdata/vpr_heat_GAT");
+    setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC;
     cb->do_quality = true;
