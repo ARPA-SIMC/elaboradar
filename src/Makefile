@@ -49,7 +49,7 @@ OBJ_BB_VPR=volume.o cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
 OBJ_BB=volume.o cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
 OBJ=cum_bac_SP20.o
 
-TESTFILES = DBP2_070120141530_GATTATICO 201401231530_temp.Ngrad 201401071530mat_el.bin 201401071530mat_bloc.bin 201401071530h_ray.txt 201401071530h_rayinf.txt temperature.txt
+TESTFILES = DBP2_070120141530_GATTATICO DBP2_060220140140_GATTATICO 201401231530_temp.Ngrad 201401071530mat_el.bin 201401071530mat_bloc.bin 201401071530h_ray.txt 201401071530h_rayinf.txt temperature.txt
 
 all: install
 

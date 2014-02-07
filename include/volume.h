@@ -26,25 +26,21 @@ struct LoadLogEntry
     }
 };
 
-struct LoadLog
-{
-    std::vector<LoadLogEntry> entries;
-
-    void log(double theta, double alpha)
-    {
-        entries.push_back(LoadLogEntry(theta, alpha));
-    }
-
-    void print(FILE* out);
-};
-
 struct Ray
 {
     std::vector<unsigned char> ray;
     short alfa_true, teta_true;
     short teta, alfa;
 
+    std::vector<LoadLogEntry> load_log;
+
     Ray();
+
+    void log(double theta, double alpha)
+    {
+        load_log.push_back(LoadLogEntry(theta, alpha));
+    }
+    void print_load_log(FILE* out);
 };
 
 struct PolarScan : public std::vector<Ray>
@@ -72,9 +68,6 @@ public:
     //dato di base volume polare, struttura definita in libSP20
     //PolarScan vol_pol[NEL];
     Ray vol_pol[NEL][NUM_AZ_X_PPI];
-
-    // Log of what has been loaded on each beam
-    LoadLog load_log[NEL][NUM_AZ_X_PPI];
 
     //numero raggi per elevazione
     int nbeam_elev[NEL];

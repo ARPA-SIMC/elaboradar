@@ -166,8 +166,8 @@ void to::test<3>()
                 for (vector<unsigned char>::const_iterator i = vals_odim.begin(); i != vals_odim.end(); ++i)
                     printf(" %d", (int)*i);
                 printf("\n");
-                printf("sp20 vp[%u][%u] load log: ", ie, ia); vsp20.load_log[ie][ia].print(stdout);
-                printf("odim vp[%u][%u] load log: ", ie, ia); vodim.load_log[ie][ia].print(stdout);
+                printf("sp20 vp[%u][%u] load log: ", ie, ia); vsp20.vol_pol[ie][ia].print_load_log(stdout);
+                printf("odim vp[%u][%u] load log: ", ie, ia); vodim.vol_pol[ie][ia].print_load_log(stdout);
                 ++failed_beams;
             }
         }
@@ -175,5 +175,20 @@ void to::test<3>()
 
     wassert(actual(failed_beams) == 0);
 }
+
+template<> template<>
+void to::test<4>()
+{
+    // Test loading of a radar volume via SP20
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    CUM_BAC* cb = new CUM_BAC;
+    bool res = cb->read_sp20_volume(fname, "GAT", 0);
+    // Ensure that reading was successful
+    wassert(actual(res).istrue());
+    // Check the contents of what we read
+    //wruntest(test_0120141530gat, cb->volume);
+    delete cb;
+}
+
 
 }
