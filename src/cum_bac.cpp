@@ -874,11 +874,11 @@ FILE *CUM_BAC::controllo_apertura (const char *nome_file, const char *content, c
     else
     {
         LOG_ERROR("Errore Apertura %s %s", content, nome_file);
-        exit(1);
+        throw std::runtime_error("errore apertura");
     }
     if (file == NULL) {
         LOG_ERROR("Errore Apertura %s %s", content, nome_file);
-        exit(1);
+        throw std::runtime_error("errore apertura");
     }
     return(file);
 }
