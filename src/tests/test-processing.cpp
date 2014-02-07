@@ -750,7 +750,7 @@ void to::test<9>()
 }
 
 template<> template<>
-void to::test<11>()
+void to::test<10>()
 {
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
@@ -798,7 +798,7 @@ void to::test<11>()
 }
 
 template<> template<>
-void to::test<12>()
+void to::test<11>()
 {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
