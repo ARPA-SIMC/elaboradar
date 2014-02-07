@@ -758,7 +758,7 @@ template<> template<>
 void to::test<10>()
 {
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO_mod";
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
@@ -778,6 +778,7 @@ void to::test<10>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
+    std::cout<<"INIZIO - "<<fname<<std::endl;
     cb->read_sp20_volume(fname, "GAT", 0);
     cb->setup_elaborazione(fname, "GAT");
 
@@ -785,11 +786,12 @@ void to::test<10>()
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
-
+std::cout<<"Dopo caratterizzo volume "<<std::endl;
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
     cb->test_vpr=fopen("testdata/test_vpr","a+");
     ier = cb->combina_profili("GAT");
+std::cout<<"Dopo combina volume"<<std::endl;
     wassert(actual(ier) == 0);
 
     cb->heating = cb->profile_heating();
@@ -812,7 +814,7 @@ template<> template<>
 void to::test<11>()
 {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO_mod";
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
