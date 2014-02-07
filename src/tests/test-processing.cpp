@@ -448,6 +448,137 @@ void to::test<9>()
     delete cb;
 }
 
+template<> template<>
+void to::test<10>()
+{
+    // versione BB che corrisponde al parametro algo_corto
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
+    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+
+    CUM_BAC* cb = new CUM_BAC;
+    cb->do_quality = true;
+    cb->do_beamblocking = true;
+    cb->do_declutter = true;
+    cb->do_class = false;
+    cb->do_bloccorr = false;
+    cb->do_vpr = false;
+    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->setup_elaborazione(fname, "GAT");
+
+    int ier = cb->elabora_dato();
+    wassert(actual(ier) == 0);
+
+    cb->caratterizzo_volume();
+    cb->creo_cart();
+    cb->creo_cart_z_lowris();
+
+    // TODO: scrivo_out_file_bin
+
+    delete cb;
+}
+
+template<> template<>
+void to::test<11>()
+{
+    // versione BB_VPR che corrisponde al parametro algo_corto_dev
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
+    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    unlink("testdata/vpr_heat_GAT");
+    setenv("FILE_T", "testdata/temperature.txt", 1);
+
+    CUM_BAC* cb = new CUM_BAC;
+    cb->do_quality = true;
+    cb->do_beamblocking = true;
+    cb->do_declutter = true;
+    cb->do_class = false;
+    cb->do_bloccorr = false;
+    cb->do_vpr = true;
+    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->setup_elaborazione(fname, "GAT");
+
+    int ier = cb->elabora_dato();
+    wassert(actual(ier) == 0);
+
+    cb->caratterizzo_volume();
+
+    // la combina_profili restituisce 1 se non riesce a costruire un profilo
+    // perchè non piove o piove poco
+    ier = cb->combina_profili("GAT");
+    wassert(actual(ier) == 1);
+
+    cb->heating = cb->profile_heating();
+    wassert(actual(cb->heating) == 0);
+
+    ier = cb->corr_vpr("GAT");
+    wassert(actual(ier) == 1);
+
+    // TODO: cb->stampa_vpr()
+
+    cb->creo_cart();
+    cb->creo_cart_z_lowris();
+
+    // TODO: scrivo_out_file_bin
+
+    delete cb;
+}
+
+template<> template<>
+void to::test<12>()
+{
+    // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
+    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    unlink("testdata/vpr_heat_GAT");
+    setenv("FILE_T", "testdata/temperature.txt", 1);
+
+    CUM_BAC* cb = new CUM_BAC;
+    cb->do_quality = true;
+    cb->do_beamblocking = true;
+    cb->do_declutter = true;
+    cb->do_class = true;
+    cb->do_bloccorr = false;
+    cb->do_vpr = true;
+    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->setup_elaborazione(fname, "GAT");
+
+    int ier = cb->elabora_dato();
+    wassert(actual(ier) == 0);
+
+    cb->caratterizzo_volume();
+
+    cb->classifica_rain();
+
+    // la combina_profili restituisce 1 se non riesce a costruire un profilo
+    // perchè non piove o piove poco
+    ier = cb->combina_profili("GAT");
+    wassert(actual(ier) == 1);
+
+    cb->heating = cb->profile_heating();
+    wassert(actual(cb->heating) == 0);
+
+    ier = cb->corr_vpr("GAT");
+    wassert(actual(ier) == 1); // TODO: cosa deve dare?
+
+    // TODO: cb->stampa_vpr()
+
+    cb->class_conv_fixme_find_a_name();
+
+    cb->creo_cart();
+    cb->creo_cart_z_lowris();
+
+    // TODO: scrivo_out_file_bin
+
+    delete cb;
+}
+
 #if 0
 template<> template<>
 void to::test<6>()

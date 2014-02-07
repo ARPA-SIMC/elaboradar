@@ -27,26 +27,26 @@ Ray::Ray()
 {
 }
 
-PolarScan::PolarScan()
+void Ray::print_load_log(FILE* out)
 {
-    //resize(NUM_AZ_X_PPI);
-}
-
-void LoadLog::print(FILE* out)
-{
-    if (entries.empty())
+    if (load_log.empty())
     {
         fprintf(out, "no beams loaded\n");
         return;
     }
 
-    for (vector<LoadLogEntry>::const_iterator i = entries.begin(); i != entries.end(); ++i)
+    for (vector<LoadLogEntry>::const_iterator i = load_log.begin(); i != load_log.end(); ++i)
     {
-        if (i != entries.begin())
+        if (i != load_log.begin())
             fprintf(out, ", ");
         fprintf(out, "ϑ%.2f α%.2f", i->theta, i->alpha);
     }
     fprintf(out, "\n");
+}
+
+PolarScan::PolarScan()
+{
+    //resize(NUM_AZ_X_PPI);
 }
 
 void VolumeStats::print(FILE* out)
@@ -68,7 +68,7 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
     int teta = theta / FATT_MOLT_EL;
 
     int el_num = elevation_index_MDB(teta);
-    if (el_num > NEL) return;
+    if (el_num >= NEL) return;
 
     int alfa = alpha / FATT_MOLT_AZ;
     if (alfa >= 4096) return;
@@ -100,12 +100,12 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
 
 void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati)
 {
+    LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
     //     vol_pol[el_num].resize(az_num + 1);
 
     Ray& raggio = vol_pol[el_num][az_num];
-
-    load_log[el_num][az_num].log(theta, alpha);
+    raggio.log(theta, alpha);
 
     if (raggio.ray.empty())
     {
@@ -122,8 +122,12 @@ void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsi
     }
     else
     {
-        if (raggio.ray.size() != size)
-            throw runtime_error("attempted to merge two beams of different size");
+        if (raggio.ray.size() < size)
+        {
+            raggio.ray.resize(size, 1);
+            //LOG_WARN("volume[%d][%d]: old ray size: %zd, new ray size: %u", el_num, az_num, raggio.ray.size(), size);
+            //throw runtime_error("attempted to merge two beams of different size");
+        }
 
         for (unsigned i = 0; i < size; i++)
             if(raggio.ray[i] < dati[i])
