@@ -408,7 +408,7 @@ void to::test<8>()
 template<> template<>
 void to::test<9>()
 {
-    // versione ' m' che corrisponde al parametro algo_medio
+    // versione ' m' che corrisponde al parametro algo_medio FIXME: serve?
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
