@@ -94,7 +94,7 @@ void to::test<1>()
 {
     // Test loading of a radar volume via SP20
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     bool res = cb->read_sp20_volume(fname, "GAT", 0);
     // Ensure that reading was successful
     wassert(actual(res).istrue());
@@ -108,7 +108,7 @@ void to::test<2>()
 {
     // Test loading of a radar volume via SP20
     static const char* fname = "testdata/MSG1400715300U.101.h5";
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     bool res = cb->read_odim_volume(fname, "GAT", 0);
     // Ensure that reading was successful
     wassert(actual(res).istrue());
@@ -181,7 +181,7 @@ void to::test<4>()
 {
     // Test loading of a radar volume via SP20
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     bool res = cb->read_sp20_volume(fname, "GAT", 0);
     // Ensure that reading was successful
     wassert(actual(res).istrue());

@@ -83,9 +83,9 @@ void to::test<3>()
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     wassert(actual(cb->t_ground) == NODATAVPR);
 
@@ -153,7 +153,7 @@ void to::test<4>()
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -161,7 +161,7 @@ void to::test<4>()
     cb->do_vpr = true;
     cb->do_class = true;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     wassert(actual((int)(cb->t_ground * 100)) == 1010);
 
@@ -237,14 +237,14 @@ void to::test<5>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -290,7 +290,7 @@ void to::test<6>()
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -298,7 +298,7 @@ void to::test<6>()
     cb->do_bloccorr = false;
     cb->do_vpr = false;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -406,7 +406,7 @@ void to::test<7>()
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -414,7 +414,7 @@ void to::test<7>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -527,7 +527,7 @@ void to::test<8>()
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -535,7 +535,7 @@ void to::test<8>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -656,7 +656,7 @@ void to::test<9>()
     unlink("testdata/ultimo_vpr");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -664,7 +664,7 @@ void to::test<9>()
     cb->do_bloccorr = false;
     cb->do_vpr = false;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -771,7 +771,7 @@ void to::test<10>()
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -780,7 +780,7 @@ void to::test<10>()
     cb->do_vpr = true;
     std::cout<<"INIZIO - "<<fname<<std::endl;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -827,7 +827,7 @@ void to::test<11>()
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -835,7 +835,7 @@ void to::test<11>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -882,14 +882,14 @@ void to::test<6>()
     setenv("VPR0_FILE", "testdata/vpr_SPC", 1);
     setenv("VPR_HEATING", "vpr_heat_GAT", 1);
 
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
     cb->read_sp20_volume(fname, "GAT", 0);
-    cb->setup_elaborazione(fname, "GAT");
+    cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);

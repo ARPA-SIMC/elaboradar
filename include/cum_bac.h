@@ -112,7 +112,7 @@ class CUM_BAC
 public:
     log4c_category_t* logging_category;
 
-    const Site* site;
+    const Site& site;
     Assets assets;
 
     /// Feature set required for this run
@@ -253,12 +253,12 @@ public:
        T_time, T_data, T_ora..*/
 
 
-    CUM_BAC();
+    CUM_BAC(const char* site_name);
 
     bool read_sp20_volume(const char* nome_file, const char* sito, int file_type);
     bool read_odim_volume(const char* nome_file, const char* sito, int file_type);
     bool test_file(int tipofile);
-    void setup_elaborazione(const char* nome_file, const char* sito);
+    void setup_elaborazione(const char* nome_file);
     int elabora_dato();
     void caratterizzo_volume();
     /* Doviak,Zrnic,1984 for rain as reported in cost 717 final document*/

@@ -31,7 +31,7 @@ template<> template<>
 void to::test<2>()
 {
     // Test BeamBlockingCorrection
-    CUM_BAC* cb = new CUM_BAC;
+    CUM_BAC* cb = new CUM_BAC("SPC");
     wassert(actual(DBtoBYTE(cb->BeamBlockingCorrection(128,50))) == 138);
 }
 }
