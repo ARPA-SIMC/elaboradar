@@ -39,7 +39,7 @@ public:
      * sito: Site object for the radar site.
      * time: the volume acquisition time
      */
-    void configure(const Site* site, time_t acq_time);
+    void configure(const Site& site, time_t acq_time);
 
     /**
      * Configure asset lookup with the given details.

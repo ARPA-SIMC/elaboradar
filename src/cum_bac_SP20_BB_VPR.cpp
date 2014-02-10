@@ -129,7 +129,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
     if (NormalizzoData(volume.acq_date) == -1)
         return true;
 
-    setup_elaborazione(nome_file, sito);
+    setup_elaborazione(nome_file);
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
 #ifdef ANAPROP
@@ -456,7 +456,7 @@ int main (int argc, char **argv)
     prendo_tempo();
 #endif
 
-    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC;
+    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito);
 
     // Set feature flags
 #ifdef QUALITY

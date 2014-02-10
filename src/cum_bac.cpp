@@ -74,8 +74,8 @@ extern "C" {
 
 namespace cumbac {
 
-CUM_BAC::CUM_BAC()
-    : site(0),
+CUM_BAC::CUM_BAC(const char* site_name)
+    : site(Site::get(site_name)),
       do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
@@ -122,14 +122,12 @@ CUM_BAC::CUM_BAC()
     //-----  FINE INIZIALIZZAZIONI---------//
 }
 
-void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
+void CUM_BAC::setup_elaborazione(const char* nome_file)
 {
     /*------------------------------------------
       | rimozione propagazione anomala e clutter |
       ------------------------------------------*/
     LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
-
-    site = &(Site::get(sito));
 
     assets.configure(site, volume.acq_date);
 
