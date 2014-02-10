@@ -61,6 +61,7 @@ Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
     memset(nbeam_elev, 0, sizeof(nbeam_elev));
+    memset(elev_fin,0,sizeof(elev_fin));
 }
 
 void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned char* data)

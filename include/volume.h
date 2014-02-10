@@ -72,7 +72,24 @@ public:
     //numero raggi per elevazione
     int nbeam_elev[NEL];
 
+    // elevazione finale in coordinate azimut range
+    unsigned char elev_fin[NUM_AZ_X_PPI][512];
+
     Volume();
+
+    inline Ray& ray_at_elev_fin(unsigned az_idx, unsigned ray_idx)
+    {
+        return vol_pol[elev_fin[az_idx][ray_idx]][az_idx];
+    }
+    inline const Ray& ray_at_elev_fin(unsigned az_idx, unsigned ray_idx) const
+    {
+        return vol_pol[elev_fin[az_idx][ray_idx]][az_idx];
+    }
+
+    inline unsigned char sample_at_elev_fin(unsigned az_idx, unsigned ray_idx) const
+    {
+        return ray_at_elev_fin(az_idx, ray_idx).ray[ray_idx];
+    }
 
     void read_sp20(const char* nome_file);
     void read_odim(const char* nome_file);
