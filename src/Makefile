@@ -85,6 +85,7 @@ Q_components.o:Q_components.cpp ../include/qual_par.h
 
 clean: 
 	$(RM) $(OBJ_BB_VPR) $(OBJ) $(OBJ_BB_VPR_CLASS) *.o $(BINDIR)/* tests/*.o
+	cd testdata && $(RM) $(TESTFILES)
 
 install: cum_bac_SP20_BB_VPR_CLASS cum_bac_SP20_BB_VPR cum_bac_SP20_BB cum_bac_SP20_m
 	[ -d $(BINDIR) ] || mkdir -p $(BINDIR)
