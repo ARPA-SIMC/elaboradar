@@ -27,6 +27,9 @@ extern "C" {
 */
 float func_q_Z(unsigned char cl,unsigned char bb,float dst,float dr,float dt,float dh,float dhst,float PIA);
 
+// funzione che calcola la qualita' per R
+float func_q_R(unsigned char cl, unsigned char bb, float dst, float dr, float dt, float dh, float dhst, float PIA, float dZ, float sdevZ);
+
 #ifdef __cplusplus
 }
 #endif
