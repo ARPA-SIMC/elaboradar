@@ -84,7 +84,7 @@ void to::test<3>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
     CUM_BAC* cb = new CUM_BAC("GAT");
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     wassert(actual(cb->t_ground) == NODATAVPR);
@@ -160,7 +160,7 @@ void to::test<4>()
     cb->do_bloccorr = true;
     cb->do_vpr = true;
     cb->do_class = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     wassert(actual((int)(cb->t_ground * 100)) == 1010);
@@ -243,7 +243,7 @@ void to::test<5>()
     cb->do_declutter = false;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -297,7 +297,7 @@ void to::test<6>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = false;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -413,7 +413,7 @@ void to::test<7>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -534,7 +534,7 @@ void to::test<8>()
     cb->do_class = true;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -663,7 +663,7 @@ void to::test<9>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = false;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -779,7 +779,7 @@ void to::test<10>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     std::cout<<"INIZIO - "<<fname<<std::endl;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -834,7 +834,7 @@ void to::test<11>()
     cb->do_class = true;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
@@ -888,7 +888,7 @@ void to::test<6>()
     cb->do_declutter = false;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
-    cb->read_sp20_volume(fname, "GAT", 0);
+    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     int ier = cb->elabora_dato();
