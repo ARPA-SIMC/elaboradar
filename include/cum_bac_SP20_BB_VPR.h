@@ -129,17 +129,6 @@ void scrivo_out_file_bin (char *ext,char *content,char *dir,size_t size, void  *
 
 // funzione di controllo esistenza file e restituisce puntatore a file+messaggio ev errore o info su status apertura, utile? 
 
-/**
- *  
- *  @brief funzione che restituisce un puntatore a file in lettura o scrittura dopo aver controllato esistenza e permessi 
- *  @details scrive un messaggio sul log in caso di errore durante l'apertura e l'accesso col permesso richiesto ed esce
- *  @param[in]  nome_file nome del file da aprire
- *  @param[in]  content contenuto del file (stringa esplicativa)
- *  @param[in]  mode modalita' di apertura (scrittura , lettura)
- *  @return file ritorna un puntatore a file
-*/ 
-FILE *controllo_apertura(const char *nome_file, char *content,char *mode);
-
 //funzioni associate a logging , vedere se togliere 
   /**
  *  
@@ -166,16 +155,6 @@ void leggo_dem();
 */  
       
 void leggo_hray(); 
-
-/**
- *  
- * @brief funzione  che calcola la quota in metri del centro del fascio
- * @details distanza=k*dimensionecella +semidimensionecella in metri .quota=f(distinkm, rstinkm, elevazinrad) in metri 
- * @param[in] elevaz elevazione
- * @param[in] k distanza in n0 bin
- * @return q_st quota standard
-*/ 
-float quota_f(float elevaz, int k);//ingresso: elevazione e k di range bin
 
 /**
  *  @brief   funzione che calcola l'att enuazione totale 
@@ -210,17 +189,6 @@ void caratterizzo_volume();
  *  @return  0 se ok 1 se fallisce
 */ 
 int func_vpr(); // crea vpr istantaneo 
- /**
- *  
- *  @brief funzione che compone i singoli livelli del profilo v0 e v1 
- *  @details  result=((1.-peso)*v0+peso*v1)
- *  @param[in]  v0 valore del profilo vecchio nel punto 
- *  @param[in]  v1 valore del profilo nuovo nel punto 
- *  @param[in]  nodata valore dei nodata
- *  @param[in]  peso peso del profilo nuovo
- *  @return result :ritorna il valore combinato dei due profili e se uno dei due manca mette nodata
-*/ 
-float comp_levels(float v0, float v1, float nodata, float peso);// combina livelli  
   /**
  *  
  *  @brief funzione che corregge per il profilo verticale
@@ -306,16 +274,6 @@ int trovo_hvprmax(int *hmax); // trova il massimo del profilo
 int interpola_VPR(float a[], int ma); // interpola profilo 
 
 /**
- *  @brief   funzione che testa il fit dell'interpolazione del profilo
- *  @details verifica che i parametri del fit del profilo abbiano senso
- *  @param[in] a[] vettore dei parametri della funzione
- *  @param[in] chisq  chiquare
- *  @return codice di uscita 0
- *  
-*/  
-int testfit(float a[], float chisq, float chisqin);// testa i parametri del fit in modo che abbiano significato fisico 
-
-/**
  *  @brief   funzione che  calcola derivate della gaussiana + lineare rispetto ai parametri e valore (*y) in un punto x 
  *  @details    y(x,a) is the sum of a gaussian and a linear function with amplitude B=a[1], center E=a[2] and width G=a[3] and a linear function with coefficients C(shift)=a[4] and F(slope)=a[5]  
  *  a is the parameters vector and dyda is the vector of derivatives respect to the different parameters
@@ -341,15 +299,6 @@ int n_close_(); //?
  */
 int trovo0term();//trova lo zero termico 
  
-/**
- *  
- *  @brief funzione  che classifica la precipitazione se stratiforme o convettiva
- *  @details esegue anche il ricampionamento cilindrico al suo interno
- * @return 
-*/  
- 
-void classifica_rain();// classifica la pioggia 
-
 /**
  *  
  *  @brief funzione  che classifica secondo il metodo VIZ

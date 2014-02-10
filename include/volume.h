@@ -1,6 +1,7 @@
 #ifndef ARCHIVIATORE_VOLUME_CLASS_H
 #define ARCHIVIATORE_VOLUME_CLASS_H
 
+#include <string>
 #include <vector>
 #include <ctime>
 #include <cstdio>
@@ -61,6 +62,7 @@ struct VolumeStats
 class Volume
 {
 public:
+    std::string filename;
     time_t acq_date;
     double size_cell;
     bool declutter_rsp; // ?
@@ -73,7 +75,7 @@ public:
     int nbeam_elev[NEL];
 
     // elevazione finale in coordinate azimut range
-    unsigned char elev_fin[NUM_AZ_X_PPI][512];
+    std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
     Volume();
 
@@ -97,6 +99,7 @@ public:
     void compute_stats(VolumeStats& stats) const;
 
 protected:
+    void resize_elev_fin();
     void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
     void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati);
 };

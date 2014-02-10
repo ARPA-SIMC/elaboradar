@@ -61,7 +61,6 @@ Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
     memset(nbeam_elev, 0, sizeof(nbeam_elev));
-    memset(elev_fin,0,sizeof(elev_fin));
 }
 
 void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned char* data)
@@ -146,10 +145,10 @@ void Volume::read_sp20(const char* nome_file)
 {
     // dimensioni cella a seconda del tipo di acquisizione
     static const float size_cell_by_resolution[]={62.5,125.,250.,500.,1000.,2000.};
-
     LOG_CATEGORY("radar.io");
-
     T_MDB_data_header   old_data_header;
+
+    filename = nome_file;
 
     // Replicato qui la read_dbp_SP20, per poi metterci mano e condividere codice con la lettura di ODIM
 
@@ -185,6 +184,8 @@ void Volume::read_sp20(const char* nome_file)
     acq_date = old_data_header.norm.maq.acq_date;
     size_cell = size_cell_by_resolution[old_data_header.norm.maq.resolution];
     declutter_rsp = (bool)old_data_header.norm.maq.declutter_rsp;
+
+    resize_elev_fin();
 }
 
 double eldes_converter_azimut(double start, double stop)
@@ -231,6 +232,8 @@ void Volume::read_odim(const char* nome_file)
     namespace odim = OdimH5v21;
     using namespace Radar;
     using namespace std;
+
+    filename = nome_file;
 
     auto_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
     auto_ptr<odim::PolarVolume> volume(factory->openPolarVolume(nome_file));
@@ -346,6 +349,8 @@ void Volume::read_odim(const char* nome_file)
     }
 
     size_cell = range_scale;
+
+    resize_elev_fin();
 }
 
 void Volume::compute_stats(VolumeStats& stats) const
@@ -373,6 +378,23 @@ void Volume::compute_stats(VolumeStats& stats) const
                 }
             }
         }
+    }
+}
+
+void Volume::resize_elev_fin()
+{
+    for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
+    {
+        // FIXME: set to 0 to have the right size. We start from 512 (MAX_BIN)
+        // to allocate enough memory for legacy code that iterates on MAX_BIN
+        // to successfully read zeroes
+        unsigned max_size = 512;
+        for (unsigned iel = 0; iel < NEL; ++iel)
+        {
+            if (vol_pol[iel][i].ray.size() && vol_pol[iel][i].ray.size() > max_size)
+                max_size = vol_pol[iel][i].ray.size();
+        }
+        elev_fin[i].resize(max_size, 0);
     }
 }
 

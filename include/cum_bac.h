@@ -107,6 +107,8 @@ struct Image
     }
 };
 
+struct CalcoloVPR;
+
 class CUM_BAC
 {
 public:
@@ -127,6 +129,8 @@ public:
     bool do_zlr_media;
 
     cumbac::Volume volume;
+
+    CalcoloVPR* calcolo_vpr;
 
     int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 
@@ -172,7 +176,6 @@ public:
     float hray_inf[MAX_BIN][NEL]; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     float dem[NUM_AZ_X_PPI][MAX_BIN]; /*dem in coordinate azimut range*/
     float dtrs;// distanza temporale radiosondaggio
-    float zeroterm;//zerotermico
 
     // attenuazione in formato cartesiano max risoluzione
     unsigned char att_cart[NUM_AZ_X_PPI][MAX_BIN]; /* matrice azimut-range di attenuazione */
@@ -188,7 +191,6 @@ public:
     unsigned char dato_corrotto[NUM_AZ_X_PPI][MAX_BIN]; /*uscita controllo anaprop in coordinate azimut range */
     Image<unsigned char, MAX_BIN*2> dato_corr_xy; //uscite anap  cartesiano max resol
     Image<unsigned char, CART_DIM_ZLR> dato_corr_1x1; //uscite anap cartesiano  1x1
-    //elevazioni finali come sopra
     Image<unsigned char, MAX_BIN*2> elev_fin_xy;
     Image<unsigned char, CART_DIM_ZLR> elev_fin_1x1;
     // metrici qualita' come sopra
@@ -201,54 +203,19 @@ public:
     Image<unsigned char, CART_DIM_ZLR> top_1x1;
 
     // uscite  vpr: correzione VPR , come sopra
-    unsigned char  corr_polar[NUM_AZ_X_PPI][MAX_BIN];/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
     Image<unsigned char, MAX_BIN*2> corr_cart;
     Image<unsigned char, CART_DIM_ZLR> corr_1x1;
     // uscite vpr: neve, come sopra
-    unsigned char neve[NUM_AZ_X_PPI][MAX_BIN];/* matrice az-range che memorizza punti di neve*/
     Image<unsigned char, MAX_BIN*2> neve_cart;/* neve formato 1024*1024, risoluzione minima */
     Image<unsigned char, CART_DIM_ZLR> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
-    // dati per vpr
-    unsigned char flag_vpr[NEL][NUM_AZ_X_PPI][MAX_BIN];/* punti del volume polare ok per calcolo VPR*/
-    float vpr[NMAXLAYER];/* vpr */
-    long int gap; /* distanza temporale dall'ultimo file vpr */
-    long int area_vpr[NMAXLAYER]; /*area degli strati*/
-    int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
-    int hvprmax; /* quota picco vpr */
-    int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
-    float t_ground;
-    // dati elab vpr
-    float chisqfin; //???puo' essere def in anal
-    float rmsefin;
-    // files vpr
-    FILE *test_vpr;
-    //obsol.
-    float stdev;// obsol.
 
     //matrici per classificazione: cappi
     unsigned char cappi[NUM_AZ_X_PPI][MAX_BIN];
-    //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
-    unsigned char *conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
     // uscite: matrici class max resol e 1x1
     Image<unsigned char, MAX_BIN*2> conv_cart;
     Image<unsigned char, CART_DIM_ZLR> conv_1x1;
     //uscite:matrici cappi max resol e 1x1
-    unsigned char cappi_1x1[CART_DIM_ZLR][CART_DIM_ZLR],cappi_cart[MAX_BIN*2][MAX_BIN*2],stratiform[NUM_AZ_X_PPI][MAX_BIN];
-    //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
-    int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
-    //lista punti di background iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
-    int lista_bckg[NUM_AZ_X_PPI*MAX_BIN][2];
-    // array contenenti Z di background
-    double *Z_bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
-    float *bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in dB
-    // ricampionamento del volume in coordinate cilindriche
-    float **cil[NUM_AZ_X_PPI];
-    // array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
-    float resol[2];
-    int x_size,z_size;
-    long int ncv,ncs,np;
-    float *convective_radius;
-    float htbb, hbbb;
+    unsigned char cappi_1x1[CART_DIM_ZLR][CART_DIM_ZLR],cappi_cart[MAX_BIN*2][MAX_BIN*2];
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
@@ -256,6 +223,7 @@ public:
 
 
     CUM_BAC(const char* site_name);
+    ~CUM_BAC();
 
     bool read_sp20_volume(const char* nome_file, int file_type);
     bool read_odim_volume(const char* nome_file, int file_type);
@@ -271,39 +239,139 @@ public:
     void creo_matrice_conv();
     void creo_cart_z_lowris();
     void scrivo_out_file_bin(const char *ext, const char *content, const char *dir,size_t size, const void  *matrice);
-    FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
     void leggo_hray();
     void leggo_dem();
-    int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[]);
-    float comp_levels(float v0, float v1, float nodata, float peso);
-    int combina_profili();
-    int profile_heating();
-    int stampa_vpr();
-    int corr_vpr();
-    int trovo_hvprmax(int *hmax);
-    int analyse_VPR(float *vpr_liq,int *snow,float *hliq);
-    int interpola_VPR(float a[], int ma);
-    int testfit(float a[], float chisq, float chisqin);
+    /**
+     * ingresso: elevazione e k di range bin
+     *
+     * @brief funzione  che calcola la quota in metri del centro del fascio
+     * @details distanza=k*dimensionecella +semidimensionecella in metri .quota=f(distinkm, rstinkm, elevazinrad) in metri 
+     * @param[in] elevaz elevazione
+     * @param[in] k distanza in n0 bin
+     * @return q_st quota standard
+     */
     float quota_f(float elevaz, int k);
     void class_conv_fixme_find_a_name();
-    void classifica_rain();
-    void classifico_VIZ();
-    void classifico_STEINER();
-    void calcolo_background();
-    void ingrasso_nuclei(float cr,int ja,int kr);
-    void merge_metodi();
-    int trovo0term();
     bool esegui_tutto(const char* nome_file, int file_type);
 // added function to calculate beamblocking correction
 //
     float BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking);
 
+    // RtoDBZ calcolato su aMP e bMP
+    float RtoDBZ(float rain) const;
+};
+
+struct CalcoloVPR
+{
+    log4c_category_t* logging_category;
+
+    CUM_BAC& cum_bac;
+    long int area_vpr[NMAXLAYER]; /*area degli strati*/
+    // ricampionamento del volume in coordinate cilindriche
+    float **cil[NUM_AZ_X_PPI];
+    long int gap; /* distanza temporale dall'ultimo file vpr */
+    float zeroterm;//zerotermico
+    float t_ground;
+    //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
+    unsigned char *conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
+    unsigned char stratiform[NUM_AZ_X_PPI][MAX_BIN];
+    float vpr[NMAXLAYER];/* vpr */
+    int hvprmax; /* quota picco vpr */
+    //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
+    int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
+    //lista punti di background iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
+    int lista_bckg[NUM_AZ_X_PPI*MAX_BIN][2];
+    // array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
+    float resol[2];
+    int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
+    int x_size,z_size;
+    long int ncv,ncs,np;
+    float *convective_radius;
+    float htbb, hbbb;
+    // array contenenti Z di background
+    double *Z_bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
+    float *bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in dB
+    unsigned char corr_polar[NUM_AZ_X_PPI][MAX_BIN];/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
+    unsigned char neve[NUM_AZ_X_PPI][MAX_BIN];/* matrice az-range che memorizza punti di neve*/
+    int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
+    // dati elab vpr
+    float chisqfin; //???puo' essere def in anal
+    float rmsefin;
+    // dati per vpr
+    unsigned char flag_vpr[NEL][NUM_AZ_X_PPI][MAX_BIN];/* punti del volume polare ok per calcolo VPR*/
+    //obsol.
+    float stdev;// obsol.
+    // files vpr
+    FILE *test_vpr;
+
+    CalcoloVPR(CUM_BAC& cum_bac);
+    int analyse_VPR(float *vpr_liq,int *snow,float *hliq);
+    int profile_heating();
+    int trovo_hvprmax(int *hmax);
+    int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[]);
+    int combina_profili();
+    void calcolo_background();
+    /**
+     *
+     *  @brief funzione  che classifica la precipitazione se stratiforme o convettiva
+     *  @details esegue anche il ricampionamento cilindrico al suo interno
+     * @return 
+     */
+    void classifica_rain();
+    void classifico_VIZ();
+    void classifico_STEINER();
+    int interpola_VPR(float a[], int ma);
+    int corr_vpr();
+    void ingrasso_nuclei(float cr,int ja,int kr);
+    void merge_metodi();
+    int stampa_vpr();
+    int trovo0term();
+
+    void esegui_tutto();
 };
 
 // Utility functions
 
 /// Linear gauss
 void lineargauss(float x, float a[], float *y, float dyda[],int na);
+
+/**
+ *  combina livelli
+ *
+ *  @brief funzione che compone i singoli livelli del profilo v0 e v1 
+ *  @details  result=((1.-peso)*v0+peso*v1)
+ *  @param[in]  v0 valore del profilo vecchio nel punto 
+ *  @param[in]  v1 valore del profilo nuovo nel punto 
+ *  @param[in]  nodata valore dei nodata
+ *  @param[in]  peso peso del profilo nuovo
+ *  @return result :ritorna il valore combinato dei due profili e se uno dei due manca mette nodata
+*/ 
+float comp_levels(float v0, float v1, float nodata, float peso);
+
+/**
+ *
+ *  @brief funzione che restituisce un puntatore a file in lettura o scrittura dopo aver controllato esistenza e permessi 
+ *  @details scrive un messaggio sul log in caso di errore durante l'apertura e l'accesso col permesso richiesto ed esce
+ *  @param[in]  nome_file nome del file da aprire
+ *  @param[in]  content contenuto del file (stringa esplicativa)
+ *  @param[in]  mode modalita' di apertura (scrittura , lettura)
+ *  @return file ritorna un puntatore a file
+ */
+FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
+
+
+/**
+ *  testa i parametri del fit in modo che abbiano significato fisico 
+ *
+ *  @brief   funzione che testa il fit dell'interpolazione del profilo
+ *  @details verifica che i parametri del fit del profilo abbiano senso
+ *  @param[in] a[] vettore dei parametri della funzione
+ *  @param[in] chisq  chiquare
+ *  @return codice di uscita 0
+ *
+ */
+int testfit(float a[], float chisq, float chisqin);
+
 
 }
 
