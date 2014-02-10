@@ -507,7 +507,7 @@ void to::test<7>()
     wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->top_1x1.max()) == 35);
     wassert(actual((unsigned)cb->neve_1x1.min()) == 1);
-    wassert(actual((unsigned)cb->neve_1x1.max()) == 192);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 32);
     wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
     wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
     wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
@@ -632,7 +632,7 @@ void to::test<8>()
     wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->top_1x1.max()) == 35);
     wassert(actual((unsigned)cb->neve_1x1.min()) == 1);
-    wassert(actual((unsigned)cb->neve_1x1.max()) == 192);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 32);
     wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
     wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
     wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
