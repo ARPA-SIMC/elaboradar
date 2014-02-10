@@ -115,6 +115,8 @@ public:
     const Site& site;
     Assets assets;
 
+    bool do_medium;
+
     /// Feature set required for this run
     bool do_quality;
     bool do_beamblocking;
@@ -255,8 +257,8 @@ public:
 
     CUM_BAC(const char* site_name);
 
-    bool read_sp20_volume(const char* nome_file, const char* sito, int file_type);
-    bool read_odim_volume(const char* nome_file, const char* sito, int file_type);
+    bool read_sp20_volume(const char* nome_file, int file_type);
+    bool read_odim_volume(const char* nome_file, int file_type);
     bool test_file(int tipofile);
     void setup_elaborazione(const char* nome_file);
     int elabora_dato();

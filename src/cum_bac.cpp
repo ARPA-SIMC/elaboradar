@@ -76,6 +76,7 @@ namespace cumbac {
 
 CUM_BAC::CUM_BAC(const char* site_name)
     : site(Site::get(site_name)),
+      do_medium(false),
       do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
@@ -271,20 +272,12 @@ bool CUM_BAC::test_file(int file_type)
     return true;
 }
 
-bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file_type)
+bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 {
     // ----- definisco array delle elevazioni che è diverso per i due siti ---------
-    if (!(strcmp(sito,"SPC")) ) {
-        for (int i = 0; i < NEL; ++i)
-            elev_array[i] = elev_array_spc[i];
-    }
+    site.fill_elev_array(elev_array, do_medium);
 
-    if (!(strcmp(sito,"GAT")) ) {
-        for (int i = 0; i < NEL; ++i)
-            elev_array[i] = elev_array_gat[i];
-    }
-
-    LOG_INFO("Reading %s for site %s and file type %d", nome_file, sito, file_type);
+    LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     volume.read_sp20(nome_file);
 
@@ -305,20 +298,12 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, const char* sito, int file
     return true;
 }
 
-bool CUM_BAC::read_odim_volume(const char* nome_file, const char* sito, int file_type)
+bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 {
     // ----- definisco array delle elevazioni che è diverso per i due siti ---------
-    if (!(strcmp(sito,"SPC")) ) {
-        for (int i = 0; i < NEL; ++i)
-            elev_array[i] = elev_array_spc[i];
-    }
+    site.fill_elev_array(elev_array, do_medium);
 
-    if (!(strcmp(sito,"GAT")) ) {
-        for (int i = 0; i < NEL; ++i)
-            elev_array[i] = elev_array_gat[i];
-    }
-
-    LOG_INFO("Reading %s for site %s and file type %d", nome_file, sito, file_type);
+    LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     volume.read_odim(nome_file);
 

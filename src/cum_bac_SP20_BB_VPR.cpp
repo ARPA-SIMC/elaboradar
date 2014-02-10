@@ -109,7 +109,7 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const cha
 bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sito)
 {
     // Legge e controlla il volume dal file SP20
-    if (!read_sp20_volume(nome_file, sito, file_type))
+    if (!read_sp20_volume(nome_file, file_type))
         return false;
 
     ///-------------------------ELABORAZIONE -------------------------
@@ -459,6 +459,15 @@ int main (int argc, char **argv)
     cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito);
 
     // Set feature flags
+#ifdef SHORT
+    cb->do_medium = false;
+#else
+ #ifdef MEDIUM
+    cb->do_medium = true;
+ #else
+    #error Neither SHORT nor MEDIUM are defined
+ #endif
+#endif
 #ifdef QUALITY
     cb->do_quality = true;
 #endif

@@ -35,7 +35,21 @@ struct SiteGAT : public Site
         else
             return "../dati/FIRST_LEVEL_GAT_2006_AUT";
     }
+
+    virtual void fill_elev_array(int* elev_array, bool medium) const
+    {
+        if (medium)
+        {
+            static const int elev_data[]={6,16,27,36,47};//ANNA 30-03-2011
+            memcpy(elev_array, elev_data, sizeof(elev_data));
+        } else {
+            static const int elev_data[]={6,16,27,37,45,55,65,76,85,95,105,126,149,174,201};//105,126,149,174,201 è da completare NEL=15:ANNA 30-03-2011
+            memcpy(elev_array, elev_data, sizeof(elev_data));
+        }
+    }
 } site_gat;
+
+
 
 struct SiteSPC : public Site
 {
@@ -60,7 +74,21 @@ struct SiteSPC : public Site
         else
             return "../dati/FIRST_LEVEL_SPC_2006_AUT";
     }
+
+    virtual void fill_elev_array(int* elev_array, bool medium) const
+    {
+        if (medium)
+        {
+            static const int elev_data[]={6,16,26,36,47};//ANNA 30-03-2011
+            memcpy(elev_array, elev_data, sizeof(elev_data));
+        } else {
+            static const int elev_data[]={6,15,26,36,46,57,80,108,148,159,170,180,190,200,210};//GLI ULTIMI 5 fittizi: ANNA 30-03-2011
+            memcpy(elev_array, elev_data, sizeof(elev_data));
+        }
+    }
 } site_spc;
+
+
 
 const Site& Site::get(const char* name)
 {
