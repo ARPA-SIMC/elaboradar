@@ -100,7 +100,7 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
 
 void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati)
 {
-    LOG_CATEGORY("radar.io");
+    //LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
     //     vol_pol[el_num].resize(az_num + 1);
 
@@ -145,7 +145,7 @@ void Volume::read_sp20(const char* nome_file)
 {
     // dimensioni cella a seconda del tipo di acquisizione
     static const float size_cell_by_resolution[]={62.5,125.,250.,500.,1000.,2000.};
-    LOG_CATEGORY("radar.io");
+    //LOG_CATEGORY("radar.io");
     T_MDB_data_header   old_data_header;
 
     filename = nome_file;
@@ -225,6 +225,21 @@ unsigned char eldes_counter_to_db(unsigned short val)
         return (unsigned char)(ret + 0.5f);
 }
 
+namespace {
+
+unsigned int_to_unsigned(int val, const char* desc)
+{
+    if (val < 0)
+    {
+        string errmsg(desc);
+        errmsg += " has a negative value";
+        throw std::runtime_error(errmsg);
+    }
+    return (unsigned)val;
+}
+
+}
+
 void Volume::read_odim(const char* nome_file)
 {
     LOG_CATEGORY("radar.io");
@@ -263,7 +278,7 @@ void Volume::read_odim(const char* nome_file)
     double range_scale;
 
     // Iterate all scans
-    int scan_count = volume->getScanCount();
+    unsigned scan_count = int_to_unsigned(volume->getScanCount(), "scan count");
     for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
     {
         auto_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
@@ -299,16 +314,16 @@ void Volume::read_odim(const char* nome_file)
 
         // Get and validate the azimuth angles for this scan
         std::vector<odim::AZAngles> azangles = scan->getAzimuthAngles();
-        int rpm_sign = scan->getDirection();
+        //int rpm_sign = scan->getDirection();
 
-        int nrays = data->getNumRays();
+        unsigned nrays = int_to_unsigned(data->getNumRays(), "number of rays");
         if (azangles.size() != nrays)
         {
             LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), nrays);
             throw runtime_error("mismatch between number of azumuth angles and number of rays");
         }
 
-        int beam_size = data->getNumBins();
+        unsigned beam_size = int_to_unsigned(data->getNumBins(), "beam size");
         if (beam_size > MAX_DIM)
         {
             LOG_ERROR("elevation %f has beams of %d elements, but the maximum we can store is %d", elevation, beam_size, MAX_DIM);
@@ -325,11 +340,9 @@ void Volume::read_odim(const char* nome_file)
         data->readData(const_cast<unsigned short*>(matrix.get()));
 
         unsigned char* beam = new unsigned char[beam_size];
-        double offset = data->getOffset();
-        double gain = data->getGain();
 
         std::vector<bool> angles_seen(400, false);
-        for (int src_az = 0; src_az < nrays; ++src_az)
+        for (unsigned src_az = 0; src_az < nrays; ++src_az)
         {
             // FIXME: reproduce a bad truncation from the eldes sp20 converte
             //double azimut = azangles[src_az].averagedAngle(rpm_sign);
@@ -362,7 +375,7 @@ void Volume::compute_stats(VolumeStats& stats) const
         stats.count_others[iel] = 0;
         stats.sum_others[iel] = 0;
 
-        for (int ibeam = 0; ibeam < nbeam_elev[iel]; ++ibeam)
+        for (unsigned ibeam = 0; ibeam < nbeam_elev[iel]; ++ibeam)
         {
             for (size_t i = 0; i < vol_pol[iel][ibeam].ray.size(); ++i)
             {
