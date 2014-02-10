@@ -1752,7 +1752,7 @@ void CUM_BAC::merge_metodi()
     FILE *file;
     int mode,ilay;  modalità calcolo profilo (0=combinazione, 1=istantaneo),indice di strato
 */
-int CUM_BAC::combina_profili(const char *sito)
+int CUM_BAC::combina_profili()
 {
     LOG_CATEGORY("radar.vpr");
     long int c0,*cv,*ct;
@@ -1790,7 +1790,7 @@ int CUM_BAC::combina_profili(const char *sito)
     *cv=0;
     *ct=0;
 
-    ier_vpr=func_vpr(cv,ct,vpr1,area_vpr,sito); // ho fatto func_vpr, il profilo istantaneo
+    ier_vpr=func_vpr(cv,ct,vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %d", ier_vpr);
 
 
@@ -2076,7 +2076,7 @@ int CUM_BAC::stampa_vpr()
    corr=RtoDBZ(vpr_liq)-RtoDBZ(vpr_hray)
    comend
 */
-int CUM_BAC::corr_vpr(const char *sito)
+int CUM_BAC::corr_vpr()
     //* ====correzione profilo====================================*/
 
 #include <vpr_par.h>
@@ -2097,7 +2097,7 @@ int CUM_BAC::corr_vpr(const char *sito)
     // analisi vpr
 
     ier_max=trovo_hvprmax(&hvprmax);
-    ier_ana=analyse_VPR(&vpr_liq,&snow,&hliq,sito);
+    ier_ana=analyse_VPR(&vpr_liq,&snow,&hliq);
     LOG_INFO("ier_analisi %i",ier_ana) ;
 
     /* se analisi dice che non è il caso di correggere non correggo (NB in questo caso non riempio la matrice di neve)*/
@@ -2284,7 +2284,7 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
 
    comend
 */
-int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito)
+int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
     /*=======analisi profilo============ */
 {
     int i,ier=1,ier_ana=0,ier_ap,liv0;
@@ -2520,7 +2520,7 @@ long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del sin
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
-int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], const char *sito)
+int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[])
 {
     LOG_CATEGORY("radar.vpr");
     int l,i,iA,k,ilay,il,ilast,iaz_min,iaz_max,icounter,naz,nra;
@@ -2544,21 +2544,8 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 
 
     //------------riconoscimento sito per definizione limiti azimut---------
-
-    if (!(strcmp(sito,"SPC"))){  /* limiti azimuth per calcolo VPR sarebbe bello fare un CASE ma con stringhe non si puo'!*/
-        iaz_min=IAZ_MIN_SPC;
-        iaz_max=IAZ_MAX_SPC;
-    }
-    if (!(strcmp(sito,"GAT"))){
-        iaz_min=IAZ_MIN_GAT;
-        iaz_max=IAZ_MAX_GAT;
-    }
-    if (strcmp(sito,"SPC") && strcmp(sito,"GAT")) {
-        LOG_ERROR("errore, sito sconosciuto o non definito");
-        exit (1);
-    }
-
-    //
+    iaz_min=site.vpr_iaz_min;
+    iaz_max=site.vpr_iaz_max;
 
     for (int l=0; l<NEL; l++)//ciclo elevazioni
     {

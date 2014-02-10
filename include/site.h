@@ -13,6 +13,8 @@ struct Site
     std::string name;
     float radar_lat;
     float radar_lon;
+    int vpr_iaz_min;
+    int vpr_iaz_max;
 
     virtual ~Site();
 
