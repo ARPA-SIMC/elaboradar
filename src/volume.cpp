@@ -27,7 +27,7 @@ Ray::Ray()
 {
 }
 
-void Ray::print_load_log(FILE* out)
+void Ray::print_load_log(FILE* out) const
 {
     if (load_log.empty())
     {

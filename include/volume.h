@@ -41,7 +41,7 @@ struct Ray
     {
         load_log.push_back(LoadLogEntry(theta, alpha));
     }
-    void print_load_log(FILE* out);
+    void print_load_log(FILE* out) const;
 };
 
 struct PolarScan : public std::vector<Ray>

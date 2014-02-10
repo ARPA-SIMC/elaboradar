@@ -9,10 +9,10 @@ using namespace cumbac;
 
 namespace tut {
 
-struct read_sp20_shar {
+struct read_shar {
     Logging logging;
 };
-TESTGRP(read_sp20);
+TESTGRP(read);
 
 namespace {
 
@@ -87,49 +87,9 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(stats.sum_others[6]) == 0);
 }
 
-}
-
-template<> template<>
-void to::test<1>()
-{
-    // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
-    CUM_BAC* cb = new CUM_BAC("GAT");
-    bool res = cb->read_sp20_volume(fname, 0);
-    // Ensure that reading was successful
-    wassert(actual(res).istrue());
-    // Check the contents of what we read
-    wruntest(test_0120141530gat, cb->volume);
-    delete cb;
-}
-
-template<> template<>
-void to::test<2>()
-{
-    // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/MSG1400715300U.101.h5";
-    CUM_BAC* cb = new CUM_BAC("GAT");
-    bool res = cb->read_odim_volume(fname, 0);
-    // Ensure that reading was successful
-    wassert(actual(res).istrue());
-    // Check the contents of what we read
-    wruntest(test_0120141530gat, cb->volume);
-    delete cb;
-}
-
-template<> template<>
-void to::test<3>()
+void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& vodim)
 {
     using namespace std;
-    Volume vsp20;
-    Volume vodim;
-
-    // FIXME: get rid of the static elev_array as soon as it is convenient to do so
-    for (unsigned i = 0; i < NEL; ++i)
-        elev_array[i] = elev_array_gat[i];
-
-    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO");
-    vodim.read_odim("testdata/MSG1400715300U.101.h5");
 
     unsigned failed_beams = 0;
     for (unsigned ie = 0; ie < NEL; ++ie)
@@ -174,6 +134,53 @@ void to::test<3>()
     }
 
     wassert(actual(failed_beams) == 0);
+}
+
+}
+
+template<> template<>
+void to::test<1>()
+{
+    // Test loading of a radar volume via SP20
+    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    CUM_BAC* cb = new CUM_BAC("GAT");
+    bool res = cb->read_sp20_volume(fname, 0);
+    // Ensure that reading was successful
+    wassert(actual(res).istrue());
+    // Check the contents of what we read
+    wruntest(test_0120141530gat, cb->volume);
+    delete cb;
+}
+
+template<> template<>
+void to::test<2>()
+{
+    // Test loading of a radar volume via SP20
+    static const char* fname = "testdata/MSG1400715300U.101.h5";
+    CUM_BAC* cb = new CUM_BAC("GAT");
+    bool res = cb->read_odim_volume(fname, 0);
+    // Ensure that reading was successful
+    wassert(actual(res).istrue());
+    // Check the contents of what we read
+    wruntest(test_0120141530gat, cb->volume);
+    delete cb;
+}
+
+template<> template<>
+void to::test<3>()
+{
+    using namespace std;
+    Volume vsp20;
+    Volume vodim;
+
+    // FIXME: get rid of the static elev_array as soon as it is convenient to do so
+    for (unsigned i = 0; i < NEL; ++i)
+        elev_array[i] = elev_array_gat[i];
+
+    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO");
+    vodim.read_odim("testdata/MSG1400715300U.101.h5");
+
+    wruntest(test_volumes_equal, vsp20, vodim);
 }
 
 template<> template<>
