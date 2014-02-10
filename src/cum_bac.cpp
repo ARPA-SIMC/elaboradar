@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "site.h"
 #include <cstring>
+#include <cstdlib>
 #include <stdexcept>
 #include <math.h>
 
@@ -32,6 +33,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#include <func_Q3d.h>
 
 #include <qual_par.h>
 #include <par_class.h>

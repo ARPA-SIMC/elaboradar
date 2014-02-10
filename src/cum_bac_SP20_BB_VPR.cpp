@@ -20,7 +20,7 @@ extern "C" {
 // libreria c
 #include <stdio.h>
 #include <stdlib.h>
-#include <rpc/rpc.h>
+//#include <rpc/rpc.h>
 #include <sys/types.h>
 #include <time.h>
 #include <math.h>
@@ -30,6 +30,7 @@ extern "C" {
 #include <unistd.h>
 #include <errno.h>
 
+#include <setwork.h>
 
 
 #ifdef QUALITY
@@ -202,11 +203,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     if (do_class)
         class_conv_fixme_find_a_name();
 
-#ifdef TIME
-    prendo_tempo();
-#endif
-
-
     //--------------------da rimuovere eventuale scrittura volume ripulito
 
     /* #ifdef WRITE_DBP  */
@@ -232,25 +228,19 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     /*--------------------------------------------------
       | conversione di coordinate da polare a cartesiana |
       --------------------------------------------------*/
-    LOG_INFO("%s -- Creazione Matrice Cartesiana",PrendiOra());
+    LOG_INFO("Creazione Matrice Cartesiana");
     creo_cart();
-
-    //------------------- STA PRENDOTEMPO!!!!!!!!!!!!!!!
-#ifdef TIME
-    prendo_tempo();
-#endif
-
 
 
     //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
 
 #ifdef Z_LOWRIS
 
-    LOG_INFO("%s -- Estrazione Precipitazione 1X1", PrendiOra());
+    LOG_INFO("Estrazione Precipitazione 1X1");
     creo_cart_z_lowris();
 
     //-------------------scritture output -----------------------
-    LOG_INFO("%s -- Scrittura File Precipitazione 1X1 %s\n", PrendiOra(), nome_file);
+    LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
     scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out.data),z_out.data);
 
 
@@ -260,15 +250,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     fwrite(MP_coeff,sizeof(MP_coeff),1,output);
     fclose(output);
     printf(" dopo scrivo_z_lowris\n");
-
-
-
-#ifdef TIME
-    prendo_tempo();
-#endif
-
-
-
 
 
     //-------------------scritture output -----------------------
@@ -347,7 +328,7 @@ static void startup_banner()
     LOG_CATEGORY("radar.banner");
 
     /// Log initial program state
-    LOG_INFO("%s -- Lancio Programma", PrendiOra());
+    LOG_INFO("Lancio Programma");
     LOG_INFO("-----------------------------------------------------------------");
     LOG_INFO("Flag di Compilazione: "
 #ifdef BOLOGNA
@@ -451,10 +432,6 @@ int main (int argc, char **argv)
     setwork(argv[3]);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
     startup_banner();
-
-#ifdef TIME
-    prendo_tempo();
-#endif
 
     cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito);
 

@@ -1,7 +1,8 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
 #include "logging.h"
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 #include <vector>
 
 using namespace wibble::tests;

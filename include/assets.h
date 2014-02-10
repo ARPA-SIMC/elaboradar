@@ -105,11 +105,23 @@ public:
     FILE* open_file_hray_inf();
 
     /**
-     * Load ground temperature
+     *  fornisce temperatura al suolo, da lettura file esterno
+     *  @brief   funzione che restituisce la temperatura al suolo
+     *  @details  apre file temperature , legge lon lat e t, calcola differenze
+     *  rispetto coordinate radar, se diff < soglia media il dato, stampa il nr
+     *  di dati usati per la media e ritorna la temperatura
+     *  @param[out] t_gr temperatura al suolo
+     *  @return ierr codice di uscita (0=ok 1=fallito)
      */
     float read_t_ground() const;
 
-    /// Read the gap in seconds between the time in $LAST_VPR and the current acquisition time
+    /**
+     * Read the gap between the time in $LAST_VPR and the current acquisition time
+     *
+     *  @brief funzione che  calcola il no di quarti d'ora che intercorrono dall'ultimo profilo calcolato (combinato)  memorizzato in 'LAST_VPR'
+     *  @param[in] nomefile nome del file LAST_VPR dove c'e' la data cui si riferisce l'ultimo profilo prodotto in n0 di secondi a partire da istante di riferimento
+     *  @return gap1 ritorna il  no di quarti d'ora che intercorrono dall'ultimo profilo calcolato
+     */
     long int read_profile_gap() const;
 
     /// Write the acquisition time in $LAST_VPR file
