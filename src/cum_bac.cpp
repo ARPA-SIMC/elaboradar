@@ -3140,6 +3140,191 @@ void CUM_BAC::creo_matrice_conv()
     return;
 }
 
+void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const char *dir,size_t size, const void  *matrice)
+{
+    char nome_file [512];
+    FILE *output;
+    struct tm *tempo;
+    time_t time;
+    /*----------------------------------------------------------------------------*/
+    /*    apertura file dati di output                                          */
+    /*----------------------------------------------------------------------------*/
+    //definisco stringa data in modo predefinito
+#ifdef SHORT
+    time = NormalizzoData(volume.acq_date);
+    tempo = gmtime(&time);
+#endif
+#ifdef MEDIUM
+    tempo = gmtime(&volume.acq_date);
+    time = NormalizzoData(volume.acq_date);
+    tempo = gmtime(&time);
+#endif
+    snprintf(nome_file, 512, "%s/%04d%02d%02d%02d%02d%s",dir,
+            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
+            tempo->tm_hour, tempo->tm_min, ext);
+
+    output=controllo_apertura(nome_file,content,"w");
+    printf("aperto file %s dimensione matrice %zd\n",nome_file,size);
+
+    fwrite(matrice,size,1,output);
+    fclose(output);
+    return;
+}
+
+bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
+{
+    // Legge e controlla il volume dal file SP20
+    if (!read_sp20_volume(nome_file, file_type))
+        return false;
+
+    ///-------------------------ELABORAZIONE -------------------------
+
+    //  ----- da buttare : eventuale scrittura del volume polare ad azimut e range fissi
+    /* #ifdef WRITE_DBP_REORDER  */
+
+    /*       /\*------------------------------------------------------------------  */
+    /*    | eventuale scrittura del volume polare ad azimut e range fissi  |  */
+    /*    -----------------------------------------------------------------*\/   */
+    /*       strcat(nome_file,"_reorder");        */
+    /*       ScrivoLog(6,nome_file);  */
+    /*       ier=write_dbp(nome_file);  */
+    /* #endif */
+
+    //  ----- test su normalizzazione data ( no minuti strani)
+    if (NormalizzoData(volume.acq_date) == -1)
+        return true;
+
+    setup_elaborazione(nome_file);
+
+    //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
+#ifdef ANAPROP
+    LOG_INFO("inizio rimozione anaprop e beam blocking");
+    int ier = elabora_dato();
+#endif
+
+
+    //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
+
+    if (do_quality)
+    {
+        //-------------calcolo qualita' e trovo il top
+        printf ("calcolo Q3D \n") ;
+        caratterizzo_volume();
+
+        /* //---------trovo il top (a X dbZ) */
+        /* printf ("trovo top \n") ; */
+        /* ier=trovo_top(); */
+
+
+        //--------------se definita CLASS procedo con  classificazione -----------------//
+        if (do_class)
+            calcolo_vpr->classifica_rain();
+
+        //--------------se definito VPR procedo con calcolo VPR -----------------//
+
+        if (do_vpr)
+            calcolo_vpr->esegui_tutto();
+    }
+
+    if (do_class)
+        class_conv_fixme_find_a_name();
+
+    //--------------------da rimuovere eventuale scrittura volume ripulito
+
+    /* #ifdef WRITE_DBP  */
+    /*      /\*-------------------------------------------------  */
+    /*        | eventuale scrittura del volume polare ripulito e |  */
+    /*        -------------------------------------------------*\/   */
+    /* #ifdef DECLUTTER  */
+    /*      strcat(nome_file,"_decl");  */
+    /* #else  */
+    /*      strcat(nome_file,"_anap");  */
+    /* #endif  */
+    /*      /\*exit (1);*\/  */
+    /*      ScrivoLog(8,nome_file);  */
+    /*      ier=write_dbp(nome_file);  */
+    /* #endif  */
+
+
+
+
+    //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
+#ifndef WRITE_DBP
+
+    /*--------------------------------------------------
+      | conversione di coordinate da polare a cartesiana |
+      --------------------------------------------------*/
+    LOG_INFO("Creazione Matrice Cartesiana");
+    creo_cart();
+
+
+    //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
+
+#ifdef Z_LOWRIS
+
+    LOG_INFO("Estrazione Precipitazione 1X1");
+    creo_cart_z_lowris();
+
+    //-------------------scritture output -----------------------
+    LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
+    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out.data),z_out.data);
+
+
+    char nome_file_output[512];
+    sprintf(nome_file_output,"%s/MP_coeff",getenv("OUTPUT_Z_LOWRIS_DIR"));
+    FILE* output=controllo_apertura(nome_file_output,"file coeff MP","w");
+    fwrite(MP_coeff,sizeof(MP_coeff),1,output);
+    fclose(output);
+    printf(" dopo scrivo_z_lowris\n");
+
+
+    //-------------------scritture output -----------------------
+    if (do_quality)
+    {
+        //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
+        // temporanee
+        // in archivio
+        scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1.data),qual_Z_1x1.data);
+
+        //------------------ stampe extra per studio
+#ifdef STAMPE_EXTRA
+        //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
+        //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
+        //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
+        //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
+        scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
+        scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1.data),beam_blocking_1x1.data);
+        scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1.data),dato_corr_1x1.data); //flag di propagazione anomala
+        scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1.data),quota_1x1.data);// m/100 +128
+        scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1.data),elev_fin_1x1.data);
+        scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1.data),top_1x1.data);
+
+#endif
+        //------------------ stampe correzioni da profili verticali in formato ZLR
+        if (do_vpr)
+        {
+            scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1.data),corr_1x1.data);
+            //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
+            // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
+        }
+
+        //------------------se definita CLASS  stampo punti convettivi
+        if (do_class)
+        {
+            // in archivio?
+            // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
+            scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1.data),conv_1x1.data);
+        }
+    }
+
+
+#endif// ifdef Z_lOWRIS
+#endif // ifndef WRITE_DBP
+
+    return true;
+}
+
+
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac)
 {
@@ -3171,6 +3356,45 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
 
     if (cum_bac.do_vpr)
         t_ground = cum_bac.assets.read_t_ground();
+}
+
+void CalcoloVPR::esegui_tutto()
+{
+    test_vpr=fopen(getenv("TEST_VPR"),"a+");
+
+    LOG_INFO("processo file dati: %s", cum_bac.volume.filename.c_str());
+    printf ("calcolo VPR \n") ;
+
+    //VPR  // ------------inizializzo hvprmax ---------------
+
+    hvprmax=INODATA;
+
+    //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
+
+    //  ier_comb=combina_profili(sito,argv[4]);
+    ier_comb=combina_profili();
+    printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
+    printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
+
+
+    //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
+
+    heating=profile_heating();
+    printf ("heating %i \n", heating);
+    LOG_INFO("ier_vpr %i ier_comb %i",ier_vpr,ier_comb);
+
+    //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
+    if (!ier_comb && heating >= WARM){
+
+        int ier=corr_vpr();
+        printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+
+
+        //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
+
+        if ( ! ier && ! ier_vpr)
+            ier_stampa_vpr=stampa_vpr();
+    }
 }
 
 /*
