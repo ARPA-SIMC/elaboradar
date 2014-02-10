@@ -58,6 +58,10 @@ static const int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define DIM1_ST 16
 #define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
 
+namespace cumbac {
+
+struct Site;
+
 template<typename T, unsigned SX, unsigned SY=SX>
 struct Image
 {
@@ -108,7 +112,8 @@ class CUM_BAC
 public:
     log4c_category_t* logging_category;
 
-    cumbac::Assets assets;
+    const Site* site;
+    Assets assets;
 
     /// Feature set required for this run
     bool do_quality;
@@ -295,6 +300,11 @@ public:
 
 // Utility functions
 
+/// Linear gauss
+void lineargauss(float x, float a[], float *y, float dyda[],int na);
+
+}
+
 /**
  * Check if time is inbetween a ??? interval, and return it rounded to 5-minute
  * intervals
@@ -303,8 +313,5 @@ public:
  * reviewed to see if it is still needed.
  */
 time_t NormalizzoData(time_t time);
-
-/// Linear gauss
-void lineargauss(float x, float a[], float *y, float dyda[],int na);
 
 #endif
