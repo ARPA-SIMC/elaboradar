@@ -445,13 +445,13 @@ void to::test<7>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    ier = cb->combina_profili("GAT");
+    ier = cb->combina_profili();
     wassert(actual(ier) == 1);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0);
 
-    ier = cb->corr_vpr("GAT");
+    ier = cb->corr_vpr();
     wassert(actual(ier) == 1);
 
     // TODO: cb->stampa_vpr()
@@ -568,13 +568,13 @@ void to::test<8>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    ier = cb->combina_profili("GAT");
+    ier = cb->combina_profili();
     wassert(actual(ier) == 1);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0);
 
-    ier = cb->corr_vpr("GAT");
+    ier = cb->corr_vpr();
     wassert(actual(ier) == 1); // TODO: cosa deve dare?
 
     // TODO: cb->stampa_vpr()
@@ -790,14 +790,14 @@ std::cout<<"Dopo caratterizzo volume "<<std::endl;
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
     cb->test_vpr=fopen("testdata/test_vpr","a+");
-    ier = cb->combina_profili("GAT");
+    ier = cb->combina_profili();
 std::cout<<"Dopo combina volume"<<std::endl;
     wassert(actual(ier) == 0);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0);
 
-    ier = cb->corr_vpr("GAT");
+    ier = cb->corr_vpr();
     wassert(actual(ier) == 0);
 
     // TODO: cb->stampa_vpr()
@@ -847,13 +847,13 @@ void to::test<11>()
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
     cb->test_vpr=fopen("testdata/test_vpr","a+");
-    ier = cb->combina_profili("GAT");
+    ier = cb->combina_profili();
     wassert(actual(ier) == 0);
 
     cb->heating = cb->profile_heating();
     wassert(actual(cb->heating) == 0);
 
-    ier = cb->corr_vpr("GAT");
+    ier = cb->corr_vpr();
     wassert(actual(ier) == 0);
 
     // TODO: cb->stampa_vpr()
@@ -916,7 +916,7 @@ void to::test<6>()
 
     cb->classifica_rain();
 
-    ier = cb->combina_profili("GAT");
+    ier = cb->combina_profili();
     wassert(actual(ier) == 1);
 
     cb->heating = cb->profile_heating();

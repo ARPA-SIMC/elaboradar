@@ -106,7 +106,7 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const cha
 /*=======================================================================================*/
 
 
-bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sito)
+bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 {
     // Legge e controlla il volume dal file SP20
     if (!read_sp20_volume(nome_file, file_type))
@@ -173,7 +173,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
             //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
 
             //  ier_comb=combina_profili(sito,argv[4]);
-            ier_comb=combina_profili(sito);
+            ier_comb=combina_profili();
             printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
             printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
 
@@ -187,7 +187,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
             //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
             if (!ier_comb && heating >= WARM){
 
-                ier=corr_vpr(sito);
+                ier=corr_vpr();
                 printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
 
 
@@ -488,7 +488,7 @@ int main (int argc, char **argv)
 #endif
 
     try {
-        if (cb->esegui_tutto(nome_file, file_type, sito))
+        if (cb->esegui_tutto(nome_file, file_type))
             ier_main = 0;
         else
             ier_main = 1;

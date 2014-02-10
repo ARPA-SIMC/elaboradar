@@ -274,14 +274,14 @@ public:
     FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
     void leggo_hray();
     void leggo_dem();
-    int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[], const char *sito);
+    int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[]);
     float comp_levels(float v0, float v1, float nodata, float peso);
-    int combina_profili(const char *sito);
+    int combina_profili();
     int profile_heating();
     int stampa_vpr();
-    int corr_vpr(const char *sito);
+    int corr_vpr();
     int trovo_hvprmax(int *hmax);
-    int analyse_VPR(float *vpr_liq,int *snow,float *hliq, const char *sito);
+    int analyse_VPR(float *vpr_liq,int *snow,float *hliq);
     int interpola_VPR(float a[], int ma);
     int testfit(float a[], float chisq, float chisqin);
     float quota_f(float elevaz, int k);
@@ -293,7 +293,7 @@ public:
     void ingrasso_nuclei(float cr,int ja,int kr);
     void merge_metodi();
     int trovo0term();
-    bool esegui_tutto(const char* nome_file, int file_type, const char* sito);
+    bool esegui_tutto(const char* nome_file, int file_type);
 // added function to calculate beamblocking correction
 //
     float BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking);

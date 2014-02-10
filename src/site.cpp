@@ -1,6 +1,7 @@
 #include "site.h"
 #include "utils.h"
 #include "geo_par.h"
+#include "vpr_par.h"
 #include <stdexcept>
 #include <cstring>
 
@@ -19,6 +20,8 @@ struct SiteGAT : public Site
         name = "GAT";
         radar_lat=GAT_LAT;
         radar_lon=GAT_LON;
+        vpr_iaz_min=IAZ_MIN_GAT;
+        vpr_iaz_max=IAZ_MAX_GAT;
     }
 
     virtual const char* get_dem_file_name() const
@@ -58,6 +61,8 @@ struct SiteSPC : public Site
         name = "SPC";
         radar_lat=SPC_LAT;
         radar_lon=SPC_LON;
+        vpr_iaz_min=IAZ_MIN_SPC;
+        vpr_iaz_max=IAZ_MAX_SPC;
     }
 
     virtual const char* get_dem_file_name() const
