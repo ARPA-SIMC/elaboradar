@@ -72,7 +72,7 @@ public:
     Ray vol_pol[NEL][NUM_AZ_X_PPI];
 
     //numero raggi per elevazione
-    int nbeam_elev[NEL];
+    unsigned nbeam_elev[NEL];
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
