@@ -87,7 +87,7 @@ void to::test<3>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    wassert(actual(cb->t_ground) == NODATAVPR);
+    wassert(actual(cb->calcolo_vpr->t_ground) == NODATAVPR);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -126,7 +126,7 @@ void to::test<3>()
     wassert(actual((unsigned)(qual_stats.avg * 100)) == 4234);
 
     ArrayStats<unsigned char> vpr_stats;
-    vpr_stats.fill3(cb->flag_vpr);
+    vpr_stats.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
     wassert(actual((unsigned)vpr_stats.max) == 0);
@@ -163,7 +163,7 @@ void to::test<4>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    wassert(actual((int)(cb->t_ground * 100)) == 1010);
+    wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
@@ -202,7 +202,7 @@ void to::test<4>()
     wassert(actual((unsigned)(qual_stats.avg * 100)) == 5955);
 
     ArrayStats<unsigned char> vpr_stats;
-    vpr_stats.fill3(cb->flag_vpr);
+    vpr_stats.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
     wassert(actual((unsigned)vpr_stats.max) == 1);
@@ -215,10 +215,10 @@ void to::test<4>()
     wassert(actual((unsigned)top_stats.max) == 35);
     wassert(actual((unsigned)(top_stats.avg * 100)) == 10);
 
-    cb->classifica_rain();
+    cb->calcolo_vpr->classifica_rain();
 
     ArrayStats<unsigned char> stratiform_stats;
-    stratiform_stats.fill2(cb->stratiform);
+    stratiform_stats.fill2(cb->calcolo_vpr->stratiform);
     wassert(actual((unsigned)stratiform_stats.first).isfalse());
     wassert(actual((unsigned)stratiform_stats.min) == 0);
     wassert(actual((unsigned)stratiform_stats.max) == 0);
@@ -321,7 +321,7 @@ void to::test<6>()
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
     ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill3(cb->flag_vpr);
+    stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
@@ -429,7 +429,7 @@ void to::test<7>()
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
     ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill3(cb->flag_vpr);
+    stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 251320);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 2820680);
@@ -445,13 +445,13 @@ void to::test<7>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    ier = cb->combina_profili();
+    ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 1);
 
-    cb->heating = cb->profile_heating();
-    wassert(actual(cb->heating) == 0);
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    wassert(actual(cb->calcolo_vpr->heating) == 0);
 
-    ier = cb->corr_vpr();
+    ier = cb->calcolo_vpr->corr_vpr();
     wassert(actual(ier) == 1);
 
     // TODO: cb->stampa_vpr()
@@ -550,7 +550,7 @@ void to::test<8>()
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5907);
     ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill3(cb->flag_vpr);
+    stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 251320);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 2820680);
@@ -564,17 +564,17 @@ void to::test<8>()
     wassert(actual((unsigned)stats_top.max) == 35);
     wassert(actual((unsigned)(stats_top.avg * 100)) == 10);
 
-    cb->classifica_rain();
+    cb->calcolo_vpr->classifica_rain();
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    ier = cb->combina_profili();
+    ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 1);
 
-    cb->heating = cb->profile_heating();
-    wassert(actual(cb->heating) == 0);
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    wassert(actual(cb->calcolo_vpr->heating) == 0);
 
-    ier = cb->corr_vpr();
+    ier = cb->calcolo_vpr->corr_vpr();
     wassert(actual(ier) == 1); // TODO: cosa deve dare?
 
     // TODO: cb->stampa_vpr()
@@ -665,11 +665,14 @@ void to::test<9>()
     cb->do_vpr = false;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
+    wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     int ier = cb->elabora_dato();
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
+    wassert(actual(cb->calcolo_vpr) != (void*)0);
+
     ArrayStats<unsigned char> stats_qual;
     stats_qual.fill3(cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
@@ -679,7 +682,7 @@ void to::test<9>()
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5888);
     ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill3(cb->flag_vpr);
+    stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
@@ -789,15 +792,15 @@ void to::test<10>()
 std::cout<<"Dopo caratterizzo volume "<<std::endl;
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    cb->test_vpr=fopen("testdata/test_vpr","a+");
-    ier = cb->combina_profili();
+    cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
+    ier = cb->calcolo_vpr->combina_profili();
 std::cout<<"Dopo combina volume"<<std::endl;
     wassert(actual(ier) == 0);
 
-    cb->heating = cb->profile_heating();
-    wassert(actual(cb->heating) == 0);
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    wassert(actual(cb->calcolo_vpr->heating) == 0);
 
-    ier = cb->corr_vpr();
+    ier = cb->calcolo_vpr->corr_vpr();
     wassert(actual(ier) == 0);
 
     // TODO: cb->stampa_vpr()
@@ -842,18 +845,18 @@ void to::test<11>()
 
     cb->caratterizzo_volume();
 
-    cb->classifica_rain();
+    cb->calcolo_vpr->classifica_rain();
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    cb->test_vpr=fopen("testdata/test_vpr","a+");
-    ier = cb->combina_profili();
+    cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
+    ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
-    cb->heating = cb->profile_heating();
-    wassert(actual(cb->heating) == 0);
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    wassert(actual(cb->calcolo_vpr->heating) == 0);
 
-    ier = cb->corr_vpr();
+    ier = cb->calcolo_vpr->corr_vpr();
     wassert(actual(ier) == 0);
 
     // TODO: cb->stampa_vpr()

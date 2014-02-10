@@ -126,7 +126,7 @@ std::string Assets::fname_out_pp_bloc(const char* suffix) const
     return fname;
 }
 
-float Assets::read_t_ground()
+float Assets::read_t_ground() const
 {
     LOG_CATEGORY("radar.vpr");
     const char* fname = getenv("FILE_T");
@@ -168,7 +168,7 @@ float Assets::read_t_ground()
     return media_t;
 }
 
-long int Assets::read_profile_gap()
+long int Assets::read_profile_gap() const
 {
     LOG_CATEGORY("radar.vpr");
     const char* fname = getenv("LAST_VPR");

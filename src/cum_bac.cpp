@@ -77,15 +77,11 @@ namespace cumbac {
 CUM_BAC::CUM_BAC(const char* site_name)
     : site(Site::get(site_name)),
       do_medium(false),
-      do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false)
+      do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
+      calcolo_vpr(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
-    t_ground=NODATAVPR;
-    chisqfin=100; //???puo' essere def in anal
-    rmsefin=100;
-    ncv=0;ncs=0;np=0;
-    htbb=-9999.; hbbb=-9999.;
     memset (first_level,0,sizeof(first_level));
     memset (first_level_static,0,sizeof(first_level_static));
     memset(dato_corrotto,0,sizeof(dato_corrotto));
@@ -95,22 +91,6 @@ CUM_BAC::CUM_BAC(const char* site_name)
     memset(quota,0,sizeof(quota));
     memset(qual,0,sizeof(qual));
     memset(top,0,sizeof(top));
-    memset(neve,0,sizeof(neve));
-    for (int i=0; i<NMAXLAYER; i++)
-      vpr[i]=NODATAVPR;
-    for (int l=0; l<NEL; l++)
-      for (int i=0; i<NUM_AZ_X_PPI; i++)
-        for(int k=0; k<MAX_BIN; k++)
-      flag_vpr[l][i][k]=0;
-
-    for (int k=0; k<NUM_AZ_X_PPI*MAX_BIN;k++ ){
-      lista_conv[k][0]=-999;
-      lista_conv[k][1]=-999;
-      lista_bckg[k][0]=-999;
-      lista_bckg[k][1]=-999;
-    }
-
-    memset(stratiform,0,sizeof(stratiform));
 
     memset(bb_first_level,0,sizeof(bb_first_level));
 
@@ -121,6 +101,12 @@ CUM_BAC::CUM_BAC(const char* site_name)
 
 
     //-----  FINE INIZIALIZZAZIONI---------//
+}
+
+CUM_BAC::~CUM_BAC()
+{
+    if (calcolo_vpr)
+        delete calcolo_vpr;
 }
 
 void CUM_BAC::setup_elaborazione(const char* nome_file)
@@ -156,8 +142,7 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
     MP_coeff[1]=(unsigned char)(bMP*10);
 
     //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
-    if (do_vpr)
-        t_ground = assets.read_t_ground();
+    calcolo_vpr = new CalcoloVPR(*this);
 }
 
 bool CUM_BAC::test_file(int file_type)
@@ -844,8 +829,9 @@ void CUM_BAC::ScrivoStatistica()
     return ;
 }
 
-FILE *CUM_BAC::controllo_apertura (const char *nome_file, const char *content, const char *mode)
+FILE *controllo_apertura (const char *nome_file, const char *content, const char *mode)
 {
+    LOG_CATEGORY("radar.io");
     FILE *file;
     int ier_ap=0;
 
@@ -1005,7 +991,7 @@ void CUM_BAC::caratterizzo_volume()
                 {
                     /* sezione PREPARAZIONE DATI VPR*/
                     if(cl==0 && bb<BBMAX_VPR )   /*pongo le condizioni per individuare l'area visibile per calcolo VPR, riduco il bb ammesso (BBMAX_VPR=20)*/ //riveder.....?????
-                        flag_vpr[l][i][k]=1;
+                        calcolo_vpr->flag_vpr[l][i][k]=1;
                 }
                 //------------trovo il top per soglia
                 if (BYTEtoDB(sample) > SOGLIA_TOP )
@@ -1040,7 +1026,7 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
     return att_tot;
 }
 
-void CUM_BAC::classifica_rain()
+void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
     float a;// raggio terra, non so perchè lo rendo variabile
@@ -1074,9 +1060,9 @@ void CUM_BAC::classifica_rain()
     // DEFINISCO QUOTE DELLA BASE E DEL TOP DELLA BRIGHT BAND USANDO IL DATO quota del picco  DEL PRECEDENTE RUN O, SE NON PRESENTE LA QUOTA DELLO ZERO DA MODELLO
 
     // Lettura quota massimo da VPR  calcolo base e top bright band
-    LOG_INFO("data= %s",date);
+    LOG_INFO("data= %s",cum_bac.date);
     // calcolo il gap
-    gap = assets.read_profile_gap();
+    gap = cum_bac.assets.read_profile_gap();
     //-- se gap < memory leggo hmax da VPR
     if (gap<=MEMORY){
         ier_ap=access(getenv("VPR_HMAX"),R_OK);
@@ -1124,8 +1110,8 @@ void CUM_BAC::classifica_rain()
     /*  Metodo 1 - -Calcolo le coordinate di ogni punto del RHI mediante utilizzo di cicli */
 
     // estremi x e z (si procede per rhi)
-    range_min=0.5*volume.size_cell/1000.;
-    range_max=(MAX_BIN-0.5)*volume.size_cell/1000.;
+    range_min=0.5*cum_bac.volume.size_cell/1000.;
+    range_max=(MAX_BIN-0.5)*cum_bac.volume.size_cell/1000.;
 
     xmin=floor(range_min*cos(elev_array[NEL-1]*CONV_RAD)); // distanza orizzontale minima dal radar
     zmin=pow(pow(range_min,2.)+pow(4./3*a,2.)+2.*range_min*4./3.*a*sin(elev_array[0]*CONV_RAD),.5) -4./3.*a+h_radar; // quota  minima in prop standard
@@ -1153,7 +1139,7 @@ void CUM_BAC::classifica_rain()
         w_tot[k]=(float *) malloc(w_z_size*sizeof(float));
 
     for (i=0; i<MAX_BIN; i++){
-        range[i]=(i+0.5)*volume.size_cell/1000.;
+        range[i]=(i+0.5)*cum_bac.volume.size_cell/1000.;
 
         for (k=0; k<NEL; k++){
             zz[i][k]=pow(pow(range[i],2.)+pow(4./3*a,2.)+2.*range[i]*4./3.*a*sin(elev_array[k]*CONV_RAD),.5) -4./3.*a+h_radar;// quota
@@ -1248,13 +1234,13 @@ void CUM_BAC::classifica_rain()
         }
 
         for (i=0;i<NEL;i++){
-            if (iaz < volume.nbeam_elev[i])
+            if (iaz < cum_bac.volume.nbeam_elev[i])
             {
                 // volume.vol_pol[i][iaz].ray.size() sostituito da volume.vol_pol[0][iaz].ray.size()
-                for (k=0;k<volume.vol_pol[i][iaz].ray.size();k++){
-                    RHI_beam[i][k]=BYTEtoDB(volume.vol_pol[i][iaz].ray[k]);
+                for (k=0;k<cum_bac.volume.vol_pol[i][iaz].ray.size();k++){
+                    RHI_beam[i][k]=BYTEtoDB(cum_bac.volume.vol_pol[i][iaz].ray[k]);
                 }
-                for (k=volume.vol_pol[0][iaz].ray.size();k<MAX_BIN;k++)
+                for (k=cum_bac.volume.vol_pol[0][iaz].ray.size();k<MAX_BIN;k++)
                     RHI_beam[i][k]=BYTEtoDB(0);
             } else
                 RHI_beam[i][k]=BYTEtoDB(0);
@@ -1267,7 +1253,7 @@ void CUM_BAC::classifica_rain()
         /* ;---------------------------------- */
 
         // Enrico: non sforare se il raggio è piú lungo di MAX_BIN
-        unsigned ray_size = volume.vol_pol[0][iaz].ray.size();
+        unsigned ray_size = cum_bac.volume.vol_pol[0][iaz].ray.size();
         if (ray_size > MAX_BIN)
             ray_size = MAX_BIN;
 
@@ -1281,7 +1267,7 @@ void CUM_BAC::classifica_rain()
                 }
             }
 
-            for (ibin=0;ibin<volume.vol_pol[0][iaz].ray.size();ibin++) {
+            for (ibin=0;ibin<cum_bac.volume.vol_pol[0][iaz].ray.size();ibin++) {
                 imin=im[ibin][iel];
                 imax=ix[ibin][iel];
                 jmin=jm[ibin][iel];
@@ -1327,7 +1313,7 @@ void CUM_BAC::classifica_rain()
     return ;
 }
 
-int CUM_BAC::trovo0term()
+int CalcoloVPR::trovo0term()
 {
     LOG_CATEGORY("radar.class");
     int ier;
@@ -1345,7 +1331,7 @@ int CUM_BAC::trovo0term()
     return ier;
 }
 
-void CUM_BAC::classifico_VIZ()
+void CalcoloVPR::classifico_VIZ()
 {
     int i,j,k,kbbb=0,ktbb=0,kmax=0;
     float cil_Z,base,Zr;
@@ -1452,7 +1438,7 @@ void CUM_BAC::classifico_VIZ()
 }
 
 
-void  CUM_BAC::classifico_STEINER()
+void CalcoloVPR::classifico_STEINER()
 {
     static bool warned = false;
     int i,j,k;
@@ -1471,15 +1457,15 @@ void  CUM_BAC::classifico_STEINER()
             if (!warned)
             {
                 fprintf(stderr, "elev_fin[%d][%d]\n", j, k);
-                fprintf(stderr, " = %d\n", (int)volume.elev_fin[j][k]);
-                fprintf(stderr, "volume.vol_pol[%d][%d].ray[%d]\n", (int)volume.elev_fin[j][k], j, k);
-                //fprintf(stderr, " = %d\n", (int)volume.vol_pol[volume.elev_fin[j][k]][j].ray[k]);
+                fprintf(stderr, " = %d\n", (int)cum_bac.volume.elev_fin[j][k]);
+                fprintf(stderr, "volume.vol_pol[%d][%d].ray[%d]\n", (int)cum_bac.volume.elev_fin[j][k], j, k);
+                //fprintf(stderr, " = %d\n", (int)volume.vol_pol[elev_fin[j][k]][j].ray[k]);
                 warned = true;
             }
             BYTE=56;
 #warning This code used to work like this, by accident, in C: this is a workaround to maintain functional equivalence during porting to c++
         } else
-            BYTE=volume.sample_at_elev_fin(j, k);
+            BYTE=cum_bac.volume.sample_at_elev_fin(j, k);
         // calcolo diff col background
         diff_bckgr=BYTEtoDB(BYTE)-bckgr[i];
         /* if (k < 160 ){ */
@@ -1505,7 +1491,7 @@ void  CUM_BAC::classifico_STEINER()
     return;
 }
 
-void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
+void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
     // definisco una lista di punti utili per l'analisi, cioè con valore non nullo e sotto la bright band o sopra (NB. per l'analisi considero i punti usati per la ZLR che si suppongono non affetti da clutter e beam blocking<50%. questo ha tutta una serie di implicazioni..... tra cui la proiezione, il fatto che nel confronto entrano dei 'buchi'...cioè il confronto è fatto su una matrice pseudo-orizzontale bucata e quote variabili tuttavia, considerato che i gradienti verticali in caso convettivo e fuori dalla bright band non sono altissimi spero funzioni ( andro' a verificare che l'ipotesi sia soddisfatta)
     // per trovare il background uso uno pseudo quadrato anzichè cerchio, mantenendo come semi-lato il raggio di steiner (11KM); devo perciò  definire una semi-ampiezza delle finestre in azimut e range corrispondente al raggio di 11 km
     // quella in azimut  dipende dal range
@@ -1524,7 +1510,7 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
         {
             //if ( volume.vol_pol[0][i].ray[j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
-            {     if ( volume.vol_pol[0][i].ray[j] > 1 )
+            {     if ( cum_bac.volume.vol_pol[0][i].ray[j] > 1 )
                 lista_bckg[np][0]=i;  //IAZIMUT
                 lista_bckg[np][1]=j;  //IRANGE
                 np=np+1;
@@ -1534,7 +1520,7 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
     }
 
     // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
-    delta_nr=(int)(STEINER_RADIUS*1000./volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+    delta_nr=(int)(STEINER_RADIUS*1000./cum_bac.volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
     LOG_DEBUG("delta_nrange per analisi Steiner = %i",delta_nr);
 
 
@@ -1563,7 +1549,7 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
                 if (kmax>MAX_BIN) kmax=MAX_BIN;
 
                 //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
-                delta_naz=ceil(11./((lista_bckg[i][1]*volume.size_cell/1000.+volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
+                delta_naz=ceil(11./((lista_bckg[i][1]*cum_bac.volume.size_cell/1000.+cum_bac.volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
                 if (delta_naz>NUM_AZ_X_PPI/2)
                     delta_naz=NUM_AZ_X_PPI/2;
 
@@ -1575,10 +1561,10 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
                     jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
                     for (j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
-                            //        if ( volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
-                            if ( volume.sample_at_elev_fin(j, k) > 1  ){
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(volume.sample_at_elev_fin(j, k)) ;
-                                bckgr[i]=bckgr[i]+BYTEtoDB(volume.sample_at_elev_fin(j, k));
+                            //        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
+                            if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ){
+                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k)) ;
+                                bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
                                 npoints=npoints+1;
                             }
                         }
@@ -1590,10 +1576,10 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
                     jmax=jmax%NUM_AZ_X_PPI;
                     for (j= 0  ; j< jmax ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
-                            // if (volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                            if ( volume.sample_at_elev_fin(j, k) > 1  ) {
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(volume.sample_at_elev_fin(j, k));
-                                bckgr[i]=bckgr[i]+BYTEtoDB(volume.sample_at_elev_fin(j, k));
+                            // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                            if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
+                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
+                                bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
                                 npoints=npoints+1;
                             }
                         }
@@ -1603,10 +1589,10 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
 
                 for (j=jmin   ; j<jmax  ; j++) {
                     for (k=kmin  ; k<kmax   ; k++){
-                        // if (volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( volume.sample_at_elev_fin(j, k) > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(volume.sample_at_elev_fin(j, k));
-                            bckgr[i]=bckgr[i]+BYTEtoDB(volume.sample_at_elev_fin(j, k));
+                        // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
+                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
                             npoints=npoints+1;
                         }
                     }
@@ -1615,20 +1601,20 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
             else{
                 for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
                     for (k=0  ; k<kmax   ; k++){
-                        // if (volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( volume.sample_at_elev_fin(j, k) > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(volume.sample_at_elev_fin(j, k));
-                            bckgr[i]=bckgr[i]+BYTEtoDB(volume.sample_at_elev_fin(j, k));
+                        // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
+                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
                             npoints=npoints+1;
                         }
                     }
                 }
                 for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
                     for (k=0  ; k<-kmin   ; k++){
-                        // if (volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( volume.sample_at_elev_fin(j, k) > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(volume.sample_at_elev_fin(j, k));
-                            bckgr[i]=bckgr[i]+BYTEtoDB(volume.sample_at_elev_fin(j, k));
+                        // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
+                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
                             npoints=npoints+1;
                         }
                     }
@@ -1653,17 +1639,17 @@ void CUM_BAC::calcolo_background() // sui punti precipitanti calcolo bckgr . nb 
     return;
 }
 
-void CUM_BAC::ingrasso_nuclei(float cr,int ja,int kr)
+void CalcoloVPR::ingrasso_nuclei(float cr,int ja,int kr)
 {
     int daz, dr,jmin,jmax,kmin,kmax,j,k;
 
 
-    dr=(int)(cr*1000./volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+    dr=(int)(cr*1000./cum_bac.volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
 
     kmin=kr-dr;
     kmax=kr+dr;
 
-    daz=ceil(cr/((kr*volume.size_cell/1000.+volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
+    daz=ceil(cr/((kr*cum_bac.volume.size_cell/1000.+cum_bac.volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
     jmin=ja-daz;
     jmax=ja+daz;
 
@@ -1716,7 +1702,7 @@ void CUM_BAC::ingrasso_nuclei(float cr,int ja,int kr)
     return;
 }
 
-void CUM_BAC::merge_metodi()
+void CalcoloVPR::merge_metodi()
 {
     int j,k;
 
@@ -1752,7 +1738,7 @@ void CUM_BAC::merge_metodi()
     FILE *file;
     int mode,ilay;  modalità calcolo profilo (0=combinazione, 1=istantaneo),indice di strato
 */
-int CUM_BAC::combina_profili()
+int CalcoloVPR::combina_profili()
 {
     LOG_CATEGORY("radar.vpr");
     long int c0,*cv,*ct;
@@ -1778,7 +1764,7 @@ int CUM_BAC::combina_profili()
 
 
     /* questo per fare ciclo sul vpr vecchio*/
-    Time = NormalizzoData(volume.acq_date);
+    Time = NormalizzoData(cum_bac.volume.acq_date);
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
@@ -1805,7 +1791,7 @@ int CUM_BAC::combina_profili()
         /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
         /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
 
-        gap = assets.read_profile_gap();
+        gap = cum_bac.assets.read_profile_gap();
 
 
         /*------leggo il profilo vecchio più recente di MEMORY ----*/
@@ -1868,7 +1854,7 @@ int CUM_BAC::combina_profili()
                         //---- converto in R il profilo vecchio--
                         if (vpr0[ilay]>0){
                             vpr_dbz=vpr0[ilay];
-                            vpr0[ilay] = DBZtoR(vpr_dbz,aMP,bMP);
+                            vpr0[ilay] = DBZtoR(vpr_dbz,cum_bac.aMP,cum_bac.bMP);
                             area[ilay]=ar;
                         }
                         else
@@ -1986,7 +1972,7 @@ int CUM_BAC::combina_profili()
     return(0);
 }
 
-int CUM_BAC::profile_heating()
+int CalcoloVPR::profile_heating()
 #include <vpr_par.h>
 {
     LOG_CATEGORY("radar.vpr");
@@ -2020,7 +2006,7 @@ int CUM_BAC::profile_heating()
         heating=heating-gap+2; /*se il profilo è stato aggiornato, ho riscaldamento , in caso arrivi sopra WARM riparto da MEMORY  */
         if (heating>=WARM) heating=MEMORY;  /* se heating raggiunge WARM allora lo pongo uguale a MEMORY     */
 
-        assets.write_last_vpr();
+        cum_bac.assets.write_last_vpr();
     }
     if (heating<0) heating=0;
 
@@ -2036,7 +2022,7 @@ int CUM_BAC::profile_heating()
 }
 
 
-int CUM_BAC::stampa_vpr()
+int CalcoloVPR::stampa_vpr()
 {
     float vpr_dbz;
     int ilay;
@@ -2046,7 +2032,7 @@ int CUM_BAC::stampa_vpr()
     fprintf(file," QUOTA   DBZ    AREA PRECI(KM^2/1000)\n" );
     for (ilay=0;  ilay<NMAXLAYER; ilay++){
         if (vpr[ilay]> 0.001 ) {
-            vpr_dbz=RtoDBZ(vpr[ilay],aMP,bMP);
+            vpr_dbz=cum_bac.RtoDBZ(vpr[ilay]);
             fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, vpr_dbz, area_vpr[ilay]);
         }
         else
@@ -2076,7 +2062,7 @@ int CUM_BAC::stampa_vpr()
    corr=RtoDBZ(vpr_liq)-RtoDBZ(vpr_hray)
    comend
 */
-int CUM_BAC::corr_vpr()
+int CalcoloVPR::corr_vpr()
     //* ====correzione profilo====================================*/
 
 #include <vpr_par.h>
@@ -2110,11 +2096,11 @@ int CUM_BAC::corr_vpr()
 
     //correzione vpr
     for (i=0; i<NUM_AZ_X_PPI; i++){
-        for (k=0; k<volume.vol_pol[0][i].ray.size(); k++){
+        for (k=0; k<cum_bac.volume.vol_pol[0][i].ray.size(); k++){
             corr=0.;
             /* trovo elevazione reale e quota bin*/
             //elevaz=(float)(volume.ray_at_elev_fin(i, k).teta_true)*CONV_RAD;
-            hbin=(float)quota[i][k];
+            hbin=(float)cum_bac.quota[i][k];
 
             /* se dall'analisi risulta che nevica assegno neve ovunque*/
             if (snow) neve[i][k]=1;
@@ -2126,7 +2112,7 @@ int CUM_BAC::corr_vpr()
 #endif
             //--- impongo una soglia per la correzione pari a 0 dBZ
 
-            if (BYTEtoDB(volume.vol_pol[0][i].ray[k])>THR_CORR && hbin > hliq  && strat){
+            if (BYTEtoDB(cum_bac.volume.vol_pol[0][i].ray[k])>THR_CORR && hbin > hliq  && strat){
 
                 //---trovo lo strato del pixel, se maggiore o uguale a NMAXLAYER lo retrocedo di 2, se minore di livmn lo pongo uguale a livmin
                 ilray=(hbin>=livmin)?(floor(hbin/TCK_VPR)):(floor(livmin/TCK_VPR));//discutibile :livello del fascio se minore di livmin posto=livmin
@@ -2140,7 +2126,7 @@ int CUM_BAC::corr_vpr()
                 //trovo ilref: livello di riferimento per ricostruire il valore vpr al suolo nel caso di neve.
                 // in caso di profilo di pioggia mi riporto sempre al valore del livello liquido e questo può essere un punto critico.. vedere come modificarlo.
 
-                ilref=(dem[i][k]>livmin)?(floor(dem[i][k]/TCK_VPR)):(floor(livmin/TCK_VPR));//livello di riferimento; se livello dem>livmin = livello dem altrimenti livmin
+                ilref=(cum_bac.dem[i][k]>livmin)?(floor(cum_bac.dem[i][k]/TCK_VPR)):(floor(livmin/TCK_VPR));//livello di riferimento; se livello dem>livmin = livello dem altrimenti livmin
 
 
                 if (vpr[ilref] > 0 && vpr[ilray] > 0 ){ /*devo avere dati validi nel VPR alle quote considerate!*/
@@ -2148,7 +2134,7 @@ int CUM_BAC::corr_vpr()
                     vpr_hray=vpr[ilray]+((vpr[ilray]-vpr[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2); /*per rendere la correzione continua non a gradini */
                     //--identifico le aree dove nevica stando alla quota teorica dello zero termico
 
-                    if (dem[i][k]> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/
+                    if (cum_bac.dem[i][k]> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/
                         neve[i][k]=1;
 
                     }
@@ -2168,9 +2154,9 @@ int CUM_BAC::corr_vpr()
 
                         //volpol[0][i].ray[k]=RtoBYTE(passaggio)
 
-                        corr=RtoDBZ(vpr[ilref],aMP,bMP)-RtoDBZ(vpr_hray,aMP,bMP);
+                        corr=cum_bac.RtoDBZ(vpr[ilref])-cum_bac.RtoDBZ(vpr_hray);
 
-                        volume.vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(volume.vol_pol[0][i].ray[k],aMP_SNOW,bMP_SNOW),aMP_class,bMP_class )) ;
+                        cum_bac.volume.vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(cum_bac.volume.vol_pol[0][i].ray[k],aMP_SNOW,bMP_SNOW),aMP_class,bMP_class )) ;
 
                     }
                     else
@@ -2182,13 +2168,13 @@ int CUM_BAC::corr_vpr()
                     if (hbin<hvprmax && corr>0.) corr=0; /*evito effetti incrementi non giustificati*/
 
                     //controllo qualità su valore corretto e correzione
-                    if ( BYTEtoDB(volume.vol_pol[0][i].ray[k])+corr > BYTEtoDB(255) ) // se dato corretto va fuori scala assegno valore massimo
-                        volume.vol_pol[0][i].ray[k]=255;
+                    if ( BYTEtoDB(cum_bac.volume.vol_pol[0][i].ray[k])+corr > BYTEtoDB(255) ) // se dato corretto va fuori scala assegno valore massimo
+                        cum_bac.volume.vol_pol[0][i].ray[k]=255;
                     else
-                        if ( BYTEtoDB(volume.vol_pol[0][i].ray[k])+corr <BYTEtoDB(1)) // se dato corretto va a fodoscala assegno valore di fondo scala
-                            volume.vol_pol[0][i].ray[k]=1;
+                        if ( BYTEtoDB(cum_bac.volume.vol_pol[0][i].ray[k])+corr <BYTEtoDB(1)) // se dato corretto va a fodoscala assegno valore di fondo scala
+                            cum_bac.volume.vol_pol[0][i].ray[k]=1;
                         else
-                            volume.vol_pol[0][i].ray[k]=DBtoBYTE(BYTEtoDB(volume.vol_pol[0][i].ray[k])+corr);  // correggo
+                            cum_bac.volume.vol_pol[0][i].ray[k]=DBtoBYTE(BYTEtoDB(cum_bac.volume.vol_pol[0][i].ray[k])+corr);  // correggo
 
                     corr_polar[i][k]=(unsigned char)(corr)+128;
 
@@ -2205,7 +2191,7 @@ int CUM_BAC::corr_vpr()
     return(0);
 }
 
-int CUM_BAC::trovo_hvprmax(int *hmax)
+int CalcoloVPR::trovo_hvprmax(int *hmax)
 {
     int i,imax,istart,foundlivmax;
     float vprmax,h0start,peak,soglia;
@@ -2284,7 +2270,7 @@ int CUM_BAC::trovo_hvprmax(int *hmax)
 
    comend
 */
-int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
+int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
     /*=======analisi profilo============ */
 {
     int i,ier=1,ier_ana=0,ier_ap,liv0;
@@ -2447,23 +2433,23 @@ int CUM_BAC::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     /* nome data */
     //definisco stringa data in modo predefinito
-    Time = NormalizzoData(volume.acq_date);
+    Time = NormalizzoData(cum_bac.volume.acq_date);
     tempo = gmtime(&Time);
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
     if (! ier ) {
         if(*hliq > livmin +200 )
-            vhliquid=RtoDBZ(vpr[(int)(*hliq)/TCK_VPR],aMP,bMP);
-        vliq=RtoDBZ(*vpr_liq,aMP,bMP);
+            vhliquid=cum_bac.RtoDBZ(vpr[(int)(*hliq)/TCK_VPR]);
+        vliq=cum_bac.RtoDBZ(*vpr_liq);
     }
     if (ier_max) {
         if ( hvprmax-600 >= livmin )
-            v600sottobb=RtoDBZ(vpr[(hvprmax-600)/TCK_VPR],aMP,bMP);
+            v600sottobb=cum_bac.RtoDBZ(vpr[(hvprmax-600)/TCK_VPR]);
         if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
-            v1000=RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR],aMP,bMP);
+            v1000=cum_bac.RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR]);
         if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
-            v1500=RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR],aMP,bMP);
-        vprmax=RtoDBZ(vpr[(hvprmax/TCK_VPR)],aMP,bMP);
+            v1500=cum_bac.RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR]);
+        vprmax=cum_bac.RtoDBZ(vpr[(hvprmax/TCK_VPR)]);
     }
 
     fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f  %f %f %f  %f \n",date,hvprmax,tipo_profilo,stdev,chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,vprmax,rmsefin,a[1],a[2],a[3],a[4],a[5]);
@@ -2520,7 +2506,7 @@ long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del sin
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
-int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[])
+int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[])
 {
     LOG_CATEGORY("radar.vpr");
     int l,i,iA,k,ilay,il,ilast,iaz_min,iaz_max,icounter,naz,nra;
@@ -2544,15 +2530,15 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 
 
     //------------riconoscimento sito per definizione limiti azimut---------
-    iaz_min=site.vpr_iaz_min;
-    iaz_max=site.vpr_iaz_max;
+    iaz_min=cum_bac.site.vpr_iaz_min;
+    iaz_max=cum_bac.site.vpr_iaz_max;
 
     for (int l=0; l<NEL; l++)//ciclo elevazioni
     {
         for (int k=0; k<MAX_BIN; k++)/*ciclo range*/
         {
             //-------------calcolo distanza-----------
-            dist=k*(long int)(volume.size_cell)+(int)(volume.size_cell)/2.;
+            dist=k*(long int)(cum_bac.volume.size_cell)+(int)(cum_bac.volume.size_cell)/2.;
 
             //-----ciclo settore azimut???
             for (iA=iaz_min; iA<iaz_max; iA++)//ciclo sulle unità di azimut  (0,9°)    ---------
@@ -2561,8 +2547,8 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
                 i=(iA+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
 
                 //--------calcolo elevazione e quota---------
-                elevaz=(float)(volume.vol_pol[l][i].teta_true)*CONV_RAD;
-                quota_true_st=quota_f(elevaz,k);
+                elevaz=(float)(cum_bac.volume.vol_pol[l][i].teta_true)*CONV_RAD;
+                quota_true_st=cum_bac.quota_f(elevaz,k);
 
                 //--------trovo ilay---------
                 ilay=floor(quota_true_st/TCK_VPR);//  in teoria quota indipendente da azimuth  , in realtà no (se c'è vento)
@@ -2574,7 +2560,7 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 
 
                 vol_rain=0;
-                // dist=(long int)(dist*cos((float)(volume.ray_at_elev_fin(i, k).teta_true)*CONV_RAD));
+                // dist=(long int)(dist*cos((float)(cum_bac.volume.ray_at_elev_fin(i, k).teta_true)*CONV_RAD));
 
                 /* //---------calcolo la distanza proiettata sul piano-------------  */
 
@@ -2582,7 +2568,7 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
                     flag_vpr[l][i][k]=0;
 
-                if(qual[l][i][k]<QMIN_VPR ) flag_vpr[l][i][k]=0;
+                if(cum_bac.qual[l][i][k]<QMIN_VPR ) flag_vpr[l][i][k]=0;
 
                 //AGGIUNTA PER CLASS
 # ifdef CLASS
@@ -2592,7 +2578,7 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 #endif
 
                 // ------per calcolare l'area del pixel lo considero un rettangolo dim bin x ampiezzamediafascio x flag vpr/1000 per evitare problemi di memoria?
-                area=volume.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr[l][i][k]/1000.; // divido per  mille per evitare nr troppo esagerato
+                area=cum_bac.volume.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr[l][i][k]/1000.; // divido per  mille per evitare nr troppo esagerato
 
                 // ------incremento il volume totale di area
 
@@ -2601,12 +2587,12 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
                 unsigned char sample = 0;
-                if (k < volume.vol_pol[l][i].ray.size())
-                    sample = volume.vol_pol[l][i].ray[k];
+                if (k < cum_bac.volume.vol_pol[l][i].ray.size())
+                    sample = cum_bac.volume.vol_pol[l][i].ray[k];
                 if (BYTEtoDB(sample)> THR_VPR &&  flag_vpr[l][i][k]>0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area
-                    vol_rain=(long int)(BYTE_to_mp_func(sample,aMP,bMP)*area);//peso ogni cella con la sua area
+                    vol_rain=(long int)(BYTE_to_mp_func(sample,cum_bac.aMP,cum_bac.bMP)*area);//peso ogni cella con la sua area
 
                     //-------incremento l'area precipitante totale ct,aggiungendo però,cosa che avevo messo male una THR solo per ct, cioè per il peso
                     if (BYTEtoDB(sample)> THR_PDF)
@@ -2709,7 +2695,7 @@ int CUM_BAC::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vp
     return(0);
 }
 
-float CUM_BAC::comp_levels(float v0, float v1, float nodata, float peso)
+float comp_levels(float v0, float v1, float nodata, float peso)
 {
     float result;
     /* if ((v0<nodata+1)&&(v1<nodata+1)) result=nodata; */
@@ -2753,7 +2739,7 @@ float CUM_BAC::comp_levels(float v0, float v1, float nodata, float peso)
 
    comend
 */
-int CUM_BAC::interpola_VPR(float a[], int ma)
+int CalcoloVPR::interpola_VPR(float a[], int ma)
 # include <vpr_par.h>
 {
     LOG_CATEGORY("radar.vpr");
@@ -2892,7 +2878,7 @@ int CUM_BAC::interpola_VPR(float a[], int ma)
             xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
             lineargauss(xint, a, &y1, dyda, ndata);
             // stampa del profilo interpolato
-            fprintf(file," %f \n",RtoDBZ(y1,aMP,bMP));
+            fprintf(file," %f \n",cum_bac.RtoDBZ(y1));
         }
         fclose(file);
     }
@@ -2908,7 +2894,7 @@ int CUM_BAC::interpola_VPR(float a[], int ma)
     return ier_int;
 }
 
-int CUM_BAC::testfit(float a[], float chisq, float chisqin)
+int testfit(float a[], float chisq, float chisqin)
 {
     if (a[1]<0. || a[1] >15.) return 1;
     if (a[2] >10.) return 1;
@@ -2924,9 +2910,9 @@ void CUM_BAC::class_conv_fixme_find_a_name()
     for (int i=0; i<NUM_AZ_X_PPI; i++){
         for (int k=0; k<volume.vol_pol[0][i].ray.size(); k++){
 
-            if (conv[i][k] > 0){
+            if (calcolo_vpr->conv[i][k] > 0){
 
-                volume.vol_pol[0][i].ray[k]=DBtoBYTE(RtoDBZ( BYTE_to_mp_func(volume.vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
+                volume.vol_pol[0][i].ray[k]=DBtoBYTE(::RtoDBZ( BYTE_to_mp_func(volume.vol_pol[0][i].ray[k],aMP_conv,bMP_conv),aMP_class,bMP_class )) ;
 
             }
         }
@@ -3017,14 +3003,14 @@ void CUM_BAC::creo_cart()
                                 /*neve_cart[x][y]=qual_Z_cart[x][y];*/
                                 if (do_vpr)
                                 {
-                                    neve_cart[x][y]=(neve[iaz%NUM_AZ_X_PPI][irange])?0:1;
-                                    corr_cart[x][y]=corr_polar[iaz%NUM_AZ_X_PPI][irange];
+                                    neve_cart[x][y]=(calcolo_vpr->neve[iaz%NUM_AZ_X_PPI][irange])?0:1;
+                                    corr_cart[x][y]=calcolo_vpr->corr_polar[iaz%NUM_AZ_X_PPI][irange];
                                 }
                             }
                             if (do_class)
                             {
-                                if (irange<x_size)
-                                    conv_cart[x][y]=conv[iaz%NUM_AZ_X_PPI][irange];
+                                if (irange<calcolo_vpr->x_size)
+                                    conv_cart[x][y]=calcolo_vpr->conv[iaz%NUM_AZ_X_PPI][irange];
                             }
                         }
                         if (do_zlr_media)
@@ -3151,6 +3137,38 @@ void CUM_BAC::creo_matrice_conv()
     return;
 }
 
+CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
+    : cum_bac(cum_bac)
+{
+    logging_category = log4c_category_get("radar.vpr");
+    ncv=0;ncs=0;np=0;
+    htbb=-9999.; hbbb=-9999.;
+    t_ground=NODATAVPR;
+    memset(stratiform,0,sizeof(stratiform));
+
+    for (int i=0; i<NMAXLAYER; i++)
+      vpr[i]=NODATAVPR;
+
+    for (int k=0; k<NUM_AZ_X_PPI*MAX_BIN;k++ ){
+      lista_conv[k][0]=-999;
+      lista_conv[k][1]=-999;
+      lista_bckg[k][0]=-999;
+      lista_bckg[k][1]=-999;
+    }
+
+    for (int l=0; l<NEL; l++)
+      for (int i=0; i<NUM_AZ_X_PPI; i++)
+        for(int k=0; k<MAX_BIN; k++)
+            flag_vpr[l][i][k]=0;
+
+    memset(neve,0,sizeof(neve));
+
+    chisqfin=100; //???puo' essere def in anal
+    rmsefin=100;
+
+    if (cum_bac.do_vpr)
+        t_ground = cum_bac.assets.read_t_ground();
+}
 
 /*
  * Questa funzione al momento non va tolta. C'è del codice che va a leggere
@@ -3185,6 +3203,11 @@ void lineargauss(float x, float a[], float *y, float dyda[],int na)
 
 float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking){
    return ( BYTEtoDB(bin_val)-10*log10(1.-(float)beamblocking/100.));
+}
+
+float CUM_BAC::RtoDBZ(float rain) const
+{
+    return ::RtoDBZ(rain, aMP, bMP);
 }
 
 }

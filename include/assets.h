@@ -107,10 +107,10 @@ public:
     /**
      * Load ground temperature
      */
-    float read_t_ground();
+    float read_t_ground() const;
 
     /// Read the gap in seconds between the time in $LAST_VPR and the current acquisition time
-    long int read_profile_gap();
+    long int read_profile_gap() const;
 
     /// Write the acquisition time in $LAST_VPR file
     void write_last_vpr();

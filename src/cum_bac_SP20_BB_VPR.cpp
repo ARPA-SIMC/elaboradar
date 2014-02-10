@@ -105,6 +105,44 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const cha
 
 /*=======================================================================================*/
 
+void CalcoloVPR::esegui_tutto()
+{
+    test_vpr=fopen(getenv("TEST_VPR"),"a+");
+
+    LOG_INFO("processo file dati: %s", cum_bac.volume.filename.c_str());
+    printf ("calcolo VPR \n") ;
+
+    //VPR  // ------------inizializzo hvprmax ---------------
+
+    hvprmax=INODATA;
+
+    //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
+
+    //  ier_comb=combina_profili(sito,argv[4]);
+    ier_comb=combina_profili();
+    printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
+    printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
+
+
+    //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
+
+    heating=profile_heating();
+    printf ("heating %i \n", heating);
+    LOG_INFO("ier_vpr %i ier_comb %i",ier_vpr,ier_comb);
+
+    //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
+    if (!ier_comb && heating >= WARM){
+
+        int ier=corr_vpr();
+        printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+
+
+        //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
+
+        if ( ! ier && ! ier_vpr)
+            ier_stampa_vpr=stampa_vpr();
+    }
+}
 
 bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 {
@@ -153,50 +191,12 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
         //--------------se definita CLASS procedo con  classificazione -----------------//
         if (do_class)
-            classifica_rain();
+            calcolo_vpr->classifica_rain();
 
         //--------------se definito VPR procedo con calcolo VPR -----------------//
 
         if (do_vpr)
-        {
-            LOG_CATEGORY("radar.vpr");
-
-            test_vpr=fopen(getenv("TEST_VPR"),"a+");
-
-            LOG_INFO("processo file dati: %s",nome_file);
-            printf ("calcolo VPR \n") ;
-
-            //VPR  // ------------inizializzo hvprmax ---------------
-
-            hvprmax=INODATA;
-
-            //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
-
-            //  ier_comb=combina_profili(sito,argv[4]);
-            ier_comb=combina_profili();
-            printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
-            printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
-
-
-            //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
-
-            heating=profile_heating();
-            printf ("heating %i \n", heating);
-            LOG_INFO("ier_vpr %i ier_comb %i",ier_vpr,ier_comb);
-
-            //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
-            if (!ier_comb && heating >= WARM){
-
-                ier=corr_vpr();
-                printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
-
-
-                //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
-
-                if ( ! ier && ! ier_vpr)
-                    ier_stampa_vpr=stampa_vpr();
-            }
-        }
+            calcolo_vpr->esegui_tutto();
     }
 
     if (do_class)
