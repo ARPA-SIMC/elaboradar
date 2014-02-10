@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 using namespace wibble::tests;
+using namespace cumbac;
 
 namespace tut {
 

@@ -70,7 +70,7 @@ extern "C" {
 /*extern char *sys_errlist[];  ANNA 17-2-2006 sostituito con strerror che sta in string.h */
 extern int errno;
 
-
+namespace cumbac {
 
 void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const char *dir,size_t size, const void  *matrice)
 {
@@ -317,6 +317,8 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, const char* sit
     return true;
 }
 
+}
+
   /*non cancellare*/
   /* int trovo_top() */
   /* { */
@@ -454,7 +456,7 @@ int main (int argc, char **argv)
     prendo_tempo();
 #endif
 
-    CUM_BAC *cb = new CUM_BAC;
+    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC;
 
     // Set feature flags
 #ifdef QUALITY

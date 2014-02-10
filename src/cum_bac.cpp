@@ -1,6 +1,7 @@
 #include "cum_bac.h"
 #include "logging.h"
 #include "utils.h"
+#include "site.h"
 #include <cstring>
 #include <stdexcept>
 #include <math.h>
@@ -71,8 +72,11 @@ extern "C" {
 // parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
 #define NSCAN 6
 
+namespace cumbac {
+
 CUM_BAC::CUM_BAC()
-    : do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false)
+    : site(0),
+      do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -125,7 +129,9 @@ void CUM_BAC::setup_elaborazione(const char* nome_file, const char* sito)
       ------------------------------------------*/
     LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
 
-    assets.configure(sito, volume.acq_date);
+    site = &(Site::get(sito));
+
+    assets.configure(site, volume.acq_date);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
@@ -3190,6 +3196,29 @@ void ScrivoLog(int i, const char* stringa)
     static FILE *log = 0;
 }
 
+void lineargauss(float x, float a[], float *y, float dyda[],int na)
+{
+  float fac, ex, arg;
+
+  *y=0.0;
+  arg=(x-a[2])/a[3];
+  ex=exp(-arg*arg);
+  fac=a[1]*ex*2.0*arg;
+  *y+=a[1]*ex+a[4]+a[5]*x;
+  dyda[1]=ex;
+  dyda[2]=fac/a[3];
+  dyda[3]=fac*arg/a[3];
+  dyda[4]=1.;
+  dyda[5]=x;
+}
+
+
+float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking){
+   return ( BYTEtoDB(bin_val)-10*log10(1.-(float)beamblocking/100.));
+}
+
+}
+
 char *PrendiOra()
 {
     time_t clock;
@@ -3235,25 +3264,4 @@ time_t NormalizzoData(time_t time)
     if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
     //altrimenti ritorno -1
     return -1;
-}
-
-void lineargauss(float x, float a[], float *y, float dyda[],int na)
-{
-  float fac, ex, arg;
-
-  *y=0.0;
-  arg=(x-a[2])/a[3];
-  ex=exp(-arg*arg);
-  fac=a[1]*ex*2.0*arg;
-  *y+=a[1]*ex+a[4]+a[5]*x;
-  dyda[1]=ex;
-  dyda[2]=fac/a[3];
-  dyda[3]=fac*arg/a[3];
-  dyda[4]=1.;
-  dyda[5]=x;
-}
-
-
-float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking){
-   return ( BYTEtoDB(bin_val)-10*log10(1.-(float)beamblocking/100.));
 }

@@ -19,9 +19,14 @@ Assets::Assets()
 {
 }
 
-void Assets::configure(const char* sito, time_t acq_time)
+void Assets::configure(const char* site, time_t acq_time)
 {
-    conf_site = &(Site::get(sito));
+    configure(&(Site::get(site)), acq_time);
+}
+
+void Assets::configure(const Site* site, time_t acq_time)
+{
+    conf_site = site;
     conf_acq_time = acq_time;
     struct tm* tempo = gmtime(&acq_time);
     conf_year = tempo->tm_year + 1900;
