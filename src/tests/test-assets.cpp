@@ -6,6 +6,7 @@
 
 using namespace wibble::tests;
 using namespace std;
+using namespace cumbac;
 
 namespace tut {
 

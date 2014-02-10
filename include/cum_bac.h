@@ -108,7 +108,7 @@ class CUM_BAC
 public:
     log4c_category_t* logging_category;
 
-    Assets assets;
+    cumbac::Assets assets;
 
     /// Feature set required for this run
     bool do_quality;

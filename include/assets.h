@@ -6,6 +6,10 @@
 #include <cstdio>
 #include <logging.h>
 
+namespace cumbac {
+
+struct Site;
+
 /**
  * Finds resources, like data files, used by the program.
  */
@@ -18,10 +22,7 @@ class Assets
 
 protected:
     log4c_category_t* logging_category;
-    enum {
-        SITE_GAT,
-        SITE_SPC,
-    } conf_site;
+    const cumbac::Site* conf_site;
     time_t conf_acq_time;
     int conf_year;
     int conf_month;
@@ -110,5 +111,7 @@ protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
 };
+
+}
 
 #endif

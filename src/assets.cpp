@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "geo_par.h"
 #include "vpr_par.h"
+#include "site.h"
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
@@ -11,6 +12,8 @@
 
 using namespace std;
 
+namespace cumbac {
+
 Assets::Assets()
     : logging_category(log4c_category_get("radar.assets"))
 {
@@ -18,18 +21,8 @@ Assets::Assets()
 
 void Assets::configure(const char* sito, time_t acq_time)
 {
-    if (strcmp(sito, "GAT") == 0)
-        conf_site = SITE_GAT;
-    else if (strcmp(sito, "SPC") == 0)
-        conf_site = SITE_SPC;
-    else
-    {
-        string errmsg(sito);
-        throw domain_error(errmsg + " is not a valid radar site name");
-    }
-
+    conf_site = &(Site::get(sito));
     conf_acq_time = acq_time;
-
     struct tm* tempo = gmtime(&acq_time);
     conf_year = tempo->tm_year + 1900;
     conf_month = tempo->tm_mon + 1;
@@ -40,12 +33,7 @@ void Assets::configure(const char* sito, time_t acq_time)
 
 FILE* Assets::open_file_dem()
 {
-    const char* fname;
-    switch (conf_site)
-    {
-        case SITE_SPC: fname = getenv_default("FILE_DEM_SPC", "../../PP+BLOC/dati/dem_SanPi.txt"); break;
-        case SITE_GAT: fname = getenv_default("FILE_DEM_GAT", "../../PP+BLOC/dati/dem_Gatta.txt"); break;
-    }
+    const char* fname = conf_site->get_dem_file_name();
     LOG_INFO("Opening dem file %s", fname);
     return fopen_checked(fname, "rt", "file dem");
 }
@@ -54,27 +42,7 @@ FILE* Assets::open_file_first_level()
 {
     const char* fname = getenv("FIRST_LEVEL_FILE");
     if (!fname)
-    {
-        switch (conf_site)
-        {
-            case SITE_SPC:
-                if (1 <= conf_month && conf_month <= 3)
-                    fname = "../dati/FIRST_LEVEL_SPC_2006_INV";
-                else if (4 <= conf_month && conf_month <= 9)
-                    fname = "../dati/FIRST_LEVEL_SPC_2006_PRI-EST";
-                else
-                    fname = "../dati/FIRST_LEVEL_SPC_2006_AUT";
-                break;
-            case SITE_GAT:
-                if (1 <= conf_month && conf_month <= 3)
-                    fname = "../dati/FIRST_LEVEL_GAT_2006_INV";
-                else if (4 <= conf_month && conf_month <= 9)
-                    fname = "../dati/FIRST_LEVEL_GAT_2006_PRI-EST";
-                else
-                    fname = "../dati/FIRST_LEVEL_GAT_2006_AUT";
-                break;
-        }
-    }
+        fname = conf_site->get_first_level_file_name(conf_month);
     LOG_INFO("Opening mappa statica %s", fname);
     return fopen_checked(fname, "rb", "mappa statica");
 }
@@ -172,23 +140,11 @@ float Assets::read_t_ground()
 
     float media_t = 0;
     int icount = 0;
-    float radar_lat, radar_lon, lon, lat, t;
-
-    switch (conf_site)
-    {
-        case SITE_GAT:
-            radar_lat=GAT_LAT;
-            radar_lon=GAT_LON;
-            break;
-        case SITE_SPC:
-            radar_lat=SPC_LAT;
-            radar_lon=SPC_LON;
-            break;
-    }
+    float lon, lat, t;
 
     while (1) {
         if(fscanf(file_t,"%f %f %f \n",&lon,&lat,&t) == EOF) break;
-        if (fabs(radar_lat-lat)<=maxdlat && fabs(radar_lon-lon)<=maxdlon) {
+        if (fabs(conf_site->radar_lat-lat)<=maxdlat && fabs(conf_site->radar_lon-lon)<=maxdlon) {
             ++icount;
             media_t += t - 273.15;
         }
@@ -246,4 +202,6 @@ void Assets::write_last_vpr()
     uint32_t val = conf_acq_time;
     fwrite(&val, 4, 1, out);
     fclose(out);
+}
+
 }
