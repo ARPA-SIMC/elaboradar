@@ -37,9 +37,6 @@ extern "C" {
 //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
 #define NMIN 1 // cambiato da #define NMIN 5 a 1 dopo inserimento minuti maltempo, step di arrotondamento in minuti
 #define MAX_TIME_DIFF 3 // massima differenza in minuti tra data acquisizione e standard per arrotondare per difetto
-//Array delle elevazioni
-static const int elev_array_spc[NEL]={6,15,26,36,46,57,80,108,148,159,170,180,190,200,210};//GLI ULTIMI 5 fittizi: ANNA 30-03-2011
-static const int elev_array_gat[NEL]={6,16,27,37,45,55,65,76,85,95,105,126,149,174,201};//105,126,149,174,201 è da completare NEL=15:ANNA 30-03-2011
 #endif
 // v. parametri SHORT
 #ifdef MEDIUM
@@ -48,8 +45,6 @@ static const int elev_array_gat[NEL]={6,16,27,37,45,55,65,76,85,95,105,126,149,1
 #define CART_DIM_ZLR             512
 #define ZLR_N_ELEMENTARY_PIXEL   1
 #define ZLR_OFFSET               CART_DIM_ZLR/2
-static const int elev_array_spc[NEL]={6,16,26,36,47};//ANNA 30-03-2011
-static const int elev_array_gat[NEL]={6,16,27,36,47};//ANNA 30-03-2011
 #define NMIN 2
 #define MAX_TIME_DIFF 1
 #endif

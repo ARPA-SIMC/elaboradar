@@ -1,5 +1,6 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
+#include "site.h"
 #include "logging.h"
 #include <stdio.h>
 #include <vector>
@@ -174,8 +175,7 @@ void to::test<3>()
     Volume vodim;
 
     // FIXME: get rid of the static elev_array as soon as it is convenient to do so
-    for (unsigned i = 0; i < NEL; ++i)
-        elev_array[i] = elev_array_gat[i];
+    Site::get("GAT").fill_elev_array(elev_array);
 
     vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO");
     vodim.read_odim("testdata/MSG1400715300U.101.h5");
