@@ -182,7 +182,6 @@ public:
     Image<unsigned char, MAX_BIN*2> dato_corr_xy; //uscite anap  cartesiano max resol
     Image<unsigned char, CART_DIM_ZLR> dato_corr_1x1; //uscite anap cartesiano  1x1
     //elevazioni finali come sopra
-    unsigned char elev_fin[NUM_AZ_X_PPI][MAX_BIN]; /* elevazione finale in coordinate azimut range  */
     Image<unsigned char, MAX_BIN*2> elev_fin_xy;
     Image<unsigned char, CART_DIM_ZLR> elev_fin_1x1;
     // metrici qualita' come sopra
