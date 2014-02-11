@@ -527,6 +527,8 @@ void to::test<8>()
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("LAST_VPR","testdata/last_vpr",1);
+    setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
 
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
@@ -632,7 +634,7 @@ void to::test<8>()
     wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->top_1x1.max()) == 35);
     wassert(actual((unsigned)cb->neve_1x1.min()) == 1);
-    wassert(actual((unsigned)cb->neve_1x1.max()) == 32);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 65);
     wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
     wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
     wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
