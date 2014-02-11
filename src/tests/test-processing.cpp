@@ -677,11 +677,11 @@ void to::test<9>()
     ArrayStats<unsigned char> stats_qual;
     stats_qual.fill3(cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 162505);
-    wassert(actual((unsigned)stats_qual.min) == 1);
+    wassert(actual((unsigned)stats_qual.count_zeros) == 108000);
+    wassert(actual((unsigned)stats_qual.count_ones) == 159263);
+    wassert(actual((unsigned)stats_qual.min) == 0);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5888);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5759);
     ArrayStats<unsigned char> stats_flag_vpr;
     stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
@@ -691,15 +691,15 @@ void to::test<9>()
     ArrayStats<unsigned char> stats_top;
     stats_top.fill2(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 111644);
+    wassert(actual((unsigned)stats_top.count_zeros) == 113000);
     wassert(actual((unsigned)stats_top.count_ones) == 423);
     wassert(actual((unsigned)stats_top.min) == 0);
     wassert(actual((unsigned)stats_top.max) == 75);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 565);
+    wassert(actual((unsigned)(stats_top.avg * 100)) == 542);
 
     cb->creo_cart();
     wassert(actual((unsigned)cb->cart.min()) == 0);
-    wassert(actual((unsigned)cb->cart.avg()) == 55);
+    wassert(actual((unsigned)cb->cart.avg()) == 53);
     wassert(actual((unsigned)cb->cart.max()) == 255);
     wassert(actual(cb->cartm.min()) == 0);
     wassert(actual(cb->cartm.max()) == 0);
@@ -707,7 +707,7 @@ void to::test<9>()
     wassert(actual((unsigned)cb->topxy.avg()) == 3);
     wassert(actual((unsigned)cb->topxy.max()) == 75);
     wassert(actual((unsigned)cb->qual_Z_cart.min()) == 0);
-    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 26);
+    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 25);
     wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
     wassert(actual((unsigned)cb->quota_cart.min()) == 0);
     wassert(actual((unsigned)cb->quota_cart.max()) == 0);
@@ -728,10 +728,10 @@ void to::test<9>()
 
     cb->creo_cart_z_lowris();
     wassert(actual((unsigned)cb->z_out.min()) == 0);
-    wassert(actual((unsigned)cb->z_out.avg()) == 66);
+    wassert(actual((unsigned)cb->z_out.avg()) == 63);
     wassert(actual((unsigned)cb->z_out.max()) == 255);
     wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
-    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 25);
+    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 24);
     wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 97);
     wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
     wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
@@ -741,11 +741,11 @@ void to::test<9>()
     wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
     wassert(actual((unsigned)cb->beam_blocking_1x1.min()) == 0);
-    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 15);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 13);
     wassert(actual((unsigned)cb->beam_blocking_1x1.max()) == 51);
     wassert(actual((unsigned)cb->top_1x1.min()) == 0);
     wassert(actual((unsigned)cb->top_1x1.avg()) == 3);
-    wassert(actual((unsigned)cb->top_1x1.max()) == 75);
+    wassert(actual((unsigned)cb->top_1x1.max()) == 42);
     wassert(actual((unsigned)cb->neve_1x1.min()) == 0);
     wassert(actual((unsigned)cb->neve_1x1.max()) == 0);
     wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
