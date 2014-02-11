@@ -647,7 +647,7 @@ template<> template<>
 void to::test<9>()
 {
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO_mod";
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
