@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <math.h>
+#include <iostream>
 
 #ifdef __cplusplus
 extern "C" {
@@ -1044,7 +1045,8 @@ void CalcoloVPR::classifica_rain()
 
     //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
     float w_size[2]={3.,0.3}; //dimensione della matrice pesi
-    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,**beamXweight[MAX_BIN]; // da inizializzare in fase di programma
+//    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,**beamXweight[MAX_BIN]; // da inizializzare in fase di programma
+    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,beamXweight[MAX_BIN][20][10]; // da inizializzare in fase di programma
     float range_min,range_max,xmin,zmin,xmax,zmax;
     int w_x_size,w_z_size,w_x_size_2,w_z_size_2;
     FILE *file;
@@ -1222,12 +1224,13 @@ void CalcoloVPR::classifica_rain()
         rhi_cart[k]= (float *) malloc (z_size*sizeof(float ));
         rhi_weight[k]= (float *) malloc (z_size*sizeof(float ));
     }
-    for(k=0;k<MAX_BIN;k++){
+/*     for(k=0;k<MAX_BIN;k++){
         beamXweight[k]=(float **) malloc(w_x_size*sizeof(float *));
-        for(i=0;i<w_x_size;i++)
+        for(i=0;i<w_x_size;i++){
             beamXweight[k][i]=(float *) malloc(w_z_size*sizeof(float));
+	}
     }
-
+*/
     for (iaz=0; iaz<NUM_AZ_X_PPI; iaz++){
         for (k=0; k<x_size; k++){
             for (j=0; j<z_size; j++){
@@ -1262,9 +1265,15 @@ void CalcoloVPR::classifica_rain()
 
         for (iel=0;iel<NEL;iel++){
             for (ibin=0;ibin<ray_size;ibin++) {
-
-                for(kx=0;kx<w_x_size;kx++){
+if ( ibin >= MAX_BIN) {
+std::cout<<"ibin troppo grande "<<std::endl;
+throw std::runtime_error("ERRORE");
+}                for(kx=0;kx<w_x_size;kx++){
                     for(kz=0;kz<w_z_size;kz++){
+//std::cout<<"ibin , kx, kz "<<ibin<<" "<<kx<<" "<<kz<<" "<<w_x_size<< " "<<w_z_size<<" "<<MAX_BIN<<std::endl;
+//std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
+//std::cout<<"RHI "<<  RHI_beam[iel][ibin]<<std::endl;
+//std::cout<<"w_tot "<<  w_tot[kx][kz]<<std::endl;
                         beamXweight[ibin][kx][kz]=RHI_beam[iel][ibin]*w_tot[kx][kz];
                     }
                 }
