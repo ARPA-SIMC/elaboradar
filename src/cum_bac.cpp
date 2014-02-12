@@ -1208,15 +1208,7 @@ void CalcoloVPR::classifica_rain()
     /* ; Selezione dati per formare RHI */
     /* ;---------------------------------- */
 
-
-    for (i=0; i<NUM_AZ_X_PPI; i++){
-        cil[i]=(float **) malloc (x_size*sizeof(float *));
-        for (k=0; k<x_size; k++){
-            cil[i][k]= (float *) malloc (z_size*sizeof(float));
-            for (j=0;j<z_size;j++)
-                cil[i][k][j]= -20. ;
-        }
-    }
+    cil.allocate(x_size, z_size);
 
     rhi_cart= (float **) malloc (x_size*sizeof(float *));
     rhi_weight= (float **) malloc (x_size*sizeof(float *));
@@ -1228,7 +1220,7 @@ void CalcoloVPR::classifica_rain()
         beamXweight[k]=(float **) malloc(w_x_size*sizeof(float *));
         for(i=0;i<w_x_size;i++){
             beamXweight[k][i]=(float *) malloc(w_z_size*sizeof(float));
-	}
+        }
     }
 */
     for (iaz=0; iaz<NUM_AZ_X_PPI; iaz++){
@@ -1306,8 +1298,6 @@ throw std::runtime_error("ERRORE");
 
                 }
                 cil[iaz][i][j]=rhi_cart[i][j];
-             
-
             }
         }
     }
@@ -1354,6 +1344,7 @@ void CalcoloVPR::classifico_VIZ()
 
     kbbb=floor(hbbb/resol[1]);   //08/01/2013...MODIFICA, inserito questo dato
     ktbb=ceil(htbb/resol[1]);
+
     kmax=ceil(LIM_VERT/resol[1]);
     // kmax=ceil(z_size/resol[1]);
     if (t_ground < T_MAX_ML) kmax=0;/////se t suolo dentro t melting layer pongo kmax=00 e in tal modo non classifico
@@ -1397,6 +1388,7 @@ void CalcoloVPR::classifico_VIZ()
                     ext_bbb=resol[1]+ext_bbb;
                 }
             }
+//std::cout<<"Z_size :"<<z_size<<" kbbb :"<<kbbb<<" ktbb "<<ktbb<<std::endl;
             for(k=kbbb; k<ktbb; k++)
             {
                 if (k < 4 ){

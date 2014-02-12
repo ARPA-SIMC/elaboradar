@@ -153,6 +153,8 @@ void to::test<4>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("LAST_VPR","testdata/last_vpr",1);
+    setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
 
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
@@ -222,8 +224,8 @@ void to::test<4>()
     stratiform_stats.fill2(cb->calcolo_vpr->stratiform);
     wassert(actual((unsigned)stratiform_stats.first).isfalse());
     wassert(actual((unsigned)stratiform_stats.min) == 0);
-    wassert(actual((unsigned)stratiform_stats.max) == 0);
-    wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 0);
+    wassert(actual((unsigned)stratiform_stats.max) == 1);
+    wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 2);
 
     delete cb;
 }
