@@ -871,12 +871,12 @@ void to::test<10>()
     wassert(actual(ier) == 0);
 
     cb->caratterizzo_volume();
-std::cout<<"Dopo caratterizzo volume "<<std::endl;
+
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
     cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
+
     ier = cb->calcolo_vpr->combina_profili();
-std::cout<<"Dopo combina volume"<<std::endl;
     wassert(actual(ier) == 0);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();

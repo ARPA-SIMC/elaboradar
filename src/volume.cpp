@@ -4,6 +4,7 @@
 #include <radarlib/radar.hpp>
 #include <stdexcept>
 #include <memory>
+#include <algorithm>
 #include <cstring>
 #include <H5Cpp.h>
 
@@ -12,6 +13,7 @@ extern "C" {
 #endif
 // libreria radar
 #include <func_SP20read.h>
+#include <func_Z_R.h>
 #ifdef __cplusplus
 }
 #endif
@@ -26,6 +28,18 @@ namespace cumbac {
 Ray::Ray()
     : alfa_true(0), teta_true(0), teta(0), alfa(0)
 {
+}
+
+void Ray::read_db(float* out, size_t out_size, float missing) const
+{
+    // Prima riempio il minimo tra ray.size() e out_size
+    size_t set_count = min(ray.size(), out_size);
+
+    for (unsigned i = 0; i < set_count; ++i)
+        out[i] = BYTEtoDB(ray[i]);
+
+    for (unsigned i = set_count; i < out_size; ++i)
+        out[i] = missing;
 }
 
 void Ray::print_load_log(FILE* out) const

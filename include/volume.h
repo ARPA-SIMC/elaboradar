@@ -40,6 +40,8 @@ struct Ray
 
     Ray();
 
+    void read_db(float* out, size_t out_size, float missing=0) const;
+
     void log(double theta, double alpha)
     {
         load_log.push_back(LoadLogEntry(theta, alpha));

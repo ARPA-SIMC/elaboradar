@@ -452,7 +452,7 @@ struct CalcoloVPR
     float resol[2];
     int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
     int x_size,z_size;
-    long int ncv,ncs,np;
+    long int ncv,np;
     float *convective_radius;
     float htbb, hbbb;
     // array contenenti Z di background

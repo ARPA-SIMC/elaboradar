@@ -1225,17 +1225,15 @@ void CalcoloVPR::classifica_rain()
         CilindricalSlice rhi_cart(x_size, z_size, 0);
         CilindricalSlice rhi_weight(x_size, z_size, 0);
 
-        for (i=0;i<NEL;i++){
+        for (i=0;i<NEL;i++)
+        {
             if (iaz < cum_bac.volume.nbeam_elev[i])
+                cum_bac.volume.vol_pol[i][iaz].read_db(RHI_beam[i], MAX_BIN, BYTEtoDB(0));
+            else
             {
-                // volume.vol_pol[i][iaz].ray.size() sostituito da volume.vol_pol[0][iaz].ray.size()
-                for (k=0;k<cum_bac.volume.vol_pol[i][iaz].ray.size();k++){
-                    RHI_beam[i][k]=BYTEtoDB(cum_bac.volume.vol_pol[i][iaz].ray[k]);
-                }
-                for (k=cum_bac.volume.vol_pol[0][iaz].ray.size();k<MAX_BIN;k++)
+                for (unsigned k = 0; k < MAX_BIN; ++k)
                     RHI_beam[i][k]=BYTEtoDB(0);
-            } else
-                RHI_beam[i][k]=BYTEtoDB(0);
+            }
         }
 
         /* ;---------------------------------- */
@@ -1439,34 +1437,15 @@ void CalcoloVPR::classifico_VIZ()
 
 void CalcoloVPR::classifico_STEINER()
 {
-    static bool warned = false;
-    int i,j,k;
+    for(int i=0; i<np; i++)
+    {
+        int j = lista_bckg[i][0]; //az=lista_bckg[i][0]
+        int k = lista_bckg[i][1]; //ra=lista_bckg[i][1]
+        if (j < 0 || k < 0) continue;
 
-    unsigned char BYTE;
-    float diff_bckgr,cr;
-
-    for(i=0; i<np; i++){
-      if ( lista_bckg[i][0] >= 0 && lista_bckg[i][1] >= 0 ){
-        j=lista_bckg[i][0]; //az=lista_bckg[i][0]
-        k=lista_bckg[i][1]; //ra=lista_bckg[i][1]
-
-        // calcolo valore BYTE nel punto
-        if (j == -999)
-        {
-            if (!warned)
-            {
-                fprintf(stderr, "elev_fin[%d][%d]\n", j, k);
-                fprintf(stderr, " = %d\n", (int)cum_bac.volume.elev_fin[j][k]);
-                fprintf(stderr, "volume.vol_pol[%d][%d].ray[%d]\n", (int)cum_bac.volume.elev_fin[j][k], j, k);
-                //fprintf(stderr, " = %d\n", (int)volume.vol_pol[elev_fin[j][k]][j].ray[k]);
-                warned = true;
-            }
-            BYTE=56;
-#warning This code used to work like this, by accident, in C: this is a workaround to maintain functional equivalence during porting to c++
-        } else
-            BYTE=cum_bac.volume.sample_at_elev_preci(j, k);
+        unsigned char BYTE=cum_bac.volume.sample_at_elev_preci(j, k);
         // calcolo diff col background
-        diff_bckgr=BYTEtoDB(BYTE)-bckgr[i];
+        float diff_bckgr=BYTEtoDB(BYTE)-bckgr[i];
         /* if (k < 160 ){ */
         /*   fprintf(log_class," bckgr[i] = %f diff_bckgr %f \n ",bckgr[i],diff_bckgr ); */
         /* } */
@@ -1474,18 +1453,16 @@ void CalcoloVPR::classifico_STEINER()
         if ((BYTEtoDB(BYTE)>40.)||
                 (bckgr[i]< 0 && diff_bckgr > 10) ||
                 (bckgr[i]< 42.43 &&  bckgr[i]>0 &&  diff_bckgr > 10. - bckgr[i]*bckgr[i]/180. )||
-                (bckgr[i]> 42.43 &&  diff_bckgr >0)  ) {
+                (bckgr[i]> 42.43 &&  diff_bckgr >0)  )
+        {
             // assegno il punto  nucleo di Steiner
             conv_STEINER[j][k]=CONV_VAL;
 
             // ingrasso il nucleo
-            cr=convective_radius[i];
+            float cr=convective_radius[i];
             LOG_DEBUG(" %f cr", cr);
             ingrasso_nuclei(cr,j,k);
-            ncs=ncs+1;
-
         }
-    }
     }
     return;
 }
@@ -3331,7 +3308,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac)
 {
     logging_category = log4c_category_get("radar.vpr");
-    ncv=0;ncs=0;np=0;
+    ncv=0;np=0;
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
     memset(stratiform,0,sizeof(stratiform));
