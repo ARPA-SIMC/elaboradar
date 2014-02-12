@@ -179,21 +179,25 @@ void to::test<4>()
     wassert(actual(stats.count_zeros[2]) == 0);
     wassert(actual(stats.count_zeros[3]) == 0);
     wassert(actual(stats.count_zeros[4]) == 0);
-    wassert(actual(stats.count_ones[0]) == 176003);
-    wassert(actual(stats.count_ones[1]) == 190293);
-    wassert(actual(stats.count_ones[2]) == 193588);
-    wassert(actual(stats.count_ones[3]) == 196292);
+    wassert(actual(stats.count_zeros[5]) == 0);
+    wassert(actual(stats.count_ones[0]) == 193091);
+    wassert(actual(stats.count_ones[1]) == 193929);
+    wassert(actual(stats.count_ones[2]) == 194526);
+    wassert(actual(stats.count_ones[3]) == 196576);
     wassert(actual(stats.count_ones[4]) == 196160);
-    wassert(actual(stats.count_others[0]) == 21597);
-    wassert(actual(stats.count_others[1]) ==  7307);
-    wassert(actual(stats.count_others[2]) ==  4012);
-    wassert(actual(stats.count_others[3]) ==  1308);
-    wassert(actual(stats.count_others[4]) ==  1440);
-    wassert(actual(stats.sum_others[0]) == 1538560);
-    wassert(actual(stats.sum_others[1]) ==  478421);
-    wassert(actual(stats.sum_others[2]) ==  246658);
-    wassert(actual(stats.sum_others[3]) ==   45968);
-    wassert(actual(stats.sum_others[4]) ==   78321);
+    wassert(actual(stats.count_ones[5]) == 196158);
+    wassert(actual(stats.count_others[0]) == 4509);
+    wassert(actual(stats.count_others[1]) == 3671);
+    wassert(actual(stats.count_others[2]) == 3074);
+    wassert(actual(stats.count_others[3]) == 1024);
+    wassert(actual(stats.count_others[4]) == 1440);
+    wassert(actual(stats.count_others[5]) == 1442);
+    wassert(actual(stats.sum_others[0]) == 387010);
+    wassert(actual(stats.sum_others[1]) == 276931);
+    wassert(actual(stats.sum_others[2]) == 220729);
+    wassert(actual(stats.sum_others[3]) ==  41677);
+    wassert(actual(stats.sum_others[4]) ==  78321);
+    wassert(actual(stats.sum_others[5]) ==  88234);
 
     cb->caratterizzo_volume();
 
@@ -202,21 +206,21 @@ void to::test<4>()
     wassert(actual((unsigned)qual_stats.first).isfalse());
     wassert(actual((unsigned)qual_stats.min) == 0);
     wassert(actual((unsigned)qual_stats.max) == 99);
-    wassert(actual((unsigned)(qual_stats.avg * 100)) == 5955);
+    wassert(actual((unsigned)(qual_stats.avg * 100)) == 5874);
 
     ArrayStats<unsigned char> vpr_stats;
     vpr_stats.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
     wassert(actual((unsigned)vpr_stats.max) == 1);
-    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 92);
+    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 91);
 
     ArrayStats<unsigned char> top_stats;
     top_stats.fill2(cb->top);
     wassert(actual((unsigned)top_stats.first).isfalse());
     wassert(actual((unsigned)top_stats.min) == 0);
     wassert(actual((unsigned)top_stats.max) == 35);
-    wassert(actual((unsigned)(top_stats.avg * 100)) == 10);
+    wassert(actual((unsigned)(top_stats.avg * 100)) == 3);
 
     cb->calcolo_vpr->classifica_rain();
 
