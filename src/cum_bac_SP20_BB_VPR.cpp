@@ -102,9 +102,6 @@ static void startup_banner()
 #ifdef Z_LOWRIS
             " Z_LOWRIS"
 #endif
-#ifdef ANAPROP
-            " ANAPROP"
-#endif
 #ifdef SHORT
             " SHORT"
 #endif
@@ -206,6 +203,9 @@ int main (int argc, char **argv)
 #endif
 #ifdef CLASS
     cb->do_class = true;
+#endif
+#ifdef STAMPE_EXTRA
+    cb->do_devel = true;
 #endif
 
     try {

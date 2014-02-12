@@ -138,6 +138,7 @@ public:
     bool do_vpr;
     bool do_class;
     bool do_zlr_media;
+    bool do_devel;
 
     cumbac::Volume volume;
 
@@ -366,7 +367,7 @@ public:
      * @return q_st quota standard
      */
     float quota_f(float elevaz, int k);
-    void class_conv_fixme_find_a_name();
+    void conversione_convettiva();
     bool esegui_tutto(const char* nome_file, int file_type);
 // added function to calculate beamblocking correction
 //
