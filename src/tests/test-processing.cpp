@@ -159,7 +159,7 @@ void to::test<4>()
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
-    cb->do_declutter = true;
+    cb->do_declutter = false;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
     cb->do_class = true;
@@ -226,6 +226,11 @@ void to::test<4>()
     wassert(actual((unsigned)stratiform_stats.min) == 0);
     wassert(actual((unsigned)stratiform_stats.max) == 1);
     wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 2);
+
+    // calcolo_vpr->esegui_tutto();
+    // conversione_convettiva();
+    // creo_cart();
+    // creo_cart_z_lowris();
 
     delete cb;
 }
@@ -586,7 +591,7 @@ void to::test<8>()
 
     // TODO: cb->stampa_vpr()
 
-    cb->class_conv_fixme_find_a_name();
+    cb->conversione_convettiva();
 
     cb->creo_cart();
     wassert(actual((unsigned)cb->cart.min()) == 0);
@@ -944,7 +949,7 @@ void to::test<11>()
 
     // TODO: cb->stampa_vpr()
 
-    cb->class_conv_fixme_find_a_name();
+    cb->conversione_convettiva();
 
     cb->creo_cart();
     cb->creo_cart_z_lowris();

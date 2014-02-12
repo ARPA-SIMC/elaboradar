@@ -81,7 +81,9 @@ namespace cumbac {
 CUM_BAC::CUM_BAC(const char* site_name)
     : site(Site::get(site_name)),
       do_medium(false),
-      do_quality(false), do_beamblocking(false), do_declutter(false), do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
+      do_quality(false), do_beamblocking(false), do_declutter(false),
+      do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
+      do_devel(false),
       calcolo_vpr(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
@@ -700,8 +702,10 @@ void CUM_BAC::leggo_first_level()
                     if (first_level_static[i][j]<=bb_first_level[i][j])
                         first_level[i][j]=bb_first_level[i][j];
                     else
-                    {  beam_blocking[i][j]=0;
-                        first_level[i][j]=first_level_static[i][j]; }
+                    {
+                        beam_blocking[i][j]=0;
+                        first_level[i][j]=first_level_static[i][j];
+                    }
                 } else {
                     if (first_level_static[i][j]>bb_first_level[i][j])
                         beam_blocking[i][j]=0;
@@ -2082,11 +2086,12 @@ int CalcoloVPR::corr_vpr()
             /* se dall'analisi risulta che nevica assegno neve ovunque*/
             if (snow) neve[i][k]=1;
             strat=1;
-#ifdef CLASS
-            if (conv[i][k] >= CONV_VAL){
-                strat=0;
+            if (cum_bac.do_class)
+            {
+                if (conv[i][k] >= CONV_VAL){
+                    strat=0;
+                }
             }
-#endif
             //--- impongo una soglia per la correzione pari a 0 dBZ
 
             if (BYTEtoDB(cum_bac.volume.vol_pol[0][i].ray[k])>THR_CORR && hbin > hliq  && strat){
@@ -2882,7 +2887,7 @@ int testfit(float a[], float chisq, float chisqin)
     return 0;
 }
 
-void CUM_BAC::class_conv_fixme_find_a_name()
+void CUM_BAC::conversione_convettiva()
 {
     for (int i=0; i<NUM_AZ_X_PPI; i++){
         for (int k=0; k<volume.vol_pol[0][i].ray.size(); k++){
@@ -3176,10 +3181,8 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     setup_elaborazione(nome_file);
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
-#ifdef ANAPROP
     LOG_INFO("inizio rimozione anaprop e beam blocking");
     int ier = elabora_dato();
-#endif
 
 
     //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
@@ -3206,7 +3209,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     }
 
     if (do_class)
-        class_conv_fixme_find_a_name();
+        conversione_convettiva();
 
     //--------------------da rimuovere eventuale scrittura volume ripulito
 
@@ -3228,7 +3231,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
     //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
-#ifndef WRITE_DBP
 
     /*--------------------------------------------------
       | conversione di coordinate da polare a cartesiana |
@@ -3238,8 +3240,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
     //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
-
-#ifdef Z_LOWRIS
 
     LOG_INFO("Estrazione Precipitazione 1X1");
     creo_cart_z_lowris();
@@ -3266,19 +3266,20 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
         scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1.data),qual_Z_1x1.data);
 
         //------------------ stampe extra per studio
-#ifdef STAMPE_EXTRA
-        //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-        //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
-        //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
-        //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-        //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
-        scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1.data),beam_blocking_1x1.data);
-        scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1.data),dato_corr_1x1.data); //flag di propagazione anomala
-        scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1.data),quota_1x1.data);// m/100 +128
-        scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1.data),elev_fin_1x1.data);
-        scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1.data),top_1x1.data);
+        if (do_devel)
+        {
+            //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
+            //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
+            //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
+            //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
+            //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
+            scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1.data),beam_blocking_1x1.data);
+            scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1.data),dato_corr_1x1.data); //flag di propagazione anomala
+            scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1.data),quota_1x1.data);// m/100 +128
+            scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1.data),elev_fin_1x1.data);
+            scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1.data),top_1x1.data);
+        }
 
-#endif
         //------------------ stampe correzioni da profili verticali in formato ZLR
         if (do_vpr)
         {
@@ -3295,10 +3296,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
             scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1.data),conv_1x1.data);
         }
     }
-
-
-#endif// ifdef Z_lOWRIS
-#endif // ifndef WRITE_DBP
 
     return true;
 }
