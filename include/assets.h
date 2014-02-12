@@ -5,6 +5,7 @@
 #include <ctime>
 #include <cstdio>
 #include <logging.h>
+#include <H5Cpp.h>
 
 namespace cumbac {
 
@@ -29,9 +30,11 @@ protected:
     int conf_day;
     int conf_hour;
     int conf_minute;
+    mutable H5::H5File* outfile_devel_data;
 
 public:
     Assets();
+    ~Assets();
 
     /**
      * Configure asset lookup with the given details.
@@ -126,6 +129,12 @@ public:
 
     /// Write the acquisition time in $LAST_VPR file
     void write_last_vpr();
+
+    /**
+     * Return an open HDF5 File to which we can write datasets used to debug
+     * run information
+     */
+    H5::H5File get_devel_data_output() const;
 
 protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC

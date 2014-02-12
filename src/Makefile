@@ -23,7 +23,7 @@ LDLIBS_SP20= -L$(libSP20_DIR) -lSP20_utility
 LDLIBS_ZR= -L$(libZR_DIR) -lfunc_Z_R
 LDLIBS_NR=-L$(libNR_DIR) -lNR_C_ANSI
 
-LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs) $(shell pkg-config --libs radarlib)
+LDLIBS= $(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs) $(shell pkg-config --libs radarlib) -lhdf5_cpp -lhdf5
 
 CC=cc 
 CXX=g++ 

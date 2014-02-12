@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <memory>
 #include <cstring>
+#include <H5Cpp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -408,6 +409,25 @@ void Volume::resize_elev_fin()
                 max_size = vol_pol[iel][i].ray.size();
         }
         elev_fin[i].resize(max_size, 0);
+    }
+}
+
+void Volume::write_info_to_debug_file(H5::H5File out)
+{
+    using namespace H5;
+
+    // Compute dimensions
+    hsize_t dims[2] = { NUM_AZ_X_PPI, 0 };
+    for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
+        if (dims[1] < elev_fin[i].size())
+            dims[1] = elev_fin[i].size();
+
+    // Create the dataset
+    DataSet ds = out.createDataSet("elev_fin", H5T_NATIVE_UCHAR, DataSpace(2, dims));
+
+    // Write elev_fin to it
+    for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
+    {
     }
 }
 
