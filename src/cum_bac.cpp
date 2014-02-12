@@ -103,6 +103,9 @@ CUM_BAC::CUM_BAC(const char* site_name)
     memset(stat_bloc,0,sizeof(stat_bloc));
     memset(stat_elev,0,sizeof(stat_elev));
 
+    memset(hray, 0, sizeof(hray));
+    memset(hray_inf, 0, sizeof(hray_inf));
+
 
     //-----  FINE INIZIALIZZAZIONI---------//
 }
