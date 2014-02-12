@@ -66,9 +66,9 @@ PolarScan::PolarScan()
 
 void VolumeStats::print(FILE* out)
 {
-    fprintf(out, "Nel   Zeros    Ones  Others     Sum\n"); 
+    fprintf(out, "Nel    Zeros     Ones   Others      Sum\n");
     for (int iel =0; iel<NEL; ++iel){
-        fprintf(out, "%4d%8d%8d%8d%8d\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
+        fprintf(out, "%4u %8u %8u %8u %8u\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
     }
 }
 
