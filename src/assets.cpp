@@ -15,8 +15,14 @@ using namespace std;
 namespace cumbac {
 
 Assets::Assets()
-    : logging_category(log4c_category_get("radar.assets"))
+    : logging_category(log4c_category_get("radar.assets")), outfile_devel_data(0)
 {
+}
+
+Assets::~Assets()
+{
+    if (outfile_devel_data)
+        delete outfile_devel_data;
 }
 
 void Assets::configure(const char* site, time_t acq_time)
@@ -200,13 +206,26 @@ long int Assets::read_profile_gap() const
 
 void Assets::write_last_vpr()
 {
-    LOG_CATEGORY("radar.vpr");
+    //LOG_CATEGORY("radar.vpr");
     const char* fname = getenv("LAST_VPR");
     if (!fname) throw runtime_error("$LAST_VPR is not set");
     FILE* out = fopen_checked(fname, "wb", "ultimo VPR");
     uint32_t val = conf_acq_time;
     fwrite(&val, 4, 1, out);
     fclose(out);
+}
+
+H5::H5File Assets::get_devel_data_output() const
+{
+    if (!outfile_devel_data)
+    {
+        const char* qdir = getenv("DIR_QUALITY");
+        if (!qdir) throw runtime_error("$DIR_QUALITY is not set");
+        string fname(qdir);
+        fname += "/devel-data.h5";
+        outfile_devel_data = new H5::H5File(fname, H5F_ACC_TRUNC);
+    }
+    return *outfile_devel_data;
 }
 
 }

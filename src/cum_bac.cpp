@@ -642,7 +642,7 @@ int CUM_BAC::elabora_dato()
 
             if (do_quality)
             {
-                elevaz=(float)(volume.ray_at_elev_fin(i, k).teta_true)*CONV_RAD;
+                elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
                 // elev_fin[i][k]=first_level_static[i][k];//da togliere
                 quota[i][k]=(unsigned short)(quota_f(elevaz,k));
                 quota_rel[i][k]=(unsigned short)(hray[k][volume.elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
@@ -1464,7 +1464,7 @@ void CalcoloVPR::classifico_STEINER()
             BYTE=56;
 #warning This code used to work like this, by accident, in C: this is a workaround to maintain functional equivalence during porting to c++
         } else
-            BYTE=cum_bac.volume.sample_at_elev_fin(j, k);
+            BYTE=cum_bac.volume.sample_at_elev_preci(j, k);
         // calcolo diff col background
         diff_bckgr=BYTEtoDB(BYTE)-bckgr[i];
         /* if (k < 160 ){ */
@@ -1561,10 +1561,10 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                     jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
                     for (j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
-                            //        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
-                            if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ){
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k)) ;
-                                bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
+                            //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
+                            if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ){
+                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_preci(j, k)) ;
+                                bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_preci(j, k));
                                 npoints=npoints+1;
                             }
                         }
@@ -1576,10 +1576,10 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                     jmax=jmax%NUM_AZ_X_PPI;
                     for (j= 0  ; j< jmax ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
-                            // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                            if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
-                                bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
+                            // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                            if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
+                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_preci(j, k));
+                                bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_preci(j, k));
                                 npoints=npoints+1;
                             }
                         }
@@ -1589,10 +1589,10 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
 
                 for (j=jmin   ; j<jmax  ; j++) {
                     for (k=kmin  ; k<kmax   ; k++){
-                        // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
-                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_preci(j, k));
+                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_preci(j, k));
                             npoints=npoints+1;
                         }
                     }
@@ -1601,20 +1601,20 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
             else{
                 for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
                     for (k=0  ; k<kmax   ; k++){
-                        // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
-                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_preci(j, k));
+                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_preci(j, k));
                             npoints=npoints+1;
                         }
                     }
                 }
                 for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
                     for (k=0  ; k<-kmin   ; k++){
-                        // if (cum_bac.volume.sample_at_elev_fin(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( cum_bac.volume.sample_at_elev_fin(j, k) > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_fin(j, k));
-                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_fin(j, k));
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(cum_bac.volume.sample_at_elev_preci(j, k));
+                            bckgr[i]=bckgr[i]+BYTEtoDB(cum_bac.volume.sample_at_elev_preci(j, k));
                             npoints=npoints+1;
                         }
                     }
@@ -2099,7 +2099,7 @@ int CalcoloVPR::corr_vpr()
         for (k=0; k<cum_bac.volume.vol_pol[0][i].ray.size(); k++){
             corr=0.;
             /* trovo elevazione reale e quota bin*/
-            //elevaz=(float)(volume.ray_at_elev_fin(i, k).teta_true)*CONV_RAD;
+            //elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
             hbin=(float)cum_bac.quota[i][k];
 
             /* se dall'analisi risulta che nevica assegno neve ovunque*/
@@ -2560,7 +2560,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
 
                 vol_rain=0;
-                // dist=(long int)(dist*cos((float)(cum_bac.volume.ray_at_elev_fin(i, k).teta_true)*CONV_RAD));
+                // dist=(long int)(dist*cos((float)(cum_bac.volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD));
 
                 /* //---------calcolo la distanza proiettata sul piano-------------  */
 

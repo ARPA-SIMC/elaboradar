@@ -13,6 +13,9 @@
 // TODO: per compatibilità con la libsp20, anche questo toglierlo in futuro
 extern int elev_array[NEL];
 
+namespace H5 {
+struct H5File;
+}
 
 namespace cumbac {
 
@@ -79,24 +82,26 @@ public:
 
     Volume();
 
-    inline Ray& ray_at_elev_fin(unsigned az_idx, unsigned ray_idx)
+    inline Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx)
     {
         return vol_pol[elev_fin[az_idx][ray_idx]][az_idx];
     }
-    inline const Ray& ray_at_elev_fin(unsigned az_idx, unsigned ray_idx) const
+    inline const Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
         return vol_pol[elev_fin[az_idx][ray_idx]][az_idx];
     }
 
-    inline unsigned char sample_at_elev_fin(unsigned az_idx, unsigned ray_idx) const
+    inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return ray_at_elev_fin(az_idx, ray_idx).ray[ray_idx];
+        return ray_at_elev_preci(az_idx, ray_idx).ray[ray_idx];
     }
 
     void read_sp20(const char* nome_file);
     void read_odim(const char* nome_file);
 
     void compute_stats(VolumeStats& stats) const;
+
+    void write_info_to_debug_file(H5::H5File out);
 
 protected:
     void resize_elev_fin();
