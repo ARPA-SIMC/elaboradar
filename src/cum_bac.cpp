@@ -3341,6 +3341,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
     memset(stratiform,0,sizeof(stratiform));
+    memset(corr_polar, 0, sizeof(corr_polar));
 
     for (int i=0; i<NMAXLAYER; i++)
       vpr[i]=NODATAVPR;
