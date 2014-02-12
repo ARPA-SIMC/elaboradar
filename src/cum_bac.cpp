@@ -1049,7 +1049,7 @@ void CalcoloVPR::classifica_rain()
     //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
     float w_size[2]={3.,0.3}; //dimensione della matrice pesi
 //    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,**beamXweight[MAX_BIN]; // da inizializzare in fase di programma
-    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,beamXweight[MAX_BIN][20][10]; // da inizializzare in fase di programma
+    float RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,beamXweight[MAX_BIN][20][10]; // da inizializzare in fase di programma
     float range_min,range_max,xmin,zmin,xmax,zmax;
     int w_x_size,w_z_size,w_x_size_2,w_z_size_2;
     FILE *file;
@@ -1211,14 +1211,8 @@ void CalcoloVPR::classifica_rain()
     /* ; Selezione dati per formare RHI */
     /* ;---------------------------------- */
 
-    cil.allocate(x_size, z_size);
+    cil.slices.reserve(NUM_AZ_X_PPI);
 
-    rhi_cart= (float **) malloc (x_size*sizeof(float *));
-    rhi_weight= (float **) malloc (x_size*sizeof(float *));
-    for (k=0; k<x_size; k++){
-        rhi_cart[k]= (float *) malloc (z_size*sizeof(float ));
-        rhi_weight[k]= (float *) malloc (z_size*sizeof(float ));
-    }
 /*     for(k=0;k<MAX_BIN;k++){
         beamXweight[k]=(float **) malloc(w_x_size*sizeof(float *));
         for(i=0;i<w_x_size;i++){
@@ -1226,13 +1220,10 @@ void CalcoloVPR::classifica_rain()
         }
     }
 */
-    for (iaz=0; iaz<NUM_AZ_X_PPI; iaz++){
-        for (k=0; k<x_size; k++){
-            for (j=0; j<z_size; j++){
-                rhi_cart[k][j]=0. ;
-                rhi_weight[k][j]=0. ;
-            }
-        }
+    for (iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
+    {
+        CilindricalSlice rhi_cart(x_size, z_size, 0);
+        CilindricalSlice rhi_weight(x_size, z_size, 0);
 
         for (i=0;i<NEL;i++){
             if (iaz < cum_bac.volume.nbeam_elev[i])
@@ -1301,9 +1292,9 @@ void CalcoloVPR::classifica_rain()
                     rhi_cart[i][j]=missing_value;
 
                 }
-                cil[iaz][i][j]=rhi_cart[i][j];
             }
         }
+        cil.slices.push_back(rhi_cart);
     }
 
     //-------------------------------------------------------------------------------------------------------------------------
