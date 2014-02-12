@@ -153,6 +153,7 @@ public:
     //matrici per ricampionamento cartesiano
     float azimut[MAX_BIN][MAX_BIN];
     float range[MAX_BIN][MAX_BIN];
+    // vol_pol riportato in cartesiano
     Image<unsigned char, MAX_BIN*2> cart;
     Image<double, MAX_BIN*2> cartm;  /* Z media dei bins adiacenti al punto */
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
@@ -183,7 +184,8 @@ public:
     unsigned char beam_blocking [NUM_AZ_X_PPI][MAX_BIN];   /* mappa di beam blocking (input)*/
 
     //variabili legate a propagazione e beam blocking, da prog_bb
-    float hray[MAX_BIN][NEL];  /*quota centro fascio in funzione della distanza e elevazione*/
+    // quota centro fascio in funzione della distanza e elevazione
+    float hray[MAX_BIN][NEL];
     float hray_inf[MAX_BIN][NEL]; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     float dem[NUM_AZ_X_PPI][MAX_BIN]; /*dem in coordinate azimut range*/
     float dtrs;// distanza temporale radiosondaggio
@@ -378,9 +380,9 @@ struct CilindricalColumn
 {
     std::vector<float> data;
 
-    CilindricalColumn(unsigned zsize)
+    CilindricalColumn(unsigned zsize, float def_val=-20)
     {
-        data.resize(zsize, -20);
+        data.resize(zsize, def_val);
     }
 
     float& operator[](unsigned z)
@@ -394,11 +396,11 @@ struct CilindricalSlice
 {
     std::vector<CilindricalColumn> columns;
 
-    CilindricalSlice(unsigned xsize, unsigned zsize)
+    CilindricalSlice(unsigned xsize, unsigned zsize, float def_val=-20)
     {
         columns.reserve(xsize);
         for (unsigned i = 0; i < xsize; ++i)
-            columns.push_back(CilindricalColumn(zsize));
+            columns.push_back(CilindricalColumn(zsize, def_val));
     }
 
     CilindricalColumn& operator[](unsigned x)
@@ -410,19 +412,19 @@ struct CilindricalSlice
 
 struct CilindricalVolume
 {
-    std::vector<CilindricalSlice> cil;
-   
+    std::vector<CilindricalSlice> slices;
+
     void allocate(unsigned xsize, unsigned zsize)
     {
-        cil.reserve(NUM_AZ_X_PPI);
+        slices.reserve(NUM_AZ_X_PPI);
         for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
-            cil.push_back(CilindricalSlice(xsize, zsize));
+            slices.push_back(CilindricalSlice(xsize, zsize));
     }
 
     CilindricalSlice& operator[](unsigned i)
     {
-        if (i >= cil.size()) throw std::runtime_error("cil: fuori coordinata i");
-        return cil[i];
+        if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
+        return slices[i];
     }
 };
 
