@@ -1257,10 +1257,11 @@ void CalcoloVPR::classifica_rain()
 
         for (iel=0;iel<NEL;iel++){
             for (ibin=0;ibin<ray_size;ibin++) {
-if ( ibin >= MAX_BIN) {
-std::cout<<"ibin troppo grande "<<std::endl;
-throw std::runtime_error("ERRORE");
-}                for(kx=0;kx<w_x_size;kx++){
+                if ( ibin >= MAX_BIN) {
+                    std::cout<<"ibin troppo grande "<<std::endl;
+                    throw std::runtime_error("ERRORE");
+                }
+                for(kx=0;kx<w_x_size;kx++){
                     for(kz=0;kz<w_z_size;kz++){
 //std::cout<<"ibin , kx, kz "<<ibin<<" "<<kx<<" "<<kz<<" "<<w_x_size<< " "<<w_z_size<<" "<<MAX_BIN<<std::endl;
 //std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
@@ -1514,7 +1515,8 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
         {
             //if ( volume.vol_pol[0][i].ray[j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
-            {     if ( cum_bac.volume.vol_pol[0][i].ray[j] > 1 )
+            if (j < cum_bac.volume.vol_pol[0][i].ray.size() && cum_bac.volume.vol_pol[0][i].ray[j] > 1)
+            {
                 lista_bckg[np][0]=i;  //IAZIMUT
                 lista_bckg[np][1]=j;  //IRANGE
                 np=np+1;
@@ -3056,6 +3058,7 @@ void CUM_BAC::creo_cart_z_lowris()
             //reinizializzo tutte le variabili calcolate dentro la funzione .
             z = 0;
             q = 0;
+            nv = 0;
             zm = 0.;
             dc1x1=0;
             el1x1=0;
@@ -3068,34 +3071,38 @@ void CUM_BAC::creo_cart_z_lowris()
                 for(y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
                     //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
                 {
-                    if(cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] != MISSING)
-                        if(cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] > z){
-                            z= cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                            traw=topxy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                    unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
+                    unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
+                    if (src_x >= MAX_BIN*2) printf("X è fuori\n");
+                    if (src_y >= MAX_BIN*2) printf("Y è fuori\n");
+                    if(cart[src_x][src_y] != MISSING)
+                        if(cart[src_x][src_y] > z){
+                            z= cart[src_x][src_y];
+                            traw=topxy[src_x][src_y];
                             if (do_quality)
                             {
-                                q=qual_Z_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                                q1x1=quota_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                                dc1x1=dato_corr_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                                el1x1=elev_fin_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                                bl1x1=beam_blocking_xy[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                q=qual_Z_cart[src_x][src_y];
+                                q1x1=quota_cart[src_x][src_y];
+                                dc1x1=dato_corr_xy[src_x][src_y];
+                                el1x1=elev_fin_xy[src_x][src_y];
+                                bl1x1=beam_blocking_xy[src_x][src_y];
 
                                 if (do_vpr)
                                 {
-                                    c1x1=corr_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
-                                    nv= neve_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                    c1x1=corr_cart[src_x][src_y];
+                                    nv= neve_cart[src_x][src_y];
                                 }
                             }
 
                             if (do_class)
                             {
-                                conv_1x1[i][j]=conv_cart[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                conv_1x1[i][j]=conv_cart[src_x][src_y];
                             }
 
                             if (do_zlr_media)
                             {
-                                if (cartm[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET] > 0) {
-                                    zm = zm + cartm[i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET][j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET];
+                                if (cartm[src_x][src_y] > 0) {
+                                    zm = zm + cartm[src_x][src_y];
                                     cont=cont+1;
                                 }
                             }
