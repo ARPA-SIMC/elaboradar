@@ -20,6 +20,7 @@
 #include "logging.h"
 #include "assets.h"
 #include "volume.h"
+#include <stdexcept>
 
 #ifdef __cplusplus
 extern "C" {
@@ -373,6 +374,58 @@ public:
     float RtoDBZ(float rain) const;
 };
 
+struct CilindricalColumn
+{
+    std::vector<float> data;
+
+    CilindricalColumn(unsigned zsize)
+    {
+        data.resize(zsize, -20);
+    }
+
+    float& operator[](unsigned z)
+    {
+        if (z >= data.size()) throw std::runtime_error("cil: fuori coordinata z");
+        return data[z];
+    }
+};
+
+struct CilindricalSlice
+{
+    std::vector<CilindricalColumn> columns;
+
+    CilindricalSlice(unsigned xsize, unsigned zsize)
+    {
+        columns.reserve(xsize);
+        for (unsigned i = 0; i < xsize; ++i)
+            columns.push_back(CilindricalColumn(zsize));
+    }
+
+    CilindricalColumn& operator[](unsigned x)
+    {
+        if (x >= columns.size()) throw std::runtime_error("cil: fuori coordinata x");
+        return columns[x];
+    }
+};
+
+struct CilindricalVolume
+{
+    std::vector<CilindricalSlice> cil;
+   
+    void allocate(unsigned xsize, unsigned zsize)
+    {
+        cil.reserve(NUM_AZ_X_PPI);
+        for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
+            cil.push_back(CilindricalSlice(xsize, zsize));
+    }
+
+    CilindricalSlice& operator[](unsigned i)
+    {
+        if (i >= cil.size()) throw std::runtime_error("cil: fuori coordinata i");
+        return cil[i];
+    }
+};
+
 struct CalcoloVPR
 {
     log4c_category_t* logging_category;
@@ -380,7 +433,7 @@ struct CalcoloVPR
     CUM_BAC& cum_bac;
     long int area_vpr[NMAXLAYER]; /*area degli strati*/
     // ricampionamento del volume in coordinate cilindriche
-    float **cil[NUM_AZ_X_PPI];
+    CilindricalVolume cil;
     long int gap; /* distanza temporale dall'ultimo file vpr */
     float zeroterm;//zerotermico
     float t_ground;

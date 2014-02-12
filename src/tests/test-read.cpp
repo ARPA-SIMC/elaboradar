@@ -187,7 +187,7 @@ template<> template<>
 void to::test<4>()
 {
     // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO_mod";
     CUM_BAC* cb = new CUM_BAC("GAT");
     bool res = cb->read_sp20_volume(fname, 0);
     // Ensure that reading was successful
