@@ -436,12 +436,30 @@ void Volume::write_info_to_debug_file(H5::H5File out)
         if (dims[1] < elev_fin[i].size())
             dims[1] = elev_fin[i].size();
 
+    DataSpace file_data_space(2, dims);
+
+    // Dataset data type
+    IntType datatype( PredType::NATIVE_UCHAR );
+
+    // Dataset fill value
+    DSetCreatPropList props;
+    unsigned char fill_value(0);
+    props.setFillValue(datatype, &fill_value);
+
     // Create the dataset
-    DataSet ds = out.createDataSet("elev_fin", H5T_NATIVE_UCHAR, DataSpace(2, dims));
+    DataSet ds = out.createDataSet("/elev_fin", datatype, file_data_space, props);
 
     // Write elev_fin to it
     for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
     {
+        hsize_t mdims[1] = { elev_fin[i].size() };
+        DataSpace memory_data_space(1, mdims);
+
+        hsize_t count[] = { 1, elev_fin[i].size() };
+        hsize_t start[] = { i, 0 };
+        file_data_space.selectHyperslab(H5S_SELECT_SET, count, start);
+
+        ds.write(elev_fin[i].data(), datatype, memory_data_space, file_data_space);
     }
 }
 
