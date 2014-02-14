@@ -29,7 +29,7 @@ CC=cc
 CXX=g++ 
 
 # Common CFLAGS for old and new code
-CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib)
+CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -Wstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib)
 
 # CFLAGS for old code
 CFLAGS_LEGACY=$(CFLAGS_COMMON) $(COMMON_DFLAGS_MEDIUM)

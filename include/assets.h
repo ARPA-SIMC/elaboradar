@@ -130,6 +130,8 @@ public:
     /// Write the acquisition time in $LAST_VPR file
     void write_last_vpr();
 
+    void write_vpr_hmax(int hvprmax);
+
     /**
      * Return an open HDF5 File to which we can write datasets used to debug
      * run information

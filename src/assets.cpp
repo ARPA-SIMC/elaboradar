@@ -215,6 +215,15 @@ void Assets::write_last_vpr()
     fclose(out);
 }
 
+void Assets::write_vpr_hmax(int hvprmax)
+{
+    const char* fname = getenv("VPR_HMAX");
+    if (!fname) throw runtime_error("$VPR_HMAX is not set");
+    FILE* out = fopen_checked(fname, "wt", "hmax VPR");
+    fprintf(out, "%d", hvprmax);
+    fclose(out);
+}
+
 H5::H5File Assets::get_devel_data_output() const
 {
     if (!outfile_devel_data)
