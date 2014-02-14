@@ -353,7 +353,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 
 int CUM_BAC::elabora_dato()
 {
-    int i,l,k;
+    int i,l;
     int test_an;
     int el_inf,el_up;
     float bin_low,bin_high,bin_low_low,cont_anap;
@@ -381,7 +381,7 @@ int CUM_BAC::elabora_dato()
     {
         for(i=0; i<NUM_AZ_X_PPI; i++)
         {
-            for(k=0; k<volume.vol_pol[0][i].ray.size(); k++)
+            for(unsigned k=0; k<volume.vol_pol[0][i].ray.size(); k++)
             {
                 //---assegno el_inf a mappa statica
                 el_inf = first_level_static[i][k];
@@ -426,7 +426,7 @@ int CUM_BAC::elabora_dato()
     {
         flag_anap = 0;
         cont_anap=0;// aggiunto per risolvere problema di uso con preci shallow
-        for(k=0; k<volume.vol_pol[0][i].ray.size(); k++)
+        for(unsigned k=0; k<volume.vol_pol[0][i].ray.size(); k++)
             //------------- incremento statistica tot ------------------
         {
             stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
@@ -914,7 +914,7 @@ void CUM_BAC::caratterizzo_volume()
 
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
-            int beam_size;
+            unsigned beam_size;
             //-----elevazione reale letta da file* fattore di conversione 360/4096
             if (i < count_beams)
             {
@@ -930,7 +930,7 @@ void CUM_BAC::caratterizzo_volume()
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
 
-            for (int k=0; k<beam_size; k++)/*ciclo range*/
+            for (unsigned k=0; k<beam_size; k++)/*ciclo range*/
             {
                 // Enrico: cerca di non leggere fuori dal volume effettivo
                 unsigned char sample = 0;
@@ -1046,8 +1046,8 @@ void CalcoloVPR::classifica_rain()
     float xx[MAX_BIN][NEL];
     int  i_xx[MAX_BIN][NEL],i_zz[MAX_BIN][NEL],i_xx_min[MAX_BIN][NEL],i_xx_max[MAX_BIN][NEL],i_zz_min[MAX_BIN][NEL],i_zz_max[MAX_BIN][NEL];
     int  im[MAX_BIN][NEL], ix[MAX_BIN][NEL], jm[MAX_BIN][NEL], jx[MAX_BIN][NEL];
-    int i,j,kx,kz,k,iel,iaz,ibin,imin,imax,jmin,jmax,RHI_ind[NEL][MAX_BIN],jbb;
-    int wimin,wjmin,wimax,wjmax;
+    int i,j,kx,kz,k,iel,imin,imax,jmin,jmax;// Enrico RHI_ind[NEL][MAX_BIN];
+    int wimin,wjmin; // Enrico ,wimax,wjmax;
     int hmax=-9999, ier_ap,ier_0term=0;
 
     //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
@@ -1158,7 +1158,7 @@ void CalcoloVPR::classifica_rain()
             xx[i][k]=range[i]*cos(elev_array[k]*CONV_RAD); // distanza
             i_zz[i][k]=floor((zz[i][k]-zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
             i_xx[i][k]=floor((xx[i][k]-xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
-            RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;
+            // Enrico RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;
             //shift orizzontale negativo del punto di indice i_xx[i][k] per costruire la finestra in x
             // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
             i_xx_min[i][k]=i_xx[i][k];
@@ -1224,7 +1224,7 @@ void CalcoloVPR::classifica_rain()
         }
     }
 */
-    for (iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
+    for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         CilindricalSlice rhi_cart(x_size, z_size, 0);
         CilindricalSlice rhi_weight(x_size, z_size, 0);
@@ -1252,7 +1252,7 @@ void CalcoloVPR::classifica_rain()
             ray_size = MAX_BIN;
 
         for (iel=0;iel<NEL;iel++){
-            for (ibin=0;ibin<ray_size;ibin++) {
+            for (unsigned ibin=0;ibin<ray_size;ibin++) {
                 if ( ibin >= MAX_BIN) {
                     std::cout<<"ibin troppo grande "<<std::endl;
                     throw std::runtime_error("ERRORE");
@@ -1268,16 +1268,16 @@ void CalcoloVPR::classifica_rain()
                 }
             }
 
-            for (ibin=0;ibin<cum_bac.volume.vol_pol[0][iaz].ray.size();ibin++) {
+            for (unsigned ibin=0;ibin<cum_bac.volume.vol_pol[0][iaz].ray.size();ibin++) {
                 imin=im[ibin][iel];
                 imax=ix[ibin][iel];
                 jmin=jm[ibin][iel];
                 jmax=jx[ibin][iel];
 
                 wimin=w_x_size_2-i_xx_min[ibin][iel];
-                wimax=w_x_size_2+i_xx_max[ibin][iel];
+                //wimax=w_x_size_2+i_xx_max[ibin][iel];
                 wjmin=w_z_size_2-i_zz_min[ibin][iel];
-                wjmax=w_z_size_2+i_zz_max[ibin][iel];
+                //wjmax=w_z_size_2+i_zz_max[ibin][iel];
                 for (i=imin;i<=imax;i++) {
                     for (j=jmin;j<=jmax;j++) {
                         rhi_cart[i][j]=rhi_cart[i][j] +  beamXweight[ibin][wimin+(i-imin)][wjmin+(j-jmin)];
@@ -1333,11 +1333,9 @@ int CalcoloVPR::trovo0term()
 void CalcoloVPR::classifico_VIZ()
 {
     int i,j,k,kbbb=0,ktbb=0,kmax=0;
-    float cil_Z,base,Zr;
+    float cil_Z,base;
     double *Zabb[NUM_AZ_X_PPI],*Zbbb[NUM_AZ_X_PPI], ext_abb,ext_bbb;
     float LIM_VERT= 8.;//questo l'ho messo io
-    FILE *file_Zabb;
-
 
     kbbb=floor(hbbb/resol[1]);   //08/01/2013...MODIFICA, inserito questo dato
     ktbb=ceil(htbb/resol[1]);
@@ -1477,16 +1475,13 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
     // quella in azimut  dipende dal range
 
 {
-    int i,j,k,jmin,jmax,J_MAX,J_BBB,J_ABB,kmin,kmax,delta_naz=0,delta_nr;
-    float z,zmax,range,delta_r,delta_az,az_min,az_max;
+    int k,kmin,kmax,delta_naz=0,delta_nr;
     long int npoints=0;
 
 
-
-
     //traccio una lista dei punti che hanno valore non nullo e sotto base bright band (lista_bckg) contenente iaz e irange e conto i punti
-    for (i=0; i<NUM_AZ_X_PPI;i++) {
-        for (j=0; j<MAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa
+    for (unsigned i=0; i<NUM_AZ_X_PPI;i++) {
+        for (unsigned j=0; j<MAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa
         {
             //if ( volume.vol_pol[0][i].ray[j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
@@ -1512,13 +1507,13 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
         Z_bckgr=(double *) malloc(np*sizeof(double));
         bckgr=(float *) malloc(np*sizeof(float));
 
-        for (i=0;i<np;i++){ //M: tolto np-1 messo np
+        for (unsigned i=0;i<np;i++){ //M: tolto np-1 messo np
             bckgr[i]=0.;
             Z_bckgr[i]=0;
             convective_radius[i]=0;
         }
 
-        for(i=0; i<np;i++){       // M:tolto np -1 messo np
+        for(unsigned i=0; i<np;i++){       // M:tolto np -1 messo np
             npoints=0;
 
             // estremi della finestra in range
@@ -1534,13 +1529,13 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                 if (delta_naz>NUM_AZ_X_PPI/2)
                     delta_naz=NUM_AZ_X_PPI/2;
 
-                jmin=lista_bckg[i][0]-delta_naz;
-                jmax=lista_bckg[i][0]+delta_naz;
+                unsigned jmin=lista_bckg[i][0]-delta_naz;
+                unsigned jmax=lista_bckg[i][0]+delta_naz;
 
 
                 if (jmin<0) {
                     jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
-                    for (j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
+                    for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
                             //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
                             if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ){
@@ -1555,7 +1550,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
 
                 if (jmax>NUM_AZ_X_PPI) {
                     jmax=jmax%NUM_AZ_X_PPI;
-                    for (j= 0  ; j< jmax ; j++) {
+                    for (unsigned j= 0  ; j< jmax ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
                             // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
                             if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
@@ -1568,7 +1563,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                         jmax=NUM_AZ_X_PPI;
                 }
 
-                for (j=jmin   ; j<jmax  ; j++) {
+                for (unsigned j=jmin   ; j<jmax  ; j++) {
                     for (k=kmin  ; k<kmax   ; k++){
                         // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
                         if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
@@ -1580,7 +1575,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                 }
             }
             else{
-                for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
+                for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
                     for (k=0  ; k<kmax   ; k++){
                         // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
                         if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
@@ -1590,7 +1585,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                         }
                     }
                 }
-                for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
+                for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
                     for (k=0  ; k<-kmin   ; k++){
                         // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
                         if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1  ) {
@@ -1622,7 +1617,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
 
 void CalcoloVPR::ingrasso_nuclei(float cr,int ja,int kr)
 {
-    int daz, dr,jmin,jmax,kmin,kmax,j,k;
+    int daz, dr,jmin, jmax, kmin,kmax,j,k;
 
 
     dr=(int)(cr*1000./cum_bac.volume.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
@@ -1725,7 +1720,7 @@ int CalcoloVPR::combina_profili()
     long int c0,*cv,*ct;
     float vpr0[NMAXLAYER],vpr1[NMAXLAYER],vpr_dbz;
     float alfat,noval;
-    int mode,ilay,gap_res,heating_res,i,foundlivmin=0,il,ier_ap,ier_cp,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
+    int mode,ilay,i,foundlivmin=0,il,ier_ap,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
     long int  area[NMAXLAYER],ar=0;
     int n=0,diff=0;
     char nomefile[150],stringa[100];
@@ -1795,7 +1790,7 @@ int CalcoloVPR::combina_profili()
             for(ilay=0; ilay<NMAXLAYER; ilay++){
 
                 //-----leggo vpr e area per ogni strato----
-                ier_cp=fscanf(file,"%f %li\n",&vpr0[ilay],&area[ilay]);
+                fscanf(file,"%f %li\n",&vpr0[ilay],&area[ilay]);
             }
             LOG_INFO("fatta lettura vpr");
             fclose(file);
@@ -1830,7 +1825,7 @@ int CalcoloVPR::combina_profili()
                     heating=WARM;
                     fscanf(file," %s %s %s %s" ,stringa ,stringa,stringa,stringa);
                     for (ilay=0;  ilay<NMAXLAYER; ilay++){
-                        ier_cp=fscanf(file," %i %f %li", &il, &vpr0[ilay], &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
+                        fscanf(file," %i %f %li", &il, &vpr0[ilay], &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
 
                         //---- converto in R il profilo vecchio--
                         if (vpr0[ilay]>0){
@@ -2051,8 +2046,8 @@ int CalcoloVPR::corr_vpr()
 {
     LOG_CATEGORY("radar.vpr");
 
-    int ilray,ilref,ilay2,i,k,ier_ana,snow,strat;
-    float corr,vpr_liq,vpr_hray,hbin,hliq,elevaz,db1,db2;
+    int ilray,ilref,ilay2,ier_ana,snow,strat;
+    float corr,vpr_liq,vpr_hray,hbin,hliq;
 
     /*inizializzazione variabili */
     snow=0;
@@ -2076,8 +2071,8 @@ int CalcoloVPR::corr_vpr()
 
 
     //correzione vpr
-    for (i=0; i<NUM_AZ_X_PPI; i++){
-        for (k=0; k<cum_bac.volume.vol_pol[0][i].ray.size(); k++){
+    for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
+        for (unsigned k=0; k<cum_bac.volume.vol_pol[0][i].ray.size(); k++){
             corr=0.;
             /* trovo elevazione reale e quota bin*/
             //elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
@@ -2176,7 +2171,7 @@ int CalcoloVPR::corr_vpr()
 int CalcoloVPR::trovo_hvprmax(int *hmax)
 {
     int i,imax,istart,foundlivmax;
-    float vprmax,h0start,peak,soglia;
+    float h0start,peak,soglia;
 
 
     if (t_ground != NODATAVPR)
@@ -2199,7 +2194,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     foundlivmax=0;
     peak=NODATAVPR;
     *hmax=INODATA;
-    vprmax=NODATAVPR;
+    // Enrico vprmax=NODATAVPR;
     imax=INODATA;
     soglia=DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
@@ -2211,7 +2206,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     //----se picco > MINIMO il punto è ok
     if(peak> MIN_PEAK_VPR){
         imax=istart;
-        vprmax=vpr[imax];
+        // Enrico vprmax=vpr[imax];
         LOG_DEBUG("il primo punto soddisfa le condizioni di picco");
     }
     for (i=istart+1;i<NMAXLAYER-4;i++) //la ricerca è un po' diversa dall'originale.. trovo il picco + alto con valore  rispetto a 4 sopra > soglia
@@ -2221,7 +2216,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
         if (vpr[i]>vpr[i-1]  && peak> MIN_PEAK_VPR ) // se vpr(i) maggiore del massimo e picco sufficientemente alto
         {
             imax=i;
-            vprmax=vpr[imax];
+            // Enrico vprmax=vpr[imax];
         }
 
     }
@@ -2255,16 +2250,13 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
 int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
     /*=======analisi profilo============ */
 {
-    int i,ier=1,ier_ana=0,ier_ap,liv0;
+    int i,ier=1,ier_ana=0,liv0;
     int tipo_profilo;
     int npar=5;
     float *a,*dyda,v1000,v1500,v600sottobb,vliq,vhliquid,vprmax; //*togliere gli ultimi tre*/;
     char date[]="000000000000";
     struct tm *tempo;
     time_t Time;
-    int ndata=10;
-    FILE *file;
-
 
     // ------------inizializzazione delle variabili ----------
 
@@ -2448,11 +2440,8 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     //---SCRIVO ALTEZZA MASSIMO PER CLASSIFICAZIONE AL RUN SUCCESSIVO
 
-    ier_ap=access(getenv("VPR_HMAX"),R_OK);
-    file = fopen(getenv("VPR_HMAX"),"w");
-    fprintf(file,"%d", hvprmax);
+    cum_bac.assets.write_vpr_hmax(hvprmax);
     LOG_INFO("fatta scrittura hmax vpr = %d",hvprmax);
-    fclose(file);
 
     return (ier_ana);
 }
@@ -2491,17 +2480,13 @@ long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[])
 {
     LOG_CATEGORY("radar.vpr");
-    int l,i,iA,k,ilay,il,ilast,iaz_min,iaz_max,icounter,naz,nra;
-    int strat;
-    long int dist,dist_plain,vert_ext,vol_rain,somma;
-    float noval,area,elevaz,quota_true_st;
+    int i,iA,ilay,il,ilast,iaz_min,iaz_max;
+    long int dist,dist_plain,vert_ext,vol_rain;
+    float area,elevaz,quota_true_st;
     float grad;
 
     //----------------inizializzazioni----------------
-    somma=0;
     stdev = -1.;
-    noval=NODATAVPR;
-    icounter=0;
     vert_ext=0;
 
     *cv=0;
@@ -2515,9 +2500,9 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
     iaz_min=cum_bac.site.vpr_iaz_min;
     iaz_max=cum_bac.site.vpr_iaz_max;
 
-    for (int l=0; l<NEL; l++)//ciclo elevazioni
+    for (unsigned l=0; l<NEL; l++)//ciclo elevazioni
     {
-        for (int k=0; k<MAX_BIN; k++)/*ciclo range*/
+        for (unsigned k=0; k<MAX_BIN; k++)/*ciclo range*/
         {
             //-------------calcolo distanza-----------
             dist=k*(long int)(cum_bac.volume.size_cell)+(int)(cum_bac.volume.size_cell)/2.;
@@ -2729,7 +2714,7 @@ int CalcoloVPR::interpola_VPR(float a[], int ma)
     float chisq=100.;
     float chisqold=0.0;
     float chisqin=0.0;
-    int i,in1,in2,in3,in4,*ia,ifit,ii,ndati_nok,ndati_ok,k,ier_int;
+    int i,in1,in2,in3,in4,*ia,ifit,ii,ndati_nok,k,ier_int;
     //int ma=5;
     int ndata=10;
     float **covar;
@@ -2889,8 +2874,8 @@ int testfit(float a[], float chisq, float chisqin)
 
 void CUM_BAC::conversione_convettiva()
 {
-    for (int i=0; i<NUM_AZ_X_PPI; i++){
-        for (int k=0; k<volume.vol_pol[0][i].ray.size(); k++){
+    for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
+        for (unsigned k=0; k<volume.vol_pol[0][i].ray.size(); k++){
 
             if (calcolo_vpr->conv[i][k] > 0){
 
@@ -3022,7 +3007,7 @@ void CUM_BAC::creo_cart()
 void CUM_BAC::creo_cart_z_lowris()
 {
     int i,j,x,y,cont;
-    unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1,Zr1x1;
+    unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
     unsigned short q1x1;
     float zm;
 
@@ -3105,7 +3090,7 @@ void CUM_BAC::creo_cart_z_lowris()
                         if (cont >0 ) {
                             z_out[i][j]=(unsigned char)((10*log10(zm/(float)(cont))+20.)/80.*255);
                         }
-                        if (cont =0 ) z_out[i][j]=MISSING;
+                        if (cont == 0 ) z_out[i][j]=MISSING;
                     }
                 }
         }
