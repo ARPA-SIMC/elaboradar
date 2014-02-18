@@ -80,7 +80,7 @@ namespace cumbac {
 
 CUM_BAC::CUM_BAC(const char* site_name)
     : site(Site::get(site_name)),
-      do_medium(false),
+      do_medium(false), do_clean(false),
       do_quality(false), do_beamblocking(false), do_declutter(false),
       do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
       do_devel(false),
@@ -273,7 +273,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume.read_sp20(nome_file);
+    volume.read_sp20(nome_file, site, do_clean);
 
     /*
     printf("fbeam ϑ%f α%f", volume.vol_pol[0][0].teta, volume.vol_pol[0][0].alfa);

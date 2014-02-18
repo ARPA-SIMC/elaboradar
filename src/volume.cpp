@@ -1,12 +1,17 @@
 #include "volume.h"
 #include "utils.h"
+#include "site.h"
+#include "volume_cleaner.h"
 #include "logging.h"
 #include <radarlib/radar.hpp>
 #include <stdexcept>
 #include <memory>
 #include <algorithm>
 #include <cstring>
+#include <cerrno>
 #include <H5Cpp.h>
+
+#define IMPRECISE_AZIMUT
 
 #ifdef __cplusplus
 extern "C" {
@@ -156,12 +161,12 @@ void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsi
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
 }
 
-void Volume::read_sp20(const char* nome_file)
+void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
 {
     // dimensioni cella a seconda del tipo di acquisizione
     static const float size_cell_by_resolution[]={62.5,125.,250.,500.,1000.,2000.};
     //LOG_CATEGORY("radar.io");
-    T_MDB_data_header   old_data_header;
+    HD_DBP_SP20_RAW hd_char;
 
     filename = nome_file;
 
@@ -169,25 +174,77 @@ void Volume::read_sp20(const char* nome_file)
 
     FILE* sp20_in = fopen_checked(nome_file, "rb", "input sp20 file");
 
-    if (ReadHeaderSP20toMDB(&old_data_header, sp20_in) == NO_OK)
+    // Read and decode file header
+    if (fread(&hd_char, sizeof(hd_char), 1, sp20_in) != 1)
     {
-        fclose(sp20_in);
-        throw std::runtime_error("errore lettura header SP20");
+      fclose(sp20_in);
+      throw std::runtime_error("errore lettura header SP20");
     }
+    HD_DBP_SP20_DECOD hd_file;
+    decode_header_DBP_SP20(&hd_char, &hd_file);
 
     /*--------
       ATTENZIONE PRENDO LA DATA DAL NOME DEL FILE
       -------*/
     struct tm data_nome;
-    old_data_header.norm.maq.acq_date=get_date_from_name(&old_data_header,&data_nome,nome_file);
+    acq_date = get_date_from_name(0, &data_nome, nome_file);
+    size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
+    declutter_rsp = (bool)hd_file.filtro_clutter;
 
-    T_MDB_ap_beam_header  old_beam_header;
-    unsigned char dati[MAX_DIM];
-    const int tipo_dati = INDEX_Z;
-    while(1)
+    BeamCleaner cleaner;
+    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
+
+    auto_ptr<Beams> b(new Beams);
+
+    /* Ciclo su tutti i raggi del volume */
+    while (true)
     {
-        if(read_ray_SP20(&old_beam_header,dati,sp20_in,tipo_dati)==NO_OK) break;
-        fill_beam(old_beam_header.teta * FATT_MOLT_EL, old_beam_header.alfa * FATT_MOLT_AZ, old_beam_header.max_bin, dati);
+      char beam_header[40];
+      size_t res = fread(beam_header, sizeof(beam_header), 1, sp20_in);
+      if (res != 1)
+      {
+        if (feof(sp20_in))
+          break;
+        else
+        {
+          string errmsg("Error reading ");
+          errmsg += filename;
+          errmsg += ": ";
+          errmsg += strerror(errno);
+          fclose(sp20_in);
+          throw runtime_error(errmsg);
+        }
+      }
+
+      BEAM_HD_SP20_INFO beam_info;
+      decode_header_sp20_date_from_name(beam_header, &beam_info, (char*)nome_file);
+
+      // Salta beam non validi
+      if (!beam_info.valid_data) continue;
+
+      // Calcola la nuova dimensione dei raggi
+      float my_max_range = 123500;
+      unsigned max_range;
+      if (clean)
+          max_range = get_new_cell_num(beam_info.cell_num, my_max_range / size_cell);
+      else
+          max_range = beam_info.cell_num;
+
+      // TODO: controllare il valore di ritorno delle fread
+      if (beam_info.flag_quantities[0]) fread(b->data_z, 1, beam_info.cell_num, sp20_in);
+      if (beam_info.flag_quantities[1]) fread(b->data_d, 1, beam_info.cell_num, sp20_in);
+      if (beam_info.flag_quantities[2]) fread(b->data_v, 1, beam_info.cell_num, sp20_in);
+      if (beam_info.flag_quantities[3]) fread(b->data_w, 1, beam_info.cell_num, sp20_in);
+
+      vector<bool> cleaned(max_range, false);
+      if (clean)
+          cleaner.clean_beams(*b, max_range, cleaned);
+
+#ifdef IMPRECISE_AZIMUT
+      fill_beam(beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
+#else
+      fill_beam(beam_info.elevation, beam_info.azimuth, max_range, b->data_z);
+#endif
     }
 
     fclose(sp20_in);
@@ -195,10 +252,6 @@ void Volume::read_sp20(const char* nome_file)
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
-
-    acq_date = old_data_header.norm.maq.acq_date;
-    size_cell = size_cell_by_resolution[old_data_header.norm.maq.resolution];
-    declutter_rsp = (bool)old_data_header.norm.maq.declutter_rsp;
 
     resize_elev_fin();
 }
@@ -222,8 +275,10 @@ double eldes_converter_azimut(double start, double stop)
     azAvg &= 0x1FFF;
 
     double res = (double)azAvg * 360.0 / 8192.0;
+#ifdef IMPRECISE_AZIMUT
     // Further truncate to 12 bits
     res = (int)(res / FATT_MOLT_AZ) * FATT_MOLT_AZ;
+#endif
     return res;
 }
 

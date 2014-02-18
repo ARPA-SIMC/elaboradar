@@ -2,6 +2,9 @@
 #define ARCHIVIATORE_VOLUME_CLEANER_H
 
 #include <vector>
+#include <cstdio>
+
+namespace cumbac {
 
 unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range=0);
 
@@ -16,9 +19,15 @@ struct Beams
 struct BeamCleaner
 {
   unsigned char bin_wind_magic_number;
-  int min_segment_length, max_segment_length;
+  unsigned min_segment_length, max_segment_length;
+
+  BeamCleaner();
+
+  void print_config(FILE* out) const;
 
   void clean_beams(Beams& b, unsigned beam_size, std::vector<bool>& corrected) const;
 };
+
+}
 
 #endif

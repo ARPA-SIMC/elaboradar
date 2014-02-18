@@ -177,6 +177,7 @@ int main (int argc, char **argv)
     cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito);
 
     // Set feature flags
+    cb->do_clean = true;
 #ifdef SHORT
     cb->do_medium = false;
 #else
