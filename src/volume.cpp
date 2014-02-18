@@ -11,7 +11,7 @@
 #include <cerrno>
 #include <H5Cpp.h>
 
-#define IMPRECISE_AZIMUT
+//#define IMPRECISE_AZIMUT
 
 #ifdef __cplusplus
 extern "C" {
