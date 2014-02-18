@@ -21,6 +21,8 @@
 // TODO: toglierlo
 #define MAX_DIM 512
 
+namespace cumbac {
+
 using namespace std;
 
 unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range)
@@ -28,8 +30,20 @@ unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range)
     // Lunghezza che vogliamo
     unsigned rmax = min(orig_cell_num, (unsigned)MAX_DIM);
     if (max_range > 0)
-	 rmax = min(rmax, max_range);
+      rmax = min(rmax, max_range);
     return rmax;
+}
+
+
+BeamCleaner::BeamCleaner()
+  : min_segment_length(4), max_segment_length(40)
+{
+}
+
+void BeamCleaner::print_config(FILE* out) const
+{
+    fprintf(out, "bin_wind_magic_number: %u, min_segment_length: %u, max_segment_length: %u\n",
+      (unsigned)bin_wind_magic_number, min_segment_length, max_segment_length);
 }
 
 void BeamCleaner::clean_beams(Beams& b, unsigned beam_size, vector<bool>& corrected) const
@@ -84,4 +98,6 @@ INIZIO CODICE RIPULITURA
       }
     }
   }
+}
+
 }

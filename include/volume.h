@@ -18,6 +18,7 @@ struct H5File;
 }
 
 namespace cumbac {
+struct Site;
 
 struct LoadLogEntry
 {
@@ -27,6 +28,11 @@ struct LoadLogEntry
     LoadLogEntry(double theta, double alpha)
         : theta(theta), alpha(alpha)
     {
+    }
+
+    bool operator==(const LoadLogEntry& e) const
+    {
+        return theta == e.theta && alpha == e.alpha;
     }
 };
 
@@ -102,7 +108,7 @@ public:
         return ray_at_elev_preci(az_idx, ray_idx).ray[ray_idx];
     }
 
-    void read_sp20(const char* nome_file);
+    void read_sp20(const char* nome_file, const Site& site, bool clean=true);
     void read_odim(const char* nome_file);
 
     void compute_stats(VolumeStats& stats) const;

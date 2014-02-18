@@ -131,6 +131,7 @@ public:
     bool do_medium;
 
     /// Feature set required for this run
+    bool do_clean;        // Clean and truncate input volume
     bool do_quality;
     bool do_beamblocking;
     bool do_declutter;

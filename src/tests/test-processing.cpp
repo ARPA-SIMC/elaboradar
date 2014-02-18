@@ -229,7 +229,7 @@ void to::test<4>()
     wassert(actual((unsigned)stratiform_stats.first).isfalse());
     wassert(actual((unsigned)stratiform_stats.min) == 0);
     wassert(actual((unsigned)stratiform_stats.max) == 1);
-    wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 2);
+    wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 0);
 
     // calcolo_vpr->esegui_tutto();
     // conversione_convettiva();

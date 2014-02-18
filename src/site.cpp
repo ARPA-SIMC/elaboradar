@@ -50,6 +50,11 @@ struct SiteGAT : public Site
             memcpy(elev_array, elev_data, sizeof(elev_data));
         }
     }
+
+    virtual unsigned char get_bin_wind_magic_number(time_t when) const
+    {
+        return 135;
+    }
 } site_gat;
 
 
@@ -90,6 +95,15 @@ struct SiteSPC : public Site
             static const int elev_data[]={6,15,26,36,46,57,80,108,148,159,170,180,190,200,210};//GLI ULTIMI 5 fittizi: ANNA 30-03-2011
             memcpy(elev_array, elev_data, sizeof(elev_data));
         }
+    }
+
+    virtual unsigned char get_bin_wind_magic_number(time_t when) const
+    {
+        // After DBP2_250920131130_BOLOGNA
+        if (when >= 1380108600)
+          return 135;
+        else
+          return 131;
     }
 } site_spc;
 
