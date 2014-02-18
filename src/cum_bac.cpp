@@ -2069,7 +2069,6 @@ int CalcoloVPR::corr_vpr()
     LOG_INFO("CORREGGO VPR");
 
 
-
     //correzione vpr
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
         for (unsigned k=0; k<cum_bac.volume.vol_pol[0][i].ray.size(); k++){
