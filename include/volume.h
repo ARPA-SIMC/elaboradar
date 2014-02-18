@@ -40,6 +40,10 @@ struct Ray
 
     Ray();
 
+    /**
+     * Riempie un array di float con i dati del raggio convertiti in DB
+     * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
+     */
     void read_db(float* out, size_t out_size, float missing=0) const;
 
     void log(double theta, double alpha)
