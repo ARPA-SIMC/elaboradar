@@ -83,8 +83,8 @@ public:
     bool declutter_rsp; // ?
 
     //dato di base volume polare, struttura definita in libSP20
-    //PolarScan vol_pol[NEL];
-    Ray vol_pol[NEL][NUM_AZ_X_PPI];
+    PolarScan vol_pol[NEL];
+    //Ray vol_pol[NEL][NUM_AZ_X_PPI];
 
     //numero raggi per elevazione
     unsigned nbeam_elev[NEL];
