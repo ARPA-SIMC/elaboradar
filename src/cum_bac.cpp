@@ -353,17 +353,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 
 int CUM_BAC::elabora_dato()
 {
-    int i,l;
-    int test_an;
-    int el_inf,el_up;
-    float bin_low,bin_high,bin_low_low,cont_anap;
-    float fondo_scala,elevaz;
-    unsigned char flag_anap;
-
-    //-------------calcolo fondo scala   ------------
-    flag_anap = 1;
-    fondo_scala = BYTEtoDB(flag_anap);/*-19.7 dBZ*/
-
+    const float fondo_scala = BYTEtoDB(1); // -19.7 dBZ
 
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
     leggo_first_level();
@@ -379,14 +369,14 @@ int CUM_BAC::elabora_dato()
 
     if (do_declutter)
     {
-        for(i=0; i<NUM_AZ_X_PPI; i++)
+        for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
         {
             for(unsigned k=0; k<volume.vol_pol[0][i].ray.size(); k++)
             {
                 //---assegno el_inf a mappa statica
-                el_inf = first_level_static[i][k];
+                unsigned el_inf = first_level_static[i][k];
                 //---ricopio valori a mappa statica sotto
-                for(l=0; l<=el_inf; l++)
+                for(unsigned l=0; l<=el_inf; l++)
                 {
                     // Enrico: cerca di non leggere/scrivere fuori dal volume effettivo
                     if (k >= volume.vol_pol[l][i].ray.size()) continue;
@@ -422,32 +412,33 @@ int CUM_BAC::elabora_dato()
 
     //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala----------------
 
-    for(i=0; i<NUM_AZ_X_PPI; i++)
+    // FIXME: togliere la definizione di l da qui e metterla nei for dove viene usata
+    unsigned l;
+    for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
     {
-        flag_anap = 0;
-        cont_anap=0;// aggiunto per risolvere problema di uso con preci shallow
+        bool flag_anap = false;
+        unsigned cont_anap=0;// aggiunto per risolvere problema di uso con preci shallow
         for(unsigned k=0; k<volume.vol_pol[0][i].ray.size(); k++)
             //------------- incremento statistica tot ------------------
         {
             stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            el_inf = first_level[i][k];
+            int el_inf = first_level[i][k];
 
             if (do_quality)
                 volume.elev_fin[i][k]=el_inf;
 
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
-            el_up = el_inf +1;
-            if ( el_up >= NEL )
-                bin_high = fondo_scala ;
+            unsigned el_up = el_inf +1;
 
             // ------------assegno  bin_low_low (cioè il valore sotto il bin base)
+            float bin_low_low;
             if (el_inf>0) bin_low_low=BYTEtoDB(volume.vol_pol[el_inf-1][i].ray[k]);
             else  bin_low_low=fondo_scala+1;
 
             // ------------assegno bin_low bin_high anche
-            bin_low  = BYTEtoDB(volume.vol_pol[el_inf][i].ray[k]);
-            bin_high = BYTEtoDB(volume.vol_pol[el_up][i].ray[k]);
+            float bin_low  = BYTEtoDB(volume.vol_pol[el_inf][i].ray[k]);
+            float bin_high = BYTEtoDB(volume.vol_pol[el_up][i].ray[k]);
 
             //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
             MAX_DIF=MAX_DIF_OR;
@@ -463,6 +454,7 @@ int CUM_BAC::elabora_dato()
                 MIN_VALUE_NEXT= BYTEtoDB(0);  }
 
             // ------------separo i diversi casi x analisi anaprop: ho dati sia al livello base che sopra o no  e ho trovato anaprop in precedenza sul raggio o no
+            bool test_an;
             if (cont_anap> THR_CONT_ANAP || k < 80  )
                 test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
             else
@@ -480,7 +472,7 @@ int CUM_BAC::elabora_dato()
                     {
 
                         //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop  e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
-                        flag_anap = 1;
+                        flag_anap = true;
                         cont_anap=cont_anap+1;
 
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
@@ -506,10 +498,11 @@ int CUM_BAC::elabora_dato()
                     else
                         //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking e incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto e assegno a 0 indicatore anap nel raggio-----------
                     {
-                        flag_anap = 0;
+                        flag_anap = false;
                         if (do_beamblocking && do_bloccorr)
                         {
-
+                            // FIXME: cosa dovrebbe essere l qui? Non siamo
+                            // dentro a un ciclo for che itera su l [Enrico]
                             volume.vol_pol[el_inf][i].ray[k]=DBtoBYTE(BeamBlockingCorrection(volume.vol_pol[l][i].ray[k],beam_blocking[i][k]));
                             //volume.vol_pol[el_inf][i].ray[k]=DBtoBYTE(BYTEtoDB(volume.vol_pol[l][i].ray[k])-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    volume.vol_pol[l][i].ray[k]=volume.vol_pol[l][i].ray[k]+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
@@ -543,7 +536,7 @@ int CUM_BAC::elabora_dato()
                             volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_up][i].ray[k];  //ALTERN
                         }
                         //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
-                        flag_anap = 1;
+                        flag_anap = true;
                         cont_anap=cont_anap+1;
                         stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
                         if (do_quality)
@@ -578,7 +571,7 @@ int CUM_BAC::elabora_dato()
                         }
 
                         if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
-                        flag_anap = 0;
+                        flag_anap = false;
 
                     } /*endif test anaprop*/
                 }/*endif flaganap*/
@@ -601,13 +594,14 @@ int CUM_BAC::elabora_dato()
                 if (do_quality)
                 {
                     if (bin_high<fondo_scala)   dato_corrotto[i][k]=ANAP_NODAT;/*manca dato sotto e sopra*/
+                    bool test_an1;
                     if (cont_anap< THR_CONT_ANAP )
-                        test_an=(bin_high>=fondo_scala); //modificato per contemplare > o >=
+                        test_an1=(bin_high>=fondo_scala); //modificato per contemplare > o >=
                     else
-                        test_an=(bin_high>fondo_scala);
+                        test_an1=(bin_high>fondo_scala);
 
                     // if (bin_high>=fondo_scala)  dato_corrotto[i][k]=ANAP_NOCONTROL;/*manca controllo (sotto non ho nulla)*/ //messo l=
-                    if (test_an) dato_corrotto[i][k]=ANAP_NOCONTROL;
+                    if (test_an1) dato_corrotto[i][k]=ANAP_NOCONTROL;
                     if (bin_high==fondo_scala) dato_corrotto[i][k]=ANAP_OK;/*non piove (oppure sono sopra livello preci...)*/
                 }
 
@@ -644,7 +638,7 @@ int CUM_BAC::elabora_dato()
 
             if (do_quality)
             {
-                elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
+                float elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
                 // elev_fin[i][k]=first_level_static[i][k];//da togliere
                 quota[i][k]=(unsigned short)(quota_f(elevaz,k));
                 quota_rel[i][k]=(unsigned short)(hray[k][volume.elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
