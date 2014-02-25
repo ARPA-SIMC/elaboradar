@@ -66,7 +66,7 @@ void Ray::print_load_log(FILE* out) const
 
 PolarScan::PolarScan()
 {
-    //resize(NUM_AZ_X_PPI);
+    resize(NUM_AZ_X_PPI);
 }
 
 void VolumeStats::print(FILE* out)
