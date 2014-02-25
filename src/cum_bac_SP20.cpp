@@ -208,7 +208,8 @@ extern "C" {
 #define ZLR_OFFSET               0
 #define NMIN 5
 #define MAX_TIME_DIFF 3
-int elev_array[NEL]={6,17,27,37,43,52,62,71,79,88};
+//int elev_array[NEL]={6,17,27,37,43,52,62,71,79,88};
+elev_array[NEL]={6,16,26,37,47,57,80,109,148,205,284};
 #endif
 
 #ifdef MEDIUM
@@ -217,7 +218,7 @@ int elev_array[NEL]={6,17,27,37,43,52,62,71,79,88};
 #define CART_DIM_ZLR             512
 #define ZLR_N_ELEMENTARY_PIXEL   1
 #define ZLR_OFFSET               CART_DIM_ZLR/2
-int elev_array[NEL]={6,15,24,34,57,52,62,71,79,88};
+int elev_array[NEL]={6,16,26,37,47};
 #define NMIN 1
 #define MAX_TIME_DIFF 1
 #endif
