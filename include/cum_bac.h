@@ -45,7 +45,7 @@ extern "C" {
 
 #ifdef SHORT
 //Risoluzioni e limiti spaziali
-#define NEL 15                // n0 elevazioni massimo
+#define NEL 11                // n0 elevazioni massimo
 #define RANGE_KM                 125  // distanza massima in km
 #define CART_DIM_ZLR             256 // dimensione matrice a 1x1 km
 #define ZLR_N_ELEMENTARY_PIXEL   4
