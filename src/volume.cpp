@@ -85,6 +85,17 @@ PolarScan::~PolarScan()
     //gsl_matrix_free(scan);
 }
 
+float PolarScan::get_db(unsigned az, unsigned beam) const
+{
+    return BYTEtoDB(get_raw(az, beam));
+}
+
+float PolarScan::set_db(unsigned az, unsigned beam, float val)
+{
+    rays[az][beam] = DBtoBYTE(val);
+    return val;
+}
+
 unsigned PolarScan::count_rays_filled() const
 {
     unsigned count = 0;

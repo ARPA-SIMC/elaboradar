@@ -387,7 +387,7 @@ int CUM_BAC::elabora_dato()
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
                     {
-                        volume.scan(l).set_raw(i, k, DBtoBYTE(BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k])));
+                        volume.scan(l).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
                         //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100:tab.)));
                         //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
                     }
@@ -507,7 +507,7 @@ int CUM_BAC::elabora_dato()
                         {
                             // FIXME: cosa dovrebbe essere l qui? Non siamo
                             // dentro a un ciclo for che itera su l [Enrico]
-                            volume.scan(el_inf).set_raw(i, k, DBtoBYTE(BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k])));
+                            volume.scan(el_inf).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
                             //volume.scan(el_inf).get_raw(i, k)=DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    volume.scan(l).get_raw(i, k)=volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
                             stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
@@ -561,7 +561,7 @@ int CUM_BAC::elabora_dato()
                             volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
                             if (do_beamblocking && do_bloccorr)
                             {
-                                volume.scan(l).set_raw(i, k, DBtoBYTE(BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k])));
+                                volume.scan(l).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
                                 //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.)));
                                 //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
                                 stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k];
@@ -2063,7 +2063,7 @@ int CalcoloVPR::corr_vpr()
             }
             //--- impongo una soglia per la correzione pari a 0 dBZ
 
-            if (BYTEtoDB(cum_bac.volume.scan(0).get_raw(i, k))>THR_CORR && hbin > hliq  && strat){
+            if (cum_bac.volume.scan(0).get_db(i, k) > THR_CORR && hbin > hliq  && strat){
 
                 //---trovo lo strato del pixel, se maggiore o uguale a NMAXLAYER lo retrocedo di 2, se minore di livmn lo pongo uguale a livmin
                 ilray=(hbin>=livmin)?(floor(hbin/TCK_VPR)):(floor(livmin/TCK_VPR));//discutibile :livello del fascio se minore di livmin posto=livmin
@@ -2107,7 +2107,7 @@ int CalcoloVPR::corr_vpr()
 
                         corr=cum_bac.RtoDBZ(vpr[ilref])-cum_bac.RtoDBZ(vpr_hray);
 
-                        cum_bac.volume.scan(0).set_raw(i, k, DBtoBYTE(RtoDBZ( BYTE_to_mp_func(cum_bac.volume.scan(0).get_raw(i, k),aMP_SNOW,bMP_SNOW),aMP_class,bMP_class )));
+                        cum_bac.volume.scan(0).set_db(i, k, RtoDBZ( BYTE_to_mp_func(cum_bac.volume.scan(0).get_raw(i, k),aMP_SNOW,bMP_SNOW),aMP_class,bMP_class ));
 
                     }
                     else
@@ -2119,13 +2119,14 @@ int CalcoloVPR::corr_vpr()
                     if (hbin<hvprmax && corr>0.) corr=0; /*evito effetti incrementi non giustificati*/
 
                     //controllo qualità su valore corretto e correzione
-                    if ( BYTEtoDB(cum_bac.volume.scan(0).get_raw(i, k))+corr > BYTEtoDB(255) ) // se dato corretto va fuori scala assegno valore massimo
+                    float corrected = cum_bac.volume.scan(0).get_db(i, k) + corr;
+                    if ( corrected > BYTEtoDB(255) ) // se dato corretto va fuori scala assegno valore massimo
                         cum_bac.volume.scan(0).set_raw(i, k, 255);
                     else
-                        if ( BYTEtoDB(cum_bac.volume.scan(0).get_raw(i, k))+corr <BYTEtoDB(1)) // se dato corretto va a fodoscala assegno valore di fondo scala
+                        if ( corrected < BYTEtoDB(1)) // se dato corretto va a fodoscala assegno valore di fondo scala
                             cum_bac.volume.scan(0).set_raw(i, k, 1);
                         else
-                            cum_bac.volume.scan(0).set_raw(i, k, DBtoBYTE(BYTEtoDB(cum_bac.volume.scan(0).get_raw(i, k))+corr));  // correggo
+                            cum_bac.volume.scan(0).set_db(i, k, corrected);  // correggo
 
                     corr_polar[i][k]=(unsigned char)(corr)+128;
 
@@ -2856,7 +2857,7 @@ void CUM_BAC::conversione_convettiva()
 
             if (calcolo_vpr->conv[i][k] > 0){
 
-                volume.scan(0).set_raw(i, k, DBtoBYTE(::RtoDBZ( BYTE_to_mp_func(volume.scan(0).get_raw(i, k),aMP_conv,bMP_conv),aMP_class,bMP_class )));
+                volume.scan(0).set_db(i, k, ::RtoDBZ( BYTE_to_mp_func(volume.scan(0).get_raw(i, k),aMP_conv,bMP_conv),aMP_class,bMP_class ));
 
             }
         }

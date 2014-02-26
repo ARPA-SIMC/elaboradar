@@ -87,11 +87,17 @@ public:
         return rays[az][beam];
     }
 
+    /// Get a beam value in DB
+    float get_db(unsigned az, unsigned beam) const;
+
     /// Set a raw value in a beam
     unsigned char set_raw(unsigned az, unsigned beam, unsigned char val)
     {
         return rays[az][beam] = val;
     }
+
+    /// Set a beam value in DB
+    float set_db(unsigned az, unsigned beam, float val);
 
     void fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data);
 
