@@ -30,12 +30,12 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(v.scan(7).count_rays_filled()) == 0);
 
     // Ensure that the beam sizes are what we expect
-    wassert(actual(v.scan(0)[0].size()) == 494);
-    wassert(actual(v.scan(1)[0].size()) == 494);
-    wassert(actual(v.scan(2)[0].size()) == 494);
-    wassert(actual(v.scan(3)[0].size()) == 494);
-    wassert(actual(v.scan(4)[0].size()) == 494);
-    wassert(actual(v.scan(5)[0].size()) == 494);
+    wassert(actual(v.scan(0).beam_size) == 494);
+    wassert(actual(v.scan(1).beam_size) == 494);
+    wassert(actual(v.scan(2).beam_size) == 494);
+    wassert(actual(v.scan(3).beam_size) == 494);
+    wassert(actual(v.scan(4).beam_size) == 494);
+    wassert(actual(v.scan(5).beam_size) == 494);
 
     // Ensure that the beam azimuth are what we expect
     /*
@@ -117,16 +117,16 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
             //wassert(actual(vsp20.scan(ie)[ia].teta_true) == vodim.scan(ie)[ia].teta_true);
             //wassert(actual(vsp20.scan(ie)[ia].teta) == vodim.scan(ie)[ia].teta);
             //wassert(actual(vsp20.scan(ie)[ia].alfa) == vodim.scan(ie)[ia].alfa);
-            wassert(actual(vsp20.scan(ie)[ia].size()) == vodim.scan(ie)[ia].size());
+            wassert(actual(vsp20.scan(ie).beam_size) == vodim.scan(ie).beam_size);
 
             vector<Difference> vals_sp20;
             vector<Difference> vals_odim;
             for (unsigned ib = 0; ib < vsp20.scan(ie).beam_size; ++ib)
             {
-                if (vsp20.scan(ie)[ia][ib] != vodim.scan(ie)[ia][ib])
+                if (vsp20.scan(ie).get_raw(ia, ib) != vodim.scan(ie).get_raw(ia, ib))
                 {
-                    vals_sp20.push_back(Difference(ib, vsp20.scan(ie)[ia][ib]));
-                    vals_odim.push_back(Difference(ib, vodim.scan(ie)[ia][ib]));
+                    vals_sp20.push_back(Difference(ib, vsp20.scan(ie).get_raw(ia, ib)));
+                    vals_odim.push_back(Difference(ib, vodim.scan(ie).get_raw(ia, ib)));
                 }
             }
             if (!vals_sp20.empty())
@@ -139,10 +139,12 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
                 for (vector<Difference>::const_iterator i = vals_odim.begin(); i != vals_odim.end(); ++i)
                     printf(" %u:%d", i->idx, (int)i->val);
                 printf("\n");
-                if (vsp20.scan(ie)[ia].load_log != vodim.scan(ie)[ia].load_log)
+                const LoadLog& llsp20 = vsp20.scan(ie).get_beam_load_log(ia);
+                const LoadLog& llodim = vodim.scan(ie).get_beam_load_log(ia);
+                if (llsp20 != llodim)
                 {
-                    printf("sp20 vp[%u][%u] load log: ", ie, ia); vsp20.scan(ie)[ia].print_load_log(stdout);
-                    printf("odim vp[%u][%u] load log: ", ie, ia); vodim.scan(ie)[ia].print_load_log(stdout);
+                    printf("sp20 vp[%u][%u] load log: ", ie, ia); llsp20.print(stdout);
+                    printf("odim vp[%u][%u] load log: ", ie, ia); llodim.print(stdout);
                 }
                 ++failed_beams;
             }

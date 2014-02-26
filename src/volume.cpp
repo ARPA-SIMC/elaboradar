@@ -35,29 +35,17 @@ Ray::Ray()
 {
 }
 
-void Ray::read_db(float* out, size_t out_size, float missing) const
+void LoadLog::print(FILE* out) const
 {
-    // Prima riempio il minimo tra ray.size() e out_size
-    size_t set_count = min(size(), out_size);
-
-    for (unsigned i = 0; i < set_count; ++i)
-        out[i] = BYTEtoDB((*this)[i]);
-
-    for (unsigned i = set_count; i < out_size; ++i)
-        out[i] = missing;
-}
-
-void Ray::print_load_log(FILE* out) const
-{
-    if (load_log.empty())
+    if (empty())
     {
         fprintf(out, "no beams loaded\n");
         return;
     }
 
-    for (vector<LoadLogEntry>::const_iterator i = load_log.begin(); i != load_log.end(); ++i)
+    for (const_iterator i = begin(); i != end(); ++i)
     {
-        if (i != load_log.begin())
+        if (i != begin())
             fprintf(out, ", ");
         fprintf(out, "ϑ%.2f α%.2f", i->theta, i->alpha);
     }
@@ -105,6 +93,23 @@ unsigned PolarScan::count_rays_filled() const
     return count;
 }
 
+void PolarScan::read_beam_db(unsigned az, float* out, unsigned out_size, float missing) const
+{
+    // Prima riempio il minimo tra ray.size() e out_size
+    size_t set_count = min(beam_size, out_size);
+
+    for (unsigned i = 0; i < set_count; ++i)
+        out[i] = get_db(az, i);
+
+    for (unsigned i = set_count; i < out_size; ++i)
+        out[i] = missing;
+}
+
+const LoadLog& PolarScan::get_beam_load_log(unsigned az) const
+{
+    return rays[az].load_log;
+}
+
 void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data)
 {
     int alfa = alpha / FATT_MOLT_AZ;
@@ -144,7 +149,7 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
     //     vol_pol[el_num].resize(az_num + 1);
 
     Ray& raggio = rays[az_num];
-    raggio.log(theta, alpha);
+    raggio.load_log.log(theta, alpha);
 
     unsigned overlap = min((unsigned)raggio.size(), size);
     for (unsigned i = 0; i < overlap; ++i)

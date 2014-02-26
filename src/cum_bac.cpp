@@ -1211,7 +1211,7 @@ void CalcoloVPR::classifica_rain()
         CilindricalSlice rhi_weight(x_size, z_size, 0);
 
         for (i=0;i<NEL;i++)
-            cum_bac.volume.scan(i)[iaz].read_db(RHI_beam[i], MAX_BIN, BYTEtoDB(0));
+            cum_bac.volume.scan(i).read_beam_db(iaz, RHI_beam[i], MAX_BIN, BYTEtoDB(0));
 
         /* ;---------------------------------- */
         /* ;          FASE 4 */
