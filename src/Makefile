@@ -23,13 +23,15 @@ LDLIBS_SP20= -L$(libSP20_DIR) -lSP20_utility
 LDLIBS_ZR= -L$(libZR_DIR) -lfunc_Z_R
 LDLIBS_NR=-L$(libNR_DIR) -lNR_C_ANSI
 
-LDLIBS=$(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs) $(shell pkg-config --libs radarlib) -lhdf5_cpp -lhdf5 $(gsl-config --libs)
+LDLIBS=$(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs) $(shell pkg-config --libs radarlib) -lhdf5_cpp -lhdf5 $(shell gsl-config --libs)
 
 CC=cc 
 CXX=g++ 
 
 # Common CFLAGS for old and new code
-CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -Wstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(gsl-config --cflags)
+CFLAGS_COMMON=-g -I../include -Wall -fstack-protector -Wstack-protector -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags)
+# Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
+# CFLAGS_COMMON += -DGSL_RANGE_CHECK_OFF
 
 # CFLAGS for old code
 CFLAGS_LEGACY=$(CFLAGS_COMMON) $(COMMON_DFLAGS_MEDIUM)

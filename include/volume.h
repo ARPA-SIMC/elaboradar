@@ -46,11 +46,6 @@ struct LoadLog : public std::vector<LoadLogEntry>
     void print(FILE* out) const;
 };
 
-struct Ray : public std::vector<unsigned char>
-{
-    Ray();
-};
-
 struct BeamInfo
 {
     /// Real beam elevation in degrees
@@ -61,11 +56,10 @@ struct BeamInfo
 class PolarScan
 {
 protected:
-    std::vector<Ray> rays;
+    gsl_matrix* scan;
     std::vector<BeamInfo> beam_info;
 
 public:
-    // gsl_matrix* scan;
     const unsigned beam_count;
     const unsigned beam_size;
     //double elevation;
@@ -81,7 +75,7 @@ public:
     /// Get a raw value in a beam
     unsigned char get_raw(unsigned az, unsigned beam) const
     {
-        return rays[az][beam];
+        return gsl_matrix_get(scan, az, beam);
     }
 
     /// Get a beam value in DB
@@ -90,7 +84,8 @@ public:
     /// Set a raw value in a beam
     unsigned char set_raw(unsigned az, unsigned beam, unsigned char val)
     {
-        return rays[az][beam] = val;
+        gsl_matrix_set(scan, az, beam, val);
+        return val;
     }
 
     /// Set a beam value in DB
@@ -162,7 +157,12 @@ public:
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return scan(elev_fin[az_idx][ray_idx]).get_raw(az_idx, ray_idx);
+        const PolarScan& s = scan(elev_fin[az_idx][ray_idx]);
+        if (ray_idx < s.beam_size)
+            return s.get_raw(az_idx, ray_idx);
+        else
+            // If we are reading out of bounds, return 1 (the missing value)
+            return 1;
     }
 
     void read_sp20(const char* nome_file, const Site& site, bool clean=true);
