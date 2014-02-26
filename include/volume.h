@@ -37,26 +37,24 @@ struct LoadLogEntry
     }
 };
 
+struct LoadLog : public std::vector<LoadLogEntry>
+{
+    void log(double theta, double alpha)
+    {
+        push_back(LoadLogEntry(theta, alpha));
+    }
+    void print(FILE* out) const;
+};
+
 struct Ray : public std::vector<unsigned char>
 {
     /// Real beam elevation in degrees
     double elevation;
 
-    std::vector<LoadLogEntry> load_log;
+    LoadLog load_log;
 
     Ray();
 
-    /**
-     * Riempie un array di float con i dati del raggio convertiti in DB
-     * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
-     */
-    void read_db(float* out, size_t out_size, float missing=0) const;
-
-    void log(double theta, double alpha)
-    {
-        load_log.push_back(LoadLogEntry(theta, alpha));
-    }
-    void print_load_log(FILE* out) const;
 };
 
 class PolarScan
@@ -72,9 +70,6 @@ public:
 
     PolarScan(unsigned beam_size);
     ~PolarScan();
-
-    Ray& operator[](unsigned az) { return rays[az]; }
-    const Ray& operator[](unsigned az) const { return rays[az]; }
 
     double get_elevation(unsigned az) const
     {
@@ -99,10 +94,19 @@ public:
     /// Set a beam value in DB
     float set_db(unsigned az, unsigned beam, float val);
 
+    /**
+     * Riempie un array di float con i dati del raggio convertiti in DB
+     * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
+     */
+    void read_beam_db(unsigned az, float* out, unsigned out_size, float missing=0) const;
+
     void fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data);
 
     /// Return the number of beams that have been filled with data while loading
     unsigned count_rays_filled() const;
+
+    /// Return the load log for the given beam
+    const LoadLog& get_beam_load_log(unsigned az) const;
 
 protected:
     void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati);
