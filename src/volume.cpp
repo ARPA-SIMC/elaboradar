@@ -64,10 +64,24 @@ void Ray::print_load_log(FILE* out) const
     fprintf(out, "\n");
 }
 
-PolarScan::PolarScan()
-    : nbeams(0) //, elevation(0)
+PolarScan::PolarScan(unsigned beam_size)
+    : beam_size(beam_size) //, elevation(0)
 {
+    // TODO: replace with a GSL matrix NUM_AZ_X_PPI x beam_size
     resize(NUM_AZ_X_PPI);
+
+    // Resize all beams to beam_size and fill them with 1
+    for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
+        (*this)[i].resize(beam_size, 1);
+}
+
+unsigned PolarScan::count_rays_filled() const
+{
+    unsigned count = 0;
+    for (const_iterator i = begin(); i != end(); ++i)
+        if (!i->load_log.empty())
+            ++count;
+    return count;
 }
 
 void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data)
@@ -111,31 +125,11 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
     Ray& raggio = (*this)[az_num];
     raggio.log(theta, alpha);
 
-    if (raggio.empty())
+    unsigned overlap = min((unsigned)raggio.size(), size);
+    for (unsigned i = 0; i < overlap; ++i)
     {
-        raggio.reserve(size);
-
-        for (unsigned i = 0; i < size; i++)
-        {
-            if (dati[i])
-                raggio.push_back(dati[i]);
-            else
-                raggio.push_back(1);
-        }
-        ++nbeams;
-    }
-    else
-    {
-        if (raggio.size() < size)
-        {
-            raggio.resize(size, 1);
-            //LOG_WARN("volume[%d][%d]: old ray size: %zd, new ray size: %u", el_num, az_num, raggio.size(), size);
-            //throw runtime_error("attempted to merge two beams of different size");
-        }
-
-        for (unsigned i = 0; i < size; i++)
-            if(raggio[i] < dati[i])
-                raggio[i] = dati[i];
+        if(raggio[i] < dati[i])
+            raggio[i] = dati[i];
     }
 
     raggio.elevation = theta;
@@ -153,6 +147,44 @@ void VolumeStats::print(FILE* out)
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
+    scans.reserve(NEL);
+}
+
+Volume::~Volume()
+{
+    for (vector<PolarScan*>::iterator i = scans.begin(); i != scans.end(); ++i)
+        if (*i)
+            delete *i;
+}
+
+PolarScan& Volume::make_scan(unsigned idx, unsigned beam_size)
+{
+    // Enlarge the scans vector if needed
+    if (idx >= scans.size())
+        scans.resize(idx + 1, 0);
+
+    // Create the PolarScan if needed
+    if (!scans[idx])
+        scans[idx] = new PolarScan(beam_size);
+    else if (beam_size != scans[idx]->beam_size)
+    {
+        LOG_CATEGORY("radar.io");
+        LOG_ERROR("make_scan(idx=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_size, scans[idx]->beam_size);
+        throw runtime_error("beam_size mismatch");
+    }
+
+    // Return it
+    return *scans[idx];
+}
+
+void Volume::fill_missing_scans()
+{
+    if (scans.size() < NEL)
+        scans.resize(NEL, 0);
+
+    for (unsigned i = 0; i < NEL; ++i)
+        if (!scans[i])
+            scans[i] = new PolarScan(0);
 }
 
 unsigned Volume::elevation_index(double elevation) const
@@ -245,7 +277,7 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
 
       int el_num = elevation_index(beam_info.elevation);
       if (el_num >= NEL) continue;
-      PolarScan& scan = vol_pol[el_num];
+      PolarScan& scan = make_scan(el_num, max_range);
       //scan.elevation = beam_info.elevation;
 #ifdef IMPRECISE_AZIMUT
       scan.fill_beam(el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
@@ -260,6 +292,8 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 
+    // Initialize the rest of the volume after all beams are loaded
+    fill_missing_scans();
     resize_elev_fin();
 }
 
@@ -422,7 +456,7 @@ void Volume::read_odim(const char* nome_file)
 
         int el_num = elevation_index(elevation);
         if (el_num >= NEL) continue;
-        PolarScan& vol_pol_scan = vol_pol[el_num];
+        PolarScan& vol_pol_scan = make_scan(el_num, beam_size);
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
         for (unsigned src_az = 0; src_az < nrays; ++src_az)
@@ -447,6 +481,7 @@ void Volume::read_odim(const char* nome_file)
 
     size_cell = range_scale;
 
+    fill_missing_scans();
     resize_elev_fin();
 }
 
@@ -459,11 +494,11 @@ void Volume::compute_stats(VolumeStats& stats) const
         stats.count_others[iel] = 0;
         stats.sum_others[iel] = 0;
 
-        for (unsigned ibeam = 0; ibeam < vol_pol[iel].nbeams; ++ibeam)
+        for (unsigned ibeam = 0; ibeam < scan(iel).size(); ++ibeam)
         {
-            for (size_t i = 0; i < vol_pol[iel][ibeam].size(); ++i)
+            for (size_t i = 0; i < scan(iel)[ibeam].size(); ++i)
             {
-                int val = vol_pol[iel][ibeam][i];
+                int val = scan(iel)[ibeam][i];
                 switch (val)
                 {
                     case 0: stats.count_zeros[iel]++; break;
@@ -480,17 +515,18 @@ void Volume::compute_stats(VolumeStats& stats) const
 
 void Volume::resize_elev_fin()
 {
+    // FIXME: set to 0 to have the right size. We start from 512 (MAX_BIN)
+    // to allocate enough memory for legacy code that iterates on MAX_BIN
+    // to successfully read zeroes
+    unsigned max_size = 512;
+    for (unsigned iel = 0; iel < NEL; ++iel)
+    {
+        if (scan(iel).beam_size && scan(iel).beam_size > max_size)
+            max_size = scan(iel).beam_size;
+    }
+
     for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
     {
-        // FIXME: set to 0 to have the right size. We start from 512 (MAX_BIN)
-        // to allocate enough memory for legacy code that iterates on MAX_BIN
-        // to successfully read zeroes
-        unsigned max_size = 512;
-        for (unsigned iel = 0; iel < NEL; ++iel)
-        {
-            if (vol_pol[iel][i].size() && vol_pol[iel][i].size() > max_size)
-                max_size = vol_pol[iel][i].size();
-        }
         elev_fin[i].resize(max_size, 0);
     }
 }

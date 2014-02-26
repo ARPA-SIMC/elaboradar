@@ -204,13 +204,13 @@ bool CUM_BAC::test_file(int file_type)
 
     for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
-        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.scan(k).nbeams, k);
+        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.scan(k).count_rays_filled(), k);
 
-        if (volume.scan(k).nbeams <  NUM_MIN_BEAM)
+        if (volume.scan(k).count_rays_filled() <  NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
         {
             //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.scan(k).nbeams);
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.scan(k).count_rays_filled());
             return false;
         }
     }                                                             /*end for*/
@@ -885,7 +885,6 @@ void CUM_BAC::caratterizzo_volume()
     float drrs=1.;
     // distanza dal radar
     float dist=1.;
-    float elevaz;
     // beam blocking
     unsigned char bb=0;
     // indice clutter da anaprop
@@ -896,27 +895,16 @@ void CUM_BAC::caratterizzo_volume()
 
     //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
 
+    const unsigned beam_size = volume.scan(0).beam_size;
     for (int l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
-        int count_beams = volume.scan(l).nbeams;
-
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
-            unsigned beam_size;
             //-----elevazione reale letta da file* fattore di conversione 360/4096
-            if (i < count_beams)
-            {
-                // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
-                //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
-                //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
-                elevaz=floorf(volume.scan(l)[i].elevation / FATT_MOLT_EL)*CONV_RAD;//--- elev reale
-                beam_size = volume.scan(0)[i].size();
-            }
-            else
-            {
-                elevaz = 0;
-                beam_size = volume.scan(0)[0].size();
-            }
+            // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
+            //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
+            //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
+            const float elevaz = floorf(volume.scan(l)[i].elevation / FATT_MOLT_EL)*CONV_RAD;//--- elev reale
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
@@ -925,7 +913,7 @@ void CUM_BAC::caratterizzo_volume()
             {
                 // Enrico: cerca di non leggere fuori dal volume effettivo
                 unsigned char sample = 0;
-                if (count_beams != 0 && k < volume.scan(l)[i].size())
+                if (k < volume.scan(l).beam_size)
                     sample = volume.scan(l)[i][k];
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)
@@ -1221,15 +1209,7 @@ void CalcoloVPR::classifica_rain()
         CilindricalSlice rhi_weight(x_size, z_size, 0);
 
         for (i=0;i<NEL;i++)
-        {
-            if (iaz < cum_bac.volume.scan(i).nbeams)
-                cum_bac.volume.scan(i)[iaz].read_db(RHI_beam[i], MAX_BIN, BYTEtoDB(0));
-            else
-            {
-                for (unsigned k = 0; k < MAX_BIN; ++k)
-                    RHI_beam[i][k]=BYTEtoDB(0);
-            }
-        }
+            cum_bac.volume.scan(i)[iaz].read_db(RHI_beam[i], MAX_BIN, BYTEtoDB(0));
 
         /* ;---------------------------------- */
         /* ;          FASE 4 */

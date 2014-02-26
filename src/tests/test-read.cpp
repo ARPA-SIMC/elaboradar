@@ -20,14 +20,14 @@ namespace {
 void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
 {
     // Ensure that nbeam_elev has been filled with the right values
-    wassert(actual(v.scan(0).nbeams) == 400);
-    wassert(actual(v.scan(1).nbeams) == 400);
-    wassert(actual(v.scan(2).nbeams) == 400);
-    wassert(actual(v.scan(3).nbeams) == 400);
-    wassert(actual(v.scan(4).nbeams) == 400);
-    wassert(actual(v.scan(5).nbeams) == 400);
-    wassert(actual(v.scan(6).nbeams) == 0);
-    wassert(actual(v.scan(7).nbeams) == 0);
+    wassert(actual(v.scan(0).count_rays_filled()) == 400);
+    wassert(actual(v.scan(1).count_rays_filled()) == 400);
+    wassert(actual(v.scan(2).count_rays_filled()) == 400);
+    wassert(actual(v.scan(3).count_rays_filled()) == 400);
+    wassert(actual(v.scan(4).count_rays_filled()) == 400);
+    wassert(actual(v.scan(5).count_rays_filled()) == 400);
+    wassert(actual(v.scan(6).count_rays_filled()) == 0);
+    wassert(actual(v.scan(7).count_rays_filled()) == 0);
 
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0)[0].size()) == 494);
@@ -107,10 +107,10 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
         WIBBLE_TEST_INFO(testinfo);
         testinfo() << "elevation " << ie;
 
-        wassert(actual(vsp20.scan(ie).nbeams) == vodim.scan(ie).nbeams);
-        if (vsp20.scan(ie).nbeams == 0) continue;
+        wassert(actual(vsp20.scan(ie).count_rays_filled()) == vodim.scan(ie).count_rays_filled());
+        if (vsp20.scan(ie).count_rays_filled() == 0) continue;
 
-        for (unsigned ia = 0; ia < vsp20.scan(ie).nbeams; ++ia)
+        for (unsigned ia = 0; ia < vsp20.scan(ie).size(); ++ia)
         {
             testinfo() << "elevation " << ie << " angle " << ia;
 
