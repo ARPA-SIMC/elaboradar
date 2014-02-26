@@ -39,7 +39,8 @@ struct LoadLogEntry
 struct Ray
 {
     std::vector<unsigned char> ray;
-    short teta_true;
+    /// Real beam elevation in degrees
+    double elevation;
 
     std::vector<LoadLogEntry> load_log;
 
