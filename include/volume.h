@@ -48,19 +48,21 @@ struct LoadLog : public std::vector<LoadLogEntry>
 
 struct Ray : public std::vector<unsigned char>
 {
-    /// Real beam elevation in degrees
-    double elevation;
-
-    LoadLog load_log;
-
     Ray();
+};
 
+struct BeamInfo
+{
+    /// Real beam elevation in degrees
+    LoadLog load_log;
+    double elevation;
 };
 
 class PolarScan
 {
 protected:
     std::vector<Ray> rays;
+    std::vector<BeamInfo> beam_info;
 
 public:
     // gsl_matrix* scan;
@@ -73,7 +75,7 @@ public:
 
     double get_elevation(unsigned az) const
     {
-        return rays[az].elevation;
+        return beam_info[az].elevation;
     }
 
     /// Get a raw value in a beam
