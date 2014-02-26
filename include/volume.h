@@ -60,12 +60,15 @@ struct Ray : public std::vector<unsigned char>
 
 struct PolarScan : public std::vector<Ray>
 {
-    unsigned nbeams;
+    unsigned beam_size;
     //double elevation;
 
-    PolarScan();
+    PolarScan(unsigned beam_size);
 
     void fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data);
+
+    /// Return the number of beams that have been filled with data while loading
+    unsigned count_rays_filled() const;
 
 protected:
     void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati);
@@ -83,6 +86,16 @@ struct VolumeStats
 
 class Volume
 {
+protected:
+    // Dato di base volume polare
+    std::vector<PolarScan*> scans;
+
+    // Create or reuse a scan at position idx, with the given beam size
+    PolarScan& make_scan(unsigned idx, unsigned beam_size);
+
+    // Fill all missing scans up to NEL with PolarScan(0)
+    void fill_missing_scans();
+
 public:
     std::string filename;
     time_t acq_date;
@@ -90,24 +103,25 @@ public:
     bool declutter_rsp; // ?
 
     // Access a polar scan
-    PolarScan& scan(unsigned idx) { return vol_pol[idx]; }
-    const PolarScan& scan(unsigned idx) const { return vol_pol[idx]; }
+    PolarScan& scan(unsigned idx) { return *scans[idx]; }
+    const PolarScan& scan(unsigned idx) const { return *scans[idx]; }
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
     Volume();
+    ~Volume();
 
     /// Compute the vol_pol index of an elevation angle
     unsigned elevation_index(double elevation) const;
 
     inline Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx)
     {
-        return vol_pol[elev_fin[az_idx][ray_idx]][az_idx];
+        return scan(elev_fin[az_idx][ray_idx])[az_idx];
     }
     inline const Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return vol_pol[elev_fin[az_idx][ray_idx]][az_idx];
+        return scan(elev_fin[az_idx][ray_idx])[az_idx];
     }
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
@@ -124,11 +138,6 @@ public:
 
 protected:
     void resize_elev_fin();
-
-    //dato di base volume polare, struttura definita in libSP20
-    PolarScan vol_pol[NEL];
-    //Ray vol_pol[NEL][NUM_AZ_X_PPI];
-
 };
 
 
