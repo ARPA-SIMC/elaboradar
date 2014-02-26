@@ -39,7 +39,7 @@ struct LoadLogEntry
 struct Ray
 {
     std::vector<unsigned char> ray;
-    short alfa_true, teta_true;
+    short teta_true;
     short teta, alfa;
 
     std::vector<LoadLogEntry> load_log;
