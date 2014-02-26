@@ -31,7 +31,7 @@ int elev_array[NEL];
 namespace cumbac {
 
 Ray::Ray()
-    : alfa_true(0), teta_true(0), teta(0), alfa(0)
+    : teta_true(0), teta(0), alfa(0)
 {
 }
 
@@ -140,7 +140,6 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
 
     raggio.alfa =(short)(az_num*.9/FATT_MOLT_AZ);
     raggio.teta = elev_array[el_num];
-    raggio.alfa_true = alpha / FATT_MOLT_AZ;
     raggio.teta_true = theta / FATT_MOLT_EL;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
 }
