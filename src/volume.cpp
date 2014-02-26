@@ -31,7 +31,6 @@ int elev_array[NEL];
 namespace cumbac {
 
 Ray::Ray()
-    : elevation(0)
 {
 }
 
@@ -60,6 +59,8 @@ PolarScan::PolarScan(unsigned beam_size)
     gsl_matrix_set_all(scan, 1);
     */
 
+    beam_info.resize(beam_count);
+
     // TODO: replace with a GSL matrix NUM_AZ_X_PPI x beam_size
     rays.resize(beam_count);
 
@@ -87,7 +88,7 @@ float PolarScan::set_db(unsigned az, unsigned beam, float val)
 unsigned PolarScan::count_rays_filled() const
 {
     unsigned count = 0;
-    for (vector<Ray>::const_iterator i = rays.begin(); i != rays.end(); ++i)
+    for (vector<BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
         if (!i->load_log.empty())
             ++count;
     return count;
@@ -107,7 +108,7 @@ void PolarScan::read_beam_db(unsigned az, float* out, unsigned out_size, float m
 
 const LoadLog& PolarScan::get_beam_load_log(unsigned az) const
 {
-    return rays[az].load_log;
+    return beam_info[az].load_log;
 }
 
 void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data)
@@ -149,7 +150,7 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
     //     vol_pol[el_num].resize(az_num + 1);
 
     Ray& raggio = rays[az_num];
-    raggio.load_log.log(theta, alpha);
+    beam_info[az_num].load_log.log(theta, alpha);
 
     unsigned overlap = min((unsigned)raggio.size(), size);
     for (unsigned i = 0; i < overlap; ++i)
@@ -158,7 +159,7 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
             raggio[i] = dati[i];
     }
 
-    raggio.elevation = theta;
+    beam_info[az_num].elevation = theta;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
 }
 
