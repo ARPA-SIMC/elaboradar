@@ -423,22 +423,22 @@ int CUM_BAC::elabora_dato()
         {
             stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            int el_inf = first_level[i][k];
+            const int el_inf = first_level[i][k];
 
             if (do_quality)
                 volume.elev_fin[i][k]=el_inf;
 
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
-            unsigned el_up = el_inf +1;
+            const unsigned el_up = el_inf +1;
 
             // ------------assegno  bin_low_low (cioè il valore sotto il bin base)
-            float bin_low_low;
-            if (el_inf>0) bin_low_low=BYTEtoDB(volume.scan(el_inf-1).get_raw(i, k));
-            else  bin_low_low=fondo_scala+1;
+            const float bin_low_low = (el_inf > 0)
+                ? BYTEtoDB(volume.scan(el_inf-1).get_raw(i, k))
+                : fondo_scala+1;
 
             // ------------assegno bin_low bin_high anche
-            float bin_low  = BYTEtoDB(volume.scan(el_inf).get_raw(i, k));
-            float bin_high = BYTEtoDB(volume.scan(el_up).get_raw(i, k));
+            const float bin_low  = BYTEtoDB(volume.scan(el_inf).get_raw(i, k));
+            const float bin_high = BYTEtoDB(volume.scan(el_up).get_raw(i, k));
 
             //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
             MAX_DIF=MAX_DIF_OR;
