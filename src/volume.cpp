@@ -65,7 +65,7 @@ void Ray::print_load_log(FILE* out) const
 }
 
 PolarScan::PolarScan()
-    : nbeams(0), elevation(0)
+    : nbeams(0) //, elevation(0)
 {
     resize(NUM_AZ_X_PPI);
 }
@@ -248,6 +248,7 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
       int el_num = elevation_index(beam_info.elevation);
       if (el_num >= NEL) continue;
       PolarScan& scan = vol_pol[el_num];
+      //scan.elevation = beam_info.elevation;
 #ifdef IMPRECISE_AZIMUT
       scan.fill_beam(el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
 #else
@@ -424,6 +425,7 @@ void Volume::read_odim(const char* nome_file)
         int el_num = elevation_index(elevation);
         if (el_num >= NEL) continue;
         PolarScan& vol_pol_scan = vol_pol[el_num];
+        //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
         for (unsigned src_az = 0; src_az < nrays; ++src_az)
         {
