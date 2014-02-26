@@ -110,7 +110,7 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
         wassert(actual(vsp20.scan(ie).count_rays_filled()) == vodim.scan(ie).count_rays_filled());
         if (vsp20.scan(ie).count_rays_filled() == 0) continue;
 
-        for (unsigned ia = 0; ia < vsp20.scan(ie).size(); ++ia)
+        for (unsigned ia = 0; ia < vsp20.scan(ie).beam_count; ++ia)
         {
             testinfo() << "elevation " << ie << " angle " << ia;
 
@@ -121,7 +121,7 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
 
             vector<Difference> vals_sp20;
             vector<Difference> vals_odim;
-            for (unsigned ib = 0; ib < vsp20.scan(ie)[ia].size(); ++ib)
+            for (unsigned ib = 0; ib < vsp20.scan(ie).beam_size; ++ib)
             {
                 if (vsp20.scan(ie)[ia][ib] != vodim.scan(ie)[ia][ib])
                 {

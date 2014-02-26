@@ -632,7 +632,7 @@ int CUM_BAC::elabora_dato()
             {
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //float elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
-                const float elevaz=floorf(volume.ray_at_elev_preci(i, k).elevation / FATT_MOLT_EL)*CONV_RAD;
+                const float elevaz=floorf(volume.elevation_at_elev_preci(i, k) / FATT_MOLT_EL)*CONV_RAD;
                 // elev_fin[i][k]=first_level_static[i][k];//da togliere
                 quota[i][k]=(unsigned short)(quota_f(elevaz,k));
                 quota_rel[i][k]=(unsigned short)(hray[k][volume.elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
