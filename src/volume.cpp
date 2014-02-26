@@ -31,7 +31,7 @@ int elev_array[NEL];
 namespace cumbac {
 
 Ray::Ray()
-    : teta_true(0)
+    : elevation(0)
 {
 }
 
@@ -138,7 +138,7 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
                 raggio.ray[i] = dati[i];
     }
 
-    raggio.teta_true = theta / FATT_MOLT_EL;
+    raggio.elevation = theta;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
 }
 
