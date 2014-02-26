@@ -586,9 +586,8 @@ int CUM_BAC::elabora_dato()
             {
                 for(l=0; l<el_up; l++)
                 {
-                    if(!volume.scan(l)[i].empty())
-                        volume.scan(l)[i].resize(volume.scan(0).beam_size);
-                    volume.scan(l).set_raw(i, k, volume.scan(el_up).get_raw(i, k));
+                    if (volume.scan(l).beam_size > k)
+                        volume.scan(l).set_raw(i, k, volume.scan(el_up).get_raw(i, k));
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
                 if (do_quality)
@@ -616,9 +615,8 @@ int CUM_BAC::elabora_dato()
 
                 for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
-                    if(!volume.scan(l)[i].empty())
-                        volume.scan(l)[i].resize(volume.scan(0).beam_size);
-                    volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
+                    if (volume.scan(l).beam_size > k)
+                        volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
                 }
 
                 if (do_quality)
