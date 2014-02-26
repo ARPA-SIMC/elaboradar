@@ -401,6 +401,8 @@ void Volume::read_odim(const char* nome_file)
             throw runtime_error("mismatch between number of azumuth angles and number of rays");
         }
 
+        std::vector<double> elevation_angles = scan->getElevationAngles();
+
         unsigned beam_size = int_to_unsigned(data->getNumBins(), "beam size");
         if (beam_size > MAX_DIM)
         {
@@ -436,7 +438,8 @@ void Volume::read_odim(const char* nome_file)
                 // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
                 beam[i] = eldes_counter_to_db(matrix.elem(src_az, i));
             }
-            vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
+            //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
+            vol_pol_scan.fill_beam(el_num, elevation_angles[src_az], azimut, beam_size, beam);
         }
 
         delete[] beam;
