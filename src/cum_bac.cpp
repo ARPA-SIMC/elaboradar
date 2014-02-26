@@ -371,7 +371,7 @@ int CUM_BAC::elabora_dato()
     {
         for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
         {
-            for(unsigned k=0; k<volume.scan(0)[i].size(); k++)
+            for(unsigned k=0; k<volume.scan(0).beam_size; k++)
             {
                 //---assegno el_inf a mappa statica
                 unsigned el_inf = first_level_static[i][k];
@@ -379,8 +379,8 @@ int CUM_BAC::elabora_dato()
                 for(unsigned l=0; l<=el_inf; l++)
                 {
                     // Enrico: cerca di non leggere/scrivere fuori dal volume effettivo
-                    if (k >= volume.scan(l)[i].size()) continue;
-                    if (k < volume.scan(el_inf)[i].size())
+                    if (k >= volume.scan(l).beam_size) continue;
+                    if (k < volume.scan(el_inf).beam_size)
                         volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
                     else
                         volume.scan(l).set_raw(i, k, 0);
@@ -418,7 +418,7 @@ int CUM_BAC::elabora_dato()
     {
         bool flag_anap = false;
         unsigned cont_anap=0;// aggiunto per risolvere problema di uso con preci shallow
-        for(unsigned k=0; k<volume.scan(0)[i].size(); k++)
+        for(unsigned k=0; k<volume.scan(0).beam_size; k++)
             //------------- incremento statistica tot ------------------
         {
             stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
@@ -587,7 +587,7 @@ int CUM_BAC::elabora_dato()
                 for(l=0; l<el_up; l++)
                 {
                     if(!volume.scan(l)[i].empty())
-                        volume.scan(l)[i].resize(volume.scan(0)[i].size());
+                        volume.scan(l)[i].resize(volume.scan(0).beam_size);
                     volume.scan(l).set_raw(i, k, volume.scan(el_up).get_raw(i, k));
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
@@ -617,7 +617,7 @@ int CUM_BAC::elabora_dato()
                 for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
                     if(!volume.scan(l)[i].empty())
-                        volume.scan(l)[i].resize(volume.scan(0)[i].size());
+                        volume.scan(l)[i].resize(volume.scan(0).beam_size);
                     volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
                 }
 
@@ -1222,7 +1222,7 @@ void CalcoloVPR::classifica_rain()
         /* ;---------------------------------- */
 
         // Enrico: non sforare se il raggio è piú lungo di MAX_BIN
-        unsigned ray_size = cum_bac.volume.scan(0)[iaz].size();
+        unsigned ray_size = cum_bac.volume.scan(0).beam_size;
         if (ray_size > MAX_BIN)
             ray_size = MAX_BIN;
 
@@ -1243,7 +1243,7 @@ void CalcoloVPR::classifica_rain()
                 }
             }
 
-            for (unsigned ibin=0;ibin<cum_bac.volume.scan(0)[iaz].size();ibin++) {
+            for (unsigned ibin=0;ibin<cum_bac.volume.scan(0).beam_size;ibin++) {
                 imin=im[ibin][iel];
                 imax=ix[ibin][iel];
                 jmin=jm[ibin][iel];
@@ -1460,7 +1460,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
         {
             //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
-            if (j < cum_bac.volume.scan(0)[i].size() && cum_bac.volume.scan(0)[i][j] > 1)
+            if (j < cum_bac.volume.scan(0).beam_size && cum_bac.volume.scan(0)[i][j] > 1)
             {
                 lista_bckg[np][0]=i;  //IAZIMUT
                 lista_bckg[np][1]=j;  //IRANGE
@@ -2046,7 +2046,7 @@ int CalcoloVPR::corr_vpr()
 
     //correzione vpr
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
-        for (unsigned k=0; k<cum_bac.volume.scan(0)[i].size(); k++){
+        for (unsigned k=0; k<cum_bac.volume.scan(0).beam_size; k++){
             corr=0.;
             /* trovo elevazione reale e quota bin*/
             //elevaz=(float)(volume_at_elev_preci(i, k).teta_true)*CONV_RAD;
@@ -2532,7 +2532,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
                 unsigned char sample = 0;
-                if (k < cum_bac.volume.scan(l)[i].size())
+                if (k < cum_bac.volume.scan(l).beam_size)
                     sample = cum_bac.volume.scan(l).get_raw(i, k);
                 if (BYTEtoDB(sample)> THR_VPR &&  flag_vpr[l][i][k]>0 )
                 {
@@ -2853,7 +2853,7 @@ int testfit(float a[], float chisq, float chisqin)
 void CUM_BAC::conversione_convettiva()
 {
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
-        for (unsigned k=0; k<volume.scan(0)[i].size(); k++){
+        for (unsigned k=0; k<volume.scan(0).beam_size; k++){
 
             if (calcolo_vpr->conv[i][k] > 0){
 
@@ -2932,7 +2932,7 @@ void CUM_BAC::creo_cart()
                     for(iaz = az_min; iaz<az_max; iaz++){
                         // Enrico: cerca di non leggere fuori dal volume effettivo
                         unsigned char sample = 0;
-                        if (irange < volume.scan(0)[iaz%NUM_AZ_X_PPI].size())
+                        if (irange < volume.scan(0).beam_size)
                             sample = volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange);
 
                         if(cart[x][y] <= sample){
