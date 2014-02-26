@@ -61,7 +61,15 @@ struct Ray
 
 struct PolarScan : public std::vector<Ray>
 {
+    unsigned nbeams;
+    double elevation;
+
     PolarScan();
+
+    void fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data);
+
+protected:
+    void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati);
 };
 
 struct VolumeStats
@@ -86,13 +94,13 @@ public:
     PolarScan vol_pol[NEL];
     //Ray vol_pol[NEL][NUM_AZ_X_PPI];
 
-    //numero raggi per elevazione
-    unsigned nbeam_elev[NEL];
-
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
     Volume();
+
+    /// Compute the vol_pol index of an elevation angle
+    unsigned elevation_index(double elevation) const;
 
     inline Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx)
     {
@@ -117,8 +125,6 @@ public:
 
 protected:
     void resize_elev_fin();
-    void fill_beam(double theta, double alpha, unsigned size, const unsigned char* data);
-    void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati);
 };
 
 

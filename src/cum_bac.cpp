@@ -204,13 +204,13 @@ bool CUM_BAC::test_file(int file_type)
 
     for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
-        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.nbeam_elev[k], k);
+        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.vol_pol[k].nbeams, k);
 
-        if (volume.nbeam_elev[k] <  NUM_MIN_BEAM)
+        if (volume.vol_pol[k].nbeams <  NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
         {
             //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.nbeam_elev[k]);
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.vol_pol[k].nbeams);
             return false;
         }
     }                                                             /*end for*/
@@ -904,7 +904,7 @@ void CUM_BAC::caratterizzo_volume()
 
     for (int l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
-        int count_beams = volume.nbeam_elev[l];
+        int count_beams = volume.vol_pol[l].nbeams;
 
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
@@ -1225,7 +1225,7 @@ void CalcoloVPR::classifica_rain()
 
         for (i=0;i<NEL;i++)
         {
-            if (iaz < cum_bac.volume.nbeam_elev[i])
+            if (iaz < cum_bac.volume.vol_pol[i].nbeams)
                 cum_bac.volume.vol_pol[i][iaz].read_db(RHI_beam[i], MAX_BIN, BYTEtoDB(0));
             else
             {

@@ -65,31 +65,13 @@ void Ray::print_load_log(FILE* out) const
 }
 
 PolarScan::PolarScan()
+    : nbeams(0), elevation(0)
 {
     resize(NUM_AZ_X_PPI);
 }
 
-void VolumeStats::print(FILE* out)
+void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data)
 {
-    fprintf(out, "Nel    Zeros     Ones   Others      Sum\n");
-    for (int iel =0; iel<NEL; ++iel){
-        fprintf(out, "%4u %8u %8u %8u %8u\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
-    }
-}
-
-Volume::Volume()
-    : acq_date(0), size_cell(0), declutter_rsp(false)
-{
-    memset(nbeam_elev, 0, sizeof(nbeam_elev));
-}
-
-void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned char* data)
-{
-    int teta = theta / FATT_MOLT_EL;
-
-    int el_num = elevation_index_MDB(teta);
-    if (el_num >= NEL) return;
-
     int alfa = alpha / FATT_MOLT_AZ;
     if (alfa >= 4096) return;
 
@@ -118,13 +100,13 @@ void Volume::fill_beam(double theta, double alpha, unsigned size, const unsigned
     }
 }
 
-void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati)
+void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati)
 {
     //LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
     //     vol_pol[el_num].resize(az_num + 1);
 
-    Ray& raggio = vol_pol[el_num][az_num];
+    Ray& raggio = (*this)[az_num];
     raggio.log(theta, alpha);
 
     if (raggio.ray.empty())
@@ -138,7 +120,7 @@ void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsi
             else
                 raggio.ray.push_back(1);
         }
-        nbeam_elev[el_num]++;
+        ++nbeams;
     }
     else
     {
@@ -159,6 +141,28 @@ void Volume::merge_beam(int el_num, int az_num, double theta, double alpha, unsi
     raggio.alfa_true = alpha / FATT_MOLT_AZ;
     raggio.teta_true = theta / FATT_MOLT_EL;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
+}
+
+void VolumeStats::print(FILE* out)
+{
+    fprintf(out, "Nel    Zeros     Ones   Others      Sum\n");
+    for (int iel =0; iel<NEL; ++iel){
+        fprintf(out, "%4u %8u %8u %8u %8u\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
+    }
+}
+
+Volume::Volume()
+    : acq_date(0), size_cell(0), declutter_rsp(false)
+{
+}
+
+unsigned Volume::elevation_index(double elevation) const
+{
+    int teta = elevation / FATT_MOLT_EL;
+    for (unsigned i=0; i < NEL; ++i)
+        if (teta >= (elev_array[i]-6) && teta < (elev_array[i]+5))
+            return i;
+    return NEL;
 }
 
 void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
@@ -240,10 +244,13 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
       if (clean)
           cleaner.clean_beams(*b, max_range, cleaned);
 
+      int el_num = elevation_index(beam_info.elevation);
+      if (el_num >= NEL) continue;
+      PolarScan& scan = vol_pol[el_num];
 #ifdef IMPRECISE_AZIMUT
-      fill_beam(beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
+      scan.fill_beam(el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
 #else
-      fill_beam(beam_info.elevation, beam_info.azimuth, max_range, b->data_z);
+      scan.fill_beam(el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_z);
 #endif
     }
 
@@ -411,6 +418,9 @@ void Volume::read_odim(const char* nome_file)
 
         unsigned char* beam = new unsigned char[beam_size];
 
+        int el_num = elevation_index(elevation);
+        if (el_num >= NEL) continue;
+        PolarScan& vol_pol_scan = vol_pol[el_num];
         std::vector<bool> angles_seen(400, false);
         for (unsigned src_az = 0; src_az < nrays; ++src_az)
         {
@@ -425,7 +435,7 @@ void Volume::read_odim(const char* nome_file)
                 // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
                 beam[i] = eldes_counter_to_db(matrix.elem(src_az, i));
             }
-            fill_beam(elevation, azimut, beam_size, beam);
+            vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
         }
 
         delete[] beam;
@@ -445,7 +455,7 @@ void Volume::compute_stats(VolumeStats& stats) const
         stats.count_others[iel] = 0;
         stats.sum_others[iel] = 0;
 
-        for (unsigned ibeam = 0; ibeam < nbeam_elev[iel]; ++ibeam)
+        for (unsigned ibeam = 0; ibeam < vol_pol[iel].nbeams; ++ibeam)
         {
             for (size_t i = 0; i < vol_pol[iel][ibeam].ray.size(); ++i)
             {
