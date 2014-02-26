@@ -65,20 +65,30 @@ void Ray::print_load_log(FILE* out) const
 }
 
 PolarScan::PolarScan(unsigned beam_size)
-    : beam_size(beam_size) //, elevation(0)
+    : beam_count(NUM_AZ_X_PPI), beam_size(beam_size) //, elevation(0)
 {
+    /*
+    scan = gsl_matrix_alloc(NUM_AZ_X_PPI, beam_size);
+    gsl_matrix_set_all(scan, 1);
+    */
+
     // TODO: replace with a GSL matrix NUM_AZ_X_PPI x beam_size
-    resize(NUM_AZ_X_PPI);
+    rays.resize(beam_count);
 
     // Resize all beams to beam_size and fill them with 1
-    for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
-        (*this)[i].resize(beam_size, 1);
+    for (unsigned i = 0; i < beam_count; ++i)
+        rays[i].resize(beam_size, 1);
+}
+
+PolarScan::~PolarScan()
+{
+    //gsl_matrix_free(scan);
 }
 
 unsigned PolarScan::count_rays_filled() const
 {
     unsigned count = 0;
-    for (const_iterator i = begin(); i != end(); ++i)
+    for (vector<Ray>::const_iterator i = rays.begin(); i != rays.end(); ++i)
         if (!i->load_log.empty())
             ++count;
     return count;
@@ -122,7 +132,7 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
     // if (az_num >= vol_pol[el_num].size())
     //     vol_pol[el_num].resize(az_num + 1);
 
-    Ray& raggio = (*this)[az_num];
+    Ray& raggio = rays[az_num];
     raggio.log(theta, alpha);
 
     unsigned overlap = min((unsigned)raggio.size(), size);
@@ -494,11 +504,11 @@ void Volume::compute_stats(VolumeStats& stats) const
         stats.count_others[iel] = 0;
         stats.sum_others[iel] = 0;
 
-        for (unsigned ibeam = 0; ibeam < scan(iel).size(); ++ibeam)
+        for (unsigned iaz = 0; iaz < scan(iel).beam_count; ++iaz)
         {
-            for (size_t i = 0; i < scan(iel)[ibeam].size(); ++i)
+            for (size_t i = 0; i < scan(iel).beam_size; ++i)
             {
-                int val = scan(iel)[ibeam][i];
+                int val = scan(iel).get_raw(iaz, i);
                 switch (val)
                 {
                     case 0: stats.count_zeros[iel]++; break;

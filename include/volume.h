@@ -5,6 +5,7 @@
 #include <vector>
 #include <ctime>
 #include <cstdio>
+#include <gsl/gsl_matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NEL 15                // n0 elevazioni massimo
@@ -58,12 +59,39 @@ struct Ray : public std::vector<unsigned char>
     void print_load_log(FILE* out) const;
 };
 
-struct PolarScan : public std::vector<Ray>
+class PolarScan
 {
-    unsigned beam_size;
+protected:
+    std::vector<Ray> rays;
+
+public:
+    // gsl_matrix* scan;
+    const unsigned beam_count;
+    const unsigned beam_size;
     //double elevation;
 
     PolarScan(unsigned beam_size);
+    ~PolarScan();
+
+    Ray& operator[](unsigned az) { return rays[az]; }
+    const Ray& operator[](unsigned az) const { return rays[az]; }
+
+    double get_elevation(unsigned az) const
+    {
+        return rays[az].elevation;
+    }
+
+    /// Get a raw value in a beam
+    unsigned char get_raw(unsigned az, unsigned beam) const
+    {
+        return rays[az][beam];
+    }
+
+    /// Set a raw value in a beam
+    unsigned char set_raw(unsigned az, unsigned beam, unsigned char val)
+    {
+        return rays[az][beam] = val;
+    }
 
     void fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data);
 
@@ -115,18 +143,14 @@ public:
     /// Compute the vol_pol index of an elevation angle
     unsigned elevation_index(double elevation) const;
 
-    inline Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx)
+    inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return scan(elev_fin[az_idx][ray_idx])[az_idx];
-    }
-    inline const Ray& ray_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
-    {
-        return scan(elev_fin[az_idx][ray_idx])[az_idx];
+        return scan(elev_fin[az_idx][ray_idx]).get_elevation(az_idx);
     }
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return ray_at_elev_preci(az_idx, ray_idx)[ray_idx];
+        return scan(elev_fin[az_idx][ray_idx]).get_raw(az_idx, ray_idx);
     }
 
     void read_sp20(const char* nome_file, const Site& site, bool clean=true);
