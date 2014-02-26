@@ -38,10 +38,10 @@ Ray::Ray()
 void Ray::read_db(float* out, size_t out_size, float missing) const
 {
     // Prima riempio il minimo tra ray.size() e out_size
-    size_t set_count = min(ray.size(), out_size);
+    size_t set_count = min(size(), out_size);
 
     for (unsigned i = 0; i < set_count; ++i)
-        out[i] = BYTEtoDB(ray[i]);
+        out[i] = BYTEtoDB((*this)[i]);
 
     for (unsigned i = set_count; i < out_size; ++i)
         out[i] = missing;
@@ -111,31 +111,31 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
     Ray& raggio = (*this)[az_num];
     raggio.log(theta, alpha);
 
-    if (raggio.ray.empty())
+    if (raggio.empty())
     {
-        raggio.ray.reserve(size);
+        raggio.reserve(size);
 
         for (unsigned i = 0; i < size; i++)
         {
             if (dati[i])
-                raggio.ray.push_back(dati[i]);
+                raggio.push_back(dati[i]);
             else
-                raggio.ray.push_back(1);
+                raggio.push_back(1);
         }
         ++nbeams;
     }
     else
     {
-        if (raggio.ray.size() < size)
+        if (raggio.size() < size)
         {
-            raggio.ray.resize(size, 1);
-            //LOG_WARN("volume[%d][%d]: old ray size: %zd, new ray size: %u", el_num, az_num, raggio.ray.size(), size);
+            raggio.resize(size, 1);
+            //LOG_WARN("volume[%d][%d]: old ray size: %zd, new ray size: %u", el_num, az_num, raggio.size(), size);
             //throw runtime_error("attempted to merge two beams of different size");
         }
 
         for (unsigned i = 0; i < size; i++)
-            if(raggio.ray[i] < dati[i])
-                raggio.ray[i] = dati[i];
+            if(raggio[i] < dati[i])
+                raggio[i] = dati[i];
     }
 
     raggio.elevation = theta;
@@ -461,9 +461,9 @@ void Volume::compute_stats(VolumeStats& stats) const
 
         for (unsigned ibeam = 0; ibeam < vol_pol[iel].nbeams; ++ibeam)
         {
-            for (size_t i = 0; i < vol_pol[iel][ibeam].ray.size(); ++i)
+            for (size_t i = 0; i < vol_pol[iel][ibeam].size(); ++i)
             {
-                int val = vol_pol[iel][ibeam].ray[i];
+                int val = vol_pol[iel][ibeam][i];
                 switch (val)
                 {
                     case 0: stats.count_zeros[iel]++; break;
@@ -488,8 +488,8 @@ void Volume::resize_elev_fin()
         unsigned max_size = 512;
         for (unsigned iel = 0; iel < NEL; ++iel)
         {
-            if (vol_pol[iel][i].ray.size() && vol_pol[iel][i].ray.size() > max_size)
-                max_size = vol_pol[iel][i].ray.size();
+            if (vol_pol[iel][i].size() && vol_pol[iel][i].size() > max_size)
+                max_size = vol_pol[iel][i].size();
         }
         elev_fin[i].resize(max_size, 0);
     }

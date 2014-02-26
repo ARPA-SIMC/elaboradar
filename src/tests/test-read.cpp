@@ -30,12 +30,12 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(v.vol_pol[7].nbeams) == 0);
 
     // Ensure that the beam sizes are what we expect
-    wassert(actual(v.vol_pol[0][0].ray.size()) == 494);
-    wassert(actual(v.vol_pol[1][0].ray.size()) == 494);
-    wassert(actual(v.vol_pol[2][0].ray.size()) == 494);
-    wassert(actual(v.vol_pol[3][0].ray.size()) == 494);
-    wassert(actual(v.vol_pol[4][0].ray.size()) == 494);
-    wassert(actual(v.vol_pol[5][0].ray.size()) == 494);
+    wassert(actual(v.vol_pol[0][0].size()) == 494);
+    wassert(actual(v.vol_pol[1][0].size()) == 494);
+    wassert(actual(v.vol_pol[2][0].size()) == 494);
+    wassert(actual(v.vol_pol[3][0].size()) == 494);
+    wassert(actual(v.vol_pol[4][0].size()) == 494);
+    wassert(actual(v.vol_pol[5][0].size()) == 494);
 
     // Ensure that the beam azimuth are what we expect
     /*
@@ -117,16 +117,16 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
             //wassert(actual(vsp20.vol_pol[ie][ia].teta_true) == vodim.vol_pol[ie][ia].teta_true);
             //wassert(actual(vsp20.vol_pol[ie][ia].teta) == vodim.vol_pol[ie][ia].teta);
             //wassert(actual(vsp20.vol_pol[ie][ia].alfa) == vodim.vol_pol[ie][ia].alfa);
-            wassert(actual(vsp20.vol_pol[ie][ia].ray.size()) == vodim.vol_pol[ie][ia].ray.size());
+            wassert(actual(vsp20.vol_pol[ie][ia].size()) == vodim.vol_pol[ie][ia].size());
 
             vector<Difference> vals_sp20;
             vector<Difference> vals_odim;
-            for (unsigned ib = 0; ib < vsp20.vol_pol[ie][ia].ray.size(); ++ib)
+            for (unsigned ib = 0; ib < vsp20.vol_pol[ie][ia].size(); ++ib)
             {
-                if (vsp20.vol_pol[ie][ia].ray[ib] != vodim.vol_pol[ie][ia].ray[ib])
+                if (vsp20.vol_pol[ie][ia][ib] != vodim.vol_pol[ie][ia][ib])
                 {
-                    vals_sp20.push_back(Difference(ib, vsp20.vol_pol[ie][ia].ray[ib]));
-                    vals_odim.push_back(Difference(ib, vodim.vol_pol[ie][ia].ray[ib]));
+                    vals_sp20.push_back(Difference(ib, vsp20.vol_pol[ie][ia][ib]));
+                    vals_odim.push_back(Difference(ib, vodim.vol_pol[ie][ia][ib]));
                 }
             }
             if (!vals_sp20.empty())
