@@ -62,7 +62,7 @@ struct Ray
 struct PolarScan : public std::vector<Ray>
 {
     unsigned nbeams;
-    double elevation;
+    //double elevation;
 
     PolarScan();
 
