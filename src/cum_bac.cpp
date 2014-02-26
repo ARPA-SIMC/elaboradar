@@ -1458,7 +1458,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
         {
             //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
-            if (j < cum_bac.volume.scan(0).beam_size && cum_bac.volume.scan(0)[i][j] > 1)
+            if (j < cum_bac.volume.scan(0).beam_size && cum_bac.volume.scan(0).get_raw(i, j) > 1)
             {
                 lista_bckg[np][0]=i;  //IAZIMUT
                 lista_bckg[np][1]=j;  //IRANGE
