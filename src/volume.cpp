@@ -30,10 +30,6 @@ int elev_array[NEL];
 
 namespace cumbac {
 
-Ray::Ray()
-{
-}
-
 void LoadLog::print(FILE* out) const
 {
     if (empty())
@@ -54,24 +50,21 @@ void LoadLog::print(FILE* out) const
 PolarScan::PolarScan(unsigned beam_size)
     : beam_count(NUM_AZ_X_PPI), beam_size(beam_size) //, elevation(0)
 {
-    /*
-    scan = gsl_matrix_alloc(NUM_AZ_X_PPI, beam_size);
-    gsl_matrix_set_all(scan, 1);
-    */
+    if (beam_size > 0)
+    {
+        scan = gsl_matrix_alloc(NUM_AZ_X_PPI, beam_size);
+        gsl_matrix_set_all(scan, 1);
+    } else {
+        scan = 0;
+    }
 
     beam_info.resize(beam_count);
-
-    // TODO: replace with a GSL matrix NUM_AZ_X_PPI x beam_size
-    rays.resize(beam_count);
-
-    // Resize all beams to beam_size and fill them with 1
-    for (unsigned i = 0; i < beam_count; ++i)
-        rays[i].resize(beam_size, 1);
 }
 
 PolarScan::~PolarScan()
 {
-    //gsl_matrix_free(scan);
+    if (scan)
+        gsl_matrix_free(scan);
 }
 
 float PolarScan::get_db(unsigned az, unsigned beam) const
@@ -81,7 +74,7 @@ float PolarScan::get_db(unsigned az, unsigned beam) const
 
 float PolarScan::set_db(unsigned az, unsigned beam, float val)
 {
-    rays[az][beam] = DBtoBYTE(val);
+    gsl_matrix_set(scan, az, beam, DBtoBYTE(val));
     return val;
 }
 
@@ -148,16 +141,12 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
     //LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
     //     vol_pol[el_num].resize(az_num + 1);
-
-    Ray& raggio = rays[az_num];
     beam_info[az_num].load_log.log(theta, alpha);
 
-    unsigned overlap = min((unsigned)raggio.size(), size);
+    unsigned overlap = min(beam_size, size);
     for (unsigned i = 0; i < overlap; ++i)
-    {
-        if(raggio[i] < dati[i])
-            raggio[i] = dati[i];
-    }
+        if (get_raw(az_num, i) < dati[i])
+            set_raw(az_num, i, dati[i]);
 
     beam_info[az_num].elevation = theta;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
