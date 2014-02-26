@@ -89,9 +89,9 @@ public:
     double size_cell;
     bool declutter_rsp; // ?
 
-    //dato di base volume polare, struttura definita in libSP20
-    PolarScan vol_pol[NEL];
-    //Ray vol_pol[NEL][NUM_AZ_X_PPI];
+    // Access a polar scan
+    PolarScan& scan(unsigned idx) { return vol_pol[idx]; }
+    const PolarScan& scan(unsigned idx) const { return vol_pol[idx]; }
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
@@ -124,6 +124,11 @@ public:
 
 protected:
     void resize_elev_fin();
+
+    //dato di base volume polare, struttura definita in libSP20
+    PolarScan vol_pol[NEL];
+    //Ray vol_pol[NEL][NUM_AZ_X_PPI];
+
 };
 
 
