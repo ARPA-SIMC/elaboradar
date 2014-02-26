@@ -583,11 +583,7 @@ int CUM_BAC::elabora_dato()
                 for(l=0; l<el_up; l++)
                 {
                     if(!volume.vol_pol[l][i].ray.empty())
-                    {
                         volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].ray.size());
-                        volume.vol_pol[l][i].alfa =(short)(i*.9/FATT_MOLT_AZ);
-                        volume.vol_pol[l][i].teta = elev_array[l];
-                    }
                     volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_up][i].ray[k];
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
@@ -617,11 +613,7 @@ int CUM_BAC::elabora_dato()
                 for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
                     if(!volume.vol_pol[l][i].ray.empty())
-                    {
                         volume.vol_pol[l][i].ray.resize(volume.vol_pol[0][i].ray.size());
-                        volume.vol_pol[l][i].alfa =(short)(i*.9/FATT_MOLT_AZ);
-                        volume.vol_pol[l][i].teta = elev_array[l];  //perchè ridefinisce ??
-                    }
                     volume.vol_pol[l][i].ray[k]=volume.vol_pol[el_inf][i].ray[k];
                 }
 
