@@ -441,17 +441,21 @@ int CUM_BAC::elabora_dato()
             const float bin_high = BYTEtoDB(volume.scan(el_up).get_raw(i, k));
 
             //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
-            MAX_DIF=MAX_DIF_OR;
-            MAX_DIF_NEXT=MAX_DIF_NEXT_OR;
-            MIN_VALUE=MIN_VALUE_OR;
-            MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR;
+            /* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
+
+            int MAX_DIF=MAX_DIF_OR;
+            int MAX_DIF_NEXT=MAX_DIF_NEXT_OR;
+            int MIN_VALUE=MIN_VALUE_OR;
+            int MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR;
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) //-----------ANNULLO EFFETTO TEST ANAP
             {
+                // FIXME: perché BYTEtoDB se assegnamo a degli interi? [Enrico]
                 MAX_DIF_NEXT=BYTEtoDB(255);
                 MAX_DIF=BYTEtoDB(255);
                 MIN_VALUE=BYTEtoDB(0);
-                MIN_VALUE_NEXT= BYTEtoDB(0);  }
+                MIN_VALUE_NEXT= BYTEtoDB(0);
+            }
 
             // ------------separo i diversi casi x analisi anaprop: ho dati sia al livello base che sopra o no  e ho trovato anaprop in precedenza sul raggio o no
             bool test_an;

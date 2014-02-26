@@ -145,9 +145,6 @@ public:
 
     CalcoloVPR* calcolo_vpr;
 
-    int MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT;/* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
-
-
     /*-----------------------------------------------------------
       Variabili globali
       ------------------------------------------------------------*/
