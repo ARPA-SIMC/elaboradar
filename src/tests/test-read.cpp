@@ -112,6 +112,9 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
         {
             testinfo() << "elevation " << ie << " angle " << ia;
 
+            //wassert(actual(vsp20.vol_pol[ie][ia].teta_true) == vodim.vol_pol[ie][ia].teta_true);
+            wassert(actual(vsp20.vol_pol[ie][ia].teta) == vodim.vol_pol[ie][ia].teta);
+            wassert(actual(vsp20.vol_pol[ie][ia].alfa) == vodim.vol_pol[ie][ia].alfa);
             wassert(actual(vsp20.vol_pol[ie][ia].ray.size()) == vodim.vol_pol[ie][ia].ray.size());
 
             vector<Difference> vals_sp20;
