@@ -91,12 +91,14 @@ void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size,
     if(az_num*0.9 - alpha < 0.)
     {
         int new_az_num = (az_num + 1) % 400;
-        merge_beam(el_num, new_az_num, theta, alpha, size, data);
+        if (new_az_num != az_num)
+            merge_beam(el_num, new_az_num, theta, alpha, size, data);
     }
     else if(az_num*0.9 - alpha > 0.)
     {
         int new_az_num = (az_num -1+400) %400;
-        merge_beam(el_num, new_az_num, theta, alpha, size, data);
+        if (new_az_num != az_num)
+            merge_beam(el_num, new_az_num, theta, alpha, size, data);
     }
 }
 
