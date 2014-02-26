@@ -36,9 +36,8 @@ struct LoadLogEntry
     }
 };
 
-struct Ray
+struct Ray : public std::vector<unsigned char>
 {
-    std::vector<unsigned char> ray;
     /// Real beam elevation in degrees
     double elevation;
 
@@ -113,7 +112,7 @@ public:
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return ray_at_elev_preci(az_idx, ray_idx).ray[ray_idx];
+        return ray_at_elev_preci(az_idx, ray_idx)[ray_idx];
     }
 
     void read_sp20(const char* nome_file, const Site& site, bool clean=true);
