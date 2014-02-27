@@ -45,7 +45,7 @@ CFLAGS_BB=$(CFLAGS)
 CFLAGS_BB_VPR=$(CFLAGS) $(ADDED_DFLAGS_VPR)
 CFLAGS_BB_VPR_CLASS=$(CFLAGS) $(ADDED_DFLAGS_VPR_CLASS)
 
-OBJ_COMMON=setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o
+OBJ_COMMON=setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o
 OBJ_BB_VPR_CLASS=volume.o volume_cleaner.o cum_bac.o cum_bac_SP20_BB_VPR_CLASS.o $(OBJ_COMMON)
 OBJ_BB_VPR=volume.o volume_cleaner.o cum_bac.o cum_bac_SP20_BB_VPR.o $(OBJ_COMMON)
 OBJ_BB=volume.o volume_cleaner.o cum_bac.o cum_bac_SP20_BB.o $(OBJ_COMMON)
@@ -63,17 +63,17 @@ cum_bac_SP20.o:cum_bac_SP20.cpp $(INCLUDEDIR_SP20)/func_SP20read.h
 
 cum_bac_SP20_BB: $(OBJ_BB)
 
-cum_bac_SP20_BB.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h
+cum_bac_SP20_BB.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h ../include/cum_bac_clparser.h
 	$(CXX) -c  $(CFLAGS_BB) $< -o $@
 
 cum_bac_SP20_BB_VPR: $(OBJ_BB_VPR)
 
-cum_bac_SP20_BB_VPR.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h
+cum_bac_SP20_BB_VPR.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h ../include/cum_bac_clparser.h
 	$(CXX) -c  $(CFLAGS_BB_VPR) $< -o $@
 
 cum_bac_SP20_BB_VPR_CLASS: $(OBJ_BB_VPR_CLASS)
 
-cum_bac_SP20_BB_VPR_CLASS.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h ../include/par_class.h  
+cum_bac_SP20_BB_VPR_CLASS.o:cum_bac_SP20_BB_VPR.cpp $(INCLUDEDIR_SP20)/func_SP20read.h ../include/MP_par.h ../include/vpr_par.h ../include/par_class.h  ../include/cum_bac_clparser.h 
 	$(CXX) -c  $(CFLAGS_BB_VPR_CLASS) $< -o $@
 
 setwork.o:setwork.cpp
@@ -83,6 +83,9 @@ func_Q3d.o:func_Q3d.cpp ../include/qual_par.h
 	$(CXX) -c $< $(CFLAGS) -o $@
 
 Q_components.o:Q_components.cpp ../include/qual_par.h
+	$(CXX) -c $< $(CFLAGS) -o $@
+
+cum_bac_clparser.o:cum_bac_clparser.cpp ../include/cum_bac_clparser.h
 	$(CXX) -c $< $(CFLAGS) -o $@
 
 clean: 

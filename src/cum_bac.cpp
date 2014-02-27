@@ -78,9 +78,9 @@ extern "C" {
 
 namespace cumbac {
 
-CUM_BAC::CUM_BAC(const char* site_name)
+CUM_BAC::CUM_BAC(const char* site_name, bool medium)
     : site(Site::get(site_name)),
-      do_medium(false), do_clean(false),
+      do_medium(medium), do_clean(false),
       do_quality(false), do_beamblocking(false), do_declutter(false),
       do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
       do_devel(false),
@@ -710,8 +710,7 @@ void CUM_BAC::leggo_first_level()
     /*-------------------------------
       patch per espandere il clutter
       -------------------------------*/
-#ifdef MEDIUM
-    {
+    if(do_medium){
         unsigned char first_level_tmp[NUM_AZ_X_PPI][MAX_BIN];
         int k;
         memcpy(first_level_tmp,first_level,sizeof(first_level));
@@ -725,7 +724,6 @@ void CUM_BAC::leggo_first_level()
             }
         }
     }
-#endif
 }
 
 void CUM_BAC::leggo_hray( )
@@ -2514,11 +2512,11 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
                 if(cum_bac.qual[l][i][k]<QMIN_VPR ) flag_vpr[l][i][k]=0;
 
                 //AGGIUNTA PER CLASS
-# ifdef CLASS
-                if(conv[i][k]>= CONV_VAL){
-                    flag_vpr[l][i][k]=0;
-                }
-#endif
+		if(cum_bac.do_class){
+                	if(conv[i][k]>= CONV_VAL){
+                    		flag_vpr[l][i][k]=0;
+                	}
+		}
 
                 // ------per calcolare l'area del pixel lo considero un rettangolo dim bin x ampiezzamediafascio x flag vpr/1000 per evitare problemi di memoria?
                 area=cum_bac.volume.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr[l][i][k]/1000.; // divido per  mille per evitare nr troppo esagerato
@@ -3095,15 +3093,14 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const cha
     /*    apertura file dati di output                                          */
     /*----------------------------------------------------------------------------*/
     //definisco stringa data in modo predefinito
-#ifdef SHORT
-    time = NormalizzoData(volume.acq_date);
-    tempo = gmtime(&time);
-#endif
-#ifdef MEDIUM
-    tempo = gmtime(&volume.acq_date);
-    time = NormalizzoData(volume.acq_date);
-    tempo = gmtime(&time);
-#endif
+    if( do_medium){
+    	tempo = gmtime(&volume.acq_date);
+    	time = NormalizzoData(volume.acq_date);
+    	tempo = gmtime(&time);
+    } else {
+    	time = NormalizzoData(volume.acq_date);
+    	tempo = gmtime(&time);
+    }
     snprintf(nome_file, 512, "%s/%04d%02d%02d%02d%02d%s",dir,
             tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
             tempo->tm_hour, tempo->tm_min, ext);

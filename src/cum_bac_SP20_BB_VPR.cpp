@@ -5,6 +5,7 @@
 
 #include "cum_bac.h"
 #include "logging.h"
+#include "cum_bac_clparser.h"
 
 // libreria c
 #include <stdlib.h>
@@ -152,6 +153,11 @@ int main (int argc, char **argv)
     char *nome_file;
     int ier_main=0;//uscite errore generico (lettura volume e succ.anap) , di test_file, del main
     char *sito;//GAT O SPC
+    int file_type; // -- x definire n_elev e reolution e se è =1 esco
+
+    CUM_BAC_CLOPT CL_opt;
+    parseOptions(argc,argv,&CL_opt);
+//   PrintOptions(&CL_opt);
 
     // Initialize logging
     Logging logging;
@@ -163,51 +169,32 @@ int main (int argc, char **argv)
     if (argc < 4)
         commandline_error(argv[0], "some argument is missing.");
 
-    nome_file = argv[1];
+    nome_file 		= (char *)CL_opt.filename.c_str(); 
+    file_type		=	  CL_opt.filetype;
+    sito		= (char *)CL_opt.sito.c_str();
 
-    int file_type; // -- x definire n_elev e reolution e se è =1 esco
-    if (sscanf(argv[2], "%d", &file_type) != 1)
-        commandline_error(argv[0], "file_type must be a number");
+//    nome_file = argv[1];
 
-    sito = argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni
-    setwork(argv[3]);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
+//    if (sscanf(argv[2], "%d", &file_type) != 1)
+//        commandline_error(argv[0], "file_type must be a number");
+
+//    sito = argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni
+    setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
     startup_banner();
 
-    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito);
+    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium);
 
     // Set feature flags
-    cb->do_clean = true;
-#ifdef SHORT
-    cb->do_medium = false;
-#else
- #ifdef MEDIUM
-    cb->do_medium = true;
- #else
-    #error Neither SHORT nor MEDIUM are defined
- #endif
-#endif
-#ifdef QUALITY
-    cb->do_quality = true;
-#endif
-#ifdef BEAMBLOCKING
-    cb->do_beamblocking = true;
-#endif
-#ifdef DECLUTTER
-    cb->do_declutter = true;
-#endif
-#ifndef BLOCNOCORR
-    cb->do_bloccorr = true;
-#endif
-#ifdef VPR
-    cb->do_vpr = true;
-#endif
-#ifdef CLASS
-    cb->do_class = true;
-#endif
-#ifdef STAMPE_EXTRA
-    cb->do_devel = true;
-#endif
+//   cb->do_clean = true;
+    cb->do_clean 	= CL_opt.do_clean;
+    cb->do_quality 	= CL_opt.do_quality;
+    cb->do_beamblocking = CL_opt.do_beamblocking;
+    cb->do_declutter 	= CL_opt.do_declut;
+    cb->do_bloccorr 	= CL_opt.do_bloccor;
+    cb->do_vpr 		= CL_opt.do_vpr;
+    cb->do_class 	= CL_opt.do_class;
+    cb->do_devel 	= CL_opt.do_devel;
 
     try {
         if (cb->esegui_tutto(nome_file, file_type))
