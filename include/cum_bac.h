@@ -234,7 +234,7 @@ public:
        T_time, T_data, T_ora..*/
 
 
-    CUM_BAC(const char* site_name);
+    CUM_BAC(const char* site_name, bool medium=false);
     ~CUM_BAC();
 
     bool read_sp20_volume(const char* nome_file, int file_type);
