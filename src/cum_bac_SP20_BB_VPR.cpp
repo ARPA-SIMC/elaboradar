@@ -68,57 +68,37 @@
 /**
  * Write a banner with program information, compile flags, environment and so on.
  */
-static void startup_banner()
+static void startup_banner(CUM_BAC_CLOPT *opt)
 {
     LOG_CATEGORY("radar.banner");
+#ifdef WRITE_DBP
+//            " WRITE_DBP"   eventualmente da re-inserire
+#endif
+#ifdef WRITE_DBP_REORDER
+//            " WRITE_DBP_REORDER" eventiualemnte da re-inserire
+#endif
+
+#ifdef Z_AVERAGE
+//            " Z_AVERAGE"  obsoleta da togliere
+#endif
+#ifdef R_AVERAGE
+//            " R_AVERAGE"  obsoleta da togliere
+#endif
 
     /// Log initial program state
     LOG_INFO("Lancio Programma");
     LOG_INFO("-----------------------------------------------------------------");
-    LOG_INFO("Flag di Compilazione: "
-#ifdef BOLOGNA
-            " BOLOGNA"
-#endif
-#ifdef SPC
-            " SPC"
-#endif
-#ifdef WRITE_DBP
-            " WRITE_DBP"
-#endif
-#ifdef TIME
-            " TIME"
-#endif
-#ifdef WRITE_DBP_REORDER
-            " WRITE_DBP_REORDER"
-#endif
-#ifdef DECLUTTER
-            " DECLUTTER"
-#endif
-#ifdef Z_AVERAGE
-            " Z_AVERAGE"
-#endif
-#ifdef R_AVERAGE
-            " R_AVERAGE"
-#endif
-#ifdef Z_LOWRIS
-            " Z_LOWRIS"
-#endif
-#ifdef SHORT
-            " SHORT"
-#endif
-#ifdef MEDIUM
-            " MEDIUM"
-#endif
-#ifdef STATIC
-            " STATIC"
-#endif
-#ifdef BEAMBLOCKING
-            " BEAMBLOCKING"
-#endif
-#ifdef QUALITY
-            " QUALITY"
-#endif
-            ".");
+    std::string FlagRunTime ="Flag di RunTime: ";
+
+    FlagRunTime=FlagRunTime+" "+opt->sito;
+    if(opt->do_declut)FlagRunTime=FlagRunTime+" DECLUTTER";
+    if(!opt->do_medium)FlagRunTime=FlagRunTime+" SHORT";
+    if(opt->do_medium)FlagRunTime=FlagRunTime+" MEDIUM";
+    if(opt->do_beamblocking)FlagRunTime=FlagRunTime+" BEAMBLOCKING";
+    if(opt->do_quality)FlagRunTime=FlagRunTime+" QUALITY";
+    if(opt->do_readStaticMap) FlagRunTime=FlagRunTime + " STATIC";  
+ 
+    LOG_INFO(FlagRunTime.c_str());
 
     LOG_INFO("-----------------------------------------------------------------");
     LOG_INFO("Variabili d'Ambiente:");
@@ -181,7 +161,7 @@ int main (int argc, char **argv)
 //    sito = argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni
     setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
-    startup_banner();
+    startup_banner(&CL_opt);
 
     cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium);
 

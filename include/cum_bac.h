@@ -140,6 +140,7 @@ public:
     bool do_class;
     bool do_zlr_media;
     bool do_devel;
+    bool do_readStaticMap;  
 
     cumbac::Volume volume;
 
