@@ -18,6 +18,8 @@ struct CUM_BAC_CLOPT {
    bool do_clean;
    bool do_class;
    bool do_devel;
+
+   bool do_readStaticMap;  
 }  ;
 
 

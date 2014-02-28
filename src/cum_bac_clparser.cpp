@@ -42,12 +42,13 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	//
 	// Define optional arguments
 	//
-	TCLAP::SwitchArg Short("S", "ShortPulse", "Use parameters for short pulse", false);
+//	TCLAP::SwitchArg Short("S", "ShortPulse", "Use parameters for short pulse", false);
 	TCLAP::SwitchArg Medium("M", "MediumPulse", "Use parameters for medium pulse", false);
-	std::vector<TCLAP::Arg*> xorpulse;
-	xorpulse.push_back(&Short);
-	xorpulse.push_back(&Medium);
-	cmd.xorAdd( xorpulse );
+        cmd.add(Medium);
+//	std::vector<TCLAP::Arg*> xorpulse;
+//	xorpulse.push_back(&Short);
+//	xorpulse.push_back(&Medium);
+//	cmd.xorAdd( xorpulse );
 
 	TCLAP::SwitchArg Quality("Q", "Quality", "Calculate quality", false);
         cmd.add(Quality);
@@ -59,13 +60,16 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
         cmd.add(BlocNoCor);
 	TCLAP::SwitchArg VPR("V", "VPR", "Performe VPR correction", false);
         cmd.add(VPR);
-	TCLAP::SwitchArg Clean("C", "Clean", "Performe Wimax-second trip cleaning", false);
+	TCLAP::SwitchArg Clean("c", "Clean", "Performe Wimax-second trip cleaning", false);
         cmd.add(Clean);
-	TCLAP::SwitchArg Class("c", "Class", "Evaluate stratiform-convective classification", false);
+	TCLAP::SwitchArg Class("C", "Class", "Evaluate stratiform-convective classification", false);
         cmd.add(Class);
 	TCLAP::SwitchArg Stampe("s", "StampeExtra", "Stampe Extra per devel", false);
         cmd.add(Stampe);
 
+	TCLAP::SwitchArg StaticMap("m", "UseStaticMap", "Use Static Map", false);
+        cmd.add(Stampe);
+	
 	//
 	// Parse the command line.
 	//
@@ -78,7 +82,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	opt->filename=filename.getValue();
 	opt->filetype=filetype.getValue();
 	opt->sito=sito.getValue();
-	if (Short.isSet()) opt->do_medium=false;
+//	if (Short.isSet()) opt->do_medium=false;
 	opt->do_medium=Medium.getValue();
 	opt->do_quality=Quality.getValue();
 	opt->do_beamblocking=BeamBlocking.getValue();
@@ -88,6 +92,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	opt->do_clean=Clean.getValue();
 	opt->do_class=Class.getValue();
 	opt->do_devel=Stampe.getValue();
+	opt->do_readStaticMap=StaticMap.getValue();  
 
   } catch ( TCLAP::ArgException& e )
   { std::cout << "ERROR: " << e.error() << " " << e.argId() << std::endl; }
@@ -110,6 +115,7 @@ void PrintOptions(struct CUM_BAC_CLOPT *opt){
    std::cout <<"do_clean"<<opt->do_clean<<std::endl;
    std::cout <<"do_class :"<<opt->do_class<<std::endl;
    std::cout <<"do_devel :"<<opt->do_devel<<std::endl;
+   std::cout <<"do_readStaticMap"<<opt->do_readStaticMap<<std::endl;
 
    return ;
 }

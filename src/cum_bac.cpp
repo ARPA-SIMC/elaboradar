@@ -83,7 +83,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
       do_medium(medium), do_clean(false),
       do_quality(false), do_beamblocking(false), do_declutter(false),
       do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
-      do_devel(false),
+      do_devel(false),do_readStaticMap(false),
       calcolo_vpr(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
@@ -652,20 +652,20 @@ void CUM_BAC::leggo_first_level()
 {
     FILE *file;
 
-#ifdef STATIC
+    if(do_readStaticMap){
     /*-------------------
       Leggo mappa  statica
       -------------------*/
     // lettura dimensioni matrice mappa statica da file esterno
-    int dim = assets.read_file_first_level_dim();
+      int dim = assets.read_file_first_level_dim();
     //leggo mappa statica con dimensioni appena lette
-    file = assets.open_file_first_level();
-    for(int i=0; i<NUM_AZ_X_PPI; i++)
-        fread(&first_level_static[i][0],dim,1,file);
+      file = assets.open_file_first_level();
+      for(int i=0; i<NUM_AZ_X_PPI; i++)
+         fread(&first_level_static[i][0],dim,1,file);
     // copio mappa statica su matrice first_level
-    memcpy(first_level,first_level_static,sizeof(first_level));
-    fclose(file);
-#endif
+      memcpy(first_level,first_level_static,sizeof(first_level));
+      fclose(file);
+    }
 
     if (do_beamblocking)
     {
