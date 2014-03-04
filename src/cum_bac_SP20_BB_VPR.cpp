@@ -137,7 +137,6 @@ int main (int argc, char **argv)
 
     CUM_BAC_CLOPT CL_opt;
     parseOptions(argc,argv,&CL_opt);
-//   PrintOptions(&CL_opt);
 
     // Initialize logging
     Logging logging;
@@ -166,7 +165,6 @@ int main (int argc, char **argv)
     cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium);
 
     // Set feature flags
-//   cb->do_clean = true;
     cb->do_clean 	= CL_opt.do_clean;
     cb->do_quality 	= CL_opt.do_quality;
     cb->do_beamblocking = CL_opt.do_beamblocking;
@@ -175,9 +173,11 @@ int main (int argc, char **argv)
     cb->do_vpr 		= CL_opt.do_vpr;
     cb->do_class 	= CL_opt.do_class;
     cb->do_devel 	= CL_opt.do_devel;
+    cb->do_readStaticMap= CL_opt.do_readStaticMap;
 
     try {
-        if (cb->esegui_tutto(nome_file, file_type))
+//       cb->StampoFlag(); 
+       if (cb->esegui_tutto(nome_file, file_type))
             ier_main = 0;
         else
             ier_main = 1;

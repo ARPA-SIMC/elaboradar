@@ -381,6 +381,8 @@ public:
      * reviewed to see if it is still needed.
      */
     time_t NormalizzoData(time_t time);
+
+    void StampoFlag();
 };
 
 struct CilindricalColumn
