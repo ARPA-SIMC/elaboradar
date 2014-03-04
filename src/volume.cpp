@@ -219,6 +219,16 @@ unsigned Volume::elevation_index(double elevation) const
     return MAX_NEL;
 }
 
+double Volume::elevation_min() const
+{
+    return (double)elev_array[0] * 360./4096.;
+}
+
+double Volume::elevation_max() const
+{
+    return (double)elev_array[NEL - 1] * 360./4096.;
+}
+
 void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
 {
     // dimensioni cella a seconda del tipo di acquisizione

@@ -921,7 +921,7 @@ void CUM_BAC::caratterizzo_volume()
     //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
 
     const unsigned beam_size = volume.scan(0).beam_size;
-    for (int l=0; l<NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
+    for (int l=0; l<volume.NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
@@ -1129,10 +1129,10 @@ void CalcoloVPR::classifica_rain()
     range_min=0.5*cum_bac.volume.size_cell/1000.;
     range_max=(MAX_BIN-0.5)*cum_bac.volume.size_cell/1000.;
 
-    xmin=floor(range_min*cos(elev_array[NEL-1]*CONV_RAD)); // distanza orizzontale minima dal radar
-    zmin=pow(pow(range_min,2.)+pow(4./3*a,2.)+2.*range_min*4./3.*a*sin(elev_array[0]*CONV_RAD),.5) -4./3.*a+h_radar; // quota  minima in prop standard
-    xmax=floor(range_max*cos(elev_array[0]*CONV_RAD)); // distanza orizzontale massima dal radar
-    zmax=pow(pow(range_max,2.)+pow(4./3*a,2.)+2.*range_max*4./3.*a*sin(elev_array[NEL-1]*CONV_RAD),.5) -4./3.*a+h_radar;//quota massima
+    xmin=floor(range_min*cos(cum_bac.volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
+    zmin=pow(pow(range_min,2.)+pow(4./3*a,2.)+2.*range_min*4./3.*a*sin(cum_bac.volume.elevation_min() * DTOR),.5) -4./3.*a+h_radar; // quota  minima in prop standard
+    xmax=floor(range_max*cos(cum_bac.volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
+    zmax=pow(pow(range_max,2.)+pow(4./3*a,2.)+2.*range_max*4./3.*a*sin(cum_bac.volume.elevation_max() * DTOR),.5) -4./3.*a+h_radar;//quota massima
 
     x_size=(xmax-xmin)/resol[0]; //dimensione orizzontale
     z_size=(zmax-zmin)/resol[1]; //dimensione verticale
