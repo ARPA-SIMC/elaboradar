@@ -40,6 +40,10 @@ extern "C" {
 #include <qual_par.h>
 #include <par_class.h>
 
+#ifdef NEL
+#undef NEL
+#endif
+
 //Definizioni per test_file
 #define NUM_MIN_BEAM 200
 #define SHORT_DEC         0

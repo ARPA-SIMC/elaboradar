@@ -23,6 +23,10 @@ extern "C" {
 }
 #endif
 
+#ifdef NEL
+#undef NEL
+#endif
+
 using namespace std;
 
 /// This needs to be a global variable, as it is expected by libsp20
@@ -161,7 +165,7 @@ void VolumeStats::print(FILE* out)
 }
 
 Volume::Volume()
-    : acq_date(0), size_cell(0), declutter_rsp(false)
+    : acq_date(0), size_cell(0), declutter_rsp(false), NEL(0)
 {
     scans.reserve(MAX_NEL);
 }
@@ -177,7 +181,10 @@ PolarScan& Volume::make_scan(unsigned idx, unsigned beam_size)
 {
     // Enlarge the scans vector if needed
     if (idx >= scans.size())
+    {
         scans.resize(idx + 1, 0);
+        NEL = idx + 1;
+    }
 
     // Create the PolarScan if needed
     if (!scans[idx])
