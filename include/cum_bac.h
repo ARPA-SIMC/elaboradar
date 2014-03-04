@@ -43,13 +43,12 @@ extern "C" {
 #undef NEL
 #endif
 
-#ifdef SHORT
 //Risoluzioni e limiti spaziali
-const unsigned int NEL = 15;  // n0 elevazioni massimo
-#endif
-// v. parametri SHORT
+// FIXME: rimuovere
 #ifdef MEDIUM
 const unsigned int NEL = 5;
+#else
+const unsigned int NEL = 15;  // n0 elevazioni massimo
 #endif
 
 //Dimensioni matrici statistica

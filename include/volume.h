@@ -151,6 +151,9 @@ public:
     /// Compute the vol_pol index of an elevation angle
     unsigned elevation_index(double elevation) const;
 
+    double elevation_min() const;
+    double elevation_max() const;
+
     inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
         return scan(elev_fin[az_idx][ray_idx]).get_elevation(az_idx);
