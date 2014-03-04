@@ -86,6 +86,7 @@ void to::test<3>()
 
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -165,6 +166,7 @@ void to::test<4>()
     cb->do_vpr = true;
     cb->do_class = true;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -258,6 +260,7 @@ void to::test<5>()
     cb->do_bloccorr = true;
     cb->do_vpr = true;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -313,6 +316,7 @@ void to::test<6>()
     cb->do_bloccorr = false;
     cb->do_vpr = false;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -430,6 +434,7 @@ void to::test<7>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -555,6 +560,7 @@ void to::test<8>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -687,6 +693,7 @@ void to::test<9>()
     cb->do_bloccorr = false;
     cb->do_vpr = false;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -881,6 +888,7 @@ void to::test<10>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     std::cout<<"INIZIO - "<<fname<<std::endl;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
@@ -939,6 +947,7 @@ void to::test<11>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->do_clean= true;
+    cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
