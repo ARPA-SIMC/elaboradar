@@ -2988,6 +2988,7 @@ void CUM_BAC::creo_cart()
 
 void CUM_BAC::creo_cart_z_lowris()
 {
+    unsigned char ZLR_N_ELEMENTARY_PIXEL = do_medium ? 1 : 4;
     int i,j,x,y,cont;
     unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
     unsigned short q1x1;
