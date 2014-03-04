@@ -46,7 +46,6 @@ extern "C" {
 #ifdef SHORT
 //Risoluzioni e limiti spaziali
 #define NEL 15                // n0 elevazioni massimo
-#define CART_DIM_ZLR             256 // dimensione matrice a 1x1 km
 #define ZLR_N_ELEMENTARY_PIXEL   4
 #define ZLR_OFFSET               0
 //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
@@ -56,7 +55,6 @@ extern "C" {
 // v. parametri SHORT
 #ifdef MEDIUM
 #define NEL 5
-#define CART_DIM_ZLR             512
 #define ZLR_N_ELEMENTARY_PIXEL   1
 #define ZLR_OFFSET               CART_DIM_ZLR/2
 #define NMIN 2
@@ -144,6 +142,9 @@ public:
     bool do_devel;
     bool do_readStaticMap;  
 
+    // dimensione matrice a 1x1 km
+    const unsigned CART_DIM_ZLR;
+
     cumbac::Volume volume;
 
     CalcoloVPR* calcolo_vpr;
@@ -230,7 +231,8 @@ public:
     Image<unsigned char> conv_cart;
     Image<unsigned char> conv_1x1;
     //uscite:matrici cappi max resol e 1x1
-    unsigned char cappi_1x1[CART_DIM_ZLR][CART_DIM_ZLR],cappi_cart[MAX_BIN*2][MAX_BIN*2];
+    Image<unsigned char> cappi_cart;
+    Image<unsigned char> cappi_1x1;
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
