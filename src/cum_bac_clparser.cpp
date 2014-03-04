@@ -68,7 +68,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
         cmd.add(Stampe);
 
 	TCLAP::SwitchArg StaticMap("m", "UseStaticMap", "Use Static Map", false);
-        cmd.add(Stampe);
+        cmd.add(StaticMap);
 	
 	//
 	// Parse the command line.
