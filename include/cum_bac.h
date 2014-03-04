@@ -46,7 +46,6 @@ extern "C" {
 #ifdef SHORT
 //Risoluzioni e limiti spaziali
 #define NEL 15                // n0 elevazioni massimo
-#define ZLR_N_ELEMENTARY_PIXEL   4
 #define ZLR_OFFSET               0
 //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
 #define NMIN 1 // cambiato da #define NMIN 5 a 1 dopo inserimento minuti maltempo, step di arrotondamento in minuti
@@ -55,7 +54,6 @@ extern "C" {
 // v. parametri SHORT
 #ifdef MEDIUM
 #define NEL 5
-#define ZLR_N_ELEMENTARY_PIXEL   1
 #define ZLR_OFFSET               CART_DIM_ZLR/2
 #define NMIN 2
 #define MAX_TIME_DIFF 1
