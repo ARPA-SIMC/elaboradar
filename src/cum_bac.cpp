@@ -3387,8 +3387,11 @@ float CUM_BAC::RtoDBZ(float rain) const
 /* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
 time_t CUM_BAC::NormalizzoData(time_t time)
 {
+    //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
     // massima differenza in minuti tra data acquisizione e standard per arrotondare per difetto
-    const unsigned int MAX_TIME_DIFF = do_medium ? 1 : 3;
+    const unsigned MAX_TIME_DIFF = do_medium ? 1 : 3;
+    // cambiato da #define NMIN 5 a 1 dopo inserimento minuti maltempo, step di arrotondamento in minuti
+    const unsigned NMIN = do_medium ? 2 : 1;
     int itime;
 
     itime = time/(NMIN*60);
