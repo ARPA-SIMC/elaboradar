@@ -82,6 +82,8 @@ struct Image
     T* operator[](unsigned y) { return data + y * SX; }
     const T* operator[](unsigned y) const { return data + y * SX; }
 
+    size_t size() const { return SX * SY; }
+
     T min() const
     {
         T res = data[0];
