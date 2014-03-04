@@ -23,8 +23,9 @@ template<> template<>
 void to::test<1>()
 {
     // Test NormalizzoData
-    wassert(actual(NormalizzoData(0)) == 0); // TODO: check value
-    wassert(actual(NormalizzoData(1)) == 0); // TODO: check value
+    CUM_BAC* cb = new CUM_BAC("SPC");
+    wassert(actual(cb->NormalizzoData(0)) == 0); // TODO: check value
+    wassert(actual(cb->NormalizzoData(1)) == 0); // TODO: check value
 }
 
 template<> template<>

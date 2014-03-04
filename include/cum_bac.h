@@ -48,13 +48,11 @@ extern "C" {
 #define NEL 15                // n0 elevazioni massimo
 //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
 #define NMIN 1 // cambiato da #define NMIN 5 a 1 dopo inserimento minuti maltempo, step di arrotondamento in minuti
-#define MAX_TIME_DIFF 3 // massima differenza in minuti tra data acquisizione e standard per arrotondare per difetto
 #endif
 // v. parametri SHORT
 #ifdef MEDIUM
 #define NEL 5
 #define NMIN 2
-#define MAX_TIME_DIFF 1
 #endif
 
 //Dimensioni matrici statistica
@@ -374,6 +372,18 @@ public:
 
     // RtoDBZ calcolato su aMP e bMP
     float RtoDBZ(float rain) const;
+
+
+    /**
+     *  @brief funzione che a partire dal tempo in secondi arrotonda al NMIN-esimo minuto precedente o successivo
+     *  @details 
+     *  @param  time intero che rappresenta il numero di secondi
+     *  @return restituisce l'arrotondamento in secondi al NMIN-esimo minuto precedente o successivo , se fallisce -1
+     *
+     * FIXME: this is a legacy from old procedures, code using it should be
+     * reviewed to see if it is still needed.
+     */
+    time_t NormalizzoData(time_t time);
 };
 
 struct CilindricalColumn
@@ -661,16 +671,5 @@ int testfit(float a[], float chisq, float chisqin);
 
 
 }
-
-/**
- *  @brief funzione che a partire dal tempo in secondi arrotonda al NMIN-esimo minuto precedente o successivo
- *  @details 
- *  @param  time intero che rappresenta il numero di secondi
- *  @return restituisce l'arrotondamento in secondi al NMIN-esimo minuto precedente o successivo , se fallisce -1
- *
- * FIXME: this is a legacy from old procedures, code using it should be
- * reviewed to see if it is still needed.
- */
-time_t NormalizzoData(time_t time);
 
 #endif
