@@ -38,8 +38,8 @@ extern "C" {
 #include <geo_par.h>
 
 
-// Definizioni e variabili che cambiano da corto a medio
-#ifdef NEL // Se NEL è definito lo undefinisco perchè è ridefinito sotto
+// Toglie NEL come costante
+#ifdef NEL
 #undef NEL
 #endif
 

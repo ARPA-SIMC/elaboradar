@@ -136,6 +136,7 @@ public:
     time_t acq_date;
     double size_cell;
     bool declutter_rsp; // ?
+    unsigned int NEL;
 
     // Access a polar scan
     PolarScan& scan(unsigned idx) { return *scans[idx]; }
