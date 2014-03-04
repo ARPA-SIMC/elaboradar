@@ -84,13 +84,15 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
       do_quality(false), do_beamblocking(false), do_declutter(false),
       do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
       do_devel(false),do_readStaticMap(false),
+      CART_DIM_ZLR(do_medium ? 512: 256),
       calcolo_vpr(0), cart(MAX_BIN*2), cartm(MAX_BIN*2), z_out(CART_DIM_ZLR),
       quota_cart(MAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MAX_BIN*2),
       beam_blocking_1x1(CART_DIM_ZLR), dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
       elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR), qual_Z_cart(MAX_BIN*2),
       qual_Z_1x1(CART_DIM_ZLR), topxy(MAX_BIN*2), top_1x1(CART_DIM_ZLR),
       corr_cart(MAX_BIN*2), corr_1x1(CART_DIM_ZLR), neve_cart(MAX_BIN*2), neve_1x1(CART_DIM_ZLR),
-      conv_cart(MAX_BIN*2), conv_1x1(CART_DIM_ZLR)
+      conv_cart(MAX_BIN*2), conv_1x1(CART_DIM_ZLR),
+      cappi_cart(MAX_BIN*2), cappi_1x1(CART_DIM_ZLR)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
