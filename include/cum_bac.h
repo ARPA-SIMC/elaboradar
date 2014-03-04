@@ -45,11 +45,11 @@ extern "C" {
 
 #ifdef SHORT
 //Risoluzioni e limiti spaziali
-#define NEL 15                // n0 elevazioni massimo
+const unsigned int NEL = 15;  // n0 elevazioni massimo
 #endif
 // v. parametri SHORT
 #ifdef MEDIUM
-#define NEL 5
+const unsigned int NEL = 5;
 #endif
 
 //Dimensioni matrici statistica
