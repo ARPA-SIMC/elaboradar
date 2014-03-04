@@ -1144,7 +1144,7 @@ void CalcoloVPR::classifica_rain()
     for (i=0; i<MAX_BIN; i++){
         range[i]=(i+0.5)*cum_bac.volume.size_cell/1000.;
 
-        for (k=0; k<NEL; k++){
+        for (k=0; k<cum_bac.volume.NEL; k++){
             zz[i][k]=pow(pow(range[i],2.)+pow(4./3*a,2.)+2.*range[i]*4./3.*a*sin(elev_array[k]*CONV_RAD),.5) -4./3.*a+h_radar;// quota
             xx[i][k]=range[i]*cos(elev_array[k]*CONV_RAD); // distanza
             i_zz[i][k]=floor((zz[i][k]-zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
@@ -1220,7 +1220,7 @@ void CalcoloVPR::classifica_rain()
         CilindricalSlice rhi_cart(x_size, z_size, 0);
         CilindricalSlice rhi_weight(x_size, z_size, 0);
 
-        for (i=0;i<NEL;i++)
+        for (i=0;i<cum_bac.volume.NEL;i++)
             cum_bac.volume.scan(i).read_beam_db(iaz, RHI_beam[i], MAX_BIN, BYTEtoDB(0));
 
         /* ;---------------------------------- */
@@ -1234,7 +1234,7 @@ void CalcoloVPR::classifica_rain()
         if (ray_size > MAX_BIN)
             ray_size = MAX_BIN;
 
-        for (iel=0;iel<NEL;iel++){
+        for (iel=0;iel<cum_bac.volume.NEL;iel++){
             for (unsigned ibin=0;ibin<ray_size;ibin++) {
                 if ( ibin >= MAX_BIN) {
                     std::cout<<"ibin troppo grande "<<std::endl;
@@ -2483,7 +2483,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
     iaz_min=cum_bac.site.vpr_iaz_min;
     iaz_max=cum_bac.site.vpr_iaz_max;
 
-    for (unsigned l=0; l<NEL; l++)//ciclo elevazioni
+    for (unsigned l=0; l<cum_bac.volume.NEL; l++)//ciclo elevazioni
     {
         for (unsigned k=0; k<MAX_BIN; k++)/*ciclo range*/
         {
