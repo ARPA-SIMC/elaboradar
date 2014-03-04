@@ -1719,7 +1719,7 @@ int CalcoloVPR::combina_profili()
 
 
     /* questo per fare ciclo sul vpr vecchio*/
-    Time = NormalizzoData(cum_bac.volume.acq_date);
+    Time = cum_bac.NormalizzoData(cum_bac.volume.acq_date);
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
@@ -2386,7 +2386,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     /* nome data */
     //definisco stringa data in modo predefinito
-    Time = NormalizzoData(cum_bac.volume.acq_date);
+    Time = cum_bac.NormalizzoData(cum_bac.volume.acq_date);
     tempo = gmtime(&Time);
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
@@ -3384,6 +3384,27 @@ float CUM_BAC::RtoDBZ(float rain) const
     return ::RtoDBZ(rain, aMP, bMP);
 }
 
+/* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
+time_t CUM_BAC::NormalizzoData(time_t time)
+{
+    // massima differenza in minuti tra data acquisizione e standard per arrotondare per difetto
+    const unsigned int MAX_TIME_DIFF = do_medium ? 1 : 3;
+    int itime;
+
+    itime = time/(NMIN*60);
+
+    /*
+       printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60));
+       printf("%s\n",ctime(&time));
+       printf("%d\n",(NMIN-MAX_TIME_DIFF)*60);
+       */
+
+    if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/
+    if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
+    //altrimenti ritorno -1
+    return -1;
+}
+
 }
 
 char *PrendiOra()
@@ -3412,23 +3433,4 @@ void prendo_tempo()
     LOG_INFO("tempo parziale %ld ---- totale %ld", time2-time1, time2-time_tot);
     time1=time2;
     return;
-}
-
-/* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
-time_t NormalizzoData(time_t time)
-{
-    int itime;
-
-    itime = time/(NMIN*60);
-
-    /*
-       printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60));
-       printf("%s\n",ctime(&time));
-       printf("%d\n",(NMIN-MAX_TIME_DIFF)*60);
-       */
-
-    if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/
-    if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
-    //altrimenti ritorno -1
-    return -1;
 }
