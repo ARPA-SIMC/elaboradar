@@ -71,47 +71,51 @@ namespace cumbac {
 
 struct Site;
 
-template<typename T, unsigned SX, unsigned SY=SX>
+template<typename T>
 struct Image
 {
-    T data[SY][SX];
+    const unsigned SX;
+    const unsigned SY;
+    T* data;
 
-    Image()
+    Image(unsigned sx, unsigned sy=0)
+        : SX(sx), SY(sy == 0 ? sx : sy), data(new T[SX*SY])
     {
         for (unsigned y = 0; y < SY; ++y)
             for (unsigned x = 0; x < SX; ++x)
-                data[y][x] = 0;
+                data[y*SX+x] = 0;
+    }
+    ~Image()
+    {
+        delete[] data;
     }
 
-    T* operator[](unsigned y) { return data[y]; }
-    const T* operator[](unsigned y) const { return data[y]; }
+    T* operator[](unsigned y) { return data + y * SX; }
+    const T* operator[](unsigned y) const { return data + y * SX; }
 
     T min() const
     {
-        T res = data[0][0];
-        for (unsigned y = 0; y < SY; ++y)
-            for (unsigned x = 0; x < SX; ++x)
-                if (data[y][x] < res)
-                    res = data[y][x];
+        T res = data[0];
+        for (unsigned i = 0; i < SX * SY; ++i)
+            if (data[i] < res)
+                res = data[i];
         return res;
     }
 
     T max() const
     {
-        T res = data[0][0];
-        for (unsigned y = 0; y < SY; ++y)
-            for (unsigned x = 0; x < SX; ++x)
-                if (data[y][x] > res)
-                    res = data[y][x];
+        T res = data[0];
+        for (unsigned i = 0; i < SX * SY; ++i)
+            if (data[i] > res)
+                res = data[i];
         return res;
     }
 
     T avg() const
     {
         double res = 0;
-        for (unsigned y = 0; y < SY; ++y)
-            for (unsigned x = 0; x < SX; ++x)
-                res += (double)data[y][x] / (double)(SX * SY);
+        for (unsigned i = 0; i < SX * SY; ++i)
+            res += (double)data[i] / (double)(SX * SY);
         return (T)round(res);
     }
 };
@@ -152,10 +156,10 @@ public:
     float azimut[MAX_BIN][MAX_BIN];
     float range[MAX_BIN][MAX_BIN];
     // vol_pol riportato in cartesiano
-    Image<unsigned char, MAX_BIN*2> cart;
-    Image<double, MAX_BIN*2> cartm;  /* Z media dei bins adiacenti al punto */
+    Image<unsigned char> cart;
+    Image<double> cartm;  /* Z media dei bins adiacenti al punto */
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
-    Image<unsigned char, CART_DIM_ZLR> z_out;
+    Image<unsigned char> z_out;
 
     //variabili tempo per ottenere mese.. aggiunti nel main per leggere stagione dal nome file e ricavere MP coeff */
     struct tm *tempo;
@@ -193,38 +197,38 @@ public:
     //quota centro fascio polare, cartesiana max risoluzione e cartesiana 1x1
     unsigned short quota_rel[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
     unsigned short quota[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
-    Image<unsigned short, MAX_BIN*2> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
-    Image<unsigned char, CART_DIM_ZLR> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
+    Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
+    Image<unsigned char> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
     //beam blocking cartesiano max resol e 1x1
-    Image<unsigned char, MAX_BIN*2> beam_blocking_xy; //beamblocking cartesiano max resol
-    Image<unsigned char, CART_DIM_ZLR> beam_blocking_1x1;//beam blocking cartesiano 1x1
+    Image<unsigned char> beam_blocking_xy; //beamblocking cartesiano max resol
+    Image<unsigned char> beam_blocking_1x1;//beam blocking cartesiano 1x1
     //uscite anaprop
     unsigned char dato_corrotto[NUM_AZ_X_PPI][MAX_BIN]; /*uscita controllo anaprop in coordinate azimut range */
-    Image<unsigned char, MAX_BIN*2> dato_corr_xy; //uscite anap  cartesiano max resol
-    Image<unsigned char, CART_DIM_ZLR> dato_corr_1x1; //uscite anap cartesiano  1x1
-    Image<unsigned char, MAX_BIN*2> elev_fin_xy;
-    Image<unsigned char, CART_DIM_ZLR> elev_fin_1x1;
+    Image<unsigned char> dato_corr_xy; //uscite anap  cartesiano max resol
+    Image<unsigned char> dato_corr_1x1; //uscite anap cartesiano  1x1
+    Image<unsigned char> elev_fin_xy;
+    Image<unsigned char> elev_fin_1x1;
     // metrici qualita' come sopra
     unsigned char qual[NEL][NUM_AZ_X_PPI][MAX_BIN]; /* qualita volume polare */
-    Image<unsigned char, MAX_BIN*2> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
-    Image<unsigned char, CART_DIM_ZLR> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
+    Image<unsigned char> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
+    Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra
     unsigned char top[NUM_AZ_X_PPI][MAX_BIN];
-    Image<unsigned char, MAX_BIN*2> topxy;
-    Image<unsigned char, CART_DIM_ZLR> top_1x1;
+    Image<unsigned char> topxy;
+    Image<unsigned char> top_1x1;
 
     // uscite  vpr: correzione VPR , come sopra
-    Image<unsigned char, MAX_BIN*2> corr_cart;
-    Image<unsigned char, CART_DIM_ZLR> corr_1x1;
+    Image<unsigned char> corr_cart;
+    Image<unsigned char> corr_1x1;
     // uscite vpr: neve, come sopra
-    Image<unsigned char, MAX_BIN*2> neve_cart;/* neve formato 1024*1024, risoluzione minima */
-    Image<unsigned char, CART_DIM_ZLR> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
+    Image<unsigned char> neve_cart;/* neve formato 1024*1024, risoluzione minima */
+    Image<unsigned char> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
 
     //matrici per classificazione: cappi
     unsigned char cappi[NUM_AZ_X_PPI][MAX_BIN];
     // uscite: matrici class max resol e 1x1
-    Image<unsigned char, MAX_BIN*2> conv_cart;
-    Image<unsigned char, CART_DIM_ZLR> conv_1x1;
+    Image<unsigned char> conv_cart;
+    Image<unsigned char> conv_1x1;
     //uscite:matrici cappi max resol e 1x1
     unsigned char cappi_1x1[CART_DIM_ZLR][CART_DIM_ZLR],cappi_cart[MAX_BIN*2][MAX_BIN*2];
 
