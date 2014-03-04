@@ -26,7 +26,7 @@ extern "C" {
 using namespace std;
 
 /// This needs to be a global variable, as it is expected by libsp20
-int elev_array[NEL];
+int elev_array[MAX_NEL];
 
 namespace cumbac {
 
@@ -155,7 +155,7 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
 void VolumeStats::print(FILE* out)
 {
     fprintf(out, "Nel    Zeros     Ones   Others      Sum\n");
-    for (int iel =0; iel<NEL; ++iel){
+    for (int iel =0; iel<MAX_NEL; ++iel){
         fprintf(out, "%4u %8u %8u %8u %8u\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
     }
 }
@@ -163,7 +163,7 @@ void VolumeStats::print(FILE* out)
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false)
 {
-    scans.reserve(NEL);
+    scans.reserve(MAX_NEL);
 }
 
 Volume::~Volume()
@@ -195,10 +195,10 @@ PolarScan& Volume::make_scan(unsigned idx, unsigned beam_size)
 
 void Volume::fill_missing_scans()
 {
-    if (scans.size() < NEL)
-        scans.resize(NEL, 0);
+    if (scans.size() < MAX_NEL)
+        scans.resize(MAX_NEL, 0);
 
-    for (unsigned i = 0; i < NEL; ++i)
+    for (unsigned i = 0; i < MAX_NEL; ++i)
         if (!scans[i])
             scans[i] = new PolarScan(0);
 }
@@ -206,10 +206,10 @@ void Volume::fill_missing_scans()
 unsigned Volume::elevation_index(double elevation) const
 {
     int teta = elevation / FATT_MOLT_EL;
-    for (unsigned i=0; i < NEL; ++i)
+    for (unsigned i=0; i < MAX_NEL; ++i)
         if (teta >= (elev_array[i]-6) && teta < (elev_array[i]+5))
             return i;
-    return NEL;
+    return MAX_NEL;
 }
 
 void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
@@ -292,7 +292,7 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
           cleaner.clean_beams(*b, max_range, cleaned);
 
       int el_num = elevation_index(beam_info.elevation);
-      if (el_num >= NEL) continue;
+      if (el_num >= MAX_NEL) continue;
       PolarScan& scan = make_scan(el_num, max_range);
       //scan.elevation = beam_info.elevation;
 #ifdef IMPRECISE_AZIMUT
@@ -385,9 +385,9 @@ void Volume::read_odim(const char* nome_file)
     std::vector<double> elevationAngles = volume->getElevationAngles();
 
     // Make sure that we can store all the levels in the scan
-    if (elevationAngles.size() > NEL)
+    if (elevationAngles.size() > MAX_NEL)
     {
-        LOG_INFO("%zd elevation angles found, but we can only store %d", elevationAngles.size(), NEL);
+        LOG_INFO("%zd elevation angles found, but we can only store %d", elevationAngles.size(), MAX_NEL);
         throw runtime_error("number of elevation angles too big");
     }
 
@@ -471,7 +471,7 @@ void Volume::read_odim(const char* nome_file)
         unsigned char* beam = new unsigned char[beam_size];
 
         int el_num = elevation_index(elevation);
-        if (el_num >= NEL) continue;
+        if (el_num >= MAX_NEL) continue;
         PolarScan& vol_pol_scan = make_scan(el_num, beam_size);
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
@@ -503,7 +503,7 @@ void Volume::read_odim(const char* nome_file)
 
 void Volume::compute_stats(VolumeStats& stats) const
 {
-    for (int iel = 0; iel < NEL; ++iel)
+    for (int iel = 0; iel < MAX_NEL; ++iel)
     {
         stats.count_zeros[iel] = 0;
         stats.count_ones[iel] = 0;
@@ -535,7 +535,7 @@ void Volume::resize_elev_fin()
     // to allocate enough memory for legacy code that iterates on MAX_BIN
     // to successfully read zeroes
     unsigned max_size = 512;
-    for (unsigned iel = 0; iel < NEL; ++iel)
+    for (unsigned iel = 0; iel < MAX_NEL; ++iel)
     {
         if (scan(iel).beam_size && scan(iel).beam_size > max_size)
             max_size = scan(iel).beam_size;

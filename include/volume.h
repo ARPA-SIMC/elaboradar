@@ -8,11 +8,11 @@
 #include <gsl/gsl_matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
-#define NEL 15                // n0 elevazioni massimo
+#define MAX_NEL 15                // n0 elevazioni massimo
 #define NUM_AZ_X_PPI 400
 
 // TODO: per compatibilità con la libsp20, anche questo toglierlo in futuro
-extern int elev_array[NEL];
+extern int elev_array[MAX_NEL];
 
 namespace H5 {
 struct H5File;
@@ -111,10 +111,10 @@ protected:
 
 struct VolumeStats
 {
-    unsigned count_zeros[NEL];
-    unsigned count_ones[NEL];
-    unsigned count_others[NEL];
-    unsigned sum_others[NEL];
+    unsigned count_zeros[MAX_NEL];
+    unsigned count_ones[MAX_NEL];
+    unsigned count_others[MAX_NEL];
+    unsigned sum_others[MAX_NEL];
 
     void print(FILE* out);
 };
@@ -128,7 +128,7 @@ protected:
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan& make_scan(unsigned idx, unsigned beam_size);
 
-    // Fill all missing scans up to NEL with PolarScan(0)
+    // Fill all missing scans up to MAX_NEL with PolarScan(0)
     void fill_missing_scans();
 
 public:
