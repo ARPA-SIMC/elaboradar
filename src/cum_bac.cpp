@@ -3231,7 +3231,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
     //-------------------scritture output -----------------------
     LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
-    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(z_out.data),z_out.data);
+    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),z_out.size(),z_out.data);
 
 
     char nome_file_output[512];
@@ -3248,7 +3248,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
         //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
         // temporanee
         // in archivio
-        scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(qual_Z_1x1.data),qual_Z_1x1.data);
+        scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),qual_Z_1x1.size(),qual_Z_1x1.data);
 
         //------------------ stampe extra per studio
         if (do_devel)
@@ -3260,17 +3260,17 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
             //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
             //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
             volume.write_info_to_debug_file(outfile);
-            scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking_1x1.data),beam_blocking_1x1.data);
-            scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),sizeof(dato_corr_1x1.data),dato_corr_1x1.data); //flag di propagazione anomala
-            scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),sizeof(quota_1x1.data),quota_1x1.data);// m/100 +128
-            scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),sizeof(elev_fin_1x1.data),elev_fin_1x1.data);
-            scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),sizeof(top_1x1.data),top_1x1.data);
+            scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),beam_blocking_1x1.size(),beam_blocking_1x1.data);
+            scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),dato_corr_1x1.size(),dato_corr_1x1.data); //flag di propagazione anomala
+            scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),quota_1x1.size(),quota_1x1.data);// m/100 +128
+            scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),elev_fin_1x1.size(),elev_fin_1x1.data);
+            scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),top_1x1.size(),top_1x1.data);
         }
 
         //------------------ stampe correzioni da profili verticali in formato ZLR
         if (do_vpr)
         {
-            scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),sizeof(corr_1x1.data),corr_1x1.data);
+            scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),corr_1x1.size(),corr_1x1.data);
             //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
             // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
         }
@@ -3280,7 +3280,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
         {
             // in archivio?
             // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
-            scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),sizeof(conv_1x1.data),conv_1x1.data);
+            scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),conv_1x1.size(),conv_1x1.data);
         }
     }
 
