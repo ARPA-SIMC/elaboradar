@@ -30,7 +30,7 @@ CFLAGS_LEGACY=$(CFLAGS) -DANAPROP -DTIME -DZ_LOWRIS -DMEDIUM
 CXXFLAGS=$(CFLAGS)
 
 
-OBJ_COMMON=volume.o volume_cleaner.o cum_bac.o setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o
+OBJ_COMMON=volume.o volume_cleaner.o cum_bac.o interpola_vpr.o interpola_vpr_nr.o interpola_vpr_gsl.o setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o
 
 OBJ=cum_bac_SP20.o
 
