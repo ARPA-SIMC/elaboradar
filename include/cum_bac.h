@@ -471,9 +471,6 @@ struct CalcoloVPR
     unsigned char corr_polar[NUM_AZ_X_PPI][MAX_BIN];/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
     unsigned char neve[NUM_AZ_X_PPI][MAX_BIN];/* matrice az-range che memorizza punti di neve*/
     int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
-    // dati elab vpr
-    float chisqfin; //???puo' essere def in anal
-    float rmsefin;
     // dati per vpr
     unsigned char flag_vpr[NEL][NUM_AZ_X_PPI][MAX_BIN];/* punti del volume polare ok per calcolo VPR*/
     //obsol.
@@ -567,15 +564,6 @@ struct CalcoloVPR
     void classifico_STEINER();
 
     /**
-     *  @brief   funzione che esegue interpolazione del profilo
-     *  @details interpola profilo usando una funzione gaussiana+lineare  y= B*exp(-((x-E)/G)^2)+C+Fx 
-     *  @param[out] a[] vettore dei parametri della funzione
-     *  @param[out] ma  dimensione vettore parametri
-     *  @return ier_int codice di uscita (0=ok 1=fallito)
-     */
-    int interpola_VPR(float a[], int ma);
-
-    /**
      *  correzione vpr
      *  @brief funzione che corregge per il profilo verticale
      *  @details ciclando su tutti i bins della cartesiana polare scelta per la stima della pioggia,
@@ -619,19 +607,6 @@ struct CalcoloVPR
 // Utility functions
 
 /**
- *  restituisce il valore della combinazione tra gaussiana e lineare
- *  @brief   funzione che  calcola derivate della gaussiana + lineare rispetto ai parametri e valore (*y) in un punto x 
- *  @details    y(x,a) is the sum of a gaussian and a linear function with amplitude B=a[1], center E=a[2] and width G=a[3] and a linear function with coefficients C(shift)=a[4] and F(slope)=a[5] 
- *  a is the parameters vector and dyda is the vector of derivatives respect to the different parameters
- *  @param[in] x vettore delle quote
- *  @param[in] a vettore dei parametri
- *  @param[in] y vettore dei valori della funzione 
- *  @param[out]  dyda derivate
- *  @return 0 codice di uscita 0
- */
-void lineargauss(float x, float a[], float *y, float dyda[],int na);
-
-/**
  *  combina livelli
  *
  *  @brief funzione che compone i singoli livelli del profilo v0 e v1 
@@ -655,20 +630,6 @@ float comp_levels(float v0, float v1, float nodata, float peso);
  *  @return file ritorna un puntatore a file
  */
 FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
-
-
-/**
- *  testa i parametri del fit in modo che abbiano significato fisico 
- *
- *  @brief   funzione che testa il fit dell'interpolazione del profilo
- *  @details verifica che i parametri del fit del profilo abbiano senso
- *  @param[in] a[] vettore dei parametri della funzione
- *  @param[in] chisq  chiquare
- *  @return codice di uscita 0
- *
- */
-int testfit(float a[], float chisq, float chisqin);
-
 
 }
 
