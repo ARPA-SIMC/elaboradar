@@ -19,6 +19,13 @@ extern "C" {
 */
 int setwork(char *sito);
 
+/**
+ *  @brief funzione che ripulisce tutto l'ambiente lavoro
+*/
+void unsetwork();
+
+void printwork();
+
 #ifdef __cplusplus
 }
 #endif
