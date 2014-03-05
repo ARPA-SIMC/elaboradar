@@ -61,7 +61,7 @@ cum_bac_clparser.o:cum_bac_clparser.cpp ../include/cum_bac_clparser.h
 	$(CXX) -c $< $(CFLAGS) -o $@
 
 clean: 
-	$(RM) $(OBJ_COMMON) *.o $(BINDIR)/* tests/*.o
+	$(RM) $(OBJ_COMMON) *.o $(BINDIR)/* tests/*.o cbtest
 	cd testdata && $(RM) $(TESTFILES)
 
 install: elaboradar  cum_bac_SP20_m
