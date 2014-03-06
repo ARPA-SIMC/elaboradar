@@ -32,6 +32,7 @@ extern "C" {
 #define SHORT_FULL_VOLUME 1
 #define SHORT_HAIL        2
 #define MEDIUM_PULSE      3
+#define SHORT_212	  4
 
 //Definizioni per statistica anap
 #define STEP_STAT_ANAP_RANGE  40 /*dim range griglia per stat anap*/
@@ -197,6 +198,15 @@ bool CUM_BAC::test_file(int file_type)
             break;
         case MEDIUM_PULSE:
             expected_size_cell = 1000;
+            n_elev=4;
+            break;
+        case SHORT_212://-----??? DUBBIO
+            if (!volume.declutter_rsp)
+            {
+                LOG_WARN("File senza Declutter Dinamico");
+                return false;
+            }
+            expected_size_cell = 250;
             n_elev=4;
             break;
     }
@@ -2770,8 +2780,8 @@ void CUM_BAC::creo_cart()
 
 void CUM_BAC::creo_cart_z_lowris()
 {
-    unsigned char ZLR_OFFSET = do_medium ? CART_DIM_ZLR/2 : 0;
-    unsigned char ZLR_N_ELEMENTARY_PIXEL = do_medium ? 1 : 4;
+    unsigned ZLR_OFFSET = do_medium ? CART_DIM_ZLR/2 : 0;
+    unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium ? 1 : 4;
     int i,j,x,y,cont;
     unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
     unsigned short q1x1;
@@ -2801,7 +2811,7 @@ void CUM_BAC::creo_cart_z_lowris()
                     unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
                     if (src_x >= MAX_BIN*2) printf("X è fuori\n");
-                    if (src_y >= MAX_BIN*2) printf("Y è fuori\n");
+                    if (src_y >= MAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
                     if(cart[src_x][src_y] != MISSING)
                         if(cart[src_x][src_y] > z){
                             z= cart[src_x][src_y];
