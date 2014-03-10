@@ -54,7 +54,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
         cmd.add(Quality);
 	TCLAP::SwitchArg BeamBlocking("B", "BeamBlocking", "Performe BeamBlocking correction", false);
         cmd.add(BeamBlocking);
-	TCLAP::SwitchArg Declut("D", "Declut", "Performe static declutter correction", false);
+	TCLAP::SwitchArg Declut("D", "Declut", "Performe only static declutter correction", false);
         cmd.add(Declut);
 	TCLAP::SwitchArg BlocNoCor("b", "BlocNoCor", "Questo non so cosa sia", false);
         cmd.add(BlocNoCor);
