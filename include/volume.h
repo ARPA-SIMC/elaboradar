@@ -8,7 +8,6 @@
 #include <gsl/gsl_matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
-#define MAX_NEL 15                // n0 elevazioni massimo
 #define NUM_AZ_X_PPI 400
 
 namespace H5 {
@@ -114,10 +113,10 @@ protected:
 
 struct VolumeStats
 {
-    unsigned count_zeros[MAX_NEL];
-    unsigned count_ones[MAX_NEL];
-    unsigned count_others[MAX_NEL];
-    unsigned sum_others[MAX_NEL];
+    std::vector<unsigned> count_zeros;
+    std::vector<unsigned> count_ones;
+    std::vector<unsigned> count_others;
+    std::vector<unsigned> sum_others;
 
     void print(FILE* out);
 };
@@ -134,8 +133,11 @@ public:
 
         LoadOptions(const Site& site, bool medium=false, bool clean=false);
 
-        /// Compute the vol_pol index of an elevation angle
-        unsigned elevation_index(double elevation) const;
+        /**
+         * Compute the vol_pol index of an elevation angle
+         * @returns -1 if no suitable index was found, else the index
+         */
+        int elevation_index(double elevation) const;
     };
 
 protected:
