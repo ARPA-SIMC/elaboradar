@@ -257,10 +257,8 @@ public:
      *  elevazione finale usata per il campo bidimensionale e l'output della
      *  rimozione della propagazione anomala e quota al livello scelto per la
      *  stima di R.
-     *
-     *  @return 0 se ok 1 se errore
      */
-    int elabora_dato();
+    void elabora_dato();
 
     /**
      *  @brief funzione che caratterizza i volumi polari tramite la qualita'

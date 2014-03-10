@@ -369,7 +369,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     return true;
 }
 
-int CUM_BAC::elabora_dato()
+void CUM_BAC::elabora_dato()
 {
     const float fondo_scala = BYTEtoDB(1); // -19.7 dBZ
 
@@ -415,7 +415,7 @@ int CUM_BAC::elabora_dato()
                     volume.elev_fin[i][k]=el_inf;
             }
         }
-        return 0;
+        return;
     }
 
     //------------se non definito DECLUTTER inizio rimozione propagazione anomala al livello mappa dinamica e elaborazioni accessorie
@@ -666,8 +666,6 @@ int CUM_BAC::elabora_dato()
 
     LOG_INFO("elabora_dato completed");
     ScrivoStatistica();
-
-    return 0;
 }                         /*end funzione elabora_dato()*/
 
 void CUM_BAC::leggo_first_level()
@@ -2935,7 +2933,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
     LOG_INFO("inizio rimozione anaprop e beam blocking");
-    int ier = elabora_dato();
+    elabora_dato();
 
     //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
     if (do_quality)
