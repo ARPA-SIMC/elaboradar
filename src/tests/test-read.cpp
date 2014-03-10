@@ -26,8 +26,6 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(v.scan(3).count_rays_filled()) == 400);
     wassert(actual(v.scan(4).count_rays_filled()) == 400);
     wassert(actual(v.scan(5).count_rays_filled()) == 400);
-    wassert(actual(v.scan(6).count_rays_filled()) == 0);
-    wassert(actual(v.scan(7).count_rays_filled()) == 0);
 
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
@@ -62,28 +60,24 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
     wassert(actual(stats.count_zeros[3]) == 0);
     wassert(actual(stats.count_zeros[4]) == 0);
     wassert(actual(stats.count_zeros[5]) == 0);
-    wassert(actual(stats.count_zeros[6]) == 0);
     wassert(actual(stats.count_ones[0]) == 146703);
     wassert(actual(stats.count_ones[1]) == 184606);
     wassert(actual(stats.count_ones[2]) == 193796);
     wassert(actual(stats.count_ones[3]) == 196291);
     wassert(actual(stats.count_ones[4]) == 196160);
     wassert(actual(stats.count_ones[5]) == 196157);
-    wassert(actual(stats.count_ones[6]) == 0);
     wassert(actual(stats.count_others[0]) == 50897);
     wassert(actual(stats.count_others[1]) == 12994);
     wassert(actual(stats.count_others[2]) ==  3804);
     wassert(actual(stats.count_others[3]) ==  1309);
     wassert(actual(stats.count_others[4]) ==  1440);
     wassert(actual(stats.count_others[5]) ==  1443);
-    wassert(actual(stats.count_others[6]) ==     0);
     wassert(actual(stats.sum_others[0]) == 4628598);
     wassert(actual(stats.sum_others[1]) ==  890869);
     wassert(actual(stats.sum_others[2]) ==  218370);
     wassert(actual(stats.sum_others[3]) ==   46002);
     wassert(actual(stats.sum_others[4]) ==   78321);
     wassert(actual(stats.sum_others[5]) ==   88237);
-    wassert(actual(stats.sum_others[6]) ==       0);
 }
 
 namespace {

@@ -217,19 +217,6 @@ PolarScan& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned bea
     return *scans[idx];
 }
 
-void Volume::fill_missing_scans(const LoadOptions& opts)
-{
-    if (scans.size() < MAX_NEL)
-        scans.resize(MAX_NEL, 0);
-
-    for (unsigned i = 0; i < MAX_NEL; ++i)
-        if (!scans[i])
-        {
-            scans[i] = new PolarScan(0);
-            scans[i]->elevation = opts.elev_array[i];
-        }
-}
-
 double Volume::elevation_min() const
 {
     return scan(0).elevation;
@@ -337,7 +324,6 @@ void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 
     // Initialize the rest of the volume after all beams are loaded
-    fill_missing_scans(opts);
     resize_elev_fin();
 }
 
@@ -518,7 +504,6 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
 
     size_cell = range_scale;
 
-    fill_missing_scans(opts);
     resize_elev_fin();
 }
 
@@ -561,7 +546,7 @@ void Volume::resize_elev_fin()
     // to allocate enough memory for legacy code that iterates on MAX_BIN
     // to successfully read zeroes
     unsigned max_size = 512;
-    for (unsigned iel = 0; iel < MAX_NEL; ++iel)
+    for (unsigned iel = 0; iel < scans.size(); ++iel)
     {
         if (scan(iel).beam_size && scan(iel).beam_size > max_size)
             max_size = scan(iel).beam_size;
