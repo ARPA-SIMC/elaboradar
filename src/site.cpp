@@ -43,10 +43,10 @@ struct SiteGAT : public Site
     {
         if (medium)
         {
-            static const int elev_data[]={6,16,27,36,47};//ANNA 30-03-2011
+            static const int elev_data[]={6,16,26,37,47};
             memcpy(elev_array, elev_data, sizeof(elev_data));
         } else {
-            static const int elev_data[]={6,16,27,37,45,55,65,76,85,95,105,126,149,174,201};//105,126,149,174,201 è da completare NEL=15:ANNA 30-03-2011
+            static const int elev_data[]={6,16,26,37,47,57,80,109,148,205,284, 300, 305, 310, 315 };
             memcpy(elev_array, elev_data, sizeof(elev_data));
         }
     }
