@@ -3143,6 +3143,7 @@ float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamb
 }
 
 float CUM_BAC::RtoDBZ(float rain) const
+{
     return ::RtoDBZ(rain, aMP, bMP);
 }
 
