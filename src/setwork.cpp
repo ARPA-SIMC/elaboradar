@@ -4,6 +4,7 @@
 #include <errno.h> 
 #include <string.h> 
 #include <stdio.h>
+#include "logging.h"
 
 int setwork(char *sito)
 {  
@@ -104,43 +105,44 @@ unsetenv((char *)"LOG_VPR");
 return;
 }
 void printwork(){
-printf("FIRST_LEVEL_FILE=%s\n",getenv((char *)"FIRST_LEVEL_FILE"));
-printf("FIRST_LEVEL_DIM_FILE=%s\n",getenv((char *)"FIRST_LEVEL_DIM_FILE"));
-printf("FILE_T=%s\n",getenv((char *)"FILE_T"));
-printf("VPR_HMAX=%s\n",getenv((char *)"VPR_HMAX"));
-printf("FILE_ZERO_TERMICO=%s\n",getenv((char *)"FILE_ZERO_TERMICO"));
-printf("DIR_STORE_VPR=%s\n",getenv((char *)"DIR_STORE_VPR"));
-printf("SITO=%s\n",getenv((char *)"SITO"));
-printf("VPR_ARCH=%s\n",getenv((char *)"VPR_ARCH"));
-printf("FILE_DEM_SPC=%s\n",getenv((char *)"FILE_DEM_SPC"));
-printf("FILE_DEM_GAT=%s\n",getenv((char *)"FILE_DEM_GAT"));
+LOG_CATEGORY("Environment");
+LOG_INFO("FIRST_LEVEL_FILE=%s",getenv((char *)"FIRST_LEVEL_FILE"));
+LOG_INFO("FIRST_LEVEL_DIM_FILE=%s",getenv((char *)"FIRST_LEVEL_DIM_FILE"));
+LOG_INFO("FILE_T=%s",getenv((char *)"FILE_T"));
+LOG_INFO("VPR_HMAX=%s",getenv((char *)"VPR_HMAX"));
+LOG_INFO("FILE_ZERO_TERMICO=%s",getenv((char *)"FILE_ZERO_TERMICO"));
+LOG_INFO("DIR_STORE_VPR=%s",getenv((char *)"DIR_STORE_VPR"));
+LOG_INFO("SITO=%s",getenv((char *)"SITO"));
+LOG_INFO("VPR_ARCH=%s",getenv((char *)"VPR_ARCH"));
+LOG_INFO("FILE_DEM_SPC=%s",getenv((char *)"FILE_DEM_SPC"));
+LOG_INFO("FILE_DEM_GAT=%s",getenv((char *)"FILE_DEM_GAT"));
                 
-printf("TZ=%s\n",getenv((char *)"TZ"));
-printf("DIR_OUT_PP_BLOC=%s\n",getenv((char *)"DIR_OUT_PP_BLOC"));
-printf("OUTPUT_Z_DIR=%s\n",getenv((char *)"OUTPUT_Z_DIR"));
-printf("OUTPUT_RAIN_DIR=%s\n",getenv((char *)"OUTPUT_RAIN_DIR"));
-printf("BACINI_DIR=%s\n",getenv((char *)"BACINI_DIR"));
-printf("OUTPUT_Z_LOWRIS_DIR=%s\n",getenv((char *)"OUTPUT_Z_LOWRIS_DIR"));
-printf("DIR_QUALITY=%s\n",getenv((char *)"DIR_QUALITY"));
-printf("LISTA_FILE=%s\n",getenv((char *)"LISTA_FILE"));
-printf("LAST_FILE=%s\n",getenv((char *)"LAST_FILE"));
-printf("LOG_FILE=%s\n",getenv((char *)"LOG_FILE"));
-printf("TEST_VPR=%s\n",getenv((char *)"TEST_VPR"));
-printf("ANAP_STAT_FILE=%s\n",getenv((char *)"ANAP_STAT_FILE"));
-printf("BLOC_STAT_FILE=%s\n",getenv((char *)"BLOC_STAT_FILE"));
-printf("ELEV_STAT_FILE=%s\n",getenv((char *)"ELEV_STAT_FILE"));
-printf("NOME_SIDME=%s\n",getenv((char *)"NOME_SIDME"));
-printf("MATRICE_BACINI=%s\n",getenv((char *)"MATRICE_BACINI"));
-printf("BACINI_AUS_FILE=%s\n",getenv((char *)"BACINI_AUS_FILE"));
-printf("BACINI_BOLOGNA=%s\n",getenv((char *)"BACINI_BOLOGNA"));
-printf("BACINI_HISTORY_FILE=%s\n",getenv((char *)"BACINI_HISTORY_FILE"));
-printf("LAST_VPR=%s\n",getenv((char *)"LAST_VPR"));
-printf("LAST_VPR_RES=%s\n",getenv((char *)"LAST_VPR_RES"));
-printf("VPR0_FILE=%s\n",getenv((char *)"VPR0_FILE"));
-printf("VPR0_FILE_RES=%s\n",getenv((char *)"VPR0_FILE_RES "));
-printf("VPR_HEATING=%s\n",getenv((char *)"VPR_HEATING"));
-printf("VPR_HEATING_RES=%s\n",getenv((char *)"VPR_HEATING_RES"));
-printf("LOG_VPR=%s\n",getenv((char *)"LOG_VPR"));
+LOG_INFO("TZ=%s",getenv((char *)"TZ"));
+LOG_INFO("DIR_OUT_PP_BLOC=%s",getenv((char *)"DIR_OUT_PP_BLOC"));
+LOG_INFO("OUTPUT_Z_DIR=%s",getenv((char *)"OUTPUT_Z_DIR"));
+LOG_INFO("OUTPUT_RAIN_DIR=%s",getenv((char *)"OUTPUT_RAIN_DIR"));
+LOG_INFO("BACINI_DIR=%s",getenv((char *)"BACINI_DIR"));
+LOG_INFO("OUTPUT_Z_LOWRIS_DIR=%s",getenv((char *)"OUTPUT_Z_LOWRIS_DIR"));
+LOG_INFO("DIR_QUALITY=%s",getenv((char *)"DIR_QUALITY"));
+LOG_INFO("LISTA_FILE=%s",getenv((char *)"LISTA_FILE"));
+LOG_INFO("LAST_FILE=%s",getenv((char *)"LAST_FILE"));
+LOG_INFO("LOG_FILE=%s",getenv((char *)"LOG_FILE"));
+LOG_INFO("TEST_VPR=%s",getenv((char *)"TEST_VPR"));
+LOG_INFO("ANAP_STAT_FILE=%s",getenv((char *)"ANAP_STAT_FILE"));
+LOG_INFO("BLOC_STAT_FILE=%s",getenv((char *)"BLOC_STAT_FILE"));
+LOG_INFO("ELEV_STAT_FILE=%s",getenv((char *)"ELEV_STAT_FILE"));
+LOG_INFO("NOME_SIDME=%s",getenv((char *)"NOME_SIDME"));
+LOG_INFO("MATRICE_BACINI=%s",getenv((char *)"MATRICE_BACINI"));
+LOG_INFO("BACINI_AUS_FILE=%s",getenv((char *)"BACINI_AUS_FILE"));
+LOG_INFO("BACINI_BOLOGNA=%s",getenv((char *)"BACINI_BOLOGNA"));
+LOG_INFO("BACINI_HISTORY_FILE=%s",getenv((char *)"BACINI_HISTORY_FILE"));
+LOG_INFO("LAST_VPR=%s",getenv((char *)"LAST_VPR"));
+LOG_INFO("LAST_VPR_RES=%s",getenv((char *)"LAST_VPR_RES"));
+LOG_INFO("VPR0_FILE=%s",getenv((char *)"VPR0_FILE"));
+LOG_INFO("VPR0_FILE_RES=%s",getenv((char *)"VPR0_FILE_RES "));
+LOG_INFO("VPR_HEATING=%s",getenv((char *)"VPR_HEATING"));
+LOG_INFO("VPR_HEATING_RES=%s",getenv((char *)"VPR_HEATING_RES"));
+LOG_INFO("LOG_VPR=%s",getenv((char *)"LOG_VPR"));
 
 }
 
