@@ -147,9 +147,6 @@ protected:
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan& make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size);
 
-    // Fill all missing scans up to MAX_NEL with PolarScan(0)
-    void fill_missing_scans(const LoadOptions& opts);
-
 public:
     std::string filename;
     time_t acq_date;
