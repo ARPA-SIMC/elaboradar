@@ -29,6 +29,7 @@ extern "C" {
 
 using namespace std;
 
+#define MAX_NEL 15                // n0 elevazioni massimo
 /// This is not used anymore, but it is here to satisfy libSP20 linking needs
 int elev_array[MAX_NEL];
 
@@ -159,15 +160,14 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
 void VolumeStats::print(FILE* out)
 {
     fprintf(out, "Nel    Zeros     Ones   Others      Sum\n");
-    for (int iel =0; iel<MAX_NEL; ++iel){
-        fprintf(out, "%4u %8u %8u %8u %8u\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
+    for (size_t iel =0; iel<count_zeros.size(); ++iel){
+        fprintf(out, "%4zu %8u %8u %8u %8u\n",iel,count_zeros[iel],count_ones[iel],count_others[iel],sum_others[iel]);
     }
 }
 
 Volume::Volume()
     : acq_date(0), size_cell(0), declutter_rsp(false), NEL(0)
 {
-    scans.reserve(MAX_NEL);
 }
 
 Volume::~Volume()
@@ -182,12 +182,12 @@ Volume::LoadOptions::LoadOptions(const Site& site, bool medium, bool clean)
 {
 }
 
-unsigned Volume::LoadOptions::elevation_index(double elevation) const
+int Volume::LoadOptions::elevation_index(double elevation) const
 {
-    for (unsigned i=0; i < MAX_NEL; ++i)
+    for (unsigned i=0; i < elev_array.size(); ++i)
         if (elevation >= (elev_array[i]-0.5) && elevation < (elev_array[i]+0.5))
             return i;
-    return MAX_NEL;
+    return -1;
 }
 
 
@@ -320,7 +320,7 @@ void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
           cleaner.clean_beams(*b, max_range, cleaned);
 
       int el_num = opts.elevation_index(beam_info.elevation);
-      if (el_num >= MAX_NEL) continue;
+      if (el_num < 0) continue;
       PolarScan& scan = make_scan(opts, el_num, max_range);
       //scan.elevation = beam_info.elevation;
 #ifdef IMPRECISE_AZIMUT
@@ -412,13 +412,6 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
 
     std::vector<double> elevationAngles = volume->getElevationAngles();
 
-    // Make sure that we can store all the levels in the scan
-    if (elevationAngles.size() > MAX_NEL)
-    {
-        LOG_INFO("%zd elevation angles found, but we can only store %d", elevationAngles.size(), MAX_NEL);
-        throw runtime_error("number of elevation angles too big");
-    }
-
     // Check that the levels match what we want
     for (unsigned i = 0; i < elevationAngles.size(); ++i)
     {
@@ -499,7 +492,7 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
         unsigned char* beam = new unsigned char[beam_size];
 
         int el_num = opts.elevation_index(elevation);
-        if (el_num >= MAX_NEL) continue;
+        if (el_num < 0) continue;
         PolarScan& vol_pol_scan = make_scan(opts, el_num, beam_size);
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
@@ -531,7 +524,12 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
 
 void Volume::compute_stats(VolumeStats& stats) const
 {
-    for (int iel = 0; iel < MAX_NEL; ++iel)
+    stats.count_zeros.resize(scans.size());
+    stats.count_ones.resize(scans.size());
+    stats.count_others.resize(scans.size());
+    stats.sum_others.resize(scans.size());
+
+    for (int iel = 0; iel < scans.size(); ++iel)
     {
         stats.count_zeros[iel] = 0;
         stats.count_ones[iel] = 0;
