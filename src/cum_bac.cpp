@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <math.h>
 #include <iostream>
+#include "setwork.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -449,14 +450,18 @@ int CUM_BAC::elabora_dato()
             const unsigned el_up = el_inf +1;
 
             // ------------assegno  bin_low_low (cioè il valore sotto il bin base)
-            const float bin_low_low = (el_inf > 0)
+           const float bin_low_low = (el_inf > 0)
                 ? BYTEtoDB(volume.scan(el_inf-1).get_raw(i, k))
                 : fondo_scala+1;
 
             // ------------assegno bin_low bin_high anche
             const float bin_low  = BYTEtoDB(volume.scan(el_inf).get_raw(i, k));
-            const float bin_high = BYTEtoDB(volume.scan(el_up).get_raw(i, k));
-
+	    float bin_high;
+	    if ( k >= volume.scan(el_up).beam_size){
+	        bin_high=BYTEtoDB(0);
+            } else{
+                bin_high = BYTEtoDB(volume.scan(el_up).get_raw(i, k));
+	    }
             //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
             /* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 
@@ -850,8 +855,6 @@ FILE *controllo_apertura (const char *nome_file, const char *content, const char
     LOG_CATEGORY("radar.io");
     FILE *file;
     int ier_ap=0;
-
-    //printf("controllo apertura %s\n",nome_file);
 
     if (strcmp(mode,"r") == 0)
         ier_ap=access(nome_file,R_OK);
@@ -1397,7 +1400,6 @@ void CalcoloVPR::classifico_VIZ()
                         cil_Z=pow(10.,base);
                         Zabb[i][j] = Zabb[i][j] + resol[1]*cil_Z;
                         ext_abb=resol[1]+ext_abb;
-                        //if (j == 400) printf(" %i  %i %f  %f  %f \n", i, j, cil[i][j][k],Zabb[i][j],ext ) ;
                     }
 
                 }
@@ -1436,9 +1438,6 @@ void CalcoloVPR::classifico_STEINER()
         unsigned char BYTE=cum_bac.volume.sample_at_elev_preci(j, k);
         // calcolo diff col background
         float diff_bckgr=BYTEtoDB(BYTE)-bckgr[i];
-        /* if (k < 160 ){ */
-        /*   fprintf(log_class," bckgr[i] = %f diff_bckgr %f \n ",bckgr[i],diff_bckgr ); */
-        /* } */
         // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
         if ((BYTEtoDB(BYTE)>40.)||
                 (bckgr[i]< 0 && diff_bckgr > 10) ||
@@ -2676,14 +2675,6 @@ void CUM_BAC::creo_cart()
         for(j=0; j<MAX_BIN *2; j++)
             cart[i][j] = MISSING;
 
-    /*
-       Stampa di controllo
-       for(i=0; i<MAX_BIN*2; i++)
-       for(j=MAX_BIN-10; j<MAX_BIN+10; j++)
-       if (i<10 || i> MAX_BIN*2-10)
-       printf("%3d  %3d  %3d\n",i,j,cart[i][j]);
-       */
-
     for(quad=0; quad<4; quad++)
         for(i=0; i<MAX_BIN; i++)
             for(j=0; j<MAX_BIN; j++)
@@ -2939,14 +2930,13 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
         return true;
 
     setup_elaborazione(nome_file);
+	printwork();
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
     LOG_INFO("inizio rimozione anaprop e beam blocking");
     int ier = elabora_dato();
 
-
     //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
-
     if (do_quality)
     {
         //-------------calcolo qualita' e trovo il top
@@ -3152,7 +3142,6 @@ float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamb
 }
 
 float CUM_BAC::RtoDBZ(float rain) const
-{
     return ::RtoDBZ(rain, aMP, bMP);
 }
 
@@ -3162,17 +3151,10 @@ time_t CUM_BAC::NormalizzoData(time_t time)
     //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
     // massima differenza in minuti tra data acquisizione e standard per arrotondare per difetto
     const unsigned MAX_TIME_DIFF = do_medium ? 1 : 3;
-    // cambiato da #define NMIN 5 a 1 dopo inserimento minuti maltempo, step di arrotondamento in minuti
-    const unsigned NMIN = do_medium ? 2 : 1;
+    const unsigned NMIN = 1;
     int itime;
 
     itime = time/(NMIN*60);
-
-    /*
-       printf(" esco da Normalizzo %d %d %d \n",time,itime,(time - itime*NMIN*60));
-       printf("%s\n",ctime(&time));
-       printf("%d\n",(NMIN-MAX_TIME_DIFF)*60);
-       */
 
     if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/
     if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
