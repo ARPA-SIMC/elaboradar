@@ -96,8 +96,7 @@ void to::test<3>()
 
     wassert(actual(cb->calcolo_vpr->t_ground) == NODATAVPR);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     // Check results
     VolumeStats stats;
@@ -178,8 +177,7 @@ void to::test<4>()
 
     wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     // Check results
     VolumeStats stats;
@@ -271,8 +269,7 @@ void to::test<5>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     // Check results
     VolumeStats stats;
@@ -328,8 +325,7 @@ void to::test<6>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     cb->caratterizzo_volume();
     // in hray_inf
@@ -447,8 +443,7 @@ void to::test<7>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
@@ -476,7 +471,7 @@ void to::test<7>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    ier = cb->calcolo_vpr->combina_profili();
+    int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 1);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
@@ -574,8 +569,7 @@ void to::test<8>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
@@ -605,7 +599,7 @@ void to::test<8>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    ier = cb->calcolo_vpr->combina_profili();
+    int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 1);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
@@ -709,8 +703,7 @@ void to::test<9>()
     cb->setup_elaborazione(fname);
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     VolumeStats stats;
     cb->volume.compute_stats(stats);
@@ -928,8 +921,7 @@ void to::test<10>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     cb->caratterizzo_volume();
 
@@ -937,7 +929,7 @@ void to::test<10>()
     // perchè non piove o piove poco
    cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
 
-    ier = cb->calcolo_vpr->combina_profili();
+    int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
@@ -987,8 +979,7 @@ void to::test<11>()
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
-    int ier = cb->elabora_dato();
-    wassert(actual(ier) == 0);
+    cb->elabora_dato();
 
     cb->caratterizzo_volume();
 
@@ -997,7 +988,7 @@ void to::test<11>()
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
     cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
-    ier = cb->calcolo_vpr->combina_profili();
+    int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
