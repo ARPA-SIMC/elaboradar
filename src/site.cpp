@@ -7,6 +7,17 @@
 
 using namespace std;
 
+namespace {
+vector<double> make_elev_array(const int* data, unsigned count)
+{
+    vector<double> res;
+    res.reserve(count);
+    for (unsigned i = 0; i < count; ++i)
+        res.push_back(data[i] * 360. / 4096.);
+    return res;
+}
+}
+
 namespace cumbac {
 
 Site::~Site()
@@ -39,15 +50,15 @@ struct SiteGAT : public Site
             return "../dati/FIRST_LEVEL_GAT_2006_AUT";
     }
 
-    virtual void fill_elev_array(int* elev_array, bool medium) const
+    virtual std::vector<double> get_elev_array(bool medium=false) const
     {
         if (medium)
         {
             static const int elev_data[]={6,16,26,37,47};
-            memcpy(elev_array, elev_data, sizeof(elev_data));
+            return make_elev_array(elev_data, sizeof(elev_data) / sizeof(int));
         } else {
             static const int elev_data[]={6,16,26,37,47,57,80,109,148,205,284, 300, 305, 310, 315 };
-            memcpy(elev_array, elev_data, sizeof(elev_data));
+            return make_elev_array(elev_data, sizeof(elev_data) / sizeof(int));
         }
     }
 
@@ -85,15 +96,15 @@ struct SiteSPC : public Site
             return "../dati/FIRST_LEVEL_SPC_2006_AUT";
     }
 
-    virtual void fill_elev_array(int* elev_array, bool medium) const
+    virtual std::vector<double> get_elev_array(bool medium=false) const
     {
         if (medium)
         {
             static const int elev_data[]={6,16,26,36,47};//ANNA 30-03-2011
-            memcpy(elev_array, elev_data, sizeof(elev_data));
+            return make_elev_array(elev_data, sizeof(elev_data) / sizeof(int));
         } else {
             static const int elev_data[]={6,15,26,36,46,57,80,108,148,159,170,180,190,200,210};//GLI ULTIMI 5 fittizi: ANNA 30-03-2011
-            memcpy(elev_array, elev_data, sizeof(elev_data));
+            return make_elev_array(elev_data, sizeof(elev_data) / sizeof(int));
         }
     }
 

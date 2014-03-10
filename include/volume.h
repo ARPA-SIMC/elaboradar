@@ -11,9 +11,6 @@
 #define MAX_NEL 15                // n0 elevazioni massimo
 #define NUM_AZ_X_PPI 400
 
-// TODO: per compatibilità con la libsp20, anche questo toglierlo in futuro
-extern int elev_array[MAX_NEL];
-
 namespace H5 {
 struct H5File;
 }
@@ -60,9 +57,15 @@ protected:
     std::vector<BeamInfo> beam_info;
 
 public:
+    /// Count of beams in this scan
     const unsigned beam_count;
+    /// Number of samples in each beam
     const unsigned beam_size;
-    //double elevation;
+    /**
+     * Nominal elevation of this PolarScan, which may be different from the
+     * effective elevation of each single beam
+     */
+    double elevation;
 
     PolarScan(unsigned beam_size);
     ~PolarScan();
@@ -121,15 +124,29 @@ struct VolumeStats
 
 class Volume
 {
+public:
+    struct LoadOptions
+    {
+        const Site& site;
+        bool medium;
+        bool clean;
+        std::vector<double> elev_array;
+
+        LoadOptions(const Site& site, bool medium=false, bool clean=false);
+
+        /// Compute the vol_pol index of an elevation angle
+        unsigned elevation_index(double elevation) const;
+    };
+
 protected:
     // Dato di base volume polare
     std::vector<PolarScan*> scans;
 
     // Create or reuse a scan at position idx, with the given beam size
-    PolarScan& make_scan(unsigned idx, unsigned beam_size);
+    PolarScan& make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size);
 
     // Fill all missing scans up to MAX_NEL with PolarScan(0)
-    void fill_missing_scans();
+    void fill_missing_scans(const LoadOptions& opts);
 
 public:
     std::string filename;
@@ -147,9 +164,6 @@ public:
 
     Volume();
     ~Volume();
-
-    /// Compute the vol_pol index of an elevation angle
-    unsigned elevation_index(double elevation) const;
 
     double elevation_min() const;
     double elevation_max() const;
@@ -169,8 +183,8 @@ public:
             return 1;
     }
 
-    void read_sp20(const char* nome_file, const Site& site, bool clean=true);
-    void read_odim(const char* nome_file);
+    void read_sp20(const char* nome_file, const LoadOptions& options);
+    void read_odim(const char* nome_file, const LoadOptions& options);
 
     void compute_stats(VolumeStats& stats) const;
 

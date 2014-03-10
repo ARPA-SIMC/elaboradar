@@ -29,7 +29,7 @@ extern "C" {
 
 using namespace std;
 
-/// This needs to be a global variable, as it is expected by libsp20
+/// This is not used anymore, but it is here to satisfy libSP20 linking needs
 int elev_array[MAX_NEL];
 
 namespace cumbac {
@@ -52,7 +52,7 @@ void LoadLog::print(FILE* out) const
 }
 
 PolarScan::PolarScan(unsigned beam_size)
-    : beam_count(NUM_AZ_X_PPI), beam_size(beam_size) //, elevation(0)
+    : beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
 {
     if (beam_size > 0)
     {
@@ -177,7 +177,21 @@ Volume::~Volume()
             delete *i;
 }
 
-PolarScan& Volume::make_scan(unsigned idx, unsigned beam_size)
+Volume::LoadOptions::LoadOptions(const Site& site, bool medium, bool clean)
+    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium))
+{
+}
+
+unsigned Volume::LoadOptions::elevation_index(double elevation) const
+{
+    for (unsigned i=0; i < MAX_NEL; ++i)
+        if (elevation >= (elev_array[i]-0.5) && elevation < (elev_array[i]+0.5))
+            return i;
+    return MAX_NEL;
+}
+
+
+PolarScan& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size)
 {
     // Enlarge the scans vector if needed
     if (idx >= scans.size())
@@ -188,7 +202,10 @@ PolarScan& Volume::make_scan(unsigned idx, unsigned beam_size)
 
     // Create the PolarScan if needed
     if (!scans[idx])
+    {
         scans[idx] = new PolarScan(beam_size);
+        scans[idx]->elevation = opts.elev_array[idx];
+    }
     else if (beam_size != scans[idx]->beam_size)
     {
         LOG_CATEGORY("radar.io");
@@ -200,36 +217,30 @@ PolarScan& Volume::make_scan(unsigned idx, unsigned beam_size)
     return *scans[idx];
 }
 
-void Volume::fill_missing_scans()
+void Volume::fill_missing_scans(const LoadOptions& opts)
 {
     if (scans.size() < MAX_NEL)
         scans.resize(MAX_NEL, 0);
 
     for (unsigned i = 0; i < MAX_NEL; ++i)
         if (!scans[i])
+        {
             scans[i] = new PolarScan(0);
-}
-
-unsigned Volume::elevation_index(double elevation) const
-{
-    int teta = elevation / FATT_MOLT_EL;
-    for (unsigned i=0; i < MAX_NEL; ++i)
-        if (teta >= (elev_array[i]-6) && teta < (elev_array[i]+5))
-            return i;
-    return MAX_NEL;
+            scans[i]->elevation = opts.elev_array[i];
+        }
 }
 
 double Volume::elevation_min() const
 {
-    return (double)elev_array[0] * 360./4096.;
+    return scan(0).elevation;
 }
 
 double Volume::elevation_max() const
 {
-    return (double)elev_array[NEL - 1] * 360./4096.;
+    return scan(NEL - 1).elevation;
 }
 
-void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
+void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
 {
     // dimensioni cella a seconda del tipo di acquisizione
     static const float size_cell_by_resolution[]={62.5,125.,250.,500.,1000.,2000.};
@@ -260,7 +271,7 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
     declutter_rsp = (bool)hd_file.filtro_clutter;
 
     BeamCleaner cleaner;
-    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
+    cleaner.bin_wind_magic_number = opts.site.get_bin_wind_magic_number(acq_date);
 
     auto_ptr<Beams> b(new Beams);
 
@@ -293,7 +304,7 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
       // Calcola la nuova dimensione dei raggi
       float my_max_range = 123500;
       unsigned max_range;
-      if (clean)
+      if (opts.clean)
           max_range = get_new_cell_num(beam_info.cell_num, my_max_range / size_cell);
       else
           max_range = beam_info.cell_num;
@@ -305,12 +316,12 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
       if (beam_info.flag_quantities[3]) fread(b->data_w, 1, beam_info.cell_num, sp20_in);
 
       vector<bool> cleaned(max_range, false);
-      if (clean)
+      if (opts.clean)
           cleaner.clean_beams(*b, max_range, cleaned);
 
-      int el_num = elevation_index(beam_info.elevation);
+      int el_num = opts.elevation_index(beam_info.elevation);
       if (el_num >= MAX_NEL) continue;
-      PolarScan& scan = make_scan(el_num, max_range);
+      PolarScan& scan = make_scan(opts, el_num, max_range);
       //scan.elevation = beam_info.elevation;
 #ifdef IMPRECISE_AZIMUT
       scan.fill_beam(el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
@@ -326,7 +337,7 @@ void Volume::read_sp20(const char* nome_file, const Site& site, bool clean)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 
     // Initialize the rest of the volume after all beams are loaded
-    fill_missing_scans();
+    fill_missing_scans(opts);
     resize_elev_fin();
 }
 
@@ -384,7 +395,7 @@ unsigned int_to_unsigned(int val, const char* desc)
 
 }
 
-void Volume::read_odim(const char* nome_file)
+void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
 {
     LOG_CATEGORY("radar.io");
 
@@ -411,10 +422,10 @@ void Volume::read_odim(const char* nome_file)
     // Check that the levels match what we want
     for (unsigned i = 0; i < elevationAngles.size(); ++i)
     {
-        double v = elevationAngles[i] * 4096.0 / 360.0;
-        if (v <= elev_array[i] - 5 || elev_array[i] + 5 <= v)
+        double v = elevationAngles[i];
+        if (v <= opts.elev_array[i] - 0.5 || opts.elev_array[i] + 0.5 <= v)
         {
-            LOG_ERROR("elevation %d does not match our expectation: we want %d but we got %f", i, elev_array[i], v);
+            LOG_ERROR("elevation %f does not match our expectation: we want %d but we got %f", i, opts.elev_array[i], v);
             throw runtime_error("elevation mismatch");
         }
     }
@@ -487,9 +498,9 @@ void Volume::read_odim(const char* nome_file)
 
         unsigned char* beam = new unsigned char[beam_size];
 
-        int el_num = elevation_index(elevation);
+        int el_num = opts.elevation_index(elevation);
         if (el_num >= MAX_NEL) continue;
-        PolarScan& vol_pol_scan = make_scan(el_num, beam_size);
+        PolarScan& vol_pol_scan = make_scan(opts, el_num, beam_size);
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
         for (unsigned src_az = 0; src_az < nrays; ++src_az)
@@ -514,7 +525,7 @@ void Volume::read_odim(const char* nome_file)
 
     size_cell = range_scale;
 
-    fill_missing_scans();
+    fill_missing_scans(opts);
     resize_elev_fin();
 }
 

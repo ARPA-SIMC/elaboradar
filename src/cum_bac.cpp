@@ -286,12 +286,9 @@ bool CUM_BAC::test_file(int file_type)
 
 bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 {
-    // ----- definisco array delle elevazioni che è diverso per i due siti ---------
-    site.fill_elev_array(elev_array, do_medium);
-
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume.read_sp20(nome_file, site, do_clean);
+    volume.read_sp20(nome_file, Volume::LoadOptions(site, do_medium, do_clean));
 
     /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
@@ -312,12 +309,9 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 
 bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 {
-    // ----- definisco array delle elevazioni che è diverso per i due siti ---------
-    site.fill_elev_array(elev_array, do_medium);
-
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume.read_odim(nome_file);
+    volume.read_odim(nome_file, Volume::LoadOptions(site, do_medium, do_clean));
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);
@@ -1151,8 +1145,9 @@ void CalcoloVPR::classifica_rain()
         range[i]=(i+0.5)*cum_bac.volume.size_cell/1000.;
 
         for (k=0; k<cum_bac.volume.NEL; k++){
-            zz[i][k]=pow(pow(range[i],2.)+pow(4./3*a,2.)+2.*range[i]*4./3.*a*sin(elev_array[k]*CONV_RAD),.5) -4./3.*a+h_radar;// quota
-            xx[i][k]=range[i]*cos(elev_array[k]*CONV_RAD); // distanza
+            double elev_rad = cum_bac.volume.scan(k).elevation * DTOR;
+            zz[i][k]=pow(pow(range[i],2.)+pow(4./3*a,2.)+2.*range[i]*4./3.*a*sin(elev_rad),.5) -4./3.*a+h_radar;// quota
+            xx[i][k]=range[i]*cos(elev_rad); // distanza
             i_zz[i][k]=floor((zz[i][k]-zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
             i_xx[i][k]=floor((xx[i][k]-xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
             // Enrico RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;

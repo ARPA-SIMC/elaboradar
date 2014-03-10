@@ -163,8 +163,7 @@ void to::test<1>()
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     Volume vsp20;
     const Site& gat = Site::get("GAT");
-    gat.fill_elev_array(elev_array);
-    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", gat, false);
+    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", Volume::LoadOptions(gat, false, false));
     // Check the contents of what we read
     wruntest(test_0120141530gat, vsp20);
 }
@@ -192,10 +191,9 @@ void to::test<3>()
 
     // FIXME: get rid of the static elev_array as soon as it is convenient to do so
     const Site& gat = Site::get("GAT");
-    gat.fill_elev_array(elev_array);
-
-    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", gat, false);
-    vodim.read_odim("testdata/MSG1400715300U.101.h5");
+    Volume::LoadOptions options(gat, false, false);
+    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", options);
+    vodim.read_odim("testdata/MSG1400715300U.101.h5", options);
 
     wruntest(test_volumes_equal, vsp20, vodim);
 }
@@ -222,10 +220,8 @@ void to::test<5>()
     Volume v_mod;
 
     const Site& gat = Site::get("GAT");
-    gat.fill_elev_array(elev_array);
-
-    vsp20.read_sp20("testdata/DBP2_060220140140_GATTATICO", gat);
-    v_mod.read_sp20("testdata/DBP2_060220140140_GATTATICO_mod", gat, false);
+    vsp20.read_sp20("testdata/DBP2_060220140140_GATTATICO", Volume::LoadOptions(gat, false, true));
+    v_mod.read_sp20("testdata/DBP2_060220140140_GATTATICO_mod", Volume::LoadOptions(gat, false, false));
 
     wruntest(test_volumes_equal, vsp20, v_mod);
 }
