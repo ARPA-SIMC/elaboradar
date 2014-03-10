@@ -2235,10 +2235,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
 int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
     /*=======analisi profilo============ */
 {
-    int i,ier=1,ier_ana=0,liv0;
-    int tipo_profilo;
-    int npar=5;
-    float v1000,v1500,v600sottobb,vliq,vhliquid,vprmax; //*togliere gli ultimi tre*/;
+    int ier=1,ier_ana=0,liv0;
     char date[]="000000000000";
     struct tm *tempo;
     time_t Time;
@@ -2247,13 +2244,14 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     //strcpy(date,"000000000000");
 
-    tipo_profilo=-1;
-    vliq=NODATAVPR;
-    vhliquid=NODATAVPR;
-    v600sottobb=NODATAVPR;
-    v1000=NODATAVPR;
-    v1500=NODATAVPR;
-    vprmax=NODATAVPR;
+    int tipo_profilo=-1;
+    float v600sottobb=NODATAVPR;
+    float v1000=NODATAVPR;
+    float v1500=NODATAVPR;
+    float vliq=NODATAVPR;
+    float vhliquid=NODATAVPR;
+    float vprmax=NODATAVPR;
+    //*togliere gli ultimi tre*/;
 
     //ier_max=trovo_hvprmax(&hvprmax);
 
@@ -2772,15 +2770,15 @@ void CUM_BAC::creo_cart_z_lowris()
 {
     unsigned ZLR_OFFSET = do_medium ? CART_DIM_ZLR/2 : 0;
     unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium ? 1 : 4;
-    int i,j,x,y,cont;
+    int cont;
     unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
     unsigned short q1x1;
     float zm;
 
     //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
     // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
-    for(i=0; i<CART_DIM_ZLR; i++)
-        for(j=0; j<CART_DIM_ZLR; j++)
+    for(unsigned i=0; i<CART_DIM_ZLR; i++)
+        for(unsigned j=0; j<CART_DIM_ZLR; j++)
         {
             //reinizializzo tutte le variabili calcolate dentro la funzione .
             z = 0;
@@ -2794,8 +2792,8 @@ void CUM_BAC::creo_cart_z_lowris()
             bl1x1=0;
             cont=0;
             traw=0;
-            for(x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
-                for(y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
+            for(unsigned x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
+                for(unsigned y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
                     //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
                 {
                     unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
@@ -3072,9 +3070,9 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
       lista_bckg[k][1]=-999;
     }
 
-    for (int l=0; l<NEL; l++)
-      for (int i=0; i<NUM_AZ_X_PPI; i++)
-        for(int k=0; k<MAX_BIN; k++)
+    for (unsigned l=0; l<NEL; l++)
+      for (unsigned i=0; i<NUM_AZ_X_PPI; i++)
+        for(unsigned k=0; k<MAX_BIN; k++)
             flag_vpr[l][i][k]=0;
 
     memset(neve,0,sizeof(neve));
