@@ -24,6 +24,12 @@ struct data {
     delete[] y;
     delete[] sigma;
   }
+  void print()
+  {
+      fprintf(stderr, "i    t    y    sigma\n");
+      for (unsigned i = 0; i < n; ++i)
+          fprintf(stderr, "%2d %.2f %.2f %.2f\n", i, t[i], y[i], sigma[i]);
+  }
 };
 
 int
@@ -89,7 +95,7 @@ expb_fdf (const gsl_vector * x, void *data,
 void
 print_state (size_t iter, gsl_multifit_fdfsolver * s)
 {
-  printf ("iter: %3zu x = % 15.8f % 15.8f % 15.8f  % 15.8f  % 15.8f  "
+  fprintf(stderr, "iter: %3zu x = % 15.8f % 15.8f % 15.8f  % 15.8f  % 15.8f  "
           "|f(x)| = %g\n",
           iter,
           gsl_vector_get (s->x, 0), 
@@ -102,12 +108,11 @@ print_state (size_t iter, gsl_multifit_fdfsolver * s)
 
 int testfit(double a[])
 {
-    if (a[0]<0. || a[1] >15.) return 1;
+    if (a[0]<0. || a[0] >15.) return 1;
     if (a[1] >10.) return 1;
-    if (a[2]<0.2 || a[3] > 0.6 ) return 1; //da analisi set dati
+    if (a[2]<0.2 || a[2] > 0.6 ) return 1; //da analisi set dati
     if (a[3]<0. ) return 1;
     if (a[4]>0 ) return 1;
-
     return 0;
 }
 
@@ -125,11 +130,11 @@ namespace cumbac {
 int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
 {
     LOG_CATEGORY("radar.vpr");
-    static const unsigned N = 12;
+    static const unsigned N = 10;
     const gsl_multifit_fdfsolver_type *T;
     gsl_multifit_fdfsolver *s;
     int status;
-    unsigned int i, iter = 0;
+    unsigned int i;
     const size_t n = N;
     const size_t p = 5;
     char file_vprint[512];
@@ -141,7 +146,7 @@ int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
     gsl_vector_view x = gsl_vector_view_array (x_init, p);
 
     //////////////////////////////////////////////////////////////////////////////
-    int ifit,ier_int=0;
+    int ier_int=0;
     double xint,yint;
     /* punti interessanti per inizializzare parametri*/
     int  in1=(int)((hvprmax-TCK_VPR/2)/TCK_VPR); //indice del massimo
@@ -158,17 +163,17 @@ int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
     G=0.25;
     C=vpr[in2-1];
     F=vpr[in4]<vpr[in3]?(vpr[in4]-vpr[in3])/((in4-in3)*TCK_VPR/1000.):0.;
-    fprintf(stderr, "const unsigned NMAXLAYER=%d;\n", NMAXLAYER);
-    fprintf(stderr, "float vpr[] = {");
-    for (unsigned i = 0; i < NMAXLAYER; ++i)
-        fprintf(stderr, "%s%f", i==0?"":",", (double)vpr[i]);
-    fprintf(stderr, "};\n");
+    // fprintf(stderr, "const unsigned NMAXLAYER=%d;\n", NMAXLAYER);
+    // fprintf(stderr, "float vpr[] = {");
+    // for (unsigned i = 0; i < NMAXLAYER; ++i)
+    //     fprintf(stderr, "%s%f", i==0?"":",", (double)vpr[i]);
+    // fprintf(stderr, "};\n");
 
     x_init[0]= a[0]=B;
     x_init[1]= a[1]=E;
-    x_init[2]= a[2]=G; 
+    x_init[2]= a[2]=G;
     x_init[3]= a[3]=C;
-    x_init[4]= a[4]=F; 
+    x_init[4]= a[4]=F;
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,31 +191,39 @@ int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
     {
         d.t[i]= ((hvprmax-1000.)>livmin)? (i*TCK_VPR+(hvprmax-800)-TCK_VPR)/1000. : (livmin+i*TCK_VPR)/1000.;
         d.y[i]= ((hvprmax-1000.)>livmin)? vpr[i+(int)(((hvprmax-800)-TCK_VPR)/TCK_VPR)] : vpr[i+(int)(livmin/TCK_VPR)];
-        d.sigma[i] = 0.01;
+        d.sigma[i] = 0.5;
     };
 
     T = gsl_multifit_fdfsolver_lmsder;
     s = gsl_multifit_fdfsolver_alloc (T, n, p);
     gsl_multifit_fdfsolver_set (s, &f, &x.vector);
 
-    print_state (iter, s);
-
-    do
+    //print_state (0, s);
+    bool found = false;
+    for (unsigned iter = 0; !found && iter < 500; ++iter)
     {
-        iter++;
-        status = gsl_multifit_fdfsolver_iterate (s);
+        //fprintf(stderr, "Iter %d\n", iter);
+        //d.print();
+        int status = gsl_multifit_fdfsolver_iterate (s);
+        if (status != 0)
+        {
+            LOG_ERROR("gsl_multifit_fdfsolver_iterate: %s", gsl_strerror(status));
+            return 1;
+        }
 
-        printf ("status = %s\n", gsl_strerror (status));
-
-        print_state (iter, s);
-
-        if (status)
-            break;
+        //print_state (iter, s);
 
         status = gsl_multifit_test_delta (s->dx, s->x,
                 1e-4, 1e-4);
+        switch (status)
+        {
+            case GSL_SUCCESS: found = true; break;
+            case GSL_CONTINUE: break;
+            default:
+                LOG_ERROR("gsl_multifit_test_delta: %s", gsl_strerror(status));
+                return 1;
+        }
     }
-    while (status == GSL_CONTINUE && iter < 500);
 
     gsl_multifit_covar (s->J, 0.0, covar);
 
@@ -222,44 +235,37 @@ int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
         double dof = n - p;
         double c = GSL_MAX_DBL(1, chi / sqrt(dof)); 
 
-        printf("chisq/dof = %g\n",  pow(chi, 2.0) / dof);
+        // printf("chisq/dof = %g\n",  pow(chi, 2.0) / dof);
 
-        printf ("B      = %.5f +/- %.5f\n", FIT(0), c*ERR(0));
-        printf ("E = %.5f +/- %.5f\n", FIT(1), c*ERR(1));
-        printf ("G     = %.5f +/- %.5f\n", FIT(2), c*ERR(2));
-        printf ("C = %.5f +/- %.5f\n", FIT(3), c*ERR(3));
-        printf ("F     = %.5f +/- %.5f\n", FIT(4), c*ERR(4));
+        // printf ("B      = %.5f +/- %.5f\n", FIT(0), c*ERR(0));
+        // printf ("E = %.5f +/- %.5f\n", FIT(1), c*ERR(1));
+        // printf ("G     = %.5f +/- %.5f\n", FIT(2), c*ERR(2));
+        // printf ("C = %.5f +/- %.5f\n", FIT(3), c*ERR(3));
+        // printf ("F     = %.5f +/- %.5f\n", FIT(4), c*ERR(4));
     }
 
-    printf ("status = %s\n", gsl_strerror (status));
+    B = a[0] = FIT(0);
+    E = a[1] = FIT(1);
+    G = a[2] = FIT(2);
+    C = a[3] = FIT(3);
+    F = a[4] = FIT(4);
 
     gsl_multifit_fdfsolver_free (s);
     gsl_matrix_free (covar);
 
-
     /////////////////////////////////////////////////////////
-    a[0]=FIT(0);
-    a[1]=FIT(1);
-    a[2]=FIT(2);
-    a[3]=FIT(3);
-    a[4]=FIT(4);
-    ifit=testfit(a);
 
+    if (testfit(a) == 1)
+        return 1;
 
-    if (chisqfin>CHISQ_MAX || ifit)
+    for (i=1; i<=N; i++)
     {
-        ier_int=1;
-    }
-    else {
-        for (i=1; i<=N; i++)
-        {
-            xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
-            yint= lineargauss(xint, a);
-            vpr_int[i-1] = yint;
-        }
+        xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
+        yint= lineargauss(xint, a);
+        vpr_int[i-1] = yint;
     }
 
-    return ier_int;
+    return 0;
 }
 
 }
