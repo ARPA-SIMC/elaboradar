@@ -76,8 +76,9 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
       calcolo_vpr(0), cart(MAX_BIN*2), cartm(MAX_BIN*2), z_out(CART_DIM_ZLR),
       quota_cart(MAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MAX_BIN*2),
       beam_blocking_1x1(CART_DIM_ZLR), dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
-      elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR), qual_Z_cart(MAX_BIN*2),
-      qual_Z_1x1(CART_DIM_ZLR), topxy(MAX_BIN*2), top_1x1(CART_DIM_ZLR),
+      elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
+      qual(0), qual_Z_cart(MAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),
+      topxy(MAX_BIN*2), top_1x1(CART_DIM_ZLR),
       corr_cart(MAX_BIN*2), corr_1x1(CART_DIM_ZLR), neve_cart(MAX_BIN*2), neve_1x1(CART_DIM_ZLR),
       conv_cart(MAX_BIN*2), conv_1x1(CART_DIM_ZLR),
       cappi_cart(MAX_BIN*2), cappi_1x1(CART_DIM_ZLR)
@@ -91,7 +92,6 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
     memset(att_cart,DBtoBYTE(0.),sizeof(att_cart));
     memset(quota_rel,0,sizeof(quota_rel));
     memset(quota,0,sizeof(quota));
-    memset(qual,0,sizeof(qual));
     memset(top,0,sizeof(top));
 
     memset(bb_first_level,0,sizeof(bb_first_level));
@@ -123,8 +123,8 @@ void CUM_BAC::StampoFlag(){
 
 CUM_BAC::~CUM_BAC()
 {
-    if (calcolo_vpr)
-        delete calcolo_vpr;
+    if (qual) delete qual;
+    if (calcolo_vpr) delete calcolo_vpr;
 }
 
 void CUM_BAC::setup_elaborazione(const char* nome_file)
@@ -887,6 +887,8 @@ comend
 */
 void CUM_BAC::caratterizzo_volume()
 {
+    qual = new VolumeInfo<unsigned char>(volume);
+
     // path integrated attenuation
     double PIA;
     // dimensione verticale bin calcolata tramite approcio geo-ottico
@@ -977,7 +979,7 @@ void CUM_BAC::caratterizzo_volume()
                 //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%)
                 //--------------assegno qualità zero sotto il livello di elev_fin (si può discutere...), potrei usare first_level_static confrontare e in caso sia sotto porre cl=1
                 if (l-volume.elev_fin[i][k] <0) {
-                    qual[l][i][k]=0;
+                    qual->set(l, i, k, 0);
                     cl=2;
                 }
                 //--------bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.----------
@@ -985,10 +987,10 @@ void CUM_BAC::caratterizzo_volume()
 
                     //-----------calcolo la qualità----------
                     // FIXME: qui tronca: meglio un round?
-                    qual[l][i][k]=(unsigned char)(func_q_Z(cl,bb,dist,drrs,dtrs,dh,dhst,PIA)*100);
+                    qual->set(l, i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,dtrs,dh,dhst,PIA)*100));
                 }
 
-                if(qual[l][i][k]==0) qual[l][i][k]=1;//????a che serve???
+                if (qual->get(l, i, k) ==0) qual->set(l, i, k, 1);//????a che serve???
                 if (do_vpr)
                 {
                     /* sezione PREPARAZIONE DATI VPR*/
@@ -2507,7 +2509,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
                     flag_vpr[l][i][k]=0;
 
-                if(cum_bac.qual[l][i][k]<QMIN_VPR ) flag_vpr[l][i][k]=0;
+                if(cum_bac.qual->get(l, i, k) < QMIN_VPR ) flag_vpr[l][i][k]=0;
 
                 //AGGIUNTA PER CLASS
 		if(cum_bac.do_class){
@@ -2728,7 +2730,7 @@ void CUM_BAC::creo_cart()
                             topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
                             if (do_quality)
                             {
-                                qual_Z_cart[x][y]=qual[volume.elev_fin[iaz%NUM_AZ_X_PPI][irange]][iaz%NUM_AZ_X_PPI][irange];
+                                qual_Z_cart[x][y] = qual->get(volume.elev_fin[iaz%NUM_AZ_X_PPI][irange], iaz%NUM_AZ_X_PPI, irange);
                                 quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
                                 dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
                                 beam_blocking_xy[x][y]=beam_blocking[iaz%NUM_AZ_X_PPI][irange];

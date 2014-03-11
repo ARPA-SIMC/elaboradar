@@ -164,6 +164,11 @@ public:
     Volume();
     ~Volume();
 
+    /// Return the maximum beam count in all PolarScans
+    const unsigned max_beam_count() const;
+    /// Return the maximum beam size in all PolarScans
+    const unsigned max_beam_size() const;
+
     double elevation_min() const;
     double elevation_max() const;
 
@@ -193,6 +198,83 @@ protected:
     void resize_elev_fin();
 };
 
+template<typename T>
+struct ArrayStats
+{
+    bool first;
+    T min;
+    T max;
+    double avg;
+    unsigned count_zeros;
+    unsigned count_ones;
+
+    ArrayStats() : first(true), count_zeros(0), count_ones(0) {}
+
+    void count_sample(const T& sample, unsigned item_count)
+    {
+        if (sample == 0)
+            ++count_zeros;
+        else if (sample == 1)
+            ++count_ones;
+
+        if (first)
+        {
+            min = sample;
+            max = sample;
+            avg = (double)min / item_count;
+            first = false;
+        }
+        else
+        {
+            if (sample < min)
+                min = sample;
+            if (sample > max)
+                max = sample;
+            avg += (double)sample / item_count;
+        }
+    }
+};
+
+/**
+ * Store one element for each sample in a volume
+ */
+template<typename T>
+class VolumeInfo
+{
+protected:
+    const unsigned sz_el;
+    const unsigned sz_az;
+    const unsigned sz_beam;
+    T* data;
+
+public:
+    VolumeInfo(const Volume& vol)
+        : sz_el(vol.NEL), sz_az(vol.max_beam_count()), sz_beam(vol.max_beam_size()),
+          data(new T[sz_el * sz_az * sz_beam])
+    {
+    }
+
+    ~VolumeInfo()
+    {
+        delete[] data;
+    }
+
+    const T& get(unsigned el, unsigned az, unsigned beam) const
+    {
+        return data[el * (sz_az * sz_beam) + az * sz_beam + beam];
+    }
+
+    void set(unsigned el, unsigned az, unsigned beam, const T& val)
+    {
+        data[el * (sz_az * sz_beam) + az * sz_beam + beam] = val;
+    }
+
+    void fill_array_stats(ArrayStats<T>& stats) const
+    {
+        for (unsigned i = 0; i < sz_el * sz_az * sz_beam; ++i)
+            stats.count_sample(data[i], sz_el * sz_az * sz_beam);
+    }
+};
 
 }
 

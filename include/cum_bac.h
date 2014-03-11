@@ -202,7 +202,7 @@ public:
     Image<unsigned char> elev_fin_xy;
     Image<unsigned char> elev_fin_1x1;
     // metrici qualita' come sopra
-    unsigned char qual[NEL][NUM_AZ_X_PPI][MAX_BIN]; /* qualita volume polare */
+    VolumeInfo<unsigned char>* qual; // qualita volume polare
     Image<unsigned char> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
     Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra

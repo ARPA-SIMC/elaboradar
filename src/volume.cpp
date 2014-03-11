@@ -29,9 +29,8 @@ extern "C" {
 
 using namespace std;
 
-#define MAX_NEL 15                // n0 elevazioni massimo
 /// This is not used anymore, but it is here to satisfy libSP20 linking needs
-int elev_array[MAX_NEL];
+int elev_array[15];
 
 namespace cumbac {
 
@@ -215,6 +214,22 @@ PolarScan& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned bea
 
     // Return it
     return *scans[idx];
+}
+
+const unsigned Volume::max_beam_count() const
+{
+    unsigned res = 0;
+    for (size_t i = 0; i < scans.size(); ++i)
+        res = max(res, scans[i]->beam_count);
+    return res;
+}
+
+const unsigned Volume::max_beam_size() const
+{
+    unsigned res = 0;
+    for (size_t i = 0; i < scans.size(); ++i)
+        res = max(res, scans[i]->beam_size);
+    return res;
 }
 
 double Volume::elevation_min() const
