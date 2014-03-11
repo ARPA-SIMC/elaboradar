@@ -19,47 +19,14 @@ TESTGRP(process);
 namespace {
 
 template<typename T>
-struct ArrayStats
+struct ArrayStats : public cumbac::ArrayStats<T>
 {
-    bool first;
-    T min;
-    T max;
-    double avg;
-    unsigned count_zeros;
-    unsigned count_ones;
-
-    ArrayStats() : first(true), count_zeros(0), count_ones(0) {}
-
-    void count_sample(const T& sample, unsigned item_count)
-    {
-        if (sample == 0)
-            ++count_zeros;
-        else if (sample == 1)
-            ++count_ones;
-
-        if (first)
-        {
-            min = sample;
-            max = sample;
-            avg = (double)min / item_count;
-            first = false;
-        }
-        else
-        {
-            if (sample < min)
-                min = sample;
-            if (sample > max)
-                max = sample;
-            avg += (double)sample / item_count;
-        }
-    }
-
     template<int A, int B>
     void fill2(const T (&arr)[A][B])
     {
         for (int i = 0; i < A; ++i)
             for (int j = 0; j < B; ++j)
-                count_sample(arr[i][j], A * B);
+                this->count_sample(arr[i][j], A * B);
     }
 
     template<int A, int B, int C>
@@ -68,7 +35,14 @@ struct ArrayStats
         for (int i = 0; i < A; ++i)
             for (int j = 0; j < B; ++j)
                 for (int k = 0; k < C; ++k)
-                    count_sample(arr[i][j][k], A * B * C);
+                    this->count_sample(arr[i][j][k], A * B * C);
+    }
+
+    void print()
+    {
+        fprintf(stderr, "min %f max %f avg %f, zeros: %u, ones: %u\n",
+                (double)this->min, (double)this->max, this->avg,
+                this->count_zeros, this->count_ones);
     }
 };
 
@@ -121,15 +95,15 @@ void to::test<3>()
     wassert(actual(stats.sum_others[2]) == 16605);
     wassert(actual(stats.sum_others[3]) ==  4291);
     wassert(actual(stats.sum_others[4]) ==  7079);
-                                           
+
     cb->caratterizzo_volume();
 
     ArrayStats<unsigned char> qual_stats;
-    qual_stats.fill3(cb->qual);
+    cb->qual->fill_array_stats(qual_stats);
     wassert(actual((unsigned)qual_stats.first).isfalse());
-    wassert(actual((unsigned)qual_stats.min) == 0);
+    wassert(actual((unsigned)qual_stats.min) == 1);
     wassert(actual((unsigned)qual_stats.max) == 99);
-    wassert(actual((unsigned)(qual_stats.avg * 100)) == 452);
+    wassert(actual((unsigned)(qual_stats.avg * 100)) == 1172);
 
 
     ArrayStats<unsigned char> vpr_stats;
@@ -210,11 +184,11 @@ void to::test<4>()
     cb->caratterizzo_volume();
 
     ArrayStats<unsigned char> qual_stats;
-    qual_stats.fill3(cb->qual);
+    cb->qual->fill_array_stats(qual_stats);
     wassert(actual((unsigned)qual_stats.first).isfalse());
-    wassert(actual((unsigned)qual_stats.min) == 0);
+    wassert(actual((unsigned)qual_stats.min) == 1);
     wassert(actual((unsigned)qual_stats.max) == 99);
-    wassert(actual((unsigned)(qual_stats.avg * 100)) == 2125);
+    wassert(actual((unsigned)(qual_stats.avg * 100)) == 5506);
 
     ArrayStats<unsigned char> vpr_stats;
     vpr_stats.fill3(cb->calcolo_vpr->flag_vpr);
@@ -337,7 +311,7 @@ void to::test<6>()
     // out flag_vpr
     // out top
     ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill3(cb->qual);
+    cb->qual->fill_array_stats(stats_qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
     wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
     wassert(actual((unsigned)stats_qual.count_ones) == 141553);
@@ -447,13 +421,13 @@ void to::test<7>()
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill3(cb->qual);
+    cb->qual->fill_array_stats(stats_qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
+    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 141553);
-    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 2125);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5508);
     ArrayStats<unsigned char> stats_flag_vpr;
     stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
@@ -573,13 +547,13 @@ void to::test<8>()
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill3(cb->qual);
+    cb->qual->fill_array_stats(stats_qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
+    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 141553);
-    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 2126);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5508);
     ArrayStats<unsigned char> stats_flag_vpr;
     stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
@@ -770,13 +744,13 @@ void to::test<9>()
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill3(cb->qual);
+    cb->qual->fill_array_stats(stats_qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 108000);
+    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 159263);
-    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5759);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5762);
 
     ArrayStats<unsigned char> stats_flag_vpr;
     stats_flag_vpr.fill3(cb->calcolo_vpr->flag_vpr);
