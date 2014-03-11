@@ -57,7 +57,7 @@ PolarScan::PolarScan(unsigned beam_size)
     if (beam_size > 0)
     {
         scan = gsl_matrix_alloc(NUM_AZ_X_PPI, beam_size);
-        gsl_matrix_set_all(scan, 1);
+        gsl_matrix_set_all(scan, BYTEtoDB(1));
     } else {
         scan = 0;
     }
@@ -71,15 +71,14 @@ PolarScan::~PolarScan()
         gsl_matrix_free(scan);
 }
 
-float PolarScan::get_db(unsigned az, unsigned beam) const
+unsigned char PolarScan::get_raw(unsigned az, unsigned beam) const
 {
-    return BYTEtoDB(get_raw(az, beam));
+    return DBtoBYTE(get_db(az, beam));
 }
 
-float PolarScan::set_db(unsigned az, unsigned beam, float val)
+void PolarScan::set_raw(unsigned az, unsigned beam, unsigned char val)
 {
-    gsl_matrix_set(scan, az, beam, DBtoBYTE(val));
-    return val;
+    gsl_matrix_set(scan, az, beam, BYTEtoDB(val));
 }
 
 unsigned PolarScan::count_rays_filled() const

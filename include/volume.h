@@ -75,23 +75,22 @@ public:
     }
 
     /// Get a raw value in a beam
-    unsigned char get_raw(unsigned az, unsigned beam) const
+    unsigned char get_raw(unsigned az, unsigned beam) const;
+
+    /// Get a beam value in DB
+    double get_db(unsigned az, unsigned beam) const
     {
         return gsl_matrix_get(scan, az, beam);
     }
 
-    /// Get a beam value in DB
-    float get_db(unsigned az, unsigned beam) const;
-
     /// Set a raw value in a beam
-    unsigned char set_raw(unsigned az, unsigned beam, unsigned char val)
-    {
-        gsl_matrix_set(scan, az, beam, val);
-        return val;
-    }
+    void set_raw(unsigned az, unsigned beam, unsigned char val);
 
     /// Set a beam value in DB
-    float set_db(unsigned az, unsigned beam, float val);
+    void set_db(unsigned az, unsigned beam, double val)
+    {
+        gsl_matrix_set(scan, az, beam, val);
+    }
 
     /**
      * Riempie un array di float con i dati del raggio convertiti in DB
