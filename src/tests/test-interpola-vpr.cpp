@@ -52,7 +52,6 @@ void to::test<2>()
 {
     InterpolaVPR_GSL iv;
     int res = iv.interpola_VPR(vpr1, 1300, 300);
-    fprintf(stderr, "%f %f %f %f %f\n", iv.B, iv.E, iv.G, iv.C, iv.F);
     wassert(actual(res) == 0);
     wassert(actual(round(iv.B * 10)) ==  33);
     wassert(actual(round(iv.E * 10)) ==  12);

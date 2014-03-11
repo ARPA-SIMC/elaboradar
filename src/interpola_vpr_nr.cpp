@@ -191,6 +191,9 @@ int InterpolaVPR_NR::interpola_VPR(const float* vpr, int hvprmax, int livmin)
         if (!ier_int)
         {
             LOG_INFO("\n alamda %f   chisqin % f a[1]  % f a[2] % f a[3]  % f a[4]  % f a[5]  % f", alamda,chisqin,a[1], a[2], a[3],a[4],a[5]);
+            //fprintf(stderr, "i    t    y    sigma\n");
+            //for (unsigned i = 1; i <= ndata; ++i)
+                //fprintf(stderr, "%2d %.2f %.2f %.2f\n", i, x[i], y[i], sig[i]);
             ifit=0;
             while (fabs(chisq-chisqold) > DCHISQTHR && ifit < 1)
             {
