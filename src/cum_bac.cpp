@@ -2308,8 +2308,8 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     }
 
-    InterpolaVPR_NR iv;
-    // InterpolaVPR_GSL iv;
+    // InterpolaVPR_NR iv;
+    InterpolaVPR_GSL iv;
 
     switch
         (tipo_profilo)
