@@ -95,8 +95,10 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& v
 {
     using namespace std;
 
+    wassert(actual(vsp20.NEL) == vodim.NEL);
+
     unsigned failed_beams = 0;
-    for (unsigned ie = 0; ie < NEL; ++ie)
+    for (unsigned ie = 0; ie < vsp20.NEL; ++ie)
     {
         WIBBLE_TEST_INFO(testinfo);
         testinfo() << "elevation " << ie;
