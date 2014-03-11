@@ -259,6 +259,13 @@ public:
         delete[] data;
     }
 
+    // Fill all the volume info with the given value
+    void init(const T& val)
+    {
+        for (unsigned i = 0; i < sz_el * sz_az * sz_beam; ++i)
+            data[i] = val;
+    }
+
     const T& get(unsigned el, unsigned az, unsigned beam) const
     {
         return data[el * (sz_az * sz_beam) + az * sz_beam + beam];
