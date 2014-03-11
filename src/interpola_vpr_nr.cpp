@@ -27,7 +27,7 @@ namespace {
  *  @param[out]  dyda derivate
  *  @return 0 codice di uscita 0
  */
-void lineargauss(float x, float a[], float *y, float dyda[],int na)
+void lineargauss(float x, float a[], float *y, float dyda[], int na)
 {
   float fac, ex, arg;
 
@@ -100,11 +100,11 @@ namespace cumbac {
 
    comend
 */
-int InterpolaVPR_NR::interpola_VPR(const CalcoloVPR& cv)
+int InterpolaVPR_NR::interpola_VPR(const float* vpr, int hvprmax, int livmin)
 {
     LOG_CATEGORY("radar.vpr");
     static const unsigned npar=5;
-    float *x, *y,*sig,alamda,y1=0,*dyda,B,E,C,G,F,xint,qdist,*abest;
+    float *x, *y,*sig,alamda,y1=0,*dyda,xint,qdist,*abest;
     float chisq=100.;
     float chisqold=0.0;
     float chisqin=0.0;
@@ -113,7 +113,6 @@ int InterpolaVPR_NR::interpola_VPR(const CalcoloVPR& cv)
     int ndata=10;
     float **covar;
     float **alpha;
-    char file_vprint[200];
     FILE *file;
 
     float *a=vector(1,npar);
@@ -124,11 +123,11 @@ int InterpolaVPR_NR::interpola_VPR(const CalcoloVPR& cv)
     LOG_INFO("sono in interpola_vpr");
     ier_int=0;
 
-    in1=(cv.hvprmax-TCK_VPR/2)/TCK_VPR; //indice del massimo
-    in2=(cv.hvprmax+HALF_BB)/TCK_VPR; //indice del massimo + 500 m
+    in1=(hvprmax-TCK_VPR/2)/TCK_VPR; //indice del massimo
+    in2=(hvprmax+HALF_BB)/TCK_VPR; //indice del massimo + 500 m
     in3=in2+1;
     in4=in2+5; //indice del massimo + 1000 m
-    LOG_INFO("in1 in2 %i %i %f %f",in1,in2,cv.vpr[in1],cv.vpr[in2]);
+    LOG_INFO("in1 in2 %i %i %f %f",in1,in2,vpr[in1],vpr[in2]);
 
     if (in4 > NMAXLAYER-1) {
         ier_int=1;
@@ -149,11 +148,12 @@ int InterpolaVPR_NR::interpola_VPR(const CalcoloVPR& cv)
         ier_int=0;
 
         dyda=vector(1,npar);
-        a[1]=B=cv.vpr[in1]-cv.vpr[in2];
-        a[2]=E=cv.hvprmax/1000.;
+        a[1]=B=vpr[in1]-vpr[in2];
+        a[2]=E=hvprmax/1000.;
         a[3]=G=(k-in1-0.5)*TCK_VPR/1000.;
-        a[4]=C=cv.vpr[in2];
-        a[5]=F=cv.vpr[in4]<cv.vpr[in3]?(cv.vpr[in4]-cv.vpr[in3])/((in4-in3)*TCK_VPR/1000.):0.;
+        a[4]=C=vpr[in2];
+        a[5]=F=vpr[in4]<vpr[in3]?(vpr[in4]-vpr[in3])/((in4-in3)*TCK_VPR/1000.):0.;
+        //fprintf(stderr, "k:%d, a1:%f a2:%f a3:%f a4:%f a5:%f\n", k, a[1], a[2], a[3], a[4], a[5]);
 
         alamda=-0.01;
 
@@ -165,12 +165,13 @@ int InterpolaVPR_NR::interpola_VPR(const CalcoloVPR& cv)
         for (i=1; i<=ndata; i++)
         {
             sig[ii]=0.5;
-            x[ii]= ((cv.hvprmax-1000.)>cv.livmin)? (i*TCK_VPR+(cv.hvprmax-800)-TCK_VPR)/1000. : (cv.livmin+(i-1)*TCK_VPR)/1000.;
-            y[ii]= ((cv.hvprmax-1000.)>cv.livmin)? cv.vpr[i+((cv.hvprmax-800)-TCK_VPR)/TCK_VPR] : cv.vpr[i-1+cv.livmin/TCK_VPR];
-            // x[ii]= ((cv.hvprmax-800.)>cv.livmin)? (i*TCK_VPR+(cv.hvprmax-600)-TCK_VPR)/1000. : (cv.livmin+(i-1)*TCK_VPR)/1000.;
-            //y[ii]= ((cv.hvprmax-800.)>cv.livmin)? vpr[i+((cv.hvprmax-600)-TCK_VPR)/TCK_VPR] : vpr[i-1+cv.livmin/TCK_VPR];
+            x[ii]= ((hvprmax-1000.)>livmin)? (i*TCK_VPR+(hvprmax-800)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
+            y[ii]= ((hvprmax-1000.)>livmin)? vpr[i+((hvprmax-800)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR];
+            // x[ii]= ((hvprmax-800.)>livmin)? (i*TCK_VPR+(hvprmax-600)-TCK_VPR)/1000. : (livmin+(i-1)*TCK_VPR)/1000.;
+            //y[ii]= ((hvprmax-800.)>livmin)? vpr[i+((hvprmax-600)-TCK_VPR)/TCK_VPR] : vpr[i-1+livmin/TCK_VPR];
             lineargauss(x[ii], a, &y1, dyda, ndata);
             qdist=(y1-y[ii])*(y1-y[ii]);
+            //fprintf(stderr, "i:%d, ii:%d, xii:%f, yii:%f, y1:%f, qdist:%f, chisqin:%f\n", i, ii, x[ii], y[ii], y1, qdist, chisqin);
             if (sqrt(qdist) < DIST_MAX)
             {
                 ii+=1;
@@ -236,18 +237,20 @@ int InterpolaVPR_NR::interpola_VPR(const CalcoloVPR& cv)
         ier_int=1;
     }
     else {
+        // Calcola il profilo interpolato
         for (i=1;i<=npar;i++) a[i]=abest[i];
-        sprintf(file_vprint,"%s_int",getenv("VPR_ARCH"));
-        file=controllo_apertura(file_vprint," vpr interpolato ","w");
         for (i=1; i<=NMAXLAYER; i++)
         {
             xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
             lineargauss(xint, a, &y1, dyda, ndata);
-            // stampa del profilo interpolato
-            fprintf(file," %f \n",cv.cum_bac.RtoDBZ(y1));
+            vpr_int[i-1] = y1;
         }
-        fclose(file);
     }
+    B=a[1];
+    E=a[2];
+    G=a[3];
+    C=a[4];
+    F=a[5];
     free_vector(dyda,1,npar);
     free_vector(abest,1,npar);
     free_ivector(ia,1,npar);

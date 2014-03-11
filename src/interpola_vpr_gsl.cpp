@@ -122,7 +122,7 @@ float lineargauss(double xint , double a[])
 
 namespace cumbac {
 
-int InterpolaVPR_GSL::interpola_VPR(const CalcoloVPR& cv)
+int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
 {
     LOG_CATEGORY("radar.vpr");
     static const unsigned N = 12;
@@ -144,8 +144,8 @@ int InterpolaVPR_GSL::interpola_VPR(const CalcoloVPR& cv)
     int ifit,ier_int=0;
     double xint,yint;
     /* punti interessanti per inizializzare parametri*/
-    int  in1=(int)((cv.hvprmax-TCK_VPR/2)/TCK_VPR); //indice del massimo
-    int  in2=(int)((cv.hvprmax+HALF_BB)/TCK_VPR); //indice del massimo + 500 m
+    int  in1=(int)((hvprmax-TCK_VPR/2)/TCK_VPR); //indice del massimo
+    int  in2=(int)((hvprmax+HALF_BB)/TCK_VPR); //indice del massimo + 500 m
     int  in3=in2+1;
     int  in4=in2+5; //indice del massimo + 1000 m
     if (in4 > NMAXLAYER-1) {
@@ -153,15 +153,15 @@ int InterpolaVPR_GSL::interpola_VPR(const CalcoloVPR& cv)
         return ier_int;
     }
 
-    B=cv.vpr[in1]-cv.vpr[in2];
-    E=cv.hvprmax/1000.;
+    B=vpr[in1]-vpr[in2];
+    E=hvprmax/1000.;
     G=0.25;
-    C=cv.vpr[in2-1];
-    F=cv.vpr[in4]<cv.vpr[in3]?(cv.vpr[in4]-cv.vpr[in3])/((in4-in3)*TCK_VPR/1000.):0.;
+    C=vpr[in2-1];
+    F=vpr[in4]<vpr[in3]?(vpr[in4]-vpr[in3])/((in4-in3)*TCK_VPR/1000.):0.;
     fprintf(stderr, "const unsigned NMAXLAYER=%d;\n", NMAXLAYER);
     fprintf(stderr, "float vpr[] = {");
     for (unsigned i = 0; i < NMAXLAYER; ++i)
-        fprintf(stderr, "%s%f", i==0?"":",", (double)cv.vpr[i]);
+        fprintf(stderr, "%s%f", i==0?"":",", (double)vpr[i]);
     fprintf(stderr, "};\n");
 
     x_init[0]= a[0]=B;
@@ -184,8 +184,8 @@ int InterpolaVPR_GSL::interpola_VPR(const CalcoloVPR& cv)
 
     for (i = 0; i < n; i++)
     {
-        d.t[i]= ((cv.hvprmax-1000.)>cv.livmin)? (i*TCK_VPR+(cv.hvprmax-800)-TCK_VPR)/1000. : (cv.livmin+i*TCK_VPR)/1000.;
-        d.y[i]= ((cv.hvprmax-1000.)>cv.livmin)? cv.vpr[i+(int)(((cv.hvprmax-800)-TCK_VPR)/TCK_VPR)] : cv.vpr[i+(int)(cv.livmin/TCK_VPR)];
+        d.t[i]= ((hvprmax-1000.)>livmin)? (i*TCK_VPR+(hvprmax-800)-TCK_VPR)/1000. : (livmin+i*TCK_VPR)/1000.;
+        d.y[i]= ((hvprmax-1000.)>livmin)? vpr[i+(int)(((hvprmax-800)-TCK_VPR)/TCK_VPR)] : vpr[i+(int)(livmin/TCK_VPR)];
         d.sigma[i] = 0.01;
     };
 
@@ -251,16 +251,12 @@ int InterpolaVPR_GSL::interpola_VPR(const CalcoloVPR& cv)
         ier_int=1;
     }
     else {
-        sprintf(file_vprint,"%s_int",getenv("VPR_ARCH"));
-        FILE* file=controllo_apertura(file_vprint," vpr interpolato ","w");
-
         for (i=1; i<=N; i++)
         {
             xint=(i*TCK_VPR-TCK_VPR/2)/1000.;
             yint= lineargauss(xint, a);
-
+            vpr_int[i-1] = yint;
         }
-        fclose(file);
     }
 
     return ier_int;
