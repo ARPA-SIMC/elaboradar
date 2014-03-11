@@ -2317,7 +2317,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
             case 0:
             case 1:
             case 2:
-                ier=iv.interpola_VPR(*this);
+                ier=iv.interpola_VPR(vpr, hvprmax, livmin);
                 if (ier){
                     LOG_INFO(" interpolazione fallita");
                     switch (tipo_profilo)
@@ -2338,6 +2338,15 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                 }
                 else{
                     LOG_INFO(" interpolazione eseguita con successo");
+                    //
+                    // stampa del profilo interpolato
+                    char file_vprint[200];
+                    sprintf(file_vprint,"%s_int",getenv("VPR_ARCH"));
+                    FILE* file=controllo_apertura(file_vprint," vpr interpolato ","w");
+                    for (unsigned i = 0; i < NMAXLAYER; ++i)
+                        fprintf(file," %f \n", cum_bac.RtoDBZ(iv.vpr_int[i]));
+                    fclose(file);
+
                     /*calcolo valore di riferimento di vpr_liq per l'acqua liquida nell'ipotesi che a[2]=quota_bright_band e a[2]-1.5*a[3]=quota acqua liquida*/
                     if (tipo_profilo == 2 ) {
                         *hliq=(iv.E-2.1*iv.G)*1000.;
