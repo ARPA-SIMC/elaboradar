@@ -99,7 +99,7 @@ public:
      */
     void read_beam_db(unsigned az, float* out, unsigned out_size, float missing=0) const;
 
-    void fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data);
+    void fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data);
 
     /// Return the number of beams that have been filled with data while loading
     unsigned count_rays_filled() const;
@@ -108,7 +108,7 @@ public:
     const LoadLog& get_beam_load_log(unsigned az) const;
 
 protected:
-    void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati);
+    void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati);
 };
 
 struct VolumeStats

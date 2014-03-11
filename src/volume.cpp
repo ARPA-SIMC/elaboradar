@@ -109,7 +109,7 @@ const LoadLog& PolarScan::get_beam_load_log(unsigned az) const
     return beam_info[az].load_log;
 }
 
-void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const unsigned char* data)
+void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data)
 {
     int alfa = alpha / FATT_MOLT_AZ;
     if (alfa >= 4096) return;
@@ -141,7 +141,7 @@ void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size,
     }
 }
 
-void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const unsigned char* dati)
+void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati)
 {
     //LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
@@ -150,8 +150,8 @@ void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, u
 
     unsigned overlap = min(beam_size, size);
     for (unsigned i = 0; i < overlap; ++i)
-        if (get_raw(az_num, i) < dati[i])
-            set_raw(az_num, i, dati[i]);
+        if (get_db(az_num, i) < dati[i])
+            set_db(az_num, i, dati[i]);
 
     beam_info[az_num].elevation = theta;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
@@ -309,12 +309,18 @@ void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
       int el_num = opts.elevation_index(beam_info.elevation);
       if (el_num < 0) continue;
       PolarScan& scan = make_scan(opts, el_num, max_range);
+
+      // Convert to DB
+      double* dbs = new double[max_range];
+      for (unsigned i = 0; i < max_range; ++i)
+          dbs[i] = BYTEtoDB(b->data_z[i]);
       //scan.elevation = beam_info.elevation;
 #ifdef IMPRECISE_AZIMUT
-      scan.fill_beam(el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_z);
+      scan.fill_beam(el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
-      scan.fill_beam(el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_z);
+      scan.fill_beam(el_num, beam_info.elevation, beam_info.azimuth, max_range, dbs);
 #endif
+      delete[] dbs;
     }
 
     fclose(sp20_in);
@@ -475,7 +481,7 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
         //data->readData(matrix);
         data->readData(const_cast<unsigned short*>(matrix.get()));
 
-        unsigned char* beam = new unsigned char[beam_size];
+        double* beam = new double[beam_size];
 
         int el_num = opts.elevation_index(elevation);
         if (el_num < 0) continue;
@@ -493,7 +499,7 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
                 // FIXME: QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
                 // DEVE ESSERE RIMOSSO A FINE LAVORO E RIATTIVATA QUESTA LINEA DI CODICE ORA COMMENTATA
                 // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
-                beam[i] = eldes_counter_to_db(matrix.elem(src_az, i));
+                beam[i] = BYTEtoDB(eldes_counter_to_db(matrix.elem(src_az, i)));
             }
             //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
             vol_pol_scan.fill_beam(el_num, elevation_angles[src_az], azimut, beam_size, beam);
