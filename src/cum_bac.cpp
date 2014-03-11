@@ -888,6 +888,7 @@ comend
 void CUM_BAC::caratterizzo_volume()
 {
     qual = new VolumeInfo<unsigned char>(volume);
+    qual->init(0);
 
     // path integrated attenuation
     double PIA;
@@ -995,7 +996,7 @@ void CUM_BAC::caratterizzo_volume()
                 {
                     /* sezione PREPARAZIONE DATI VPR*/
                     if(cl==0 && bb<BBMAX_VPR )   /*pongo le condizioni per individuare l'area visibile per calcolo VPR, riduco il bb ammesso (BBMAX_VPR=20)*/ //riveder.....?????
-                        calcolo_vpr->flag_vpr[l][i][k]=1;
+                        calcolo_vpr->flag_vpr->set(l, i, k, 1);
                 }
                 //------------trovo il top per soglia
                 if (BYTEtoDB(sample) > SOGLIA_TOP )
@@ -2507,19 +2508,19 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
                 dist_plain=(long int)(dist*cos(elevaz));
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
-                    flag_vpr[l][i][k]=0;
+                    flag_vpr->set(l, i, k, 0);
 
-                if(cum_bac.qual->get(l, i, k) < QMIN_VPR ) flag_vpr[l][i][k]=0;
+                if (cum_bac.qual->get(l, i, k) < QMIN_VPR) flag_vpr->set(l, i, k, 0);
 
                 //AGGIUNTA PER CLASS
-		if(cum_bac.do_class){
-                	if(conv[i][k]>= CONV_VAL){
-                    		flag_vpr[l][i][k]=0;
-                	}
-		}
+                if(cum_bac.do_class){
+                    if(conv[i][k]>= CONV_VAL){
+                        flag_vpr->set(l, i, k, 0);
+                    }
+                }
 
                 // ------per calcolare l'area del pixel lo considero un rettangolo dim bin x ampiezzamediafascio x flag vpr/1000 per evitare problemi di memoria?
-                area=cum_bac.volume.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr[l][i][k]/1000.; // divido per  mille per evitare nr troppo esagerato
+                area=cum_bac.volume.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr->get(l, i, k)/1000.; // divido per  mille per evitare nr troppo esagerato
 
                 // ------incremento il volume totale di area
 
@@ -2530,7 +2531,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
                 unsigned char sample = 0;
                 if (k < cum_bac.volume.scan(l).beam_size)
                     sample = cum_bac.volume.scan(l).get_raw(i, k);
-                if (BYTEtoDB(sample)> THR_VPR &&  flag_vpr[l][i][k]>0 )
+                if (BYTEtoDB(sample)> THR_VPR &&  flag_vpr->get(l, i, k) > 0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area
                     vol_rain=(long int)(BYTE_to_mp_func(sample,cum_bac.aMP,cum_bac.bMP)*area);//peso ogni cella con la sua area
@@ -3057,7 +3058,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
-    : cum_bac(cum_bac)
+    : cum_bac(cum_bac), flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
     ncv=0;np=0;
@@ -3076,15 +3077,18 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
       lista_bckg[k][1]=-999;
     }
 
-    for (unsigned l=0; l<NEL; l++)
-      for (unsigned i=0; i<NUM_AZ_X_PPI; i++)
-        for(unsigned k=0; k<MAX_BIN; k++)
-            flag_vpr[l][i][k]=0;
+    flag_vpr = new VolumeInfo<unsigned char>(cum_bac.volume);
+    flag_vpr->init(0);
 
     memset(neve,0,sizeof(neve));
 
     if (cum_bac.do_vpr)
         t_ground = cum_bac.assets.read_t_ground();
+}
+
+CalcoloVPR::~CalcoloVPR()
+{
+    if (flag_vpr) delete flag_vpr;
 }
 
 void CalcoloVPR::esegui_tutto()

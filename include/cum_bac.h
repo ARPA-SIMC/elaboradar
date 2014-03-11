@@ -470,13 +470,14 @@ struct CalcoloVPR
     unsigned char neve[NUM_AZ_X_PPI][MAX_BIN];/* matrice az-range che memorizza punti di neve*/
     int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
     // dati per vpr
-    unsigned char flag_vpr[NEL][NUM_AZ_X_PPI][MAX_BIN];/* punti del volume polare ok per calcolo VPR*/
+    VolumeInfo<unsigned char>* flag_vpr; // punti del volume polare ok per calcolo VPR*/
     //obsol.
     float stdev;// obsol.
     // files vpr
     FILE *test_vpr;
 
     CalcoloVPR(CUM_BAC& cum_bac);
+    ~CalcoloVPR();
 
     /**
      *  @brief   funzione che analizza il profilo 
