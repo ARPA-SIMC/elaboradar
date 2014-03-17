@@ -150,8 +150,8 @@ int InterpolaVPR_NR::interpola_VPR(const float* vpr, int hvprmax, int livmin)
         dyda=vector(1,npar);
         a[1]=B=vpr[in1]-vpr[in2];
         a[2]=E=hvprmax/1000.;
-        //  a[3]=G=(k-in1-0.5)*TCK_VPR/1000.;
-         a[3]= G=0.25;
+          a[3]=G=(k-in1-0.5)*TCK_VPR/1000.;
+          //  a[3]= G=0.25;
         a[4]=C=vpr[in2];
         a[5]=F=vpr[in4]<vpr[in3]?(vpr[in4]-vpr[in3])/((in4-in3)*TCK_VPR/1000.):0.;
         //fprintf(stderr, "k:%d, a1:%f a2:%f a3:%f a4:%f a5:%f\n", k, a[1], a[2], a[3], a[4], a[5]);
