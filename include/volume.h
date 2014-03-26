@@ -5,6 +5,7 @@
 #include <vector>
 #include <ctime>
 #include <cstdio>
+#include <cmath>
 #include <gsl/gsl_matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define

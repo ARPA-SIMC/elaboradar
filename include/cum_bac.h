@@ -31,6 +31,7 @@ extern "C" {
 }
 #endif
 
+#include <cmath>
 
 //algoritmo
 #include <MP_par.h>

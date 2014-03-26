@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <math.h>
 #include <iostream>
+#include <unistd.h>
 #include "setwork.h"
 
 #ifdef __cplusplus
