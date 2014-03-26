@@ -75,6 +75,8 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
       do_devel(false),do_readStaticMap(false),
       CART_DIM_ZLR(do_medium ? 512: 256),
       calcolo_vpr(0), cart(MAX_BIN*2), cartm(MAX_BIN*2), z_out(CART_DIM_ZLR),
+      first_level(MAX_BIN), first_level_static(MAX_BIN),
+      bb_first_level(MAX_BIN), beam_blocking(MAX_BIN),
       quota_cart(MAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MAX_BIN*2),
       beam_blocking_1x1(CART_DIM_ZLR), dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
       elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
@@ -86,16 +88,11 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
-    memset (first_level,0,sizeof(first_level));
-    memset (first_level_static,0,sizeof(first_level_static));
     memset(dato_corrotto,0,sizeof(dato_corrotto));
-    memset(beam_blocking,0,sizeof(beam_blocking));
     memset(att_cart,DBtoBYTE(0.),sizeof(att_cart));
     memset(quota_rel,0,sizeof(quota_rel));
     memset(quota,0,sizeof(quota));
     memset(top,0,sizeof(top));
-
-    memset(bb_first_level,0,sizeof(bb_first_level));
 
     memset(stat_anap_tot,0,sizeof(stat_anap_tot));
     memset(stat_anap,0,sizeof(stat_anap));
@@ -678,7 +675,7 @@ void CUM_BAC::leggo_first_level()
       for(int i=0; i<NUM_AZ_X_PPI; i++)
          fread(&first_level_static[i][0],dim,1,file);
     // copio mappa statica su matrice first_level
-      memcpy(first_level,first_level_static,sizeof(first_level));
+      first_level = first_level_static;
       fclose(file);
     }
 
@@ -726,9 +723,8 @@ void CUM_BAC::leggo_first_level()
       patch per espandere il clutter
       -------------------------------*/
     if(do_medium){
-        unsigned char first_level_tmp[NUM_AZ_X_PPI][MAX_BIN];
+        PolarMap<unsigned char> first_level_tmp(first_level);
         int k;
-        memcpy(first_level_tmp,first_level,sizeof(first_level));
         for (int i=NUM_AZ_X_PPI; i<800; i++)
         {
             for (int j=0; j<MAX_BIN; j++)

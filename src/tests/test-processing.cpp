@@ -22,6 +22,12 @@ namespace {
 template<typename T>
 struct ArrayStats : public cumbac::ArrayStats<T>
 {
+    void fill(const PolarMap<T>& arr)
+    {
+        for (int i = 0; i < arr.beam_count * arr.beam_size; ++i)
+            this->count_sample(arr.data[i], arr.beam_count * arr.beam_size);
+    }
+
     template<int A, int B>
     void fill2(const T (&arr)[A][B])
     {
@@ -742,7 +748,7 @@ void to::test<7>()
     wassert(actual(stats.sum_others[4]) ==  9141377);
 
     ArrayStats<unsigned char> beam_blocking_stats;
-    beam_blocking_stats.fill2(cb->beam_blocking);
+    beam_blocking_stats.fill(cb->beam_blocking);
     wassert(actual((unsigned)beam_blocking_stats.first).isfalse());
     wassert(actual((unsigned)beam_blocking_stats.min) == 0);
     wassert(actual((unsigned)beam_blocking_stats.max) == 51);
