@@ -410,7 +410,6 @@ void CUM_BAC::elabora_dato()
 {
     const float fondo_scala = BYTEtoDB(1); // -19.7 dBZ
     HRay hray;
-    hray.load_hray(assets);
 
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
     leggo_first_level();
@@ -419,6 +418,7 @@ void CUM_BAC::elabora_dato()
     if (do_quality)
     {
         leggo_dem();
+        hray.load_hray(assets);
     }
 
     //------------se definito DECLUTTER , non rimuovo anap e riscrivo  volume polare facedndo declutter solo con mappa statica.... ancora valido?
