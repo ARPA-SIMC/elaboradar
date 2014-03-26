@@ -67,6 +67,51 @@ extern "C" {
 
 namespace cumbac {
 
+/**
+ *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
+ *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
+ *  @return 
+ */
+struct HRay
+{
+    float hray[MAX_BIN][NEL];
+    // distanza temporale radiosondaggio
+    float dtrs;
+
+    HRay()
+    {
+        memset(hray, 0, sizeof(hray));
+    }
+
+    float* operator[](unsigned idx) { return hray[idx]; }
+    const float* operator[](unsigned idx) const { return hray[idx]; }
+
+    void load_hray(Assets& assets)
+    {
+        // quota centro fascio in funzione della distanza e elevazione
+        load_file(assets.open_file_hray());
+    }
+    void load_hray_inf(Assets& assets)
+    {
+        // quota limite inferiore fascio in funzione della distanza e elevazione
+        load_file(assets.open_file_hray_inf());
+    }
+
+private:
+    void load_file(FILE* file)
+    {
+        /*--------------------------
+          Leggo quota centro fascio
+          --------------------------*/
+        fscanf(file,"%f ",&dtrs);
+        for(int i=0; i<MAX_BIN; i++){
+            for(int j=0; j<NSCAN;j++)
+                fscanf(file,"%f ",&hray[i][j]);
+        }
+        fclose(file);
+    }
+};
+
 CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
