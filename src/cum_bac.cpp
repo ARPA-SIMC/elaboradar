@@ -961,8 +961,8 @@ void CUM_BAC::caratterizzo_volume()
                 }
                 else {
                     dh=dhst; /* non ho le altezze oltre nscan-1 pero' suppongo che a tali elevazioni la prop. si possa considerare standard*/
-                    hray[k][l]=quota_f(elevaz,k);//non lo assegno
-
+                    // Enrico: commentato: non viene piú letto
+                    // hray[k][l]=quota_f(elevaz,k);//non lo assegno
                 }
 
                 if (l-volume.elev_fin[i][k] <0) {
