@@ -481,7 +481,7 @@ struct CalcoloVPR
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
     unsigned char *conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
-    unsigned char stratiform[NUM_AZ_X_PPI][MAX_BIN];
+    PolarMap<unsigned char> stratiform;
     float vpr[NMAXLAYER];/* vpr */
     int hvprmax; /* quota picco vpr */
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
@@ -498,8 +498,8 @@ struct CalcoloVPR
     // array contenenti Z di background
     double *Z_bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
     float *bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in dB
-    unsigned char corr_polar[NUM_AZ_X_PPI][MAX_BIN];/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
-    unsigned char neve[NUM_AZ_X_PPI][MAX_BIN];/* matrice az-range che memorizza punti di neve*/
+    PolarMap<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
+    PolarMap<unsigned char> neve;/* matrice az-range che memorizza punti di neve*/
     int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
     // dati per vpr
     VolumeInfo<unsigned char>* flag_vpr; // punti del volume polare ok per calcolo VPR*/

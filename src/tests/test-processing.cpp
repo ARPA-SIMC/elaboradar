@@ -212,7 +212,7 @@ void to::test<2>()
     cb->calcolo_vpr->classifica_rain();
 
     ArrayStats<unsigned char> stratiform_stats;
-    stratiform_stats.fill2(cb->calcolo_vpr->stratiform);
+    stratiform_stats.fill(cb->calcolo_vpr->stratiform);
     wassert(actual((unsigned)stratiform_stats.first).isfalse());
     wassert(actual((unsigned)stratiform_stats.min) == 0);
     wassert(actual((unsigned)stratiform_stats.max) == 1);
