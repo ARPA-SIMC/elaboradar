@@ -71,11 +71,6 @@ public:
     FILE* open_file_first_level();
 
     /**
-     * Read the value inside the first level dimension file
-     */
-    int read_file_first_level_dim();
-
-    /**
      * Open the first level elevation BB el file.
      *
      * The result is always a valid file: it throws an exception if something

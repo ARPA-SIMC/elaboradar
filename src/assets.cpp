@@ -58,40 +58,6 @@ FILE* Assets::open_file_first_level()
     return fopen_checked(fname, "rb", "mappa statica");
 }
 
-int Assets::read_file_first_level_dim()
-{
-    const char* fname = getenv("FIRST_LEVEL_DIM_FILE");
-    if (!fname) throw runtime_error("FIRST_LEVEL_DIM_FILE is not set");
-    FILE* fd = fopen_checked(fname, "rt", "dimensioni mappa statica");
-
-    // We can directly read its contents: it's just one number in ASCII
-    int dim;
-    int res = fscanf(fd, "%i", &dim);
-    if (res == EOF)
-    {
-        string errmsg("Error reading ");
-        errmsg += fname;
-        errmsg += ": ";
-        errmsg += strerror(errno);
-        fclose(fd);
-        throw runtime_error(errmsg);
-    }
-
-    if (res != 1)
-    {
-        string errmsg("Error reading ");
-        errmsg += fname;
-        errmsg += ": the file does not seem to contain a number";
-        errmsg += strerror(errno);
-        fclose(fd);
-        throw runtime_error(errmsg);
-    }
-
-    fclose(fd);
-
-    return dim;
-}
-
 FILE* Assets::open_file_first_level_bb_el()
 {
     string fname = fname_out_pp_bloc("mat_el.bin");
