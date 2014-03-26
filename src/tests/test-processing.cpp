@@ -49,7 +49,7 @@ struct ArrayStats : public cumbac::ArrayStats<T>
 }
 
 template<> template<>
-void to::test<3>()
+void to::test<1>()
 {
     // Test elabora_dato, con tutti i do_* a false
     //printwork();
@@ -124,7 +124,7 @@ void to::test<3>()
 }
 
 template<> template<>
-void to::test<4>()
+void to::test<2>()
 {
     // Test elabora_dato, con tutti i do_* a true
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
@@ -195,7 +195,7 @@ void to::test<4>()
     wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
     wassert(actual((unsigned)vpr_stats.max) == 1);
-    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 33);
+    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 87);
 
     ArrayStats<unsigned char> top_stats;
     top_stats.fill2(cb->top);
@@ -222,7 +222,7 @@ void to::test<4>()
 }
 
 template<> template<>
-void to::test<5>()
+void to::test<3>()
 {
     // Test elabora_dato, con tutti i do_* a true
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
@@ -275,7 +275,7 @@ void to::test<5>()
 }
 
 template<> template<>
-void to::test<6>()
+void to::test<4>()
 {
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
@@ -313,15 +313,16 @@ void to::test<6>()
     ArrayStats<unsigned char> stats_qual;
     cb->qual->fill_array_stats(stats_qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
+    //wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
+    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 141553);
-    wassert(actual((unsigned)stats_qual.min) == 0);
+    wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 2126);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5508);
     ArrayStats<unsigned char> stats_flag_vpr;
     cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 1185600);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
     wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
     ArrayStats<unsigned char> stats_top;
@@ -393,9 +394,12 @@ void to::test<6>()
 }
 
 template<> template<>
-void to::test<7>()
+void to::test<5>()
 {
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
+	LOG_CATEGORY("Test");
+	LOG_INFO ("Start test 7");
+
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
@@ -405,7 +409,8 @@ void to::test<7>()
     setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
-
+    setenv("LAST_VPR","testdata/last_vpr",1);
+    printwork();
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
@@ -416,8 +421,9 @@ void to::test<7>()
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
-
+LOG_INFO ("Chiamo elabora_dato");
     cb->elabora_dato();
+LOG_INFO("Chiamo caratterizzo volumi");
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
@@ -431,9 +437,9 @@ void to::test<7>()
     ArrayStats<unsigned char> stats_flag_vpr;
     cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 2029720);
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143320);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1042280);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 33);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 87);
     ArrayStats<unsigned char> stats_top;
     stats_top.fill2(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
@@ -514,12 +520,16 @@ void to::test<7>()
     wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
 
     delete cb;
+    LOG_INFO("End test 5");
 }
 
 template<> template<>
-void to::test<8>()
+void to::test<6>()
 {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
+	LOG_CATEGORY("Test");
+	LOG_INFO ("Start test 8");
+
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
@@ -529,8 +539,9 @@ void to::test<8>()
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
     setenv("LAST_VPR","testdata/last_vpr",1);
+unlink("LAST_VPR");
     setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
-
+    printwork();
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
@@ -557,9 +568,9 @@ void to::test<8>()
     ArrayStats<unsigned char> stats_flag_vpr;
     cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 2029720);
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143320);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1042280);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 33);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 87);
     ArrayStats<unsigned char> stats_top;
     stats_top.fill2(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
@@ -587,6 +598,19 @@ void to::test<8>()
     cb->conversione_convettiva();
 
     cb->creo_cart();
+
+LOG_INFO("cart         min avg max :%d %d %d",(unsigned)cb->cart.min(),(unsigned)cb->cart.avg(),(unsigned)cb->cart.max());
+LOG_INFO("cartm        min avg max :%d %d %d",(unsigned)cb->cartm.min(),(unsigned)cb->cartm.avg(),(unsigned)cb->cartm.max());
+LOG_INFO("topxy        min avg max :%d %d %d",(unsigned)cb->topxy.min(),(unsigned)cb->topxy.avg(),(unsigned)cb->topxy.max());
+LOG_INFO("qual_Z_cart  min avg max :%d %d %d",(unsigned)cb->qual_Z_cart.min(),(unsigned)cb->qual_Z_cart.avg(),(unsigned)cb->qual_Z_cart.max());
+LOG_INFO("quota_cart   min avg max :%d %d %d",(unsigned)cb->quota_cart.min(),(unsigned)cb->quota_cart.avg(),(unsigned)cb->quota_cart.max());
+LOG_INFO("dato_corr_xy min avg max :%d %d %d",(unsigned)cb->dato_corr_xy.min(),(unsigned)cb->dato_corr_xy.avg(),(unsigned)cb->dato_corr_xy.max());
+LOG_INFO("beam_blocking_xy min avg max :%d %d %d",(unsigned)cb->beam_blocking_xy.min(),(unsigned)cb->beam_blocking_xy.avg(),(unsigned)cb->beam_blocking_xy.max());
+LOG_INFO("elev_fin_xy  min avg max :%d %d %d",(unsigned)cb->elev_fin_xy.min(),(unsigned)cb->elev_fin_xy.avg(),(unsigned)cb->elev_fin_xy.max());
+LOG_INFO("neve_cart    min avg max :%d %d %d",(unsigned)cb->neve_cart.min(),(unsigned)cb->neve_cart.avg(),(unsigned)cb->neve_cart.max());
+LOG_INFO("corr_cart    min avg max :%d %d %d",(unsigned)cb->corr_cart.min(),(unsigned)cb->corr_cart.avg(),(unsigned)cb->corr_cart.max());
+LOG_INFO("conv_cart    min avg max :%d %d %d",(unsigned)cb->conv_cart.min(),(unsigned)cb->conv_cart.avg(),(unsigned)cb->conv_cart.max());
+LOG_INFO("------------------------------");
     wassert(actual((unsigned)cb->cart.min()) == 0);
     wassert(actual((unsigned)cb->cart.avg()) == 1);
     wassert(actual((unsigned)cb->cart.max()) == 227);
@@ -616,6 +640,16 @@ void to::test<8>()
     wassert(actual((unsigned)cb->conv_cart.max()) == 0);
 
     cb->creo_cart_z_lowris();
+LOG_INFO("z_out         min avg max :%d %d %d",(unsigned)cb->z_out.min(),(unsigned)cb->z_out.avg(),(unsigned)cb->z_out.max());
+LOG_INFO("qual_Z_1x1    min avg max :%d %d %d",(unsigned)cb->qual_Z_1x1.min(),(unsigned)cb->qual_Z_1x1.avg(),(unsigned)cb->qual_Z_1x1.max());
+LOG_INFO("quota_1x1     min avg max :%d %d %d",(unsigned)cb->quota_1x1.min(),(unsigned)cb->quota_1x1.avg(),(unsigned)cb->quota_1x1.max());
+LOG_INFO("dato_corr_1x1 min avg max :%d %d %d",(unsigned)cb->dato_corr_1x1.min(),(unsigned)cb->dato_corr_1x1.avg(),(unsigned)cb->dato_corr_1x1.max());
+LOG_INFO("elev_fin_1x1  min avg max :%d %d %d",(unsigned)cb->elev_fin_1x1.min(),(unsigned)cb->elev_fin_1x1.avg(),(unsigned)cb->elev_fin_1x1.max());
+LOG_INFO("beam_blocking_1x1 min avg max :%d %d %d",(unsigned)cb->beam_blocking_1x1.min(),(unsigned)cb->beam_blocking_1x1.avg(),(unsigned)cb->beam_blocking_1x1.max());
+LOG_INFO("top_1x1       min avg max :%d %d %d",(unsigned)cb->top_1x1.min(),(unsigned)cb->top_1x1.avg(),(unsigned)cb->top_1x1.max());
+LOG_INFO("neve_1x1      min avg max :%d %d %d",(unsigned)cb->neve_1x1.min(),(unsigned)cb->neve_1x1.avg(),(unsigned)cb->neve_1x1.max());
+LOG_INFO("corr_1x1      min avg max :%d %d %d",(unsigned)cb->corr_1x1.min(),(unsigned)cb->corr_1x1.avg(),(unsigned)cb->corr_1x1.max());
+LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.min(),(unsigned)cb->conv_1x1.avg(),(unsigned)cb->conv_1x1.max());
     wassert(actual((unsigned)cb->z_out.min()) == 0);
     wassert(actual((unsigned)cb->z_out.avg()) == 1);
     wassert(actual((unsigned)cb->z_out.max()) == 227);
@@ -649,8 +683,11 @@ void to::test<8>()
 }
 
 template<> template<>
-void to::test<9>()
+void to::test<7>()
 {
+	LOG_CATEGORY("Test");
+	LOG_INFO ("Start test 9");
+
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
@@ -663,6 +700,7 @@ void to::test<9>()
     setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
     unlink("testdata/ultimo_vpr");
     setenv("FILE_T", "testdata/temperature.txt", 1);
+	printwork();
 
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
@@ -755,30 +793,29 @@ void to::test<9>()
     ArrayStats<unsigned char> stats_flag_vpr;
     cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 3072000);
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 2173600);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
     wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
 
     ArrayStats<unsigned char> stats_top;
     stats_top.fill2(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 113000);
-    wassert(actual((unsigned)stats_top.count_ones) == 423);
+    wassert(actual((unsigned)stats_top.count_zeros) == 112982);
+    wassert(actual((unsigned)stats_top.count_ones) == 159);
     wassert(actual((unsigned)stats_top.min) == 0);
     wassert(actual((unsigned)stats_top.max) == 75);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 542);
+    wassert(actual((unsigned)(stats_top.avg * 100)) == 547);
 
     ArrayStats<float> stats_hray;
     stats_hray.fill2(cb->hray);
     wassert(actual((unsigned)stats_hray.first).isfalse());
-    wassert(actual((unsigned)stats_hray.count_zeros) == 162);
+    wassert(actual((unsigned)stats_hray.count_zeros) == 2138);
     wassert(actual((unsigned)stats_hray.min) == 0);
-    wassert(actual((unsigned)stats_hray.max) == 38788);
-    wassert(actual((unsigned)(stats_hray.avg * 100)) == 477103);
+    wassert(actual((unsigned)stats_hray.max) == 52796);
+    wassert(actual((unsigned)(stats_hray.avg * 100)) == 636669);
 
 
     cb->creo_cart();
-    LOG_CATEGORY("radar.test");
 
 LOG_INFO("cart         min avg max :%d %d %d",(unsigned)cb->cart.min(),(unsigned)cb->cart.avg(),(unsigned)cb->cart.max());
 LOG_INFO("cartm        min avg max :%d %d %d",(unsigned)cb->cartm.min(),(unsigned)cb->cartm.avg(),(unsigned)cb->cartm.max());
@@ -862,8 +899,11 @@ LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.min(),(uns
 }
 
 template<> template<>
-void to::test<10>()
+void to::test<8>()
 {
+	LOG_CATEGORY("Test");
+	LOG_INFO ("Start test 10");
+
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
@@ -880,7 +920,7 @@ void to::test<10>()
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
     setenv("TEST_VPR", "testdata/test_vpr", 1);
-
+	printwork();
 
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
@@ -923,7 +963,7 @@ void to::test<10>()
 }
 
 template<> template<>
-void to::test<11>()
+void to::test<9>()
 {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
