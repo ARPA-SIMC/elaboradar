@@ -64,7 +64,6 @@ void to::test<1>()
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
 
 
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
@@ -137,7 +136,6 @@ void to::test<2>()
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
 
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
@@ -235,7 +233,6 @@ void to::test<3>()
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
 
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
 
@@ -287,7 +284,6 @@ void to::test<4>()
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
@@ -409,7 +405,6 @@ void to::test<5>()
 
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
@@ -539,7 +534,6 @@ void to::test<6>()
 
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
@@ -698,7 +692,6 @@ void to::test<7>()
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
@@ -914,7 +907,6 @@ void to::test<8>()
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
@@ -975,7 +967,6 @@ void to::test<9>()
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
     static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("FILE_T", "testdata/temperature.txt", 1);
@@ -1030,6 +1021,132 @@ void to::test<9>()
     delete cb;
 }
 
+template<> template<>
+void to::test<10>()
+{
+	LOG_CATEGORY("Test");
+	LOG_INFO ("Start test 10");
+
+    // versione BB che corrisponde al parametro algo_corto
+    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    unsetwork();
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_INV_2011", 1);
+    printwork();
+
+    CUM_BAC* cb = new CUM_BAC("GAT",true,1024);
+    cb->do_medium= true;
+    cb->do_declutter = true;
+    cb->do_readStaticMap=true;
+    cb->read_sp20_volume(fname, 0);
+    cb->setup_elaborazione(fname);
+
+    cb->elabora_dato();
+
+    VolumeStats stats;
+    cb->volume.compute_stats(stats);
+    wassert(actual(stats.count_zeros[0]) == 0);
+    wassert(actual(stats.count_zeros[1]) == 0);
+    wassert(actual(stats.count_zeros[2]) == 0);
+    wassert(actual(stats.count_zeros[3]) == 0);
+    wassert(actual(stats.count_zeros[4]) == 0);
+    wassert(actual(stats.count_ones[0]) ==  61406);
+    wassert(actual(stats.count_ones[1]) ==  72916);
+    wassert(actual(stats.count_ones[2]) ==  96948);
+    wassert(actual(stats.count_ones[3]) == 110168);
+    wassert(actual(stats.count_ones[4]) == 119120);
+    wassert(actual(stats.count_others[0]) == 136194);
+    wassert(actual(stats.count_others[1]) == 124684);
+    wassert(actual(stats.count_others[2]) == 100652);
+    wassert(actual(stats.count_others[3]) ==  87432);
+    wassert(actual(stats.count_others[4]) ==  78480);
+    wassert(actual(stats.sum_others[0]) == 18104214);
+    wassert(actual(stats.sum_others[1]) == 16004410);
+    wassert(actual(stats.sum_others[2]) == 12562044);
+    wassert(actual(stats.sum_others[3]) == 10553980);
+    wassert(actual(stats.sum_others[4]) ==  9141377);
+
+    cb->creo_cart();
+
+LOG_INFO("cart         min avg max :%d %d %d",(unsigned)cb->cart.min(),(unsigned)cb->cart.avg(),(unsigned)cb->cart.max());
+LOG_INFO("cartm        min avg max :%d %d %d",(unsigned)cb->cartm.min(),(unsigned)cb->cartm.avg(),(unsigned)cb->cartm.max());
+LOG_INFO("topxy        min avg max :%d %d %d",(unsigned)cb->topxy.min(),(unsigned)cb->topxy.avg(),(unsigned)cb->topxy.max());
+LOG_INFO("qual_Z_cart  min avg max :%d %d %d",(unsigned)cb->qual_Z_cart.min(),(unsigned)cb->qual_Z_cart.avg(),(unsigned)cb->qual_Z_cart.max());
+LOG_INFO("quota_cart   min avg max :%d %d %d",(unsigned)cb->quota_cart.min(),(unsigned)cb->quota_cart.avg(),(unsigned)cb->quota_cart.max());
+LOG_INFO("dato_corr_xy min avg max :%d %d %d",(unsigned)cb->dato_corr_xy.min(),(unsigned)cb->dato_corr_xy.avg(),(unsigned)cb->dato_corr_xy.max());
+LOG_INFO("beam_blocking_xy min avg max :%d %d %d",(unsigned)cb->beam_blocking_xy.min(),(unsigned)cb->beam_blocking_xy.avg(),(unsigned)cb->beam_blocking_xy.max());
+LOG_INFO("elev_fin_xy  min avg max :%d %d %d",(unsigned)cb->elev_fin_xy.min(),(unsigned)cb->elev_fin_xy.avg(),(unsigned)cb->elev_fin_xy.max());
+LOG_INFO("neve_cart    min avg max :%d %d %d",(unsigned)cb->neve_cart.min(),(unsigned)cb->neve_cart.avg(),(unsigned)cb->neve_cart.max());
+LOG_INFO("corr_cart    min avg max :%d %d %d",(unsigned)cb->corr_cart.min(),(unsigned)cb->corr_cart.avg(),(unsigned)cb->corr_cart.max());
+LOG_INFO("conv_cart    min avg max :%d %d %d",(unsigned)cb->conv_cart.min(),(unsigned)cb->conv_cart.avg(),(unsigned)cb->conv_cart.max());
+    wassert(actual((unsigned)(unsigned)cb->cart.min()) == 0); 
+    wassert(actual((unsigned)cb->cart.avg()) == 53);
+    wassert(actual((unsigned)cb->cart.max()) == 255);
+    wassert(actual(cb->cartm.min()) == 0);
+    wassert(actual(cb->cartm.max()) == 0);
+    wassert(actual((unsigned)cb->topxy.min()) == 0);
+    wassert(actual((unsigned)cb->topxy.avg()) == 3);
+    wassert(actual((unsigned)cb->topxy.max()) == 76);
+    wassert(actual((unsigned)cb->qual_Z_cart.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 25);
+    wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
+    wassert(actual((unsigned)cb->quota_cart.min()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 14);
+    wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
+    wassert(actual((unsigned)cb->elev_fin_xy.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
+    wassert(actual((unsigned)cb->neve_cart.min()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.min()) == 0);
+    wassert(actual((unsigned)cb->corr_cart.max()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.min()) == 0);
+    wassert(actual((unsigned)cb->conv_cart.max()) == 0);
+
+    cb->creo_cart_z_lowris();
+LOG_INFO("z_out         min avg max :%d %d %d",(unsigned)cb->z_out.min(),(unsigned)cb->z_out.avg(),(unsigned)cb->z_out.max());
+LOG_INFO("qual_Z_1x1    min avg max :%d %d %d",(unsigned)cb->qual_Z_1x1.min(),(unsigned)cb->qual_Z_1x1.avg(),(unsigned)cb->qual_Z_1x1.max());
+LOG_INFO("quota_1x1     min avg max :%d %d %d",(unsigned)cb->quota_1x1.min(),(unsigned)cb->quota_1x1.avg(),(unsigned)cb->quota_1x1.max());
+LOG_INFO("dato_corr_1x1 min avg max :%d %d %d",(unsigned)cb->dato_corr_1x1.min(),(unsigned)cb->dato_corr_1x1.avg(),(unsigned)cb->dato_corr_1x1.max());
+LOG_INFO("elev_fin_1x1  min avg max :%d %d %d",(unsigned)cb->elev_fin_1x1.min(),(unsigned)cb->elev_fin_1x1.avg(),(unsigned)cb->elev_fin_1x1.max());
+LOG_INFO("beam_blocking_1x1 min avg max :%d %d %d",(unsigned)cb->beam_blocking_1x1.min(),(unsigned)cb->beam_blocking_1x1.avg(),(unsigned)cb->beam_blocking_1x1.max());
+LOG_INFO("top_1x1       min avg max :%d %d %d",(unsigned)cb->top_1x1.min(),(unsigned)cb->top_1x1.avg(),(unsigned)cb->top_1x1.max());
+LOG_INFO("neve_1x1      min avg max :%d %d %d",(unsigned)cb->neve_1x1.min(),(unsigned)cb->neve_1x1.avg(),(unsigned)cb->neve_1x1.max());
+LOG_INFO("corr_1x1      min avg max :%d %d %d",(unsigned)cb->corr_1x1.min(),(unsigned)cb->corr_1x1.avg(),(unsigned)cb->corr_1x1.max());
+LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.min(),(unsigned)cb->conv_1x1.avg(),(unsigned)cb->conv_1x1.max());
+    wassert(actual((unsigned)cb->z_out.min()) == 0);
+    wassert(actual((unsigned)cb->z_out.avg()) == 63);
+    wassert(actual((unsigned)cb->z_out.max()) == 255);
+    wassert(actual((unsigned)cb->qual_Z_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 24);
+    wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 97);
+    wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.avg()) == 13);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.max()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.avg()) == 3);
+    wassert(actual((unsigned)cb->top_1x1.max()) == 42);
+    wassert(actual((unsigned)cb->neve_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.max()) == 0);
+
+    // TODO: scrivo_out_file_bin
+
+    delete cb;
+}
 #if 0
 template<> template<>
 void to::test<6>()
@@ -1037,7 +1154,6 @@ void to::test<6>()
     // Test di tutto quello che può essere chiamato
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
 
-    setenv("FIRST_LEVEL_DIM_FILE", "../dati/FL_2006.DIM", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     setenv("LAST_VPR", "testdata/last_vpr_GAT", 1);
