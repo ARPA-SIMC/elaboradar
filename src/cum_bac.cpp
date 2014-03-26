@@ -64,41 +64,60 @@ extern "C" {
 
 namespace cumbac {
 
-HRay::HRay()
-    : hray(new float[MAX_BIN * NSCAN])
+namespace {
+/**
+ *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
+ *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
+ *  @return 
+ */
+struct HRay
 {
-    // float* hray[MAX_BIN][NSCAN];
-    memset(hray, 0, MAX_BIN * NSCAN * sizeof(float));
-}
-HRay::~HRay()
-{
-    delete[] hray;
-}
+    float* hray;
+    // distanza temporale radiosondaggio
+    float dtrs;
 
-void HRay::load_hray(Assets& assets)
-{
-    // quota centro fascio in funzione della distanza e elevazione
-    load_file(assets.open_file_hray());
-}
-void HRay::load_hray_inf(Assets& assets)
-{
-    // quota limite inferiore fascio in funzione della distanza e elevazione
-    load_file(assets.open_file_hray_inf());
-}
-
-void HRay::load_file(FILE* file)
-{
-    /*--------------------------
-      Leggo quota centro fascio
-      --------------------------*/
-    fscanf(file,"%f ",&dtrs);
-    for(int i=0; i<MAX_BIN; i++){
-        for(int j=0; j<NSCAN;j++)
-            fscanf(file,"%f ", hray + i * NSCAN + j);
+    HRay()
+        : hray(new float[MAX_BIN * NSCAN])
+    {
+        // float* hray[MAX_BIN][NSCAN];
+        memset(hray, 0, MAX_BIN * NSCAN * sizeof(float));
     }
-    fclose(file);
-}
 
+    ~HRay()
+    {
+        delete[] hray;
+    }
+
+    float* operator[](unsigned idx) { return hray + idx * NSCAN; }
+    const float* operator[](unsigned idx) const { return hray + idx * NSCAN; }
+
+    void load_hray(Assets& assets)
+    {
+        // quota centro fascio in funzione della distanza e elevazione
+        load_file(assets.open_file_hray());
+    }
+    void load_hray_inf(Assets& assets)
+    {
+        // quota limite inferiore fascio in funzione della distanza e elevazione
+        load_file(assets.open_file_hray_inf());
+    }
+
+
+private:
+    void load_file(FILE* file)
+    {
+        /*--------------------------
+          Leggo quota centro fascio
+          --------------------------*/
+        fscanf(file,"%f ",&dtrs);
+        for(int i=0; i<MAX_BIN; i++){
+            for(int j=0; j<NSCAN;j++)
+                fscanf(file,"%f ", hray + i * NSCAN + j);
+        }
+        fclose(file);
+    }
+};
+}
 
 CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
