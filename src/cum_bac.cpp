@@ -65,8 +65,14 @@ extern "C" {
 namespace cumbac {
 
 HRay::HRay()
+    : hray(new float[MAX_BIN * NSCAN])
 {
-    memset(hray, 0, sizeof(hray));
+    // float* hray[MAX_BIN][NSCAN];
+    memset(hray, 0, MAX_BIN * NSCAN * sizeof(float));
+}
+HRay::~HRay()
+{
+    delete[] hray;
 }
 
 void HRay::load_hray(Assets& assets)
@@ -88,7 +94,7 @@ void HRay::load_file(FILE* file)
     fscanf(file,"%f ",&dtrs);
     for(int i=0; i<MAX_BIN; i++){
         for(int j=0; j<NSCAN;j++)
-            fscanf(file,"%f ",&hray[i][j]);
+            fscanf(file,"%f ", hray + i * NSCAN + j);
     }
     fclose(file);
 }
