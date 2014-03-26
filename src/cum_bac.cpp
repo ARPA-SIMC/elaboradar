@@ -77,6 +77,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
       calcolo_vpr(0), cart(MAX_BIN*2), cartm(MAX_BIN*2), z_out(CART_DIM_ZLR),
       first_level(MAX_BIN), first_level_static(MAX_BIN),
       bb_first_level(MAX_BIN), beam_blocking(MAX_BIN),
+      att_cart(MAX_BIN),
       quota_cart(MAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MAX_BIN*2),
       beam_blocking_1x1(CART_DIM_ZLR), dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
       elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),

@@ -217,7 +217,7 @@ public:
     float dtrs;// distanza temporale radiosondaggio
 
     // attenuazione in formato cartesiano max risoluzione
-    unsigned char att_cart[NUM_AZ_X_PPI][MAX_BIN]; /* matrice azimut-range di attenuazione */
+    PolarMap<unsigned char> att_cart; /* matrice azimut-range di attenuazione */
     //quota centro fascio polare, cartesiana max risoluzione e cartesiana 1x1
     unsigned short quota_rel[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
     unsigned short quota[NUM_AZ_X_PPI][MAX_BIN]; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
