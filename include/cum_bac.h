@@ -145,9 +145,6 @@ public:
       Variabili globali
       ------------------------------------------------------------*/
 
-    //matrici per ricampionamento cartesiano
-    float azimut[MAX_BIN][MAX_BIN];
-    float range[MAX_BIN][MAX_BIN];
     // vol_pol riportato in cartesiano
     Image<unsigned char> cart;
     Image<double> cartm;  /* Z media dei bins adiacenti al punto */

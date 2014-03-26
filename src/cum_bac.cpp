@@ -2474,7 +2474,8 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
     for (unsigned l=0; l<cum_bac.volume.NEL; l++)//ciclo elevazioni
     {
-        for (unsigned k=0; k<MAX_BIN; k++)/*ciclo range*/
+	PolarScan& scan = cum_bac.volume.scan(l);
+        for (unsigned k=0; k < scan.beam_size; k++)/*ciclo range*/
         {
             //-------------calcolo distanza-----------
             dist=k*(long int)(cum_bac.volume.size_cell)+(int)(cum_bac.volume.size_cell)/2.;
@@ -2489,7 +2490,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].teta_true)*CONV_RAD;
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].elevation*DTOR);
-                const float elevaz=floorf(cum_bac.volume.scan(l).get_elevation(i) / FATT_MOLT_EL)*CONV_RAD;
+                const float elevaz=floorf(scan.get_elevation(i) / FATT_MOLT_EL)*CONV_RAD;
                 quota_true_st=cum_bac.quota_f(elevaz,k);
 
                 //--------trovo ilay---------
@@ -2528,16 +2529,14 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
-                unsigned char sample = 0;
-                if (k < cum_bac.volume.scan(l).beam_size)
-                    sample = cum_bac.volume.scan(l).get_raw(i, k);
-                if (BYTEtoDB(sample)> THR_VPR &&  flag_vpr->get(l, i, k) > 0 )
+                double sample = scan.get_db(i, k);
+                if (sample > THR_VPR &&  flag_vpr->get(l, i, k) > 0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area
-                    vol_rain=(long int)(BYTE_to_mp_func(sample,cum_bac.aMP,cum_bac.bMP)*area);//peso ogni cella con la sua area
+                    vol_rain=(long int)(BYTE_to_mp_func(DBtoBYTE(sample),cum_bac.aMP,cum_bac.bMP)*area);//peso ogni cella con la sua area
 
                     //-------incremento l'area precipitante totale ct,aggiungendo però,cosa che avevo messo male una THR solo per ct, cioè per il peso
-                    if (BYTEtoDB(sample)> THR_PDF)
+                    if (sample > THR_PDF)
                         *ct=*ct+(long int)(area);
 
                     //------se l'area in quello strato è già maggiore di 0 allora incremento il volume dello strato altrimenti lo scrivo ex novo. poi vpr1 andrà diviso per l'area
@@ -2664,49 +2663,62 @@ void CUM_BAC::conversione_convettiva()
     }
 }
 
+namespace {
+struct CartData
+{
+    float azimut[MAX_BIN][MAX_BIN];
+    float range[MAX_BIN][MAX_BIN];
+
+    CartData()
+    {
+        for(int i=0; i<MAX_BIN; i++)
+            for(int j=0; j<MAX_BIN; j++)
+            {
+                range[i][j] = hypot(i+.5,j+.5);
+                azimut[i][j] = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
+            }
+    }
+};
+}
+
 void CUM_BAC::creo_cart()
 {
-    int i,j,quad,x,y,irange,az,iaz,az_min,az_max,cont;
-    static int flag = 1;
+    //matrici per ricampionamento cartesiano
+    int x,y,irange,az,iaz,az_min,az_max,cont;
+    static CartData* cd = 0;
+    if (!cd) cd = new CartData;
 
-    if(flag)
-    {
-        creo_matrice_conv();
-        flag = 0;
-    }
-
-    for(i=0; i<MAX_BIN *2; i++)
-        for(j=0; j<MAX_BIN *2; j++)
+    for(int i=0; i<MAX_BIN *2; i++)
+        for(int j=0; j<MAX_BIN *2; j++)
             cart[i][j] = MISSING;
 
-    for(quad=0; quad<4; quad++)
-        for(i=0; i<MAX_BIN; i++)
-            for(j=0; j<MAX_BIN; j++)
+    for(int quad=0; quad<4; quad++)
+        for(int i=0; i<MAX_BIN; i++)
+            for(int j=0; j<MAX_BIN; j++)
             {
-                irange = (int)range[i][j];
-                if(range[i][j] - irange >= .5) irange++;
+                irange = (int)round(cd->range[i][j]);
                 if(irange < MAX_BIN)        {
                     switch(quad)
                     {
                         case 0:
                             x = MAX_BIN + i;
                             y = MAX_BIN + j;
-                            az = azimut[i][j];
+                            az = cd->azimut[i][j];
                             break;
                         case 1:
                             x = MAX_BIN + j;
                             y = MAX_BIN - i;
-                            az = azimut[i][j] + 90.;
+                            az = cd->azimut[i][j] + 90.;
                             break;
                         case 2:
                             x = MAX_BIN - i;
                             y = MAX_BIN - j;
-                            az = azimut[i][j] + 180.;
+                            az = cd->azimut[i][j] + 180.;
                             break;
                         case 3:
                             x = MAX_BIN - j;
                             y = MAX_BIN + i;
-                            az = azimut[i][j]+270.;
+                            az = cd->azimut[i][j]+270.;
                             break;
                     }
 
@@ -2865,19 +2877,6 @@ void CUM_BAC::creo_cart_z_lowris()
                     }
                 }
         }
-}
-
-void CUM_BAC::creo_matrice_conv()
-{
-    int i,j;
-
-    for(i=0; i<MAX_BIN; i++)
-        for(j=0; j<MAX_BIN; j++)
-        {
-            range[i][j] = hypot(i+.5,j+.5);
-            azimut[i][j] = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
-        }
-    return;
 }
 
 void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const char *dir,size_t size, const void  *matrice)
