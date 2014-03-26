@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <vector>
 #include "setwork.h"
+#include <unistd.h>
 
 using namespace wibble::tests;
 using namespace cumbac;
