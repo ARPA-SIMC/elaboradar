@@ -70,9 +70,14 @@ public:
     PolarScan(unsigned beam_size);
     ~PolarScan();
 
-    double get_elevation(unsigned az) const
+    inline double get_elevation(unsigned az) const
     {
         return beam_info[az].elevation;
+    }
+
+    inline double get_elevation_rad(unsigned az) const
+    {
+        return beam_info[az].elevation * M_PI / 180.;
     }
 
     /// Get a raw value in a beam
@@ -171,6 +176,11 @@ public:
 
     double elevation_min() const;
     double elevation_max() const;
+
+    inline double elevation_rad_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
+    {
+        return scan(elev_fin[az_idx][ray_idx]).get_elevation_rad(az_idx);
+    }
 
     inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {

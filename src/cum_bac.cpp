@@ -651,7 +651,7 @@ void CUM_BAC::elabora_dato()
             {
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //float elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
-                const float elevaz=floorf(volume.elevation_at_elev_preci(i, k) / FATT_MOLT_EL)*CONV_RAD;
+                const float elevaz = volume.elevation_rad_at_elev_preci(i, k);
                 // elev_fin[i][k]=first_level_static[i][k];//da togliere
                 quota[i][k]=(unsigned short)(quota_f(elevaz,k));
                 quota_rel[i][k]=(unsigned short)(hray[k][volume.elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
@@ -920,7 +920,7 @@ void CUM_BAC::caratterizzo_volume()
             // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
             //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
             //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
-            const float elevaz = floorf(volume.scan(l).get_elevation(i) / FATT_MOLT_EL)*CONV_RAD;//--- elev reale
+            const float elevaz = volume.scan(l).get_elevation_rad(i);//--- elev reale
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
@@ -2491,7 +2491,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].teta_true)*CONV_RAD;
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].elevation*DTOR);
-                const float elevaz=floorf(scan.get_elevation(i) / FATT_MOLT_EL)*CONV_RAD;
+                const float elevaz = scan.get_elevation_rad(i);
                 quota_true_st=cum_bac.quota_f(elevaz,k);
 
                 //--------trovo ilay---------
