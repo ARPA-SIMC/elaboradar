@@ -238,8 +238,6 @@ public:
     PolarMap<unsigned char> beam_blocking;   /* mappa di beam blocking (input)*/
 
     //variabili legate a propagazione e beam blocking, da prog_bb
-    // quota centro fascio in funzione della distanza e elevazione
-    HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     PolarMap <float> dem; /*dem in coordinate azimut range*/
 
     // attenuazione in formato cartesiano max risoluzione

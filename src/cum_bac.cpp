@@ -400,7 +400,6 @@ void CUM_BAC::elabora_dato()
     if (do_quality)
     {
         leggo_dem();
-        leggo_hray();
     }
 
     //------------se definito DECLUTTER , non rimuovo anap e riscrivo  volume polare facedndo declutter solo con mappa statica.... ancora valido?
@@ -772,14 +771,6 @@ void CUM_BAC::leggo_first_level()
     }
 }
 
-void CUM_BAC::leggo_hray( )
-{
-    /*--------------------------
-      Leggo quota centro fascio
-      --------------------------*/
-    hray_inf.load_hray_inf(assets);
-}
-
 void CUM_BAC::leggo_dem()
 {
     /*---------------------
@@ -902,6 +893,10 @@ comend
 void CUM_BAC::caratterizzo_volume()
 {
     LOG_DEBUG("start caratterizzo_volume");
+
+    HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
+    hray_inf.load_hray_inf(assets);
+
     qual = new VolumeInfo<unsigned char>(volume);
     qual->init(0);
 
