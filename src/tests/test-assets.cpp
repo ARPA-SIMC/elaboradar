@@ -108,4 +108,14 @@ void to::test<8>()
     wassert(actual(assets.read_profile_gap()) == 0);
 }
 
+template<> template<>
+void to::test<9>()
+{
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_PRI-EST_2011", 1);
+    Assets assets;
+    assets.configure("GAT", 1389108600);
+    FILE* in = assets.open_file_first_level();
+    wassert(actual(in != 0).istrue());
+    fclose(in);
+}
 }
