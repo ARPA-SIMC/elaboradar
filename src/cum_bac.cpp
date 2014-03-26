@@ -390,6 +390,8 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 void CUM_BAC::elabora_dato()
 {
     const float fondo_scala = BYTEtoDB(1); // -19.7 dBZ
+    HRay hray;
+    hray.load_hray(assets);
 
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
     leggo_first_level();
@@ -775,7 +777,6 @@ void CUM_BAC::leggo_hray( )
     /*--------------------------
       Leggo quota centro fascio
       --------------------------*/
-    hray.load_hray(assets);
     hray_inf.load_hray_inf(assets);
     dtrs = hray_inf.dtrs;
 }
