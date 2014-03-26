@@ -86,6 +86,7 @@ static void startup_banner(CUM_BAC_CLOPT *opt)
 #endif
 
     /// Log initial program state
+
     LOG_INFO("Lancio Programma");
     LOG_INFO("-----------------------------------------------------------------");
     std::string FlagRunTime ="Flag di RunTime: ";
@@ -143,6 +144,8 @@ int main (int argc, char **argv)
 
     LOG_CATEGORY("radar.main");
 
+    int MyMAX_BIN = 512;
+    if(CL_opt.do_medium) MyMAX_BIN=1024; 
     //------- verifica n0 argomenti ------
 
     if (argc < 4)
@@ -156,7 +159,8 @@ int main (int argc, char **argv)
 
     startup_banner(&CL_opt);
 
-    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium);
+
+    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium,MyMAX_BIN);
 
     // Set feature flags
     cb->do_clean 	= CL_opt.do_clean;

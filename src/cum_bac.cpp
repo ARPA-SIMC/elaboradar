@@ -67,26 +67,26 @@ extern "C" {
 
 namespace cumbac {
 
-CUM_BAC::CUM_BAC(const char* site_name, bool medium)
-    : site(Site::get(site_name)),
+CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
+    : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
       do_quality(false), do_beamblocking(false), do_declutter(false),
       do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
       do_devel(false),do_readStaticMap(false),
       CART_DIM_ZLR(do_medium ? 512: 256),
-      calcolo_vpr(0), cart(MAX_BIN*2), cartm(MAX_BIN*2), z_out(CART_DIM_ZLR),
-      first_level(MAX_BIN), first_level_static(MAX_BIN),
-      bb_first_level(MAX_BIN), beam_blocking(MAX_BIN),dem(MAX_BIN), att_cart(MAX_BIN),
-      quota_rel(MAX_BIN),quota(MAX_BIN),
-      quota_cart(MAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MAX_BIN*2),
-      beam_blocking_1x1(CART_DIM_ZLR), dato_corrotto(MAX_BIN),
-      dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
-      elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
-      qual(0), qual_Z_cart(MAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),top(MAX_BIN),
-      topxy(MAX_BIN*2), top_1x1(CART_DIM_ZLR),
-      corr_cart(MAX_BIN*2), corr_1x1(CART_DIM_ZLR), neve_cart(MAX_BIN*2), neve_1x1(CART_DIM_ZLR),
-      cappi(MAX_BIN),conv_cart(MAX_BIN*2), conv_1x1(CART_DIM_ZLR),
-      cappi_cart(MAX_BIN*2), cappi_1x1(CART_DIM_ZLR)
+      calcolo_vpr(0), cart(MyMAX_BIN*2), cartm(MyMAX_BIN*2), z_out(CART_DIM_ZLR),
+      first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
+      bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN), att_cart(MyMAX_BIN),
+      quota_rel(MyMAX_BIN),quota(MyMAX_BIN),
+      quota_cart(MyMAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MyMAX_BIN*2),
+      beam_blocking_1x1(CART_DIM_ZLR), dato_corrotto(MyMAX_BIN),
+      dato_corr_xy(MyMAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
+      elev_fin_xy(MyMAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
+      qual(0), qual_Z_cart(MyMAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),top(MyMAX_BIN),
+      topxy(MyMAX_BIN*2), top_1x1(CART_DIM_ZLR),
+      corr_cart(MyMAX_BIN*2), corr_1x1(CART_DIM_ZLR), neve_cart(MyMAX_BIN*2), neve_1x1(CART_DIM_ZLR),
+      cappi(MyMAX_BIN),conv_cart(MyMAX_BIN*2), conv_1x1(CART_DIM_ZLR),
+      cappi_cart(MyMAX_BIN*2), cappi_1x1(CART_DIM_ZLR)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
@@ -690,7 +690,7 @@ void CUM_BAC::leggo_first_level()
           ----------------------------*/
         file = assets.open_file_first_level_bb_el();
         for(int i=0; i<NUM_AZ_X_PPI; i++)
-            fread(&bb_first_level[i][0],MAX_BIN,1,file);
+            fread(&bb_first_level[i][0],MyMAX_BIN,1,file);
         fclose(file);
         /*------------------------
           Leggo file valore di BB
@@ -699,9 +699,9 @@ void CUM_BAC::leggo_first_level()
         /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
            altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
         for(int i=0; i<NUM_AZ_X_PPI; i++){   /*ciclo sugli azimut*/
-            fread(&beam_blocking[i][0],MAX_BIN,1,file);
+            fread(&beam_blocking[i][0],MyMAX_BIN,1,file);
 
-            for (int j=0; j<MAX_BIN; j++) /*ciclo sul range  */
+            for (int j=0; j<MyMAX_BIN; j++) /*ciclo sul range  */
             {
                 if (do_bloccorr)
                 {
@@ -731,7 +731,7 @@ void CUM_BAC::leggo_first_level()
         int k;
         for (int i=NUM_AZ_X_PPI; i<800; i++)
         {
-            for (int j=0; j<MAX_BIN; j++)
+            for (int j=0; j<MyMAX_BIN; j++)
             {
                 for (k=i-1; k<i+2; k++)
                     if(first_level[i%NUM_AZ_X_PPI][j] < first_level_tmp[k%NUM_AZ_X_PPI][j])
@@ -773,7 +773,7 @@ void CUM_BAC::leggo_dem()
       Leggo dem
       ---------------------*/
     FILE *file = assets.open_file_dem();
-    for (int i=0; i<MAX_BIN; i++){
+    for (int i=0; i<MyMAX_BIN; i++){
         for (int j=0; j<NUM_AZ_X_PPI;j++)
             fscanf(file,"%f ",&dem[j][i]);
     }
@@ -1038,11 +1038,11 @@ void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
     float a;// raggio terra, non so perchè lo rendo variabile
-    float range[MAX_BIN];
-    float zz[MAX_BIN][NEL];
-    float xx[MAX_BIN][NEL];
-    int  i_xx[MAX_BIN][NEL],i_zz[MAX_BIN][NEL],i_xx_min[MAX_BIN][NEL],i_xx_max[MAX_BIN][NEL],i_zz_min[MAX_BIN][NEL],i_zz_max[MAX_BIN][NEL];
-    int  im[MAX_BIN][NEL], ix[MAX_BIN][NEL], jm[MAX_BIN][NEL], jx[MAX_BIN][NEL];
+    float range[MyMAX_BIN];
+    float zz[MyMAX_BIN][NEL];
+    float xx[MyMAX_BIN][NEL];
+    int  i_xx[MyMAX_BIN][NEL],i_zz[MyMAX_BIN][NEL],i_xx_min[MyMAX_BIN][NEL],i_xx_max[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL],i_zz_max[MyMAX_BIN][NEL];
+    int  im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
     int i,j,kx,kz,k,iel,imin,imax,jmin,jmax;// Enrico RHI_ind[NEL][MAX_BIN];
     int wimin,wjmin; // Enrico ,wimax,wjmax;
     int hmax=-9999, ier_ap,ier_0term=0;
@@ -1050,7 +1050,7 @@ void CalcoloVPR::classifica_rain()
     //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
     float w_size[2]={3.,0.3}; //dimensione della matrice pesi
 //    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,**beamXweight[MAX_BIN]; // da inizializzare in fase di programma
-    float RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,beamXweight[MAX_BIN][20][10]; // da inizializzare in fase di programma
+    float RHI_beam[NEL][MyMAX_BIN],*w_x,*w_z,**w_tot,beamXweight[MyMAX_BIN][20][10]; // da inizializzare in fase di programma
     float range_min,range_max,xmin,zmin,xmax,zmax;
     int w_x_size,w_z_size,w_x_size_2,w_z_size_2;
     FILE *file;
@@ -1120,7 +1120,7 @@ void CalcoloVPR::classifica_rain()
 
     // estremi x e z (si procede per rhi)
     range_min=0.5*cum_bac.volume.size_cell/1000.;
-    range_max=(MAX_BIN-0.5)*cum_bac.volume.size_cell/1000.;
+    range_max=(MyMAX_BIN-0.5)*cum_bac.volume.size_cell/1000.;
 
     xmin=floor(range_min*cos(cum_bac.volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
     zmin=pow(pow(range_min,2.)+pow(4./3*a,2.)+2.*range_min*4./3.*a*sin(cum_bac.volume.elevation_min() * DTOR),.5) -4./3.*a+h_radar; // quota  minima in prop standard
@@ -1130,7 +1130,7 @@ void CalcoloVPR::classifica_rain()
     x_size=(xmax-xmin)/resol[0]; //dimensione orizzontale
     z_size=(zmax-zmin)/resol[1]; //dimensione verticale
     LOG_INFO("calcolati range_min e range_max , dimensione orizzontale e dimensione verticale range_min=%f  range_max=%f x_size=%d z_size=%d",range_min,range_max,x_size,z_size);
-    if (x_size > MAX_BIN) x_size=MAX_BIN;
+    if (x_size > MyMAX_BIN) x_size=MyMAX_BIN;
 
     w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
     w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
@@ -1147,7 +1147,7 @@ void CalcoloVPR::classifica_rain()
     for(k=0;k<w_x_size;k++)
         w_tot[k]=(float *) malloc(w_z_size*sizeof(float));
 
-    for (i=0; i<MAX_BIN; i++){
+    for (i=0; i<MyMAX_BIN; i++){
         range[i]=(i+0.5)*cum_bac.volume.size_cell/1000.;
 
         for (k=0; k<cum_bac.volume.NEL; k++){
@@ -1228,7 +1228,7 @@ void CalcoloVPR::classifica_rain()
         CilindricalSlice rhi_weight(x_size, z_size, 0);
 
         for (i=0;i<cum_bac.volume.NEL;i++)
-            cum_bac.volume.scan(i).read_beam_db(iaz, RHI_beam[i], MAX_BIN, BYTEtoDB(0));
+            cum_bac.volume.scan(i).read_beam_db(iaz, RHI_beam[i], MyMAX_BIN, BYTEtoDB(0));
 
         /* ;---------------------------------- */
         /* ;          FASE 4 */
@@ -1238,12 +1238,12 @@ void CalcoloVPR::classifica_rain()
 
         // Enrico: non sforare se il raggio è piú lungo di MAX_BIN
         unsigned ray_size = cum_bac.volume.scan(0).beam_size;
-        if (ray_size > MAX_BIN)
-            ray_size = MAX_BIN;
+        if (ray_size > MyMAX_BIN)
+            ray_size = MyMAX_BIN;
 
         for (iel=0;iel<cum_bac.volume.NEL;iel++){
             for (unsigned ibin=0;ibin<ray_size;ibin++) {
-                if ( ibin >= MAX_BIN) {
+                if ( ibin >= MyMAX_BIN) {
                     std::cout<<"ibin troppo grande "<<std::endl;
                     throw std::runtime_error("ERRORE");
                 }
@@ -1467,7 +1467,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
 
     //traccio una lista dei punti che hanno valore non nullo e sotto base bright band (lista_bckg) contenente iaz e irange e conto i punti
     for (unsigned i=0; i<NUM_AZ_X_PPI;i++) {
-        for (unsigned j=0; j<MAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa
+        for (unsigned j=0; j<MyMAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa
         {
             //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
@@ -1508,7 +1508,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
 
             if (kmin>0) {
 
-                if (kmax>MAX_BIN) kmax=MAX_BIN;
+                if (kmax>MyMAX_BIN) kmax=MyMAX_BIN;
 
                 //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
                 delta_naz=ceil(11./((lista_bckg[i][1]*cum_bac.volume.size_cell/1000.+cum_bac.volume.size_cell/2000.)/(AMPLITUDE*DTOR)));
@@ -2691,36 +2691,36 @@ void CUM_BAC::creo_cart()
     static CartData* cd = 0;
     if (!cd) cd = new CartData;
 
-    for(int i=0; i<MAX_BIN *2; i++)
-        for(int j=0; j<MAX_BIN *2; j++)
+    for(int i=0; i<MyMAX_BIN *2; i++)
+        for(int j=0; j<MyMAX_BIN *2; j++)
             cart[i][j] = MISSING;
 
     for(int quad=0; quad<4; quad++)
-        for(int i=0; i<MAX_BIN; i++)
-            for(int j=0; j<MAX_BIN; j++)
+        for(int i=0; i<MyMAX_BIN; i++)
+            for(int j=0; j<MyMAX_BIN; j++)
             {
                 irange = (int)round(cd->range[i][j]);
-                if(irange < MAX_BIN)        {
+                if(irange < MyMAX_BIN)        {
                     switch(quad)
                     {
                         case 0:
-                            x = MAX_BIN + i;
-                            y = MAX_BIN + j;
+                            x = MyMAX_BIN + i;
+                            y = MyMAX_BIN + j;
                             az = cd->azimut[i][j];
                             break;
                         case 1:
-                            x = MAX_BIN + j;
-                            y = MAX_BIN - i;
+                            x = MyMAX_BIN + j;
+                            y = MyMAX_BIN - i;
                             az = cd->azimut[i][j] + 90.;
                             break;
                         case 2:
-                            x = MAX_BIN - i;
-                            y = MAX_BIN - j;
+                            x = MyMAX_BIN - i;
+                            y = MyMAX_BIN - j;
                             az = cd->azimut[i][j] + 180.;
                             break;
                         case 3:
-                            x = MAX_BIN - j;
-                            y = MAX_BIN + i;
+                            x = MyMAX_BIN - j;
+                            y = MyMAX_BIN + i;
                             az = cd->azimut[i][j]+270.;
                             break;
                     }
@@ -2820,8 +2820,8 @@ void CUM_BAC::creo_cart_z_lowris()
                 {
                     unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
-                    if (src_x >= MAX_BIN*2) printf("X è fuori\n");
-                    if (src_y >= MAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
+                    if (src_x >= MyMAX_BIN*2) printf("X è fuori\n");
+                    if (src_y >= MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
                     if(cart[src_x][src_y] != MISSING)
                         if(cart[src_x][src_y] > z){
                             z= cart[src_x][src_y];
@@ -3063,6 +3063,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac), flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
+    MyMAX_BIN=cum_bac.MyMAX_BIN;
     ncv=0;np=0;
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
@@ -3072,7 +3073,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     for (int i=0; i<NMAXLAYER; i++)
       vpr[i]=NODATAVPR;
 
-    for (int k=0; k<NUM_AZ_X_PPI*MAX_BIN;k++ ){
+    for (int k=0; k<NUM_AZ_X_PPI*MyMAX_BIN;k++ ){
       lista_conv[k][0]=-999;
       lista_conv[k][1]=-999;
       lista_bckg[k][0]=-999;

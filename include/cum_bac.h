@@ -151,6 +151,7 @@ class CUM_BAC
 public:
     log4c_category_t* logging_category;
 
+    int MyMAX_BIN;
     const Site& site;
     Assets assets;
 
@@ -262,7 +263,7 @@ public:
        T_time, T_data, T_ora..*/
 
 
-    CUM_BAC(const char* site_name, bool medium=false);
+    CUM_BAC(const char* site_name, bool medium=false, int max_bin=512);
     ~CUM_BAC();
 
     bool read_sp20_volume(const char* nome_file, int file_type);
@@ -506,6 +507,8 @@ struct CalcoloVPR
     float stdev;// obsol.
     // files vpr
     FILE *test_vpr;
+
+    int MyMAX_BIN;
 
     CalcoloVPR(CUM_BAC& cum_bac);
     ~CalcoloVPR();
