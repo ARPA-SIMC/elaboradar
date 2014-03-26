@@ -76,24 +76,20 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium)
       CART_DIM_ZLR(do_medium ? 512: 256),
       calcolo_vpr(0), cart(MAX_BIN*2), cartm(MAX_BIN*2), z_out(CART_DIM_ZLR),
       first_level(MAX_BIN), first_level_static(MAX_BIN),
-      bb_first_level(MAX_BIN), beam_blocking(MAX_BIN),
-      att_cart(MAX_BIN),
+      bb_first_level(MAX_BIN), beam_blocking(MAX_BIN),dem(MAX_BIN), att_cart(MAX_BIN),
+      quota_rel(MAX_BIN),quota(MAX_BIN),
       quota_cart(MAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MAX_BIN*2),
-      beam_blocking_1x1(CART_DIM_ZLR), dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
+      beam_blocking_1x1(CART_DIM_ZLR), dato_corrotto(MAX_BIN),
+      dato_corr_xy(MAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
       elev_fin_xy(MAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
-      qual(0), qual_Z_cart(MAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),
+      qual(0), qual_Z_cart(MAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),top(MAX_BIN),
       topxy(MAX_BIN*2), top_1x1(CART_DIM_ZLR),
       corr_cart(MAX_BIN*2), corr_1x1(CART_DIM_ZLR), neve_cart(MAX_BIN*2), neve_1x1(CART_DIM_ZLR),
-      conv_cart(MAX_BIN*2), conv_1x1(CART_DIM_ZLR),
+      cappi(MAX_BIN),conv_cart(MAX_BIN*2), conv_1x1(CART_DIM_ZLR),
       cappi_cart(MAX_BIN*2), cappi_1x1(CART_DIM_ZLR)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 
-    memset(dato_corrotto,0,sizeof(dato_corrotto));
-    memset(att_cart,DBtoBYTE(0.),sizeof(att_cart));
-    memset(quota_rel,0,sizeof(quota_rel));
-    memset(quota,0,sizeof(quota));
-    memset(top,0,sizeof(top));
 
     memset(stat_anap_tot,0,sizeof(stat_anap_tot));
     memset(stat_anap,0,sizeof(stat_anap));
@@ -669,10 +665,17 @@ void CUM_BAC::leggo_first_level()
     /*-------------------
       Leggo mappa  statica
       -------------------*/
-    // lettura dimensioni matrice mappa statica da file esterno
-      int dim = assets.read_file_first_level_dim();
+    // dimensioni matrice mappa statica ricavata da dimensione file 
+      int dim ;
     //leggo mappa statica con dimensioni appena lette
       file = assets.open_file_first_level();
+      {
+	fseek(file, 0,SEEK_END);
+      	int size = ftell (file);
+	rewind(file);
+	if (size%NUM_AZ_X_PPI != 0) throw std::runtime_error("Dimensione mappa statica non corretta - non multiplo di 400 ");
+	dim= size/NUM_AZ_X_PPI ;
+      }
       for(int i=0; i<NUM_AZ_X_PPI; i++)
          fread(&first_level_static[i][0],dim,1,file);
     // copio mappa statica su matrice first_level
@@ -885,6 +888,7 @@ comend
 */
 void CUM_BAC::caratterizzo_volume()
 {
+    LOG_DEBUG("start caratterizzo_volume");
     qual = new VolumeInfo<unsigned char>(volume);
     qual->init(0);
 
@@ -1005,6 +1009,7 @@ void CUM_BAC::caratterizzo_volume()
         }
     }
 
+    LOG_DEBUG("End caratterizzo_volume");
     return;
 }
 
