@@ -806,15 +806,6 @@ void to::test<7>()
     wassert(actual((unsigned)stats_top.max) == 76);
     wassert(actual((unsigned)(stats_top.avg * 100)) == 552);
 
-    ArrayStats<float> stats_hray;
-    stats_hray.fill2(cb->hray);
-    wassert(actual((unsigned)stats_hray.first).isfalse());
-    wassert(actual((unsigned)stats_hray.count_zeros) == 2138);
-    wassert(actual((unsigned)stats_hray.min) == 0);
-    wassert(actual((unsigned)stats_hray.max) == 52796);
-    wassert(actual((unsigned)(stats_hray.avg * 100)) == 637556);
-
-
     cb->creo_cart();
 
 LOG_INFO("cart         min avg max :%d %d %d",(unsigned)cb->cart.min(),(unsigned)cb->cart.avg(),(unsigned)cb->cart.max());

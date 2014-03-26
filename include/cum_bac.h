@@ -48,9 +48,36 @@ const unsigned int NEL = 15;  // n0 elevazioni massimo
 #define DIM1_ST 16
 #define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
 
+// parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
+#define NSCAN 6
+
 namespace cumbac {
 
 struct Site;
+
+/**
+ *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
+ *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
+ *  @return 
+ */
+struct HRay
+{
+    float hray[MAX_BIN][NSCAN];
+    // distanza temporale radiosondaggio
+    float dtrs;
+
+    HRay();
+
+    float* operator[](unsigned idx) { return hray[idx]; }
+    const float* operator[](unsigned idx) const { return hray[idx]; }
+
+
+    void load_hray(Assets& assets);
+    void load_hray_inf(Assets& assets);
+
+private:
+    void load_file(FILE* file);
+};
 
 template<typename T>
 struct PolarMap
@@ -212,8 +239,8 @@ public:
 
     //variabili legate a propagazione e beam blocking, da prog_bb
     // quota centro fascio in funzione della distanza e elevazione
-    float hray[MAX_BIN][NEL];
-    float hray_inf[MAX_BIN][NEL]; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
+    HRay hray;
+    HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     PolarMap <float> dem; /*dem in coordinate azimut range*/
     float dtrs;// distanza temporale radiosondaggio
 
