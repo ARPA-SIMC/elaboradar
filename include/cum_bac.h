@@ -55,30 +55,6 @@ namespace cumbac {
 
 struct Site;
 
-/**
- *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
- *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
- *  @return 
- */
-struct HRay
-{
-    float* hray;
-    // distanza temporale radiosondaggio
-    float dtrs;
-
-    HRay();
-    ~HRay();
-
-    float* operator[](unsigned idx) { return hray + idx * NSCAN; }
-    const float* operator[](unsigned idx) const { return hray + idx * NSCAN; }
-
-    void load_hray(Assets& assets);
-    void load_hray_inf(Assets& assets);
-
-private:
-    void load_file(FILE* file);
-};
-
 template<typename T>
 struct PolarMap
 {
