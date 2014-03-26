@@ -152,12 +152,6 @@ int main (int argc, char **argv)
     file_type		=	  CL_opt.filetype;
     sito		= (char *)CL_opt.sito.c_str();
 
-//    nome_file = argv[1];
-
-//    if (sscanf(argv[2], "%d", &file_type) != 1)
-//        commandline_error(argv[0], "file_type must be a number");
-
-//    sito = argv[3];  //---- assegnazioni legate a argv[3]-- sito,  ambiente di lavoro, elevazioni
     setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
     startup_banner(&CL_opt);
