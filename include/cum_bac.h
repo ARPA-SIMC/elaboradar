@@ -62,15 +62,15 @@ struct Site;
  */
 struct HRay
 {
-    float hray[MAX_BIN][NSCAN];
+    float* hray;
     // distanza temporale radiosondaggio
     float dtrs;
 
     HRay();
+    ~HRay();
 
-    float* operator[](unsigned idx) { return hray[idx]; }
-    const float* operator[](unsigned idx) const { return hray[idx]; }
-
+    float* operator[](unsigned idx) { return hray + idx * NSCAN; }
+    const float* operator[](unsigned idx) const { return hray + idx * NSCAN; }
 
     void load_hray(Assets& assets);
     void load_hray_inf(Assets& assets);
