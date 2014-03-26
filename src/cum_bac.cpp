@@ -62,55 +62,37 @@ extern "C" {
 #define DTOR  M_PI/180. /* esternalizzo?*/ //fattore conversione gradi-radianti
 #define CONV_RAD 360./4096.*DTOR  // fattore conversione unità angolare radar-radianti
 
-// parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
-#define NSCAN 6
-
 namespace cumbac {
 
-/**
- *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
- *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
- *  @return 
- */
-struct HRay
+HRay::HRay()
 {
-    float hray[MAX_BIN][NEL];
-    // distanza temporale radiosondaggio
-    float dtrs;
+    memset(hray, 0, sizeof(hray));
+}
 
-    HRay()
-    {
-        memset(hray, 0, sizeof(hray));
-    }
+void HRay::load_hray(Assets& assets)
+{
+    // quota centro fascio in funzione della distanza e elevazione
+    load_file(assets.open_file_hray());
+}
+void HRay::load_hray_inf(Assets& assets)
+{
+    // quota limite inferiore fascio in funzione della distanza e elevazione
+    load_file(assets.open_file_hray_inf());
+}
 
-    float* operator[](unsigned idx) { return hray[idx]; }
-    const float* operator[](unsigned idx) const { return hray[idx]; }
+void HRay::load_file(FILE* file)
+{
+    /*--------------------------
+      Leggo quota centro fascio
+      --------------------------*/
+    fscanf(file,"%f ",&dtrs);
+    for(int i=0; i<MAX_BIN; i++){
+        for(int j=0; j<NSCAN;j++)
+            fscanf(file,"%f ",&hray[i][j]);
+    }
+    fclose(file);
+}
 
-    void load_hray(Assets& assets)
-    {
-        // quota centro fascio in funzione della distanza e elevazione
-        load_file(assets.open_file_hray());
-    }
-    void load_hray_inf(Assets& assets)
-    {
-        // quota limite inferiore fascio in funzione della distanza e elevazione
-        load_file(assets.open_file_hray_inf());
-    }
-
-private:
-    void load_file(FILE* file)
-    {
-        /*--------------------------
-          Leggo quota centro fascio
-          --------------------------*/
-        fscanf(file,"%f ",&dtrs);
-        for(int i=0; i<MAX_BIN; i++){
-            for(int j=0; j<NSCAN;j++)
-                fscanf(file,"%f ",&hray[i][j]);
-        }
-        fclose(file);
-    }
-};
 
 CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
@@ -140,10 +122,6 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     memset(stat_anap,0,sizeof(stat_anap));
     memset(stat_bloc,0,sizeof(stat_bloc));
     memset(stat_elev,0,sizeof(stat_elev));
-
-    memset(hray, 0, sizeof(hray));
-    memset(hray_inf, 0, sizeof(hray_inf));
-
 
     //-----  FINE INIZIALIZZAZIONI---------//
 }
@@ -788,28 +766,12 @@ void CUM_BAC::leggo_first_level()
 
 void CUM_BAC::leggo_hray( )
 {
-    FILE *file;
-
     /*--------------------------
       Leggo quota centro fascio
       --------------------------*/
-    file = assets.open_file_hray();
-    fscanf(file,"%f ",&dtrs);
-    for(int i=0; i<MAX_BIN; i++){
-        for(int j=0; j<NSCAN;j++)
-            fscanf(file,"%f ",&hray[i][j]);
-    }
-    fclose(file);
-
-    file = assets.open_file_hray_inf();
-    fscanf(file,"%f ",&dtrs);
-    for(int i=0; i<MAX_BIN; i++){
-        for(int j=0; j<NSCAN;j++)
-            fscanf(file,"%f ",&hray_inf[i][j]);
-    }
-    fclose(file);
-
-    return  ;
+    hray.load_hray(assets);
+    hray_inf.load_hray_inf(assets);
+    dtrs = hray_inf.dtrs;
 }
 
 void CUM_BAC::leggo_dem()
