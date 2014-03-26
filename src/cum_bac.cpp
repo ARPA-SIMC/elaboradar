@@ -778,7 +778,6 @@ void CUM_BAC::leggo_hray( )
       Leggo quota centro fascio
       --------------------------*/
     hray_inf.load_hray_inf(assets);
-    dtrs = hray_inf.dtrs;
 }
 
 void CUM_BAC::leggo_dem()
@@ -1004,7 +1003,7 @@ void CUM_BAC::caratterizzo_volume()
 
                     //-----------calcolo la qualità----------
                     // FIXME: qui tronca: meglio un round?
-                    qual->set(l, i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,dtrs,dh,dhst,PIA)*100));
+                    qual->set(l, i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,hray_inf.dtrs,dh,dhst,PIA)*100));
                 }
 
                 if (qual->get(l, i, k) ==0) qual->set(l, i, k, 1);//????a che serve???

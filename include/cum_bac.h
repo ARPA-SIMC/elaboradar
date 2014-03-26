@@ -241,7 +241,6 @@ public:
     // quota centro fascio in funzione della distanza e elevazione
     HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     PolarMap <float> dem; /*dem in coordinate azimut range*/
-    float dtrs;// distanza temporale radiosondaggio
 
     // attenuazione in formato cartesiano max risoluzione
     PolarMap <unsigned char> att_cart; /* matrice azimut-range di attenuazione */
