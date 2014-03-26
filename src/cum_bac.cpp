@@ -3060,15 +3060,13 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
-    : cum_bac(cum_bac), flag_vpr(0)
+    : cum_bac(cum_bac), stratiform(MAX_BIN), corr_polar(MAX_BIN), neve(MAX_BIN), flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
     MyMAX_BIN=cum_bac.MyMAX_BIN;
     ncv=0;np=0;
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
-    memset(stratiform,0,sizeof(stratiform));
-    memset(corr_polar, 0, sizeof(corr_polar));
 
     for (int i=0; i<NMAXLAYER; i++)
       vpr[i]=NODATAVPR;
@@ -3082,8 +3080,6 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
 
     flag_vpr = new VolumeInfo<unsigned char>(cum_bac.volume);
     flag_vpr->init(0);
-
-    memset(neve,0,sizeof(neve));
 
     if (cum_bac.do_vpr)
         t_ground = cum_bac.assets.read_t_ground();
