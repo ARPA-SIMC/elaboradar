@@ -53,6 +53,47 @@ namespace cumbac {
 struct Site;
 
 template<typename T>
+struct PolarMap
+{
+    const unsigned beam_size;
+    const unsigned beam_count;
+    T* data;
+
+    PolarMap(const PolarMap& pm)
+        : beam_size(pm.beam_size), beam_count(pm.beam_count), data(new T[beam_size * beam_count])
+
+    {
+        for (unsigned i = 0; i < beam_size * beam_count; ++i)
+            data[i] = pm.data[i];
+    }
+
+    PolarMap(unsigned beam_size=512, unsigned beam_count=400)
+        : beam_size(beam_size), beam_count(beam_count), data(new T[beam_size * beam_count])
+    {
+        for (unsigned az = 0; az < beam_count; ++az)
+            for (unsigned i = 0; i < beam_size; ++i)
+                data[az * beam_size + i] = 0;
+    }
+
+    ~PolarMap()
+    {
+        delete[] data;
+    }
+
+    T* operator[](unsigned az) { return data + az * beam_size; }
+    const T* operator[](unsigned az) const { return data + az * beam_size; }
+
+    PolarMap& operator=(const PolarMap& pm)
+    {
+        if (beam_size != pm.beam_size or beam_count != pm.beam_count)
+            throw std::runtime_error("PolarMap size mismatch");
+        for (unsigned i = 0; i < beam_size * beam_count; ++i)
+            data[i] = pm.data[i];
+        return *this;
+    }
+};
+
+template<typename T>
 struct Image
 {
     const unsigned SX;
@@ -162,11 +203,11 @@ public:
     int stat_elev[DIM1_ST][DIM2_ST]; /* statistica cambio elevazione rispetto mappa statica  */
 
     //matrici first_level e first level da beam blocking e valore beam blocking
-    unsigned char first_level[NUM_AZ_X_PPI][MAX_BIN]; //mappa dinamica complessiva
-    unsigned char first_level_static[NUM_AZ_X_PPI][MAX_BIN];//mappa statica
+    PolarMap<unsigned char> first_level; //mappa dinamica complessiva
+    PolarMap<unsigned char> first_level_static;//mappa statica
 
-    unsigned char bb_first_level[NUM_AZ_X_PPI][MAX_BIN];  /* mappa di elevazioni da beam blocking (input)*/
-    unsigned char beam_blocking [NUM_AZ_X_PPI][MAX_BIN];   /* mappa di beam blocking (input)*/
+    PolarMap<unsigned char> bb_first_level;  /* mappa di elevazioni da beam blocking (input)*/
+    PolarMap<unsigned char> beam_blocking;   /* mappa di beam blocking (input)*/
 
     //variabili legate a propagazione e beam blocking, da prog_bb
     // quota centro fascio in funzione della distanza e elevazione
