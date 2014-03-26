@@ -76,17 +76,8 @@ struct HRay
     // distanza temporale radiosondaggio
     float dtrs;
 
-    HRay()
-        : hray(new float[MAX_BIN * NSCAN])
-    {
-        // float* hray[MAX_BIN][NSCAN];
-        memset(hray, 0, MAX_BIN * NSCAN * sizeof(float));
-    }
-
-    ~HRay()
-    {
-        delete[] hray;
-    }
+    HRay() : hray(0) { }
+    ~HRay() { if (hray) delete[] hray; }
 
     float* operator[](unsigned idx) { return hray + idx * NSCAN; }
     const float* operator[](unsigned idx) const { return hray + idx * NSCAN; }
@@ -106,6 +97,13 @@ struct HRay
 private:
     void load_file(FILE* file)
     {
+        if (hray)
+        {
+            delete[] hray;
+            hray = 0;
+        }
+        hray = new float[MAX_BIN * NSCAN];
+
         /*--------------------------
           Leggo quota centro fascio
           --------------------------*/
