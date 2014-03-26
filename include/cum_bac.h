@@ -239,7 +239,6 @@ public:
 
     //variabili legate a propagazione e beam blocking, da prog_bb
     // quota centro fascio in funzione della distanza e elevazione
-    HRay hray;
     HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     PolarMap <float> dem; /*dem in coordinate azimut range*/
     float dtrs;// distanza temporale radiosondaggio
