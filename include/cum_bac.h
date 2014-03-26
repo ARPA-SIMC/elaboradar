@@ -21,16 +21,6 @@
 #include "assets.h"
 #include "volume.h"
 #include <stdexcept>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-// libreria radar
-#include <func_SP20read.h>
-#ifdef __cplusplus
-}
-#endif
-
 #include <cmath>
 
 //algoritmo
@@ -38,6 +28,8 @@ extern "C" {
 #include <vpr_par.h>
 #include <geo_par.h>
 
+
+#define MAX_BIN 512
 
 // Toglie NEL come costante
 #ifdef NEL
