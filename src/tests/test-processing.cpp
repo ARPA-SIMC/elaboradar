@@ -22,6 +22,12 @@ namespace {
 template<typename T>
 struct ArrayStats : public cumbac::ArrayStats<T>
 {
+    void fill(const T* arr, unsigned size)
+    {
+        for (unsigned i = 0; i < size; ++i)
+            this->count_sample(arr[i], size);
+    }
+
     void fill(const PolarMap<T>& arr)
     {
         for (int i = 0; i < arr.beam_count * arr.beam_size; ++i)
@@ -673,26 +679,28 @@ void to::test<7>()
     wassert(actual((unsigned)beam_blocking_stats.max) == 51);
     wassert(actual((unsigned)(beam_blocking_stats.avg * 100)) == 1350);
 
-    ArrayStats<int> stat_anap_stats;
-    stat_anap_stats.fill2(cb->stat_anap);
+    unsigned stats_size = cb->grid_stats.size_az * cb->grid_stats.size_beam;
+
+    ArrayStats<unsigned> stat_anap_stats;
+    stat_anap_stats.fill(cb->grid_stats.stat_anap, stats_size);
     wassert(actual((unsigned)stat_anap_stats.first).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
     wassert(actual((unsigned)stat_anap_stats.max) == 75);
 
-    ArrayStats<int> stat_anap_tot_stats;
-    stat_anap_tot_stats.fill2(cb->stat_anap_tot);
+    ArrayStats<unsigned> stat_anap_tot_stats;
+    stat_anap_tot_stats.fill(cb->grid_stats.stat_tot, stats_size);
     wassert(actual((unsigned)stat_anap_tot_stats.first).isfalse());
     wassert(actual((unsigned)stat_anap_tot_stats.min) ==  350);
     wassert(actual((unsigned)stat_anap_tot_stats.max) == 1000);
 
-    ArrayStats<long int> stat_bloc_stats;
-    stat_bloc_stats.fill2(cb->stat_bloc);
+    ArrayStats<unsigned> stat_bloc_stats;
+    stat_bloc_stats.fill(cb->grid_stats.stat_bloc, stats_size);
     wassert(actual((unsigned)stat_bloc_stats.first).isfalse());
     wassert(actual((unsigned)stat_bloc_stats.min) == 0);
     wassert(actual((unsigned)stat_bloc_stats.max) == 0);
 
-    ArrayStats<int> stat_elev_stats;
-    stat_elev_stats.fill2(cb->stat_elev);
+    ArrayStats<unsigned> stat_elev_stats;
+    stat_elev_stats.fill(cb->grid_stats.stat_elev, stats_size);
     wassert(actual((unsigned)stat_elev_stats.first).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
     wassert(actual((unsigned)stat_elev_stats.max) == 75);
