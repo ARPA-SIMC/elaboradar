@@ -68,7 +68,7 @@ public:
      * The result is always a valid file: it throws an exception if something
      * goes wrong.
      */
-    FILE* open_file_first_level();
+    std::string fname_first_level();
 
     /**
      * Open the first level elevation BB el file.
@@ -76,7 +76,7 @@ public:
      * The result is always a valid file: it throws an exception if something
      * goes wrong.
      */
-    FILE* open_file_first_level_bb_el();
+    std::string fname_first_level_bb_el();
 
     /**
      * Open the first level elevation BB bloc file.
@@ -84,7 +84,7 @@ public:
      * The result is always a valid file: it throws an exception if something
      * goes wrong.
      */
-    FILE* open_file_first_level_bb_bloc();
+    std::string fname_first_level_bb_bloc();
 
     /**
      * Open the hray file.
