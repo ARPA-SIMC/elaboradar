@@ -20,6 +20,7 @@
 #include "logging.h"
 #include "assets.h"
 #include "volume.h"
+#include "matrix.h"
 #include <stdexcept>
 #include <cmath>
 
@@ -36,98 +37,19 @@ namespace cumbac {
 struct Site;
 
 template<typename T>
-struct PolarMap
+struct PolarMap : public Matrix2D<T>
 {
-    const unsigned beam_size;
-    const unsigned beam_count;
-    T* data;
-
-    PolarMap(const PolarMap& pm)
-        : beam_size(pm.beam_size), beam_count(pm.beam_count), data(new T[beam_size * beam_count])
-
-    {
-        for (unsigned i = 0; i < beam_size * beam_count; ++i)
-            data[i] = pm.data[i];
-    }
-
+    PolarMap(const PolarMap& pm) : Matrix2D<T>(pm) {}
     PolarMap(unsigned beam_size=512, unsigned beam_count=400)
-        : beam_size(beam_size), beam_count(beam_count), data(new T[beam_size * beam_count])
-    {
-        for (unsigned az = 0; az < beam_count; ++az)
-            for (unsigned i = 0; i < beam_size; ++i)
-                data[az * beam_size + i] = 0;
-    }
-
-    ~PolarMap()
-    {
-        delete[] data;
-    }
-
-    T* operator[](unsigned az) { return data + az * beam_size; }
-    const T* operator[](unsigned az) const { return data + az * beam_size; }
-
-    PolarMap& operator=(const PolarMap& pm)
-    {
-        if (beam_size != pm.beam_size or beam_count != pm.beam_count)
-            throw std::runtime_error("PolarMap size mismatch");
-        for (unsigned i = 0; i < beam_size * beam_count; ++i)
-            data[i] = pm.data[i];
-        return *this;
-    }
-
-    /// Load data from the file and close the file descriptor
-    void load_raw(const std::string& fname, const char* desc);
+        : Matrix2D<T>(beam_size, beam_count) {}
 };
 
 template<typename T>
-struct Image
+struct Image : public Matrix2D<T>
 {
-    const unsigned SX;
-    const unsigned SY;
-    T* data;
-
     Image(unsigned sx, unsigned sy=0)
-        : SX(sx), SY(sy == 0 ? sx : sy), data(new T[SX*SY])
-    {
-        for (unsigned y = 0; y < SY; ++y)
-            for (unsigned x = 0; x < SX; ++x)
-                data[y*SX+x] = 0;
-    }
-    ~Image()
-    {
-        delete[] data;
-    }
+        : Matrix2D<T>(sx, sy ? sy : sx) {}
 
-    T* operator[](unsigned y) { return data + y * SX; }
-    const T* operator[](unsigned y) const { return data + y * SX; }
-
-    size_t size() const { return SX * SY; }
-
-    T min() const
-    {
-        T res = data[0];
-        for (unsigned i = 0; i < SX * SY; ++i)
-            if (data[i] < res)
-                res = data[i];
-        return res;
-    }
-
-    T max() const
-    {
-        T res = data[0];
-        for (unsigned i = 0; i < SX * SY; ++i)
-            if (data[i] > res)
-                res = data[i];
-        return res;
-    }
-
-    T avg() const
-    {
-        double res = 0;
-        for (unsigned i = 0; i < SX * SY; ++i)
-            res += (double)data[i] / (double)(SX * SY);
-        return (T)round(res);
-    }
 };
 
 // Matrici per statistiche

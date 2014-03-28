@@ -141,41 +141,6 @@ void GridStats::init(const Volume& volume)
         stat_anap[i] = stat_tot[i] = stat_bloc[i] = stat_elev[i] = 0;
 }
 
-template<typename T>
-void PolarMap<T>::load_raw(const std::string& fname, const char* desc)
-{
-    LOG_CATEGORY("radar.io");
-    LOG_INFO("Opening %s %s", desc, fname.c_str());
-    FILE* in = fopen_checked(fname.c_str(), "rb", desc);
-
-    // Read the file size
-    fseek(in, 0,SEEK_END);
-    long size = ftell(in);
-    rewind(in);
-
-    // Check that the file size is consistent with what we want
-    if (size != beam_size * beam_count * sizeof(T))
-    {
-        LOG_ERROR("Il file %s è %ld byte ma dovrebbe invece essere %ld byte\n",
-                beam_size * beam_count * sizeof(T));
-        throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
-    }
-    LOG_INFO ("DIMENSIONE MAPPA STATICA %u %u", beam_count, beam_size);
-
-    for (unsigned i = 0; i < beam_count; ++i)
-        if (fread(data + i * beam_size, beam_size, 1, in) != 1)
-        {
-            std::string errmsg("Error reading ");
-            errmsg += fname;
-            errmsg += ": ";
-            errmsg += strerror(errno);
-            fclose(in);
-            throw std::runtime_error(errmsg);
-        }
-
-    fclose(in);
-}
-
 CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
@@ -778,7 +743,7 @@ void CUM_BAC::leggo_first_level()
     if (do_readStaticMap)
     {
         // Leggo mappa statica
-        first_level_static.load_raw(assets.fname_first_level(), "mappa statica");
+        assets.load_first_level(first_level_static);
 
         // copio mappa statica su matrice first_level
         first_level = first_level_static;
@@ -788,15 +753,15 @@ void CUM_BAC::leggo_first_level()
     if (do_beamblocking)
     {
         // Leggo file elevazioni per BB
-        bb_first_level.load_raw(assets.fname_first_level_bb_el(), "elev BB");
+        assets.load_first_level_bb_el(bb_first_level);
 
         // Leggo file valore di BB
-        beam_blocking.load_raw(assets.fname_first_level_bb_bloc(), "elev BB");
+        assets.load_first_level_bb_bloc(beam_blocking);
 
         /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
            altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
-        for(unsigned i=0; i < first_level.beam_count; ++i)
-            for (unsigned j=0; j < first_level.beam_size; ++j)
+        for(unsigned i=0; i < first_level.SY; ++i)
+            for (unsigned j=0; j < first_level.SX; ++j)
             {
                 if (do_bloccorr)
                 {

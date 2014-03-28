@@ -9,6 +9,8 @@
 
 namespace cumbac {
 
+template<typename T> struct Matrix2D;
+
 struct Site;
 
 /**
@@ -68,7 +70,7 @@ public:
      * The result is always a valid file: it throws an exception if something
      * goes wrong.
      */
-    std::string fname_first_level();
+    void load_first_level(Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the first level elevation BB el file.
@@ -76,7 +78,7 @@ public:
      * The result is always a valid file: it throws an exception if something
      * goes wrong.
      */
-    std::string fname_first_level_bb_el();
+    void load_first_level_bb_el(Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the first level elevation BB bloc file.
@@ -84,7 +86,7 @@ public:
      * The result is always a valid file: it throws an exception if something
      * goes wrong.
      */
-    std::string fname_first_level_bb_bloc();
+    void load_first_level_bb_bloc(Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the hray file.
@@ -136,6 +138,9 @@ public:
 protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
+
+    template<typename T>
+    void load_raw(const std::string& fname, const char* desc, Matrix2D<T>& matrix);
 };
 
 }

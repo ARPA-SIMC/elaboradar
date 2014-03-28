@@ -28,10 +28,10 @@ struct ArrayStats : public cumbac::ArrayStats<T>
             this->count_sample(arr[i], size);
     }
 
-    void fill(const PolarMap<T>& arr)
+    void fill(const Matrix2D<T>& arr)
     {
-        for (int i = 0; i < arr.beam_count * arr.beam_size; ++i)
-            this->count_sample(arr.data[i], arr.beam_count * arr.beam_size);
+        for (int i = 0; i < arr.size(); ++i)
+            this->count_sample(arr.data[i], arr.size());
     }
 
     template<int A, int B>

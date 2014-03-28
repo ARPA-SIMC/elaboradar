@@ -47,9 +47,8 @@ void to::test<2>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     Assets assets;
     assets.configure("GAT", 1389108600);
-    FILE* in = fopen_checked(assets.fname_first_level().c_str(), "rb", "first level");
-    wassert(actual(in != 0).istrue());
-    fclose(in);
+    Matrix2D<unsigned char> m(512, 400);
+    assets.load_first_level(m);
 }
 
 template<> template<>
@@ -58,9 +57,8 @@ void to::test<3>()
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     Assets assets;
     assets.configure("GAT", 1389108600);
-    FILE* in = fopen_checked(assets.fname_first_level_bb_el().c_str(), "rb", "elev BB");
-    wassert(actual(in != 0).istrue());
-    fclose(in);
+    Matrix2D<unsigned char> m(512, 400);
+    assets.load_first_level_bb_el(m);
 }
 
 template<> template<>
@@ -69,9 +67,8 @@ void to::test<4>()
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
     Assets assets;
     assets.configure("GAT", 1389108600);
-    FILE* in = fopen_checked(assets.fname_first_level_bb_bloc().c_str(), "rb", "elev BB");
-    wassert(actual(in != 0).istrue());
-    fclose(in);
+    Matrix2D<unsigned char> m(512, 400);
+    assets.load_first_level_bb_bloc(m);
 }
 
 template<> template<>
@@ -115,8 +112,8 @@ void to::test<9>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_PRI-EST_2011", 1);
     Assets assets;
     assets.configure("GAT", 1389108600);
-    FILE* in = fopen_checked(assets.fname_first_level().c_str(), "rb", "mappa statica");
-    wassert(actual(in != 0).istrue());
-    fclose(in);
+    Matrix2D<unsigned char> m(1024, 400);
+    assets.load_first_level(m);
 }
+
 }

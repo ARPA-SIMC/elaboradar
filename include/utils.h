@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <string>
+#include "matrix.h"
 
 /**
  * Open a file taking its name from a given env variable.
