@@ -18,29 +18,6 @@
 /*----------------------------------------------------------------------------*/
 // DEFINIZIONI PREPROCESSORE NB: VPR E CLASS IMPLICANO QUALITY ,
 
-#if 0
-// TODO: questi non sembrano piú servire: li cancelliamo?
-
-//Definizioni geometriche
-#define AMPLITUDE 0.9 /* esternalizzo?*/ // ampiezza fascio radar
-#define DTOR  M_PI/180. /* esternalizzo?*/ //fattore conversione gradi-radianti
-#define CONV_RAD 360./4096.*DTOR  // fattore conversione unità angolare radar-radianti
-
-//Dimensioni massime range polare
-#define MAX_BIN 512
-#define MAX_DIM 512
-
-// Fattori moltiplicativi per passare da unità azimut / unità elevazione a gradi
-#define FATT_MOLT_EL ((double) 360./(double)4096.)
-#define FATT_MOLT_AZ ((double) 360./(double)4096.)
-
-// Soglie algoritmi
-#define MISSING 0 /*valore mancante*/
-
-// parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
-#define NSCAN 6
-#endif
-
 /*----------------------------------------------------------------------------*/
 /*  DICHIARATIVE GLOBALI                              */
 /*----------------------------------------------------------------------------*/

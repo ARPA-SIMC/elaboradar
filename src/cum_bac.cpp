@@ -1101,6 +1101,7 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
 void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
+    const unsigned int NEL = cum_bac.volume.NEL;
     float a;// raggio terra, non so perchè lo rendo variabile
     float range[MyMAX_BIN];
     float zz[MyMAX_BIN][NEL];
