@@ -219,10 +219,10 @@ void to::test<4>()
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
-    cb->do_declutter = true;
+    cb->do_declutter =false ;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = false;
+    cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
@@ -244,20 +244,20 @@ void to::test<4>()
     wassert(actual((unsigned)stats_qual.first).isfalse());
     //wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
     wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 141553);
+    wassert(actual((unsigned)stats_qual.count_ones) == 141695);
     wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5508);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5507);
     ArrayStats<unsigned char> stats_flag_vpr;
     cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 1185600);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143635);
+    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1041965);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 87);
     ArrayStats<unsigned char> stats_top;
     stats_top.fill(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 204764);
+    wassert(actual((unsigned)stats_top.count_zeros) == 204765);
     wassert(actual((unsigned)stats_top.count_ones) == 0);
     wassert(actual((unsigned)stats_top.min) == 0);
     wassert(actual((unsigned)stats_top.max) == 15);
@@ -276,17 +276,17 @@ void to::test<4>()
     wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 30);
     wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
     wassert(actual((unsigned)cb->quota_cart.min()) == 0);
-    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 5732);
     wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
-    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 1);
     wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
     wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 9);
     wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
     wassert(actual((unsigned)cb->elev_fin_xy.min()) == 0);
     wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
-    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
+    wassert(actual((unsigned)cb->elev_fin_xy.max()) == 4);
     wassert(actual((unsigned)cb->neve_cart.min()) == 0);
-    wassert(actual((unsigned)cb->neve_cart.max()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 1);
     wassert(actual((unsigned)cb->corr_cart.min()) == 0);
     wassert(actual((unsigned)cb->corr_cart.max()) == 0);
     wassert(actual((unsigned)cb->conv_cart.min()) == 0);
@@ -300,9 +300,9 @@ void to::test<4>()
     wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 30);
     wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 98);
     wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
-    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 185);
     wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
-    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 1);
     wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
     wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
@@ -313,7 +313,7 @@ void to::test<4>()
     wassert(actual((unsigned)cb->top_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->top_1x1.max()) == 15);
     wassert(actual((unsigned)cb->neve_1x1.min()) == 0);
-    wassert(actual((unsigned)cb->neve_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 1);
     wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
     wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
     wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
@@ -631,10 +631,10 @@ void to::test<7>()
     CUM_BAC* cb = new CUM_BAC("GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
-    cb->do_declutter = true;
+    cb->do_declutter = false;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = false;
+    cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
@@ -650,20 +650,20 @@ void to::test<7>()
     wassert(actual(stats.count_zeros[2]) == 0);
     wassert(actual(stats.count_zeros[3]) == 0);
     wassert(actual(stats.count_zeros[4]) == 0);
-    wassert(actual(stats.count_ones[0]) ==  61406);
-    wassert(actual(stats.count_ones[1]) ==  72916);
-    wassert(actual(stats.count_ones[2]) ==  96948);
-    wassert(actual(stats.count_ones[3]) == 110168);
+    wassert(actual(stats.count_ones[0]) ==  62046);
+    wassert(actual(stats.count_ones[1]) ==  73001);
+    wassert(actual(stats.count_ones[2]) ==  97019);
+    wassert(actual(stats.count_ones[3]) == 110179);
     wassert(actual(stats.count_ones[4]) == 119120);
-    wassert(actual(stats.count_others[0]) == 136194);
-    wassert(actual(stats.count_others[1]) == 124684);
-    wassert(actual(stats.count_others[2]) == 100652);
-    wassert(actual(stats.count_others[3]) ==  87432);
+    wassert(actual(stats.count_others[0]) == 135554);
+    wassert(actual(stats.count_others[1]) == 124599);
+    wassert(actual(stats.count_others[2]) == 100581);
+    wassert(actual(stats.count_others[3]) ==  87421);
     wassert(actual(stats.count_others[4]) ==  78480);
-    wassert(actual(stats.sum_others[0]) == 18104214);
-    wassert(actual(stats.sum_others[1]) == 16004410);
-    wassert(actual(stats.sum_others[2]) == 12562044);
-    wassert(actual(stats.sum_others[3]) == 10553980);
+    wassert(actual(stats.sum_others[0]) == 18034952);
+    wassert(actual(stats.sum_others[1]) == 15995519);
+    wassert(actual(stats.sum_others[2]) == 12555858);
+    wassert(actual(stats.sum_others[3]) == 10553141);
     wassert(actual(stats.sum_others[4]) ==  9141377);
 
     ArrayStats<unsigned char> beam_blocking_stats;
@@ -671,19 +671,19 @@ void to::test<7>()
     wassert(actual((unsigned)beam_blocking_stats.first).isfalse());
     wassert(actual((unsigned)beam_blocking_stats.min) == 0);
     wassert(actual((unsigned)beam_blocking_stats.max) == 51);
-    wassert(actual((unsigned)(beam_blocking_stats.avg * 100)) == 1364);
+    wassert(actual((unsigned)(beam_blocking_stats.avg * 100)) == 1350);
 
     ArrayStats<int> stat_anap_stats;
     stat_anap_stats.fill2(cb->stat_anap);
     wassert(actual((unsigned)stat_anap_stats.first).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
-    wassert(actual((unsigned)stat_anap_stats.max) == 0);
+    wassert(actual((unsigned)stat_anap_stats.max) == 75);
 
     ArrayStats<int> stat_anap_tot_stats;
     stat_anap_tot_stats.fill2(cb->stat_anap_tot);
     wassert(actual((unsigned)stat_anap_tot_stats.first).isfalse());
-    wassert(actual((unsigned)stat_anap_tot_stats.min) == 0);
-    wassert(actual((unsigned)stat_anap_tot_stats.max) == 0);
+    wassert(actual((unsigned)stat_anap_tot_stats.min) ==  350);
+    wassert(actual((unsigned)stat_anap_tot_stats.max) == 1000);
 
     ArrayStats<long int> stat_bloc_stats;
     stat_bloc_stats.fill2(cb->stat_bloc);
@@ -695,13 +695,13 @@ void to::test<7>()
     stat_elev_stats.fill2(cb->stat_elev);
     wassert(actual((unsigned)stat_elev_stats.first).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
-    wassert(actual((unsigned)stat_elev_stats.max) == 0);
+    wassert(actual((unsigned)stat_elev_stats.max) == 75);
 
     ArrayStats<unsigned char> dato_corrotto_stats;
     dato_corrotto_stats.fill(cb->dato_corrotto);
     wassert(actual((unsigned)dato_corrotto_stats.first).isfalse());
     wassert(actual((unsigned)dato_corrotto_stats.min) == 0);
-    wassert(actual((unsigned)dato_corrotto_stats.max) == 0);
+    wassert(actual((unsigned)dato_corrotto_stats.max) == 1);
 
 
     cb->caratterizzo_volume();
@@ -711,22 +711,22 @@ void to::test<7>()
     cb->qual->fill_array_stats(stats_qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
     wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 159263);
+    wassert(actual((unsigned)stats_qual.count_ones) == 159357);
     wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5762);
+    wassert(actual((unsigned)(stats_qual.avg * 100)) == 5761);
 
     ArrayStats<unsigned char> stats_flag_vpr;
     cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 2173600);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 0);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 0);
+    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 163267);
+    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 2010333);
+    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 92);
 
     ArrayStats<unsigned char> stats_top;
     stats_top.fill(cb->top);
     wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 112982);
+    wassert(actual((unsigned)stats_top.count_zeros) == 113073);
     wassert(actual((unsigned)stats_top.count_ones) == 159);
     wassert(actual((unsigned)stats_top.min) == 0);
     wassert(actual((unsigned)stats_top.max) == 76);
@@ -757,9 +757,9 @@ LOG_INFO("conv_cart    min avg max :%d %d %d",(unsigned)cb->conv_cart.min(),(uns
     wassert(actual((unsigned)cb->qual_Z_cart.avg()) == 25);
     wassert(actual((unsigned)cb->qual_Z_cart.max()) == 98);
     wassert(actual((unsigned)cb->quota_cart.min()) == 0);
-    wassert(actual((unsigned)cb->quota_cart.max()) == 0);
+    wassert(actual((unsigned)cb->quota_cart.max()) == 5825);
     wassert(actual((unsigned)cb->dato_corr_xy.min()) == 0);
-    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_xy.max()) == 1);
     wassert(actual((unsigned)cb->beam_blocking_xy.min()) == 0);
     wassert(actual((unsigned)cb->beam_blocking_xy.avg()) == 14);
     wassert(actual((unsigned)cb->beam_blocking_xy.max()) == 51);
@@ -767,7 +767,7 @@ LOG_INFO("conv_cart    min avg max :%d %d %d",(unsigned)cb->conv_cart.min(),(uns
     wassert(actual((unsigned)cb->elev_fin_xy.avg()) == 0);
     wassert(actual((unsigned)cb->elev_fin_xy.max()) == 3);
     wassert(actual((unsigned)cb->neve_cart.min()) == 0);
-    wassert(actual((unsigned)cb->neve_cart.max()) == 0);
+    wassert(actual((unsigned)cb->neve_cart.max()) == 1);
     wassert(actual((unsigned)cb->corr_cart.min()) == 0);
     wassert(actual((unsigned)cb->corr_cart.max()) == 0);
     wassert(actual((unsigned)cb->conv_cart.min()) == 0);
@@ -791,9 +791,9 @@ LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.min(),(uns
     wassert(actual((unsigned)cb->qual_Z_1x1.avg()) == 24);
     wassert(actual((unsigned)cb->qual_Z_1x1.max()) == 97);
     wassert(actual((unsigned)cb->quota_1x1.min()) == 128);
-    wassert(actual((unsigned)cb->quota_1x1.max()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.max()) == 186);
     wassert(actual((unsigned)cb->dato_corr_1x1.min()) == 0);
-    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.max()) == 1);
     wassert(actual((unsigned)cb->elev_fin_1x1.min()) == 0);
     wassert(actual((unsigned)cb->elev_fin_1x1.avg()) == 0);
     wassert(actual((unsigned)cb->elev_fin_1x1.max()) == 3);
@@ -804,7 +804,7 @@ LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.min(),(uns
     wassert(actual((unsigned)cb->top_1x1.avg()) == 3);
     wassert(actual((unsigned)cb->top_1x1.max()) == 42);
     wassert(actual((unsigned)cb->neve_1x1.min()) == 0);
-    wassert(actual((unsigned)cb->neve_1x1.max()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.max()) == 1);
     wassert(actual((unsigned)cb->corr_1x1.min()) == 0);
     wassert(actual((unsigned)cb->corr_1x1.max()) == 0);
     wassert(actual((unsigned)cb->conv_1x1.min()) == 0);
@@ -952,13 +952,12 @@ void to::test<10>()
 
     CUM_BAC* cb = new CUM_BAC("GAT",true,1024);
     cb->do_medium= true;
-    cb->do_declutter = true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
     cb->elabora_dato();
-
+LOG_INFO(" Valuto statistica");
     VolumeStats stats;
     cb->volume.compute_stats(stats);
     wassert(actual(stats.count_zeros[0]) == 0);

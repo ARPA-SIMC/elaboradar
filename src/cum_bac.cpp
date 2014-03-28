@@ -201,7 +201,8 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
     MP_coeff[1]=(unsigned char)(bMP*10);
 
     //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
-    calcolo_vpr = new CalcoloVPR(*this);
+    if (do_vpr) calcolo_vpr = new CalcoloVPR(*this);
+    LOG_INFO(" End setup_elaborazione");
 }
 
 bool CUM_BAC::test_file(int file_type)
@@ -468,16 +469,24 @@ void CUM_BAC::elabora_dato()
 
     // FIXME: togliere la definizione di l da qui e metterla nei for dove viene usata
     unsigned l;
+
     for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
     {
         bool flag_anap = false;
         unsigned cont_anap=0;// aggiunto per risolvere problema di uso con preci shallow
         for(unsigned k=0; k<volume.scan(0).beam_size; k++)
-            //------------- incremento statistica tot ------------------
         {
+            //------------- incremento statistica tot ------------------
             stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            const int el_inf = first_level[i][k];
+	    LOG_DEBUG(" i, k, Loc_el_inf: %d %d %d",i,k,first_level[i][k]);
+            int loc_el_inf =  first_level[i][k];
+	    while ( k >= volume.scan(loc_el_inf).beam_size) {
+		LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
+                loc_el_inf--;
+            }
+            //const int el_inf = first_level[i][k];
+            const int el_inf = loc_el_inf;
 
             if (do_quality)
                 volume.elev_fin[i][k]=el_inf;
@@ -485,19 +494,24 @@ void CUM_BAC::elabora_dato()
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
             const unsigned el_up = el_inf +1;
 
+            // ------------assegno bin_low e bin_high 
+   
+            const float bin_low  = volume.scan(el_inf).get_db(i, k);
+	    float bin_high;
+	    if (el_up >= volume.NEL ) {
+	        bin_high=BYTEtoDB(0);
+	    } else {               
+	        if ( k >= volume.scan(el_up).beam_size){
+	            bin_high=BYTEtoDB(0);
+                } else{
+                    bin_high = volume.scan(el_up).get_db(i, k);
+	        }
+	    }
             // ------------assegno  bin_low_low (cioè il valore sotto il bin base)
            const float bin_low_low = (el_inf > 0)
-                ? BYTEtoDB(volume.scan(el_inf-1).get_raw(i, k))
+                ? volume.scan(el_inf-1).get_db(i, k)
                 : fondo_scala+1;
 
-            // ------------assegno bin_low bin_high anche
-            const float bin_low  = BYTEtoDB(volume.scan(el_inf).get_raw(i, k));
-	    float bin_high;
-	    if ( k >= volume.scan(el_up).beam_size){
-	        bin_high=BYTEtoDB(0);
-            } else{
-                bin_high = BYTEtoDB(volume.scan(el_up).get_raw(i, k));
-	    }
             //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
             /* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
 
@@ -539,7 +553,7 @@ void CUM_BAC::elabora_dato()
 
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
                         for(l=0; l<el_up; l++) {
-                            volume.scan(l).set_raw(i, k, volume.scan(el_up).get_raw(i, k));
+                            volume.scan(l).set_db(i, k, volume.scan(el_up).get_db(i, k));
                         } //
 
                         //--------azzero beam_blocking ( ho cambiato elevazione, non ho disponible il bbeam blocking all' elev superiore)--------------
@@ -573,7 +587,7 @@ void CUM_BAC::elabora_dato()
 // 20140128 - errore nel limite superiore ciclo
 // for(l=0; l<=el_up; l++){
                         for(l=0; l<el_inf; l++){
-                            volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k)); // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
+                            volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k)); // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 
                         }
                         if (do_quality)
@@ -595,7 +609,7 @@ void CUM_BAC::elabora_dato()
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
                         for(l=0; l<el_up; l++){
            //                 volume.scan(l).set_raw(i, k, 1);
-                            volume.scan(l).set_raw(i, k, volume.scan(el_up).get_raw(i, k));  //ALTERN
+                            volume.scan(l).set_db(i, k, volume.scan(el_up).get_db(i, k));  //ALTERN
                         }
                         //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
                         flag_anap = true;
@@ -616,7 +630,7 @@ void CUM_BAC::elabora_dato()
                     {
                         for(l=0; l<=el_inf; l++)
                         {
-                            volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
+                            volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k));
                             if (do_beamblocking && do_bloccorr)
                             {
                                 volume.scan(l).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
@@ -645,7 +659,7 @@ void CUM_BAC::elabora_dato()
                 for(l=0; l<el_up; l++)
                 {
                     if (volume.scan(l).beam_size > k)
-                        volume.scan(l).set_raw(i, k, volume.scan(el_up).get_raw(i, k));
+                        volume.scan(l).set_db(i, k, volume.scan(el_up).get_db(i, k));
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
                 if (do_quality)
@@ -674,7 +688,7 @@ void CUM_BAC::elabora_dato()
                 for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
                     if (volume.scan(l).beam_size > k)
-                        volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
+                        volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k));
                 }
 
                 if (do_quality)
@@ -722,12 +736,14 @@ void CUM_BAC::leggo_first_level()
 	rewind(file);
 	if (size%NUM_AZ_X_PPI != 0) throw std::runtime_error("Dimensione mappa statica non corretta - non multiplo di 400 ");
 	dim= size/NUM_AZ_X_PPI ;
+	LOG_INFO ("DIMENSIONE MAPPA STATICA %d %d",NUM_AZ_X_PPI,dim);
       }
       for(int i=0; i<NUM_AZ_X_PPI; i++)
          fread(&first_level_static[i][0],dim,1,file);
     // copio mappa statica su matrice first_level
       first_level = first_level_static;
       fclose(file);
+      LOG_INFO("Letta mappa statica");
     }
 
     if (do_beamblocking)
@@ -775,6 +791,7 @@ void CUM_BAC::leggo_first_level()
       -------------------------------*/
     if(do_medium){
         PolarMap<unsigned char> first_level_tmp(first_level);
+	LOG_INFO(" Dentro patch %d ",MyMAX_BIN);
         int k;
         for (int i=NUM_AZ_X_PPI; i<800; i++)
         {
@@ -785,6 +802,7 @@ void CUM_BAC::leggo_first_level()
                         first_level[i%NUM_AZ_X_PPI][j]=first_level_tmp[k%NUM_AZ_X_PPI][j];
             }
         }
+	LOG_INFO(" fine patch %d ",MyMAX_BIN);
     }
 }
 
