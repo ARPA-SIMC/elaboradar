@@ -243,6 +243,7 @@ double Volume::elevation_max() const
 
 void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
 {
+ LOG_CATEGORY("Volume");
     // dimensioni cella a seconda del tipo di acquisizione
     static const float size_cell_by_resolution[]={62.5,125.,250.,500.,1000.,2000.};
     //LOG_CATEGORY("radar.io");
@@ -339,6 +340,8 @@ void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
 
     fclose(sp20_in);
 
+    LOG_DEBUG ("Nel volume ci sono %d scan",scans.size());
+    for (int i=0; i<scans.size(); i++)  LOG_DEBUG (" Scan %2d - dimensione beam %5d",i, scans[i]->beam_size);
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
