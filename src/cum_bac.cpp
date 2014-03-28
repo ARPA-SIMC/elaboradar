@@ -36,12 +36,6 @@ extern "C" {
 #define MEDIUM_PULSE      3
 #define SHORT_212	  4
 
-//Definizioni per statistica anap
-#define STEP_STAT_ANAP_RANGE  40 /*dim range griglia per stat anap*/
-#define STEP_STAT_ANAP_AZ     25 /*dim azim griglia per stat anap*/
-#define N_MIN_BIN           500 /*--- numero minimo di celle presenti in un
-                  settore per la statistica            ---*/
-
 // Soglie algoritmi
 #define MAX_DIF_OR 30            /* differenzio limiti controllo anap      */
 #define MIN_VALUE_OR -10         /* a seconda che sia alla prima o success.*/
@@ -117,6 +111,34 @@ private:
 };
 }
 
+GridStats::GridStats()
+    : step_stat_az(25), step_stat_range(40), size_az(0), size_beam(0),
+      stat_anap(0), stat_tot(0), stat_bloc(0), stat_elev(0)
+{
+}
+
+GridStats::~GridStats()
+{
+    if (stat_anap) delete[] stat_anap;
+    if (stat_tot) delete[] stat_tot;
+    if (stat_bloc) delete[] stat_bloc;
+    if (stat_elev) delete[] stat_elev;
+}
+
+void GridStats::init(const Volume& volume)
+{
+    size_az = volume.scan(0).beam_count / step_stat_az;
+    size_beam = volume.scan(0).beam_size / step_stat_range;
+
+    stat_anap = new unsigned[size_az * size_beam];
+    stat_tot = new unsigned[size_az * size_beam];
+    stat_bloc = new unsigned[size_az * size_beam];
+    stat_elev = new unsigned[size_az * size_beam];
+
+    for (unsigned i = 0; i < size_az * size_beam; ++i)
+        stat_anap[i] = stat_tot[i] = stat_bloc[i] = stat_elev[i] = 0;
+}
+
 CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
@@ -139,15 +161,8 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
       cappi_cart(MyMAX_BIN*2), cappi_1x1(CART_DIM_ZLR)
 {
     logging_category = log4c_category_get("radar.cum_bac");
-
-
-    memset(stat_anap_tot,0,sizeof(stat_anap_tot));
-    memset(stat_anap,0,sizeof(stat_anap));
-    memset(stat_bloc,0,sizeof(stat_bloc));
-    memset(stat_elev,0,sizeof(stat_elev));
-
-    //-----  FINE INIZIALIZZAZIONI---------//
 }
+
 void CUM_BAC::StampoFlag(){
     std::cout<<" Flag do_medium       :"<< (this->do_medium?" true":" false")<<std::endl;
     std::cout<<" Flag do_clean        :"<< (this->do_clean?" true":" false")<<std::endl;  
@@ -176,6 +191,8 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
     LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
 
     assets.configure(site, volume.acq_date);
+
+    grid_stats.init(volume);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
@@ -477,12 +494,13 @@ void CUM_BAC::elabora_dato()
         for(unsigned k=0; k<volume.scan(0).beam_size; k++)
         {
             //------------- incremento statistica tot ------------------
-            stat_anap_tot[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
+            grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-	    LOG_DEBUG(" i, k, Loc_el_inf: %d %d %d",i,k,first_level[i][k]);
+            LOG_DEBUG(" i, k, Loc_el_inf: %d %d %d",i,k,first_level[i][k]);
             int loc_el_inf =  first_level[i][k];
-	    while ( k >= volume.scan(loc_el_inf).beam_size) {
-		LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
+            while ( k >= volume.scan(loc_el_inf).beam_size)
+            {
+                LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
                 loc_el_inf--;
             }
             //const int el_inf = first_level[i][k];
@@ -561,8 +579,8 @@ void CUM_BAC::elabora_dato()
                             beam_blocking[i][k]=0;/* beam blocking azzerato */
 
                         //--------------------incremento la statitica anaprop e di cambio elevazione-------------
-                        stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
-                        if (el_up > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++; //incremento la statistica cambio elevazione
+                        grid_stats.incr_anap(i, k);
+                        if (el_up > first_level_static[i][k]) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
 
                         //-------------------memorizzo dati di qualita '-------------
                         if (do_quality)
@@ -582,7 +600,7 @@ void CUM_BAC::elabora_dato()
                             volume.scan(el_inf).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
                             //volume.scan(el_inf).get_raw(i, k)=DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    volume.scan(l).get_raw(i, k)=volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
-                            stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k]; // incremento statistica beam blocking
+                            grid_stats.incr_bloc(i, k, beam_blocking[i][k]); // incremento statistica beam blocking
                         }
 // 20140128 - errore nel limite superiore ciclo
 // for(l=0; l<=el_up; l++){
@@ -595,7 +613,7 @@ void CUM_BAC::elabora_dato()
                             dato_corrotto[i][k]=ANAP_OK;/* matrice risultato test: no propagazione anomala*/
                             volume.elev_fin[i][k]=el_inf;
                         }
-                        if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
+                        if (el_inf > first_level_static[i][k]) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
 
                     }
                 }
@@ -614,13 +632,13 @@ void CUM_BAC::elabora_dato()
                         //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
                         flag_anap = true;
                         cont_anap=cont_anap+1;
-                        stat_anap[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
+                        grid_stats.incr_anap(i, k);
                         if (do_quality)
                         {
                             dato_corrotto[i][k]=ANAP_YES;/*matrice risultato test: propagazione anomala*/
                             volume.elev_fin[i][k]=el_up;
                         }
-                        if (el_up > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
+                        if (el_up > first_level_static[i][k]) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                         if (do_beamblocking)
                             beam_blocking[i][k]=0;
                     }
@@ -636,7 +654,7 @@ void CUM_BAC::elabora_dato()
                                 volume.scan(l).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
                                 //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.)));
                                 //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
-                                stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]= stat_bloc[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]+ beam_blocking[i][k];
+                                grid_stats.incr_bloc(i, k, beam_blocking[i][k]);
                             }
                         }
 
@@ -646,7 +664,7 @@ void CUM_BAC::elabora_dato()
                             volume.elev_fin[i][k]=el_inf;
                         }
 
-                        if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;//incremento la statistica cambio elevazione
+                        if (el_inf > first_level_static[i][k]) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                         flag_anap = false;
 
                     } /*endif test anaprop*/
@@ -697,7 +715,7 @@ void CUM_BAC::elabora_dato()
                     volume.elev_fin[i][k]=el_inf;
                 }
 
-                if (el_inf > first_level_static[i][k]) stat_elev[i/STEP_STAT_ANAP_AZ][k/STEP_STAT_ANAP_RANGE]++;
+                if (el_inf > first_level_static[i][k]) grid_stats.incr_elev(i, k);
             }
             /*-----------------------------------------------------------fine di tutti gli if-----------*/
             //-----finiti tutti i controlli assegno le varibili di qualita definitive: elevazione, quota calcolata sull'elevazione reale con propagazione standard , e quota relativa al suolo calcolata con elevazione nominale e propagazione da radiosondaggio.
@@ -836,6 +854,13 @@ float CUM_BAC::quota_f(float elevaz, int k) // quota funzione di elev(radianti) 
 
 void CUM_BAC::ScrivoStatistica()
 {
+    //Definizioni per statistica anap
+    static const int DIM1_ST = 16;
+    static const int DIM2_ST = 13;
+    /*--- numero minimo di celle presenti in un
+      settore per la statistica            ---*/
+    static const int N_MIN_BIN = 500;
+
     int az,ran;
     unsigned char statistica[DIM1_ST][DIM2_ST];
     unsigned char statistica_bl[DIM1_ST][DIM2_ST];
@@ -848,15 +873,11 @@ void CUM_BAC::ScrivoStatistica()
 
     for(az=0; az<DIM1_ST; az++)
         for(ran=0; ran<DIM2_ST; ran++)
-
-            if(stat_anap_tot[az][ran] >= N_MIN_BIN)
+            if (grid_stats.count(az, ran) >= N_MIN_BIN)
             {
-                statistica[az][ran] =
-                    (unsigned char)((stat_anap[az][ran]*100)/stat_anap_tot[az][ran]);
-                statistica_bl[az][ran] =
-                    (unsigned char)((stat_bloc[az][ran]*100)/stat_anap_tot[az][ran]);
-                statistica_el[az][ran] =
-                    (unsigned char)((stat_elev[az][ran]*100)/stat_anap_tot[az][ran]);
+                statistica[az][ran] = grid_stats.perc_anap(az, ran);
+                statistica_bl[az][ran] = grid_stats.perc_bloc(az, ran);
+                statistica_el[az][ran] = grid_stats.perc_elev(az, ran);
             }
 
     FILEFromEnv f_stat;

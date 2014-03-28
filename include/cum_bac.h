@@ -44,10 +44,6 @@ const unsigned int NEL = 5;
 const unsigned int NEL = 15;  // n0 elevazioni massimo
 #endif
 
-//Dimensioni matrici statistica
-#define DIM1_ST 16
-#define DIM2_ST 13/*Cambiata dimensione a 13 per cambio dimensione raggio radar*/
-
 // parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
 #define NSCAN 6
 
@@ -147,6 +143,64 @@ struct Image
     }
 };
 
+// Matrici per statistiche
+struct GridStats
+{
+    // dim azim griglia per stat anap
+    const unsigned step_stat_az;
+    // dim range griglia per stat anap
+    const unsigned step_stat_range;
+
+    // Number of cells in the azimut direction
+    unsigned size_az;
+    // Number of cells in the beam direction
+    unsigned size_beam;
+
+    // statistica anaprop
+    unsigned* stat_anap;
+    // contatore punti dentro ogni box per statistica
+    unsigned* stat_tot;
+    // statistica beam blocking
+    unsigned* stat_bloc;
+    // statistica cambio elevazione rispetto mappa statica
+    unsigned* stat_elev;
+
+    GridStats();
+    ~GridStats();
+
+    void init(const Volume& volume);
+
+    inline unsigned idx(unsigned az, unsigned beam) const
+    {
+        return az / step_stat_az * size_beam + beam / step_stat_range;
+    }
+
+    void incr_anap(unsigned az, unsigned beam) { stat_anap[idx(az, beam)]++; }
+    void incr_tot(unsigned az, unsigned beam) { stat_tot[idx(az, beam)]++; }
+    void incr_elev(unsigned az, unsigned beam) { stat_elev[idx(az, beam)]++; }
+    void incr_bloc(unsigned az, unsigned beam, unsigned amount) { stat_bloc[idx(az, beam)]++; }
+
+    unsigned count(unsigned az, unsigned beam) const
+    {
+        return stat_tot[idx(az, beam)];
+    }
+
+    unsigned char perc_anap(unsigned az, unsigned beam) const
+    {
+        return stat_anap[idx(az, beam)] * 100 / stat_tot[idx(az, beam)];
+    }
+
+    unsigned char perc_elev(unsigned az, unsigned beam) const
+    {
+        return stat_elev[idx(az, beam)] * 100 / stat_tot[idx(az, beam)];
+    }
+
+    unsigned char perc_bloc(unsigned az, unsigned beam) const
+    {
+        return stat_bloc[idx(az, beam)] * 100 / stat_tot[idx(az, beam)];
+    }
+};
+
 struct CalcoloVPR;
 
 class CUM_BAC
@@ -199,12 +253,7 @@ public:
     unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
     float aMP, bMP;   /*  coeff a e b relazione Z-R  */
 
-
-    //metrici per statistiche
-    int stat_anap[DIM1_ST][DIM2_ST]; /* statistica anaprop  */
-    int stat_anap_tot[DIM1_ST][DIM2_ST]; /* contatore punti dentro ogni box per statistica */
-    long int stat_bloc[DIM1_ST][DIM2_ST];   /* statistica beam blocking  */
-    int stat_elev[DIM1_ST][DIM2_ST]; /* statistica cambio elevazione rispetto mappa statica  */
+    GridStats grid_stats;
 
     //matrici first_level e first level da beam blocking e valore beam blocking
     PolarMap<unsigned char> first_level; //mappa dinamica complessiva
