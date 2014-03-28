@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "geo_par.h"
 #include "vpr_par.h"
+#include "matrix.h"
 #include "site.h"
 #include <cstring>
 #include <cstdlib>
@@ -49,22 +50,22 @@ FILE* Assets::open_file_dem()
     return fopen_checked(fname, "rt", "file dem");
 }
 
-string Assets::fname_first_level()
+void Assets::load_first_level(Matrix2D<unsigned char>& matrix)
 {
     const char* fname = getenv("FIRST_LEVEL_FILE");
     if (!fname)
         fname = conf_site->get_first_level_file_name(conf_month);
-    return fname;
+    load_raw(fname, "mappa statica", matrix);
 }
 
-string Assets::fname_first_level_bb_el()
+void Assets::load_first_level_bb_el(Matrix2D<unsigned char>& matrix)
 {
-    return fname_out_pp_bloc("mat_el.bin");
+    load_raw(fname_out_pp_bloc("mat_el.bin"), "elev BB", matrix);
 }
 
-string Assets::fname_first_level_bb_bloc()
+void Assets::load_first_level_bb_bloc(Matrix2D<unsigned char>& matrix)
 {
-    return fname_out_pp_bloc("mat_bloc.bin");
+    load_raw(fname_out_pp_bloc("mat_bloc.bin"), "elev BB", matrix);
 }
 
 FILE* Assets::open_file_hray()
@@ -196,6 +197,41 @@ H5::H5File Assets::get_devel_data_output() const
         outfile_devel_data = new H5::H5File(fname, H5F_ACC_TRUNC);
     }
     return *outfile_devel_data;
+}
+
+template<class T>
+void Assets::load_raw(const std::string& fname, const char* desc, Matrix2D<T>& matrix)
+{
+    LOG_CATEGORY("radar.io");
+    LOG_INFO("Opening %s %s", desc, fname.c_str());
+    FILE* in = fopen_checked(fname.c_str(), "rb", desc);
+
+    // Read the file size
+    fseek(in, 0,SEEK_END);
+    long fsize = ftell(in);
+    rewind(in);
+
+    // Check that the file size is consistent with what we want
+    if (fsize != matrix.size() * sizeof(T))
+    {
+        LOG_ERROR("Il file %s è %ld byte ma dovrebbe invece essere %ld byte\n",
+                fsize, matrix.size() * sizeof(T));
+        throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
+    }
+    LOG_INFO ("DIMENSIONE MAPPA STATICA %u %u", matrix.SY, matrix.SX);
+
+    for (unsigned i = 0; i < matrix.SY; ++i)
+        if (fread(matrix.data + i * matrix.SX, matrix.SX, 1, in) != 1)
+        {
+            std::string errmsg("Error reading ");
+            errmsg += fname;
+            errmsg += ": ";
+            errmsg += strerror(errno);
+            fclose(in);
+            throw std::runtime_error(errmsg);
+        }
+
+    fclose(in);
 }
 
 }
