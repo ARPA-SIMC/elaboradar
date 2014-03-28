@@ -743,27 +743,29 @@ void CUM_BAC::leggo_first_level()
     FILE *file;
 
     if(do_readStaticMap){
-    /*-------------------
-      Leggo mappa  statica
-      -------------------*/
-    // dimensioni matrice mappa statica ricavata da dimensione file 
-      int dim ;
-    //leggo mappa statica con dimensioni appena lette
-      file = assets.open_file_first_level();
-      {
-	fseek(file, 0,SEEK_END);
-      	int size = ftell (file);
-	rewind(file);
-	if (size%NUM_AZ_X_PPI != 0) throw std::runtime_error("Dimensione mappa statica non corretta - non multiplo di 400 ");
-	dim= size/NUM_AZ_X_PPI ;
-	LOG_INFO ("DIMENSIONE MAPPA STATICA %d %d",NUM_AZ_X_PPI,dim);
-      }
-      for(int i=0; i<NUM_AZ_X_PPI; i++)
-         fread(&first_level_static[i][0],dim,1,file);
-    // copio mappa statica su matrice first_level
-      first_level = first_level_static;
-      fclose(file);
-      LOG_INFO("Letta mappa statica");
+        /*-------------------
+          Leggo mappa  statica
+          -------------------*/
+        // dimensioni matrice mappa statica ricavata da dimensione file 
+        int dim ;
+        //leggo mappa statica con dimensioni appena lette
+        file = assets.open_file_first_level();
+        {
+            fseek(file, 0,SEEK_END);
+            int size = ftell (file);
+            rewind(file);
+            if (size%NUM_AZ_X_PPI != 0) throw std::runtime_error("Dimensione mappa statica non corretta - non multiplo di 400 ");
+            dim= size/NUM_AZ_X_PPI ;
+            LOG_INFO ("DIMENSIONE MAPPA STATICA %d %d",NUM_AZ_X_PPI,dim);
+            if (dim != MyMAX_BIN)
+                throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
+        }
+        for(int i=0; i<NUM_AZ_X_PPI; i++)
+            fread(&first_level_static[i][0],dim,1,file);
+        // copio mappa statica su matrice first_level
+        first_level = first_level_static;
+        fclose(file);
+        LOG_INFO("Letta mappa statica");
     }
 
     if (do_beamblocking)
