@@ -18,6 +18,22 @@ struct H5File;
 namespace cumbac {
 struct Site;
 
+inline double BYTEtoDB(unsigned char z)
+{
+    return (z*80./255.-20.);
+}
+
+inline unsigned char DBtoBYTE(double dB)
+{
+    int byt = round((dB+20.)*255./80.);
+    if (byt >= 0 && byt <= 255)
+        return ((unsigned char)byt);
+    else if (byt < 0)
+        return 0;
+    else
+        return 255;
+}
+
 struct LoadLogEntry
 {
     double theta;

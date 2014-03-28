@@ -1,13 +1,6 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
 #include "logging.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <func_Z_R.h>
-#ifdef __cplusplus
-}
-#endif
 
 using namespace wibble::tests;
 using namespace cumbac;

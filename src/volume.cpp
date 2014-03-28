@@ -18,7 +18,6 @@ extern "C" {
 #endif
 // libreria radar
 #include <func_SP20read.h>
-#include <func_Z_R.h>
 #ifdef __cplusplus
 }
 #endif
