@@ -66,6 +66,8 @@ namespace {
  */
 struct HRay
 {
+    static const int NSCAN = 6;
+
     float* hray;
     // distanza temporale radiosondaggio
     float dtrs;
@@ -1020,7 +1022,7 @@ void CUM_BAC::caratterizzo_volume()
 
                 //----qui si fa un po' di mischione: finchè ho il dato dal programma di beam blocking uso il dh con propagazione da radiosondaggio, alle elevazioni superiori assegno dh=dhst  e calcolo quota come se fosse prop. standard, però uso le elevazioni nominali
 
-                if (l<NSCAN-1   ) {
+                if (l<hray_inf.NSCAN-1   ) {
                     dh=hray_inf[k][l+1]-hray_inf[k][l]; /* differenza tra limite sup e inf lobo centrale secondo appoccio geo-ott*/
                 }
                 else {

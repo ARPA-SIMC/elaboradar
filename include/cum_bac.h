@@ -31,9 +31,6 @@
 
 #define MAX_BIN 512
 
-// parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
-#define NSCAN 6
-
 namespace cumbac {
 
 struct Site;
