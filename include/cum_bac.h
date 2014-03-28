@@ -31,19 +31,6 @@
 
 #define MAX_BIN 512
 
-// Toglie NEL come costante
-#ifdef NEL
-#undef NEL
-#endif
-
-//Risoluzioni e limiti spaziali
-// FIXME: rimuovere
-#ifdef MEDIUM
-const unsigned int NEL = 5;
-#else
-const unsigned int NEL = 15;  // n0 elevazioni massimo
-#endif
-
 // parametri ereditati da programma beam blocking:numero elevazioni da programma beam blocking ; le matrici ivi definite considerano questo
 #define NSCAN 6
 
