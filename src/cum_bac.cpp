@@ -141,6 +141,41 @@ void GridStats::init(const Volume& volume)
         stat_anap[i] = stat_tot[i] = stat_bloc[i] = stat_elev[i] = 0;
 }
 
+template<typename T>
+void PolarMap<T>::load_raw(const std::string& fname, const char* desc)
+{
+    LOG_CATEGORY("radar.io");
+    LOG_INFO("Opening %s %s", desc, fname.c_str());
+    FILE* in = fopen_checked(fname.c_str(), "rb", desc);
+
+    // Read the file size
+    fseek(in, 0,SEEK_END);
+    long size = ftell(in);
+    rewind(in);
+
+    // Check that the file size is consistent with what we want
+    if (size != beam_size * beam_count * sizeof(T))
+    {
+        LOG_ERROR("Il file %s è %ld byte ma dovrebbe invece essere %ld byte\n",
+                beam_size * beam_count * sizeof(T));
+        throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
+    }
+    LOG_INFO ("DIMENSIONE MAPPA STATICA %u %u", beam_count, beam_size);
+
+    for (unsigned i = 0; i < beam_count; ++i)
+        if (fread(data + i * beam_size, beam_size, 1, in) != 1)
+        {
+            std::string errmsg("Error reading ");
+            errmsg += fname;
+            errmsg += ": ";
+            errmsg += strerror(errno);
+            fclose(in);
+            throw std::runtime_error(errmsg);
+        }
+
+    fclose(in);
+}
+
 CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
@@ -740,53 +775,28 @@ void CUM_BAC::elabora_dato()
 
 void CUM_BAC::leggo_first_level()
 {
-    FILE *file;
+    if (do_readStaticMap)
+    {
+        // Leggo mappa statica
+        first_level_static.load_raw(assets.fname_first_level(), "mappa statica");
 
-    if(do_readStaticMap){
-        /*-------------------
-          Leggo mappa  statica
-          -------------------*/
-        // dimensioni matrice mappa statica ricavata da dimensione file 
-        int dim ;
-        //leggo mappa statica con dimensioni appena lette
-        file = assets.open_file_first_level();
-        {
-            fseek(file, 0,SEEK_END);
-            int size = ftell (file);
-            rewind(file);
-            if (size%NUM_AZ_X_PPI != 0) throw std::runtime_error("Dimensione mappa statica non corretta - non multiplo di 400 ");
-            dim= size/NUM_AZ_X_PPI ;
-            LOG_INFO ("DIMENSIONE MAPPA STATICA %d %d",NUM_AZ_X_PPI,dim);
-            if (dim != MyMAX_BIN)
-                throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
-        }
-        for(int i=0; i<NUM_AZ_X_PPI; i++)
-            fread(&first_level_static[i][0],dim,1,file);
         // copio mappa statica su matrice first_level
         first_level = first_level_static;
-        fclose(file);
         LOG_INFO("Letta mappa statica");
     }
 
     if (do_beamblocking)
     {
-        /*----------------------------
-          Leggo file elevazioni per BB
-          ----------------------------*/
-        file = assets.open_file_first_level_bb_el();
-        for(int i=0; i<NUM_AZ_X_PPI; i++)
-            fread(&bb_first_level[i][0],MyMAX_BIN,1,file);
-        fclose(file);
-        /*------------------------
-          Leggo file valore di BB
-          ------------------------*/
-        file = assets.open_file_first_level_bb_bloc();
+        // Leggo file elevazioni per BB
+        bb_first_level.load_raw(assets.fname_first_level_bb_el(), "elev BB");
+
+        // Leggo file valore di BB
+        beam_blocking.load_raw(assets.fname_first_level_bb_bloc(), "elev BB");
+
         /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
            altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
-        for(int i=0; i<NUM_AZ_X_PPI; i++){   /*ciclo sugli azimut*/
-            fread(&beam_blocking[i][0],MyMAX_BIN,1,file);
-
-            for (int j=0; j<MyMAX_BIN; j++) /*ciclo sul range  */
+        for(unsigned i=0; i < first_level.beam_count; ++i)
+            for (unsigned j=0; j < first_level.beam_size; ++j)
             {
                 if (do_bloccorr)
                 {
@@ -804,8 +814,6 @@ void CUM_BAC::leggo_first_level()
                         beam_blocking[i][j]=OVERBLOCKING;
                 }
             }
-        }
-        fclose(file);
     }
 
     /*-------------------------------

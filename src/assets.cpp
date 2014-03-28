@@ -49,27 +49,22 @@ FILE* Assets::open_file_dem()
     return fopen_checked(fname, "rt", "file dem");
 }
 
-FILE* Assets::open_file_first_level()
+string Assets::fname_first_level()
 {
     const char* fname = getenv("FIRST_LEVEL_FILE");
     if (!fname)
         fname = conf_site->get_first_level_file_name(conf_month);
-    LOG_INFO("Opening mappa statica %s", fname);
-    return fopen_checked(fname, "rb", "mappa statica");
+    return fname;
 }
 
-FILE* Assets::open_file_first_level_bb_el()
+string Assets::fname_first_level_bb_el()
 {
-    string fname = fname_out_pp_bloc("mat_el.bin");
-    LOG_INFO("Opening elev BB %s", fname.c_str());
-    return fopen_checked(fname.c_str(), "rb", "elev BB");
+    return fname_out_pp_bloc("mat_el.bin");
 }
 
-FILE* Assets::open_file_first_level_bb_bloc()
+string Assets::fname_first_level_bb_bloc()
 {
-    string fname = fname_out_pp_bloc("mat_bloc.bin");
-    LOG_INFO("Opening elev BB %s", fname.c_str());
-    return fopen_checked(fname.c_str(), "rb", "elev BB");
+    return fname_out_pp_bloc("mat_bloc.bin");
 }
 
 FILE* Assets::open_file_hray()

@@ -74,6 +74,9 @@ struct PolarMap
             data[i] = pm.data[i];
         return *this;
     }
+
+    /// Load data from the file and close the file descriptor
+    void load_raw(const std::string& fname, const char* desc);
 };
 
 template<typename T>
