@@ -1901,24 +1901,9 @@ int CalcoloVPR::profile_heating()
 #include <vpr_par.h>
 {
     LOG_CATEGORY("radar.vpr");
-    int heating;
-    FILE *file;
-
     //---leggo ultimo file contenente riscaldamento , se non esiste impongo heating=0 (verificare comando)
-
-    if (!access(getenv("VPR_HEATING"),F_OK)){
-        file=fopen(getenv("VPR_HEATING"),"r");
-        if (file == NULL )  {
-            LOG_WARN("non ho il file di riscaldamento %s",getenv("VPR_HEATING"));
-            heating=0;
-        }
-        else{
-            fscanf(file,"%i ",&heating);
-            fclose(file);
-        }
-    } /*contemplo la prima iterazione dopo installazione testando l'esistenza del file*/
-    else heating=0;
-
+    int heating = cum_bac.assets.read_vpr_heating();
+    FILE *file;
 
     //--una volta letto il file, se il calcolo del vpr è andato bene incremento di uno heating sottraendo però la differenza di date (in quarti d'ora)-1 tra gli ultimi due profili
     //--lo faccio perchè potrei avere heating più alto del dovuto se ho avuto un interruzione del flusso dei dati
