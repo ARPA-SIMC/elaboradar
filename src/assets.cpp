@@ -43,6 +43,68 @@ void Assets::configure(const Site& site, time_t acq_time)
     conf_minute = tempo->tm_min;
 }
 
+bool Assets::save_acq_time(time_t acq_time)
+{
+    // If LAST_FILE is not set, return true
+    const char* last_file = getenv("LAST_FILE");
+    if (last_file == NULL)
+    {
+        LOG_INFO("$LAST_FILE not set");
+        return true;
+    }
+
+    bool res = true;
+    uint32_t last_time;
+
+    FILE* fp = fopen(last_file, "r");
+
+    // If the file does not exist, return true
+    if (fp == NULL)
+    {
+        LOG_INFO("$LAST_FILE=%s does not exist", last_file);
+        last_time = 0;
+        goto check;
+    }
+
+    // If the file is empty, return true
+    if (fread(&last_time, 4, 1, fp) != 1)
+    {
+        LOG_INFO("$LAST_FILE=%s cannot be read", last_file);
+        last_time = 0;
+        goto check;
+    }
+
+check:
+    {
+        int diff = acq_time - last_time;
+        LOG_INFO("%s: new acq_time is old %c %d", last_file, diff < 0 ? '-' : '+', abs(diff));
+    }
+
+    if (acq_time <= last_time)
+        res = false;
+
+close:
+    if (fp) fclose(fp);
+
+update:
+    if ((fp = fopen(last_file, "w")) == NULL)
+    {
+        LOG_WARN("cannot write to %s: %s", last_file, strerror(errno));
+        throw std::runtime_error("cannot (re)create $LAST_FILE");
+    }
+
+    // Fit acq_time in 4 bytes (FIXME: so far so good, until 2036)
+    last_time = acq_time;
+    if (fwrite(&last_time, 4, 1, fp) != 1)
+    {
+        LOG_WARN("cannot write to %s: %s", last_file, strerror(errno));
+        throw std::runtime_error("cannot write to $LAST_FILE");
+    }
+    fclose(fp);
+
+    return res;
+}
+
 FILE* Assets::open_file_dem()
 {
     const char* fname = conf_site->get_dem_file_name();

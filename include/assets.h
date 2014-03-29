@@ -55,6 +55,16 @@ public:
     void configure(const char* site, time_t acq_time);
 
     /**
+     * Save acq_time in $LAST_FILE, comparing it with the previous value.
+     *
+     * @returns
+     *  false, if acq_time is older than the previous file processed
+     *  true, if acq_time is newer, if $LAST_FILE does not exist or if
+     *  $LAST_FILE is not set.
+     */
+    bool save_acq_time(time_t acq_time);
+
+    /**
      * Open the dem file.
      *
      * The result is always a valid file: it throws an exception if something

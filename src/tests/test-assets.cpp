@@ -1,6 +1,7 @@
 #include <wibble/tests.h>
 #include <stdexcept>
 #include <cstdlib>
+#include <unistd.h>
 #include "assets.h"
 #include "utils.h"
 #include "logging.h"
@@ -114,6 +115,32 @@ void to::test<9>()
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(1024, 400);
     assets.load_first_level(m);
+}
+
+template<> template<>
+void to::test<10>()
+{
+    static const char* fname = "testdata/test_last_file";
+    Assets assets;
+    assets.configure("GAT", 1389108600);
+
+    // True because $LAST_FILE is not set
+    unlink(fname);
+    wassert(actual(assets.save_acq_time(1)).istrue());
+
+    // True because $LAST_FILE does not exist
+    unlink(fname);
+    setenv("LAST_FILE", fname, 1);
+    wassert(actual(assets.save_acq_time(1)).istrue());
+
+    // False because $LAST_FILE exists and has the same date as the current one
+    wassert(actual(assets.save_acq_time(1)).isfalse());
+
+    // True because 1 is higher than the value in last_file
+    wassert(actual(assets.save_acq_time(2)).istrue());
+
+    // False because $LAST_FILE exists and has the same date as the current one
+    wassert(actual(assets.save_acq_time(2)).isfalse());
 }
 
 }
