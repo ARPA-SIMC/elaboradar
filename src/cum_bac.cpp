@@ -198,9 +198,9 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
-    Time = NormalizzoData(volume.acq_date);
-    tempo = gmtime(&Time);
-    month=tempo->tm_mon+1;
+    time_t Time = NormalizzoData(volume.acq_date);
+    struct tm* tempo = gmtime(&Time);
+    int month=tempo->tm_mon+1;
 
     // scrivo la variabile char date con la data in formato aaaammgghhmm
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
