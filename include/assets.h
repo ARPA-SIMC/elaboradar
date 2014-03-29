@@ -72,7 +72,7 @@ public:
      *
      * TODO: cos'è il dem?
      */
-    FILE* open_file_dem();
+    void load_dem(Matrix2D<float>& matrix);
 
     /**
      * Open the first level file.
@@ -156,8 +156,12 @@ protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
 
+    /// Load a Matrix2D, from packed row-major binary data
     template<typename T>
     void load_raw(const std::string& fname, const char* desc, Matrix2D<T>& matrix);
+
+    /// Load a Matrix2D, from space-separated column-major ascii floats
+    void load_ascii(const std::string& fname, const char* desc, Matrix2D<float>& matrix);
 };
 
 }
