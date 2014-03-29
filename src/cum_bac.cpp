@@ -226,8 +226,6 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
 
 bool CUM_BAC::test_file(int file_type)
 {
-    FILE *f_aus;
-    time_t last_time; //> volume.acq_date?
     int n_elev, expected_size_cell;// != volume.resolution?
 
     //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
@@ -295,52 +293,10 @@ bool CUM_BAC::test_file(int file_type)
     }                                                             /*end for*/
 
     //--------verifico la presenza del file contenente l'ultima data processata-------
+    bool is_new = assets.save_acq_time(volume.acq_date);
+    if (!is_new)
+        LOG_WARN("File Vecchio");
 
-    const char* last_file = getenv("LAST_FILE");
-    if (last_file != NULL)
-    {
-        if (access(last_file, 6) == 0)
-        {
-            /*--------------------------------------
-              |  il file e' presente, leggo la data  |
-              |  e la confronto con la data del      |
-              |  volume dati in esame, se il dbp e'  |
-              |  piu' giovane continuo altrimenti    |
-              |  do' un avviso (una volta errore e uscivo) perchè processavo un file alla volta|
-              |  adesso la logica è cambiata                           |
-              -------------------------------------*/
-            f_aus = fopen(last_file, "r+");
-            fread(&last_time,4,1,f_aus);
-            if(volume.acq_date <= last_time)
-            {
-                fclose(f_aus);
-                LOG_WARN("File Vecchio");
-                //return false;
-            } else {
-                /*----------------------------
-                  |  aggiorno la data nel file |
-                  ----------------------------*/
-                rewind(f_aus);
-                unsigned int acq_date = volume.acq_date;
-                fwrite(&acq_date,4,1,f_aus);
-                fclose(f_aus);
-            }
-        }
-        //-------- fin qui tutto un pezzo per dire che se il file è più vecchio dell'ultimo do' errore -----------
-
-        // -------- se il file ultima data non è presente lo scrivo
-        else
-        {
-            /*--------------------------------------
-              |  il file non e' presente, scrivo la  |
-              |  data del volume in esame            |
-              --------------------------------------*/
-            f_aus = fopen(last_file, "w");
-            unsigned int acq_date = volume.acq_date;
-            fwrite(&acq_date,4,1,f_aus);
-            fclose(f_aus);
-        }
-    }
     // ------- se ok status di uscita:1
     return true;
 }
