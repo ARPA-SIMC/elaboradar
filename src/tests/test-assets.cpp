@@ -146,4 +146,18 @@ void to::test<10>()
     wassert(actual(assets.save_acq_time(2)).isfalse());
 }
 
+template<> template<>
+void to::test<11>()
+{
+    Assets assets;
+    assets.configure("GAT", 1389108600);
+
+    // Result is 0 when the env var is not set
+    wassert(actual(assets.read_vpr_heating()) == 0);
+
+    // Unfortunately, our test file also contains 0
+    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    wassert(actual(assets.read_vpr_heating()) == 0);
+}
+
 }

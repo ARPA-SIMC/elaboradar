@@ -224,6 +224,35 @@ long int Assets::read_profile_gap() const
     return gap1;
 }
 
+int Assets::read_vpr_heating() const
+{
+    LOG_CATEGORY("radar.vpr");
+    const char* fname = getenv("VPR_HEATING");
+    if (!fname)
+    {
+        LOG_ERROR("$VPR_HEATING is not set");
+        return 0;
+    }
+
+    FILE *file = fopen(fname, "rt");
+    if (!file)
+    {
+        LOG_ERROR("Cannot open $VPR_HEATING=%s: %s", fname, strerror(errno));
+        return 0;
+    }
+
+    int heating;
+    if (fscanf(file,"%i ",&heating) != 1)
+    {
+        LOG_ERROR("Cannot read $VPR_HEATING=%s: %s", fname, strerror(errno));
+        fclose(file);
+        return 0;
+    }
+
+    fclose(file);
+    return heating;
+}
+
 bool Assets::read_0term(float& zeroterm)
 {
     LOG_CATEGORY("radar.class");

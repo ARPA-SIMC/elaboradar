@@ -135,6 +135,13 @@ public:
     long int read_profile_gap() const;
 
     /**
+     * Read the value of $VPR_HEATING
+     *
+     * Returns 0 if the file does not exist or cannot be read
+     */
+    int read_vpr_heating() const;
+
+    /**
      * Read $FILE_ZERO_TERMICO
      *
      * @returns true if the file was found and read correctly, false if zeroterm was not set
