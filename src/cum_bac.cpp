@@ -452,7 +452,6 @@ void CUM_BAC::elabora_dato()
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            LOG_DEBUG(" i, k, Loc_el_inf: %d %d %d",i,k,first_level[i][k]);
             int loc_el_inf =  first_level[i][k];
             while ( k >= volume.scan(loc_el_inf).beam_size)
             {
