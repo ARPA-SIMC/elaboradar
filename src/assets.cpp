@@ -228,6 +228,34 @@ long int Assets::read_profile_gap() const
     return gap1;
 }
 
+bool Assets::read_0term(float& zeroterm)
+{
+    LOG_CATEGORY("radar.class");
+    const char* fname = getenv("FILE_ZERO_TERMICO");
+    if (!fname)
+    {
+        LOG_ERROR("$FILE_ZERO_TERMICO is not set");
+        return false;
+    }
+
+    FILE *fd = fopen(fname, "rt");
+    if (fd == NULL)
+    {
+        LOG_ERROR("$FILE_ZERO_TERMICO=%s cannot be opened: %s", fname, strerror(errno));
+        return false;
+    }
+
+    if (fscanf(fd, "%f", &zeroterm) != 1)
+    {
+        fclose(fd);
+        LOG_ERROR("$FILE_ZERO_TERMICO=%s cannot be read: %s", fname, strerror(errno));
+        return false;
+    }
+
+    fclose(fd);
+    return true;
+}
+
 void Assets::write_last_vpr()
 {
     //LOG_CATEGORY("radar.vpr");
