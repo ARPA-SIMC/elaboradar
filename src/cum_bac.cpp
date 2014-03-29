@@ -389,7 +389,7 @@ void CUM_BAC::elabora_dato()
     //-------------se definita qualita' leggo dem e altezza fascio (funzioni legg_dem e leggo_hray)(mi servono per calcolare qualità)
     if (do_quality)
     {
-        leggo_dem();
+        assets.load_dem(dem);
         hray.load_hray(assets);
     }
 
@@ -752,20 +752,6 @@ void CUM_BAC::leggo_first_level()
         }
 	LOG_INFO(" fine patch %d ",MyMAX_BIN);
     }
-}
-
-void CUM_BAC::leggo_dem()
-{
-    /*---------------------
-      Leggo dem
-      ---------------------*/
-    FILE *file = assets.open_file_dem();
-    for (int i=0; i<MyMAX_BIN; i++){
-        for (int j=0; j<NUM_AZ_X_PPI;j++)
-            fscanf(file,"%f ",&dem[j][i]);
-    }
-    fclose(file);
-    return ;
 }
 
 //------------funzione quota_f-----------------------

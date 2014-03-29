@@ -83,10 +83,8 @@ check:
     if (acq_time <= last_time)
         res = false;
 
-close:
     if (fp) fclose(fp);
 
-update:
     if ((fp = fopen(last_file, "w")) == NULL)
     {
         LOG_WARN("cannot write to %s: %s", last_file, strerror(errno));
@@ -105,11 +103,9 @@ update:
     return res;
 }
 
-FILE* Assets::open_file_dem()
+void Assets::load_dem(Matrix2D<float>& matrix)
 {
-    const char* fname = conf_site->get_dem_file_name();
-    LOG_INFO("Opening dem file %s", fname);
-    return fopen_checked(fname, "rt", "file dem");
+    load_ascii(conf_site->get_dem_file_name(), "file dem", matrix);
 }
 
 void Assets::load_first_level(Matrix2D<unsigned char>& matrix)
@@ -292,7 +288,6 @@ H5::H5File Assets::get_devel_data_output() const
 template<class T>
 void Assets::load_raw(const std::string& fname, const char* desc, Matrix2D<T>& matrix)
 {
-    LOG_CATEGORY("radar.io");
     LOG_INFO("Opening %s %s", desc, fname.c_str());
     FILE* in = fopen_checked(fname.c_str(), "rb", desc);
 
@@ -320,6 +315,18 @@ void Assets::load_raw(const std::string& fname, const char* desc, Matrix2D<T>& m
             fclose(in);
             throw std::runtime_error(errmsg);
         }
+
+    fclose(in);
+}
+
+void Assets::load_ascii(const std::string& fname, const char* desc, Matrix2D<float>& matrix)
+{
+    LOG_INFO("Opening %s %s", desc, fname.c_str());
+    FILE* in = fopen_checked(fname.c_str(), "rt", desc);
+
+    for (unsigned x = 0; x < matrix.SX; ++x)
+        for (unsigned y = 0; y < matrix.SY; ++y)
+            fscanf(in, "%f ", matrix[y] + x);
 
     fclose(in);
 }

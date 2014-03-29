@@ -36,10 +36,13 @@ void to::test<1>()
 {
     Assets assets;
     assets.configure("GAT", 1389108600);
-    wassert(actual(fscanf_float_and_close(assets.open_file_dem())) == 34);
+    Matrix2D<float> dem(512, 400);
+    assets.load_dem(dem);
+    wassert(actual(dem[0][0]) == 34);
 
     assets.configure("SPC", 1389108600);
-    wassert(actual(fscanf_float_and_close(assets.open_file_dem())) == 9);
+    assets.load_dem(dem);
+    wassert(actual(dem[0][0]) == 9);
 }
 
 template<> template<>

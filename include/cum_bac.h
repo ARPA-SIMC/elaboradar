@@ -327,15 +327,6 @@ public:
     void leggo_hray();
 
     /**
-     *  lettura dem e quote fascio 
-     *
-     *  @brief funzione che legge il dem
-     *  @details legge il dem e lo memorizza nella matrice dem
-     *  @return
-     */
-    void leggo_dem();
-
-    /**
      * ingresso: elevazione e k di range bin
      *
      * @brief funzione  che calcola la quota in metri del centro del fascio
