@@ -152,10 +152,7 @@ public:
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
     Image<unsigned char> z_out;
 
-    //variabili tempo per ottenere mese.. aggiunti nel main per leggere stagione dal nome file e ricavere MP coeff */
-    struct tm *tempo;
-    time_t Time;
-    int month;
+    // Data del volume che abbiamo letto
     char date[20];
 
     //coeff a e b relazione Z-R
