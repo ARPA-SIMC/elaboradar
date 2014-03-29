@@ -430,7 +430,6 @@ struct CalcoloVPR
     // ricampionamento del volume in coordinate cilindriche
     CilindricalVolume cil;
     long int gap; /* distanza temporale dall'ultimo file vpr */
-    float zeroterm;//zerotermico
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
     unsigned char *conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
@@ -579,13 +578,6 @@ struct CalcoloVPR
 
     // stampa profilo combinato
     int stampa_vpr();
-
-    /**
-     *  trova lo zero termico
-     *  @brief funzione che legge il file contenente la quota dello 0 termico 
-     *  @return ier codice di errore apertura file
-     */
-    int trovo0term();
 
     void esegui_tutto();
 };

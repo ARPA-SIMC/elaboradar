@@ -134,6 +134,13 @@ public:
      */
     long int read_profile_gap() const;
 
+    /**
+     * Read $FILE_ZERO_TERMICO
+     *
+     * @returns true if the file was found and read correctly, false if zeroterm was not set
+     */
+    bool read_0term(float& zeroterm);
+
     /// Write the acquisition time in $LAST_VPR file
     void write_last_vpr();
 

@@ -1086,14 +1086,14 @@ void CalcoloVPR::classifica_rain()
         // Lettura 0 termico da modello, e calcolo base e top bright band
         LOG_INFO("leggo 0termico per class da file %s",getenv("FILE_ZERO_TERMICO"));
         //  leggo informazioni di temperatura da modello*/
-        ier_0term=trovo0term();
-        if( !ier_0term) {
+        float zeroterm;//zerotermico
+        if (cum_bac.assets.read_0term(zeroterm))
+        {
             //-- considerato che lo shift medio tra il picco e lo zero è tra 200 e 300 m, che il modello può avere un errore, definisco cautelativamente htbb come quota zero + 400 m e hbbb come  quota zero -700 m  .
             htbb=zeroterm/1000. + 0.4; // se non ho trovato il vpr allora uso un range più ristretto, potrebbe essere caso convettivo
             hbbb=zeroterm/1000. - 1.0;
-
-        }
-        else{
+        } else {
+            LOG_ERROR("non ho trovato il file dello zero termico");
             LOG_INFO("attenzione, non ho trovat zero termico ne da vpr ne da radiosondaggio");
             htbb=0; // discutibile così faccio tutto con VIZ
             hbbb=0;
@@ -1295,24 +1295,6 @@ void CalcoloVPR::classifica_rain()
     //  }
     merge_metodi();
     return ;
-}
-
-int CalcoloVPR::trovo0term()
-{
-    LOG_CATEGORY("radar.class");
-    int ier;
-    FILE *file0;
-    ier=access(getenv("FILE_ZERO_TERMICO"),R_OK);
-    if (!ier) {
-        file0=fopen(getenv("FILE_ZERO_TERMICO"),"r");//metti condizione di non trovato!!!
-        fscanf(file0,"%f", &zeroterm );
-        LOG_INFO("zero termico da modello= %f",zeroterm);
-        fclose(file0);
-    }
-    else {
-        LOG_ERROR("non ho trovato il file dello zero termico");
-    }
-    return ier;
 }
 
 void CalcoloVPR::classifico_VIZ()
