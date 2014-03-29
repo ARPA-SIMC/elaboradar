@@ -216,8 +216,6 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
         bMP=bMP_strat;
 
     }
-    MP_coeff[0]=(unsigned char)(aMP/10);
-    MP_coeff[1]=(unsigned char)(bMP*10);
 
     //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
     if (do_vpr) calcolo_vpr = new CalcoloVPR(*this);
@@ -3002,6 +3000,9 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
     scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),z_out.size(),z_out.data);
 
+    unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
+    MP_coeff[0]=(unsigned char)(aMP/10);
+    MP_coeff[1]=(unsigned char)(bMP*10);
 
     char nome_file_output[512];
     sprintf(nome_file_output,"%s/MP_coeff",getenv("OUTPUT_Z_LOWRIS_DIR"));

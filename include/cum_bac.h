@@ -133,7 +133,7 @@ public:
     bool do_class;
     bool do_zlr_media;
     bool do_devel;
-    bool do_readStaticMap;  
+    bool do_readStaticMap;
 
     // dimensione matrice a 1x1 km
     const unsigned CART_DIM_ZLR;
@@ -156,7 +156,6 @@ public:
     char date[20];
 
     //coeff a e b relazione Z-R
-    unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
     float aMP, bMP;   /*  coeff a e b relazione Z-R  */
 
     GridStats grid_stats;
