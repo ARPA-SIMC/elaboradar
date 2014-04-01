@@ -132,6 +132,8 @@ int main (int argc, char **argv)
     file_type		=	  CL_opt.filetype;
     sito		= (char *)CL_opt.sito.c_str();
 
+    if(CL_opt.do_medium && CL_opt.filetype == 3) MyMAX_BIN = 512;   // questo dovrebbe essere il caso del medio vecchio 
+   
     setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
     startup_banner(&CL_opt);

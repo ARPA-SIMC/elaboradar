@@ -257,8 +257,9 @@ bool CUM_BAC::test_file(int file_type)
         case MEDIUM_PULSE:
             expected_size_cell = 1000;
             n_elev=4;
+            LOG_INFO("CASO MEDIO OLD");
             break;
-        case SHORT_212://-----??? DUBBIO
+        case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
             if (!volume.declutter_rsp)
             {
                 LOG_WARN("File senza Declutter Dinamico");
@@ -266,6 +267,7 @@ bool CUM_BAC::test_file(int file_type)
             }
             expected_size_cell = 250;
             n_elev=4;
+            LOG_INFO("CASO SHORT_212");
             break;
     }
 
@@ -2617,13 +2619,13 @@ void CUM_BAC::conversione_convettiva()
 namespace {
 struct CartData
 {
-    float azimut[MAX_BIN][MAX_BIN];
-    float range[MAX_BIN][MAX_BIN];
+    Image <float> azimut;
+    Image <float> range;
 
-    CartData()
-    {
-        for(int i=0; i<MAX_BIN; i++)
-            for(int j=0; j<MAX_BIN; j++)
+    CartData(int max_bin=512)
+    : azimut(max_bin), range(max_bin)
+    {   for(int i=0; i<max_bin; i++)
+            for(int j=0; j<max_bin; j++)
             {
                 range[i][j] = hypot(i+.5,j+.5);
                 azimut[i][j] = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
@@ -2635,9 +2637,11 @@ struct CartData
 void CUM_BAC::creo_cart()
 {
     //matrici per ricampionamento cartesiano
-    int x,y,irange,az,iaz,az_min,az_max,cont;
+    //int x,y,irange,az,iaz,az_min,az_max,cont;
+    int x,y,irange,iaz,az_min,az_max,cont;
+    float az;
     static CartData* cd = 0;
-    if (!cd) cd = new CartData;
+    if (!cd) cd = new CartData(MyMAX_BIN);
 
     for(int i=0; i<MyMAX_BIN *2; i++)
         for(int j=0; j<MyMAX_BIN *2; j++)
