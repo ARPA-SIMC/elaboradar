@@ -151,6 +151,7 @@ int main (int argc, char **argv)
     cb->do_class 	= CL_opt.do_class;
     cb->do_devel 	= CL_opt.do_devel;
     cb->do_readStaticMap= CL_opt.do_readStaticMap;
+    cb->do_zlr_media	= true;
 
     try {
 //       cb->StampoFlag(); 
