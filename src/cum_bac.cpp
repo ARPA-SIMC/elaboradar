@@ -2647,6 +2647,8 @@ void CUM_BAC::creo_cart()
         for(int j=0; j<MyMAX_BIN *2; j++)
             cart[i][j] = MISSING;
 
+    LOG_INFO("Creo_cart - %d",MyMAX_BIN);
+
     for(int quad=0; quad<4; quad++)
         for(int i=0; i<MyMAX_BIN; i++)
             for(int j=0; j<MyMAX_BIN; j++)
@@ -2718,7 +2720,9 @@ void CUM_BAC::creo_cart()
                         }
                         if (do_zlr_media)
                         {
-                            if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0){
+                            //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0){
+                            if (sample > 0)
+	                    {
                                 cartm[x][y]=cartm[x][y]+BYTEtoZ(sample);
                                 cont=cont+1;
                             }
@@ -2742,8 +2746,8 @@ void CUM_BAC::creo_cart()
 
 void CUM_BAC::creo_cart_z_lowris()
 {
-    unsigned ZLR_OFFSET = do_medium ? CART_DIM_ZLR/2 : 0;
-    unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium ? 1 : 4;
+    unsigned ZLR_OFFSET = do_medium && MyMAX_BIN != 1024 ? CART_DIM_ZLR/2 : 0;
+    unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium && MyMAX_BIN != 1024 ? 1 : 4;
     int cont;
     unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
     unsigned short q1x1;
@@ -2826,7 +2830,7 @@ void CUM_BAC::creo_cart_z_lowris()
                     if (do_zlr_media)
                     {
                         if (cont >0 ) {
-                            z_out[i][j]=(unsigned char)((10*log10(zm/(float)(cont))+20.)/80.*255);
+                            z_out[i][j]=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
                         }
                         if (cont == 0 ) z_out[i][j]=MISSING;
                     }
