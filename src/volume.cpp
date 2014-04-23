@@ -50,53 +50,8 @@ void LoadLog::print(FILE* out) const
     fprintf(out, "\n");
 }
 
-PolarScan::PolarScan(unsigned beam_size)
-    : scan(beam_size, NUM_AZ_X_PPI, BYTEtoDB(1)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
-{
-    beam_info.resize(beam_count);
-}
-
-PolarScan::~PolarScan()
-{
-}
-
-unsigned char PolarScan::get_raw(unsigned az, unsigned beam) const
-{
-    return DBtoBYTE(get_db(az, beam));
-}
-
-void PolarScan::set_raw(unsigned az, unsigned beam, unsigned char val)
-{
-    scan[az][beam] = BYTEtoDB(val);
-}
-
-unsigned PolarScan::count_rays_filled() const
-{
-    unsigned count = 0;
-    for (vector<BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
-        if (!i->load_log.empty())
-            ++count;
-    return count;
-}
-
-void PolarScan::read_beam_db(unsigned az, float* out, unsigned out_size, float missing) const
-{
-    // Prima riempio il minimo tra ray.size() e out_size
-    size_t set_count = min(beam_size, out_size);
-
-    for (unsigned i = 0; i < set_count; ++i)
-        out[i] = get_db(az, i);
-
-    for (unsigned i = set_count; i < out_size; ++i)
-        out[i] = missing;
-}
-
-const LoadLog& PolarScan::get_beam_load_log(unsigned az) const
-{
-    return beam_info[az].load_log;
-}
-
-void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data)
+template<typename T>
+void PolarScan<T>::fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data)
 {
     int alfa = alpha / FATT_MOLT_AZ;
     if (alfa >= 4096) return;
@@ -128,7 +83,8 @@ void PolarScan::fill_beam(int el_num, double theta, double alpha, unsigned size,
     }
 }
 
-void PolarScan::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati)
+template<typename T>
+void PolarScan<T>::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati)
 {
     //LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
@@ -159,7 +115,7 @@ Volume::Volume()
 
 Volume::~Volume()
 {
-    for (vector<PolarScan*>::iterator i = scans.begin(); i != scans.end(); ++i)
+    for (vector<PolarScan<double>*>::iterator i = scans.begin(); i != scans.end(); ++i)
         if (*i)
             delete *i;
 }
@@ -178,7 +134,7 @@ int Volume::LoadOptions::elevation_index(double elevation) const
 }
 
 
-PolarScan& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size)
+PolarScan<double>& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size)
 {
     // Enlarge the scans vector if needed
     if (idx >= scans.size())
@@ -190,7 +146,7 @@ PolarScan& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned bea
     // Create the PolarScan if needed
     if (!scans[idx])
     {
-        scans[idx] = new PolarScan(beam_size);
+        scans[idx] = new PolarScan<double>(beam_size);
         scans[idx]->elevation = opts.elev_array[idx];
     }
     else if (beam_size != scans[idx]->beam_size)
@@ -309,7 +265,7 @@ void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
 
       int el_num = opts.elevation_index(beam_info.elevation);
       if (el_num < 0) continue;
-      PolarScan& scan = make_scan(opts, el_num, max_range);
+      PolarScan<double>& scan = make_scan(opts, el_num, max_range);
 
       // Convert to DB
       double* dbs = new double[max_range];
@@ -488,7 +444,7 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
 
         int el_num = opts.elevation_index(elevation);
         if (el_num < 0) continue;
-        PolarScan& vol_pol_scan = make_scan(opts, el_num, beam_size);
+        PolarScan<double>& vol_pol_scan = make_scan(opts, el_num, beam_size);
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
         for (unsigned src_az = 0; src_az < nrays; ++src_az)

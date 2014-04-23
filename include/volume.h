@@ -6,6 +6,7 @@
 #include <ctime>
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 #include <matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
@@ -66,10 +67,11 @@ struct BeamInfo
     double elevation;
 };
 
+template<typename T>
 class PolarScan
 {
 protected:
-    Matrix2D<double> scan;
+    Matrix2D<T> scan;
     std::vector<BeamInfo> beam_info;
 
 public:
@@ -83,8 +85,15 @@ public:
      */
     double elevation;
 
-    PolarScan(unsigned beam_size);
-    ~PolarScan();
+    PolarScan(unsigned beam_size)
+        : scan(beam_size, NUM_AZ_X_PPI, BYTEtoDB(1)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+    {
+        beam_info.resize(beam_count);
+    }
+
+    ~PolarScan()
+    {
+    }
 
     inline double get_elevation(unsigned az) const
     {
@@ -97,7 +106,10 @@ public:
     }
 
     /// Get a raw value in a beam
-    unsigned char get_raw(unsigned az, unsigned beam) const;
+    unsigned char get_raw(unsigned az, unsigned beam) const
+    {
+        return DBtoBYTE(get_db(az, beam));
+    }
 
     /// Get a beam value in DB
     double get_db(unsigned az, unsigned beam) const
@@ -106,7 +118,10 @@ public:
     }
 
     /// Set a raw value in a beam
-    void set_raw(unsigned az, unsigned beam, unsigned char val);
+    void set_raw(unsigned az, unsigned beam, unsigned char val)
+    {
+        scan[az][beam] = BYTEtoDB(val);
+    }
 
     /// Set a beam value in DB
     void set_db(unsigned az, unsigned beam, double val)
@@ -118,15 +133,39 @@ public:
      * Riempie un array di float con i dati del raggio convertiti in DB
      * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
      */
-    void read_beam_db(unsigned az, float* out, unsigned out_size, float missing=0) const;
+    void read_beam_db(unsigned az, float* out, unsigned out_size, float missing=0) const
+    {
+        using namespace std;
+
+        // Prima riempio il minimo tra ray.size() e out_size
+        size_t set_count = min(beam_size, out_size);
+
+        for (unsigned i = 0; i < set_count; ++i)
+            out[i] = get_db(az, i);
+
+        for (unsigned i = set_count; i < out_size; ++i)
+            out[i] = missing;
+    }
+
 
     void fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data);
 
     /// Return the number of beams that have been filled with data while loading
-    unsigned count_rays_filled() const;
+    unsigned count_rays_filled() const
+    {
+        unsigned count = 0;
+        for (std::vector<BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
+            if (!i->load_log.empty())
+                ++count;
+        return count;
+    }
 
     /// Return the load log for the given beam
-    const LoadLog& get_beam_load_log(unsigned az) const;
+    const LoadLog& get_beam_load_log(unsigned az) const
+    {
+        return beam_info[az].load_log;
+    }
+
 
 protected:
     void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati);
@@ -168,10 +207,10 @@ public:
 
 protected:
     // Dato di base volume polare
-    std::vector<PolarScan*> scans;
+    std::vector<PolarScan<double>*> scans;
 
     // Create or reuse a scan at position idx, with the given beam size
-    PolarScan& make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size);
+    PolarScan<double>& make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size);
 
 public:
     std::string filename;
@@ -181,8 +220,8 @@ public:
     unsigned int NEL;
 
     // Access a polar scan
-    PolarScan& scan(unsigned idx) { return *scans[idx]; }
-    const PolarScan& scan(unsigned idx) const { return *scans[idx]; }
+    PolarScan<double>& scan(unsigned idx) { return *scans[idx]; }
+    const PolarScan<double>& scan(unsigned idx) const { return *scans[idx]; }
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
@@ -210,7 +249,7 @@ public:
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        const PolarScan& s = scan(elev_fin[az_idx][ray_idx]);
+        const PolarScan<double>& s = scan(elev_fin[az_idx][ray_idx]);
         if (ray_idx < s.beam_size)
             return s.get_raw(az_idx, ray_idx);
         else
