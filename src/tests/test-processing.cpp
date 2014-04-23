@@ -964,6 +964,7 @@ void to::test<10>()
 //    cb->do_zlr_media=true; 
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
+    cb->assets.write_vpr_heating(0);
 
     cb->elabora_dato();
 LOG_INFO(" Valuto statistica");

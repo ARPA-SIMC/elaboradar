@@ -1923,9 +1923,7 @@ int CalcoloVPR::profile_heating()
     if (heating<0) heating=0;
 
     //----stampo heating su file
-    file=controllo_apertura(getenv("VPR_HEATING")," riscaldamento vpr ","w");
-    fprintf(file," %i \n",heating);
-    fclose(file);
+    cum_bac.assets.write_vpr_heating(heating);
 
     //----stampo log vpr
     LOG_INFO("gap %li heating %i",gap,heating);

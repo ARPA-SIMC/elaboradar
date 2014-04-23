@@ -142,6 +142,11 @@ public:
     int read_vpr_heating() const;
 
     /**
+     * Write a new value to $VPR_HEATING
+     */
+    void write_vpr_heating(int value) const;
+
+    /**
      * Read $FILE_ZERO_TERMICO
      *
      * @returns true if the file was found and read correctly, false if zeroterm was not set
