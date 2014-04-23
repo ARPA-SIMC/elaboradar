@@ -151,8 +151,13 @@ public:
         bool medium;
         bool clean;
         std::vector<double> elev_array;
+        /**
+         * If this is greather than zero, truncate each beam to this number of
+         * samples
+         */
+        unsigned max_bin;
 
-        LoadOptions(const Site& site, bool medium=false, bool clean=false);
+        LoadOptions(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0);
 
         /**
          * Compute the vol_pol index of an elevation angle

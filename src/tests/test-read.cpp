@@ -216,7 +216,7 @@ void to::test<5>()
     Volume v_mod;
 
     const Site& gat = Site::get("GAT");
-    vsp20.read_sp20("testdata/DBP2_060220140140_GATTATICO", Volume::LoadOptions(gat, false, true));
+    vsp20.read_sp20("testdata/DBP2_060220140140_GATTATICO", Volume::LoadOptions(gat, false, true, 494));
     v_mod.read_sp20("testdata/DBP2_060220140140_GATTATICO_mod", Volume::LoadOptions(gat, false, false));
 
     wruntest(test_volumes_equal, vsp20, v_mod);
