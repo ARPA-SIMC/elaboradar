@@ -51,23 +51,13 @@ void LoadLog::print(FILE* out) const
 }
 
 PolarScan::PolarScan(unsigned beam_size)
-    : beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+    : scan(beam_size, NUM_AZ_X_PPI, BYTEtoDB(1)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
 {
-    if (beam_size > 0)
-    {
-        scan = gsl_matrix_alloc(NUM_AZ_X_PPI, beam_size);
-        gsl_matrix_set_all(scan, BYTEtoDB(1));
-    } else {
-        scan = 0;
-    }
-
     beam_info.resize(beam_count);
 }
 
 PolarScan::~PolarScan()
 {
-    if (scan)
-        gsl_matrix_free(scan);
 }
 
 unsigned char PolarScan::get_raw(unsigned az, unsigned beam) const
@@ -77,7 +67,7 @@ unsigned char PolarScan::get_raw(unsigned az, unsigned beam) const
 
 void PolarScan::set_raw(unsigned az, unsigned beam, unsigned char val)
 {
-    gsl_matrix_set(scan, az, beam, BYTEtoDB(val));
+    scan[az][beam] = BYTEtoDB(val);
 }
 
 unsigned PolarScan::count_rays_filled() const

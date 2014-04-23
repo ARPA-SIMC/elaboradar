@@ -129,8 +129,8 @@ GridStats::~GridStats()
 
 void GridStats::init(const Volume& volume)
 {
-    size_az = volume.scan(0).beam_count / step_stat_az;
-    size_beam = volume.scan(0).beam_size / step_stat_range;
+    size_az = volume.scan(0).beam_count / step_stat_az + 1;
+    size_beam = volume.scan(0).beam_size / step_stat_range + 1;
 
     stat_anap = new unsigned[size_az * size_beam];
     stat_tot = new unsigned[size_az * size_beam];

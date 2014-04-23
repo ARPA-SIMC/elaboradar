@@ -6,7 +6,7 @@
 #include <ctime>
 #include <cstdio>
 #include <cmath>
-#include <gsl/gsl_matrix.h>
+#include <matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
@@ -69,7 +69,7 @@ struct BeamInfo
 class PolarScan
 {
 protected:
-    gsl_matrix* scan;
+    Matrix2D<double> scan;
     std::vector<BeamInfo> beam_info;
 
 public:
@@ -102,7 +102,7 @@ public:
     /// Get a beam value in DB
     double get_db(unsigned az, unsigned beam) const
     {
-        return gsl_matrix_get(scan, az, beam);
+        return scan[az][beam];
     }
 
     /// Set a raw value in a beam
@@ -111,7 +111,7 @@ public:
     /// Set a beam value in DB
     void set_db(unsigned az, unsigned beam, double val)
     {
-        gsl_matrix_set(scan, az, beam, val);
+        scan[az][beam] = val;
     }
 
     /**
