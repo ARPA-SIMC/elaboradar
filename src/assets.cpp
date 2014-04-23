@@ -253,6 +253,34 @@ int Assets::read_vpr_heating() const
     return heating;
 }
 
+void Assets::write_vpr_heating(int value) const
+{
+    LOG_CATEGORY("radar.vpr");
+    const char* fname = getenv("VPR_HEATING");
+    if (!fname)
+    {
+        LOG_ERROR("$VPR_HEATING is not set");
+        return;
+    }
+
+    FILE *file = fopen(fname, "wt");
+    if (!file)
+    {
+        LOG_ERROR("Cannot open $VPR_HEATING=%s: %s", fname, strerror(errno));
+        return;
+    }
+
+    int heating;
+    if (fprintf(file, " %i \n", value) < 0);
+    {
+        LOG_ERROR("Cannot write $VPR_HEATING=%s: %s", fname, strerror(errno));
+        fclose(file);
+        return;
+    }
+
+    fclose(file);
+}
+
 bool Assets::read_0term(float& zeroterm)
 {
     LOG_CATEGORY("radar.class");
