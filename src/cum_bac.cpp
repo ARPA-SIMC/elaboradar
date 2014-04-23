@@ -2425,7 +2425,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
     for (unsigned l=0; l<cum_bac.volume.NEL; l++)//ciclo elevazioni
     {
-	PolarScan& scan = cum_bac.volume.scan(l);
+        PolarScan<double>& scan = cum_bac.volume.scan(l);
         for (unsigned k=0; k < scan.beam_size; k++)/*ciclo range*/
         {
             //-------------calcolo distanza-----------
@@ -2621,8 +2621,9 @@ struct CartData
     Image <float> range;
 
     CartData(int max_bin=512)
-    : azimut(max_bin), range(max_bin)
-    {   for(int i=0; i<max_bin; i++)
+        : azimut(max_bin), range(max_bin)
+    {
+        for(int i=0; i<max_bin; i++)
             for(int j=0; j<max_bin; j++)
             {
                 range[i][j] = hypot(i+.5,j+.5);
@@ -2636,7 +2637,7 @@ void CUM_BAC::creo_cart()
 {
     //matrici per ricampionamento cartesiano
     //int x,y,irange,az,iaz,az_min,az_max,cont;
-    int x,y,irange,iaz,az_min,az_max,cont;
+    int x,y,iaz,az_min,az_max,cont;
     float az;
     static CartData* cd = 0;
     if (!cd) cd = new CartData(MyMAX_BIN);
@@ -2651,94 +2652,94 @@ void CUM_BAC::creo_cart()
         for(int i=0; i<MyMAX_BIN; i++)
             for(int j=0; j<MyMAX_BIN; j++)
             {
-                irange = (int)round(cd->range[i][j]);
-                if(irange < MyMAX_BIN)        {
-                    switch(quad)
-                    {
-                        case 0:
-                            x = MyMAX_BIN + i;
-                            y = MyMAX_BIN + j;
-                            az = cd->azimut[i][j];
-                            break;
-                        case 1:
-                            x = MyMAX_BIN + j;
-                            y = MyMAX_BIN - i;
-                            az = cd->azimut[i][j] + 90.;
-                            break;
-                        case 2:
-                            x = MyMAX_BIN - i;
-                            y = MyMAX_BIN - j;
-                            az = cd->azimut[i][j] + 180.;
-                            break;
-                        case 3:
-                            x = MyMAX_BIN - j;
-                            y = MyMAX_BIN + i;
-                            az = cd->azimut[i][j]+270.;
-                            break;
-                    }
+                unsigned irange = (unsigned)round(cd->range[i][j]);
+                if (irange >= MyMAX_BIN)
+                    continue;
+                switch(quad)
+                {
+                    case 0:
+                        x = MyMAX_BIN + i;
+                        y = MyMAX_BIN + j;
+                        az = cd->azimut[i][j];
+                        break;
+                    case 1:
+                        x = MyMAX_BIN + j;
+                        y = MyMAX_BIN - i;
+                        az = cd->azimut[i][j] + 90.;
+                        break;
+                    case 2:
+                        x = MyMAX_BIN - i;
+                        y = MyMAX_BIN - j;
+                        az = cd->azimut[i][j] + 180.;
+                        break;
+                    case 3:
+                        x = MyMAX_BIN - j;
+                        y = MyMAX_BIN + i;
+                        az = cd->azimut[i][j]+270.;
+                        break;
+                }
 
-                    az_min = (int)((az - .45)/.9);
-                    az_max = ceil((az + .45)/.9);
+                az_min = (int)((az - .45)/.9);
+                az_max = ceil((az + .45)/.9);
 
 
-                    if(az_min < 0)
-                    {
-                        az_min = az_min + NUM_AZ_X_PPI;
-                        az_max = az_max + NUM_AZ_X_PPI;
-                    }
-                    cont=0;
-                    for(iaz = az_min; iaz<az_max; iaz++){
-                        // Enrico: cerca di non leggere fuori dal volume effettivo
-                        unsigned char sample = 0;
-                        if (irange < volume.scan(0).beam_size)
-                            sample = volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange);
+                if(az_min < 0)
+                {
+                    az_min = az_min + NUM_AZ_X_PPI;
+                    az_max = az_max + NUM_AZ_X_PPI;
+                }
+                cont=0;
+                for(iaz = az_min; iaz<az_max; iaz++){
+                    // Enrico: cerca di non leggere fuori dal volume effettivo
+                    unsigned char sample = 0;
+                    if (irange < volume.scan(0).beam_size)
+                        sample = volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange);
 
-                        if(cart[x][y] <= sample){
-                            cart[x][y] = sample;
-                            topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
-                            if (do_quality)
-                            {
-                                qual_Z_cart[x][y] = qual->get(volume.elev_fin[iaz%NUM_AZ_X_PPI][irange], iaz%NUM_AZ_X_PPI, irange);
-                                quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
-                                dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
-                                beam_blocking_xy[x][y]=beam_blocking[iaz%NUM_AZ_X_PPI][irange];
-                                elev_fin_xy[x][y]=volume.elev_fin[iaz%NUM_AZ_X_PPI][irange];
-                                /*neve_cart[x][y]=qual_Z_cart[x][y];*/
-                                if (do_vpr)
-                                {
-                                    neve_cart[x][y]=(calcolo_vpr->neve[iaz%NUM_AZ_X_PPI][irange])?0:1;
-                                    corr_cart[x][y]=calcolo_vpr->corr_polar[iaz%NUM_AZ_X_PPI][irange];
-                                }
-                            }
-                            if (do_class)
-                            {
-                                if (irange<calcolo_vpr->x_size)
-                                    conv_cart[x][y]=calcolo_vpr->conv[iaz%NUM_AZ_X_PPI][irange];
-                            }
-                        }
-                        if (do_zlr_media)
+                    if(cart[x][y] <= sample){
+                        cart[x][y] = sample;
+                        topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
+                        if (do_quality)
                         {
-                            //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0){
-                            if (sample > 0)
-	                    {
-                                cartm[x][y]=cartm[x][y]+BYTEtoZ(sample);
-                                cont=cont+1;
+                            qual_Z_cart[x][y] = qual->get(volume.elev_fin[iaz%NUM_AZ_X_PPI][irange], iaz%NUM_AZ_X_PPI, irange);
+                            quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
+                            dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
+                            beam_blocking_xy[x][y]=beam_blocking[iaz%NUM_AZ_X_PPI][irange];
+                            elev_fin_xy[x][y]=volume.elev_fin[iaz%NUM_AZ_X_PPI][irange];
+                            /*neve_cart[x][y]=qual_Z_cart[x][y];*/
+                            if (do_vpr)
+                            {
+                                neve_cart[x][y]=(calcolo_vpr->neve[iaz%NUM_AZ_X_PPI][irange])?0:1;
+                                corr_cart[x][y]=calcolo_vpr->corr_polar[iaz%NUM_AZ_X_PPI][irange];
                             }
                         }
+                        if (do_class)
+                        {
+                            if (irange<calcolo_vpr->x_size)
+                                conv_cart[x][y]=calcolo_vpr->conv[iaz%NUM_AZ_X_PPI][irange];
+                        }
                     }
-
                     if (do_zlr_media)
                     {
-                        if (cont > 0) cartm[x][y]=cartm[x][y]/(float)(cont);
+                        //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
+                        if (sample > 0)
+                    {
+                            cartm[x][y]=cartm[x][y]+BYTEtoZ(sample);
+                            cont=cont+1;
+                        }
                     }
-                    /*
-                     *****  per scrivere in griglia cartesiana************
-                     bloc_xy[MAX_BIN*2-y][x]=beam_blocking[(int)((float)(az)/.9)][irange];
-                     elev_xy[MAX_BIN*2-y][x]=volume.elev_fin[(int)((float)(az)/.9)][irange];
-                     dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange];
-                     elev_fin_xy[MAX_BIN*2-y][x]=first_level[(int)((float)(az)/.9)][irange];
-                     dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange]; */
                 }
+
+                if (do_zlr_media)
+                {
+                    if (cont > 0) cartm[x][y]=cartm[x][y]/(float)(cont);
+                }
+                /*
+                 *****  per scrivere in griglia cartesiana************
+                 bloc_xy[MAX_BIN*2-y][x]=beam_blocking[(int)((float)(az)/.9)][irange];
+                 elev_xy[MAX_BIN*2-y][x]=volume.elev_fin[(int)((float)(az)/.9)][irange];
+                 dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange];
+                 elev_fin_xy[MAX_BIN*2-y][x]=first_level[(int)((float)(az)/.9)][irange];
+                 dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange]; */
             }
 }
 
