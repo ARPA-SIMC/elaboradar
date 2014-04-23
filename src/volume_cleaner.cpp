@@ -18,22 +18,9 @@
 #include <algorithm>
 #include "volume_cleaner.h"
 
-// TODO: toglierlo
-#define MAX_DIM 512
-
 namespace cumbac {
 
 using namespace std;
-
-unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range)
-{
-    // Lunghezza che vogliamo
-    unsigned rmax = min(orig_cell_num, (unsigned)MAX_DIM);
-    if (max_range > 0)
-      rmax = min(rmax, max_range);
-    return rmax;
-}
-
 
 BeamCleaner::BeamCleaner()
   : min_segment_length(4), max_segment_length(40)

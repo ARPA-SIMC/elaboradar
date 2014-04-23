@@ -141,7 +141,7 @@ void GridStats::init(const Volume& volume)
         stat_anap[i] = stat_tot[i] = stat_bloc[i] = stat_elev[i] = 0;
 }
 
-CUM_BAC::CUM_BAC(const char* site_name, bool medium,int max_bin)
+CUM_BAC::CUM_BAC(const char* site_name, bool medium, int max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
       do_quality(false), do_beamblocking(false), do_declutter(false),
@@ -305,7 +305,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 {
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume.read_sp20(nome_file, Volume::LoadOptions(site, do_medium, do_clean));
+    volume.read_sp20(nome_file, Volume::LoadOptions(site, do_medium, do_clean, MyMAX_BIN));
 
     /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);

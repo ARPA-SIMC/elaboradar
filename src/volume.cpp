@@ -174,8 +174,8 @@ Volume::~Volume()
             delete *i;
 }
 
-Volume::LoadOptions::LoadOptions(const Site& site, bool medium, bool clean)
-    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium))
+Volume::LoadOptions::LoadOptions(const Site& site, bool medium, bool clean, unsigned max_bin)
+    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium)), max_bin(max_bin)
 {
 }
 
@@ -303,12 +303,9 @@ void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
       if (!beam_info.valid_data) continue;
 
       // Calcola la nuova dimensione dei raggi
-      float my_max_range = 123500;
-      unsigned max_range;
-      if (opts.clean)
-          max_range = get_new_cell_num(beam_info.cell_num, my_max_range / size_cell);
-      else
-          max_range = beam_info.cell_num;
+      unsigned max_range = beam_info.cell_num;;
+      if (opts.clean && opts.max_bin)
+          max_range = min(max_range, opts.max_bin);
 
       // TODO: controllare il valore di ritorno delle fread
       if (beam_info.flag_quantities[0]) fread(b->data_z, 1, beam_info.cell_num, sp20_in);
