@@ -447,40 +447,6 @@ void Volume<T>::read_odim(const char* nome_file, const VolumeLoadOptions& opts)
 }
 
 template<typename T>
-void Volume<T>::compute_stats(VolumeStats& stats) const
-{
-    stats.count_zeros.resize(scans.size());
-    stats.count_ones.resize(scans.size());
-    stats.count_others.resize(scans.size());
-    stats.sum_others.resize(scans.size());
-
-    for (int iel = 0; iel < scans.size(); ++iel)
-    {
-        stats.count_zeros[iel] = 0;
-        stats.count_ones[iel] = 0;
-        stats.count_others[iel] = 0;
-        stats.sum_others[iel] = 0;
-
-        for (unsigned iaz = 0; iaz < scan(iel).beam_count; ++iaz)
-        {
-            for (size_t i = 0; i < scan(iel).beam_size; ++i)
-            {
-                int val = scan(iel).get_raw(iaz, i);
-                switch (val)
-                {
-                    case 0: stats.count_zeros[iel]++; break;
-                    case 1: stats.count_ones[iel]++; break;
-                    default:
-                            stats.count_others[iel]++;
-                            stats.sum_others[iel] += val;
-                            break;
-                }
-            }
-        }
-    }
-}
-
-template<typename T>
 void Volume<T>::resize_elev_fin()
 {
     // FIXME: set to 0 to have the right size. We start from 512 (MAX_BIN)

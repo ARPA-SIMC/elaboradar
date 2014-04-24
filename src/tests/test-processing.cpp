@@ -34,6 +34,12 @@ struct ArrayStats : public cumbac::ArrayStats<T>
             this->count_sample(arr.data[i], arr.size());
     }
 
+    void fill(const Volume<T>& vol)
+    {
+        for (unsigned i = 0; i < vol.NEL; ++i)
+            fill(vol.scan(i));
+    }
+
     template<int A, int B>
     void fill2(const T (&arr)[A][B])
     {

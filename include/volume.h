@@ -211,8 +211,8 @@ public:
      */
     double elevation;
 
-    PolarScan(unsigned beam_size)
-        : Matrix2D<T>(beam_size, NUM_AZ_X_PPI, BYTEtoDB(1)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+    PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
+        : Matrix2D<T>(beam_size, NUM_AZ_X_PPI, default_value), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
     {
     }
 
@@ -232,6 +232,12 @@ public:
         return (*this)[az][beam];
     }
 
+    /// Get a beam value in DB
+    T get(unsigned az, unsigned beam) const
+    {
+        return (*this)[az][beam];
+    }
+
     /// Set a raw value in a beam
     void set_raw(unsigned az, unsigned beam, unsigned char val)
     {
@@ -240,6 +246,12 @@ public:
 
     /// Set a beam value in DB
     void set_db(unsigned az, unsigned beam, double val)
+    {
+        (*this)[az][beam] = val;
+    }
+
+    /// Set a beam value in DB
+    void set(unsigned az, unsigned beam, T val)
     {
         (*this)[az][beam] = val;
     }
@@ -331,6 +343,22 @@ public:
     {
     }
 
+    template<typename OT>
+    Volume(const Volume<OT>& v, const T& default_value, bool with_load_info=false)
+        : acq_date(v.acq_date), size_cell(v.size_cell), NEL(v.NEL)
+    {
+        scans.resize(NEL, 0);
+        if (with_load_info)
+            add_load_info(v._load_info);
+
+        for (unsigned i = 0; i < NEL; ++i)
+        {
+            scans[i] = new PolarScan<T>(v.scan(i).beam_size, default_value);
+            scans[i]->elevation = v.scan(i).elevation;
+            scans[i]->add_load_info(v.scan(i)._load_info);
+        }
+    }
+
     ~Volume()
     {
         for (typename std::vector<PolarScan<T>*>::iterator i = scans.begin(); i != scans.end(); ++i)
@@ -389,7 +417,38 @@ public:
     void read_sp20(const char* nome_file, const VolumeLoadOptions& options);
     void read_odim(const char* nome_file, const VolumeLoadOptions& options);
 
-    void compute_stats(VolumeStats& stats) const;
+    void compute_stats(VolumeStats& stats) const
+    {
+        stats.count_zeros.resize(scans.size());
+        stats.count_ones.resize(scans.size());
+        stats.count_others.resize(scans.size());
+        stats.sum_others.resize(scans.size());
+
+        for (int iel = 0; iel < scans.size(); ++iel)
+        {
+            stats.count_zeros[iel] = 0;
+            stats.count_ones[iel] = 0;
+            stats.count_others[iel] = 0;
+            stats.sum_others[iel] = 0;
+
+            for (unsigned iaz = 0; iaz < scan(iel).beam_count; ++iaz)
+            {
+                for (size_t i = 0; i < scan(iel).beam_size; ++i)
+                {
+                    int val = scan(iel).get_raw(iaz, i);
+                    switch (val)
+                    {
+                        case 0: stats.count_zeros[iel]++; break;
+                        case 1: stats.count_ones[iel]++; break;
+                        default:
+                                stats.count_others[iel]++;
+                                stats.sum_others[iel] += val;
+                                break;
+                    }
+                }
+            }
+        }
+    }
 
     void write_info_to_debug_file(H5::H5File out);
 
