@@ -20,12 +20,12 @@ namespace {
 void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
 {
     // Ensure that nbeam_elev has been filled with the right values
-    wassert(actual(v.scan(0).count_rays_filled()) == 400);
-    wassert(actual(v.scan(1).count_rays_filled()) == 400);
-    wassert(actual(v.scan(2).count_rays_filled()) == 400);
-    wassert(actual(v.scan(3).count_rays_filled()) == 400);
-    wassert(actual(v.scan(4).count_rays_filled()) == 400);
-    wassert(actual(v.scan(5).count_rays_filled()) == 400);
+    wassert(actual(v.scan(0).load_info().count_rays_filled()) == 400);
+    wassert(actual(v.scan(1).load_info().count_rays_filled()) == 400);
+    wassert(actual(v.scan(2).load_info().count_rays_filled()) == 400);
+    wassert(actual(v.scan(3).load_info().count_rays_filled()) == 400);
+    wassert(actual(v.scan(4).load_info().count_rays_filled()) == 400);
+    wassert(actual(v.scan(5).load_info().count_rays_filled()) == 400);
 
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
@@ -103,8 +103,8 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const V
         WIBBLE_TEST_INFO(testinfo);
         testinfo() << "elevation " << ie;
 
-        wassert(actual(vsp20.scan(ie).count_rays_filled()) == vodim.scan(ie).count_rays_filled());
-        if (vsp20.scan(ie).count_rays_filled() == 0) continue;
+        wassert(actual(vsp20.scan(ie).load_info().count_rays_filled()) == vodim.scan(ie).load_info().count_rays_filled());
+        if (vsp20.scan(ie).load_info().count_rays_filled() == 0) continue;
 
         for (unsigned ia = 0; ia < vsp20.scan(ie).beam_count; ++ia)
         {
@@ -135,8 +135,8 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const V
                 for (vector<Difference>::const_iterator i = vals_odim.begin(); i != vals_odim.end(); ++i)
                     printf(" %u:%d", i->idx, (int)i->val);
                 printf("\n");
-                const LoadLog& llsp20 = vsp20.scan(ie).get_beam_load_log(ia);
-                const LoadLog& llodim = vodim.scan(ie).get_beam_load_log(ia);
+                const volume::LoadLog& llsp20 = vsp20.scan(ie).load_info().get_beam_load_log(ia);
+                const volume::LoadLog& llodim = vodim.scan(ie).load_info().get_beam_load_log(ia);
                 if (llsp20 != llodim)
                 {
                     printf("sp20 vp[%u][%u] load log: ", ie, ia); llsp20.print(stdout);

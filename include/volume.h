@@ -19,21 +19,85 @@ struct H5File;
 namespace cumbac {
 struct Site;
 
-inline double BYTEtoDB(unsigned char z)
-{
-    return (z*80./255.-20.);
-}
+namespace volume {
 
-inline unsigned char DBtoBYTE(double dB)
+template<typename T> struct WithLoadInfo;
+
+class LoadInfo
 {
-    int byt = round((dB+20.)*255./80.);
-    if (byt >= 0 && byt <= 255)
-        return ((unsigned char)byt);
-    else if (byt < 0)
-        return 0;
-    else
-        return 255;
-}
+private:
+    /**
+     * Reference counter, to share instances across many volumes
+     */
+    unsigned _refcount;
+
+protected:
+    LoadInfo() : _refcount(0) {}
+    virtual ~LoadInfo() {}
+
+    // Increment the reference count
+    void _ref() { ++_refcount; }
+
+    /**
+     * Decrement the reference count, and return true if it became zero and
+     * this structure should be deallocated
+     */
+    bool _unref() { return --_refcount == 0; }
+
+    template <typename T> friend struct WithLoadInfo;
+};
+
+template<class LI>
+struct WithLoadInfo
+{
+    LI* _load_info;
+
+    WithLoadInfo() : _load_info(0) {}
+    WithLoadInfo(const WithLoadInfo<LI>& o)
+        : _load_info(o._load_info ? o._load_info->_ref() : 0)
+    {
+    }
+    ~WithLoadInfo()
+    {
+        if (_load_info && _load_info->_unref())
+            delete _load_info;
+    }
+    WithLoadInfo<LI> operator=(const WithLoadInfo& o)
+    {
+        if (_load_info && _load_info != o._load_info && _load_info->_unref())
+            delete _load_info;
+        _load_info = o._load_info;
+        _load_info->_ref();
+        return *this;
+    }
+
+    LI* get_load_info() const { return _load_info; }
+
+    LI& obtain_load_info()
+    {
+        if (!_load_info)
+        {
+            _load_info = new LI();
+            _load_info->_ref();
+        }
+        return *_load_info;
+    }
+
+    const LI& load_info() const
+    {
+        if (!_load_info) throw std::runtime_error("this object has no loading information");
+        return *_load_info;
+    }
+
+    LI* add_load_info(LI* info)
+    {
+        if (_load_info && _load_info != info && _load_info->_unref())
+            delete _load_info;
+        _load_info = info;
+        _load_info->_ref();
+        return _load_info;
+    }
+};
 
 struct LoadLogEntry
 {
@@ -67,13 +131,75 @@ struct BeamInfo
     double elevation;
 };
 
-template<typename T>
-class PolarScan
-{
-protected:
-    Matrix2D<T> scan;
-    std::vector<BeamInfo> beam_info;
+}
 
+struct PolarScanLoadInfo : public volume::LoadInfo
+{
+    std::vector<volume::BeamInfo> beam_info;
+
+    PolarScanLoadInfo(unsigned beam_count)
+    {
+        beam_info.resize(beam_count);
+    }
+
+    /// Return the number of beams that have been filled with data while loading
+    unsigned count_rays_filled() const
+    {
+        unsigned count = 0;
+        for (std::vector<volume::BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
+            if (!i->load_log.empty())
+                ++count;
+        return count;
+    }
+
+    /// Return the load log for the given beam
+    const volume::LoadLog& get_beam_load_log(unsigned az) const
+    {
+        return beam_info[az].load_log;
+    }
+
+    inline double get_elevation(unsigned az) const
+    {
+        return beam_info[az].elevation;
+    }
+
+    inline double get_elevation_rad(unsigned az) const
+    {
+        return beam_info[az].elevation * M_PI / 180.;
+    }
+};
+
+struct VolumeLoadInfo : public volume::LoadInfo
+{
+    std::string filename;
+    bool declutter_rsp; // ?
+
+    VolumeLoadInfo()
+        : declutter_rsp(false)
+    {
+    }
+};
+
+inline double BYTEtoDB(unsigned char z)
+{
+    return (z*80./255.-20.);
+}
+
+inline unsigned char DBtoBYTE(double dB)
+{
+    int byt = round((dB+20.)*255./80.);
+    if (byt >= 0 && byt <= 255)
+        return ((unsigned char)byt);
+    else if (byt < 0)
+        return 0;
+    else
+        return 255;
+}
+
+
+template<typename T>
+class PolarScan : public Matrix2D<T>, public volume::WithLoadInfo<PolarScanLoadInfo>
+{
 public:
     /// Count of beams in this scan
     const unsigned beam_count;
@@ -86,23 +212,12 @@ public:
     double elevation;
 
     PolarScan(unsigned beam_size)
-        : scan(beam_size, NUM_AZ_X_PPI, BYTEtoDB(1)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+        : Matrix2D<T>(beam_size, NUM_AZ_X_PPI, BYTEtoDB(1)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
     {
-        beam_info.resize(beam_count);
     }
 
     ~PolarScan()
     {
-    }
-
-    inline double get_elevation(unsigned az) const
-    {
-        return beam_info[az].elevation;
-    }
-
-    inline double get_elevation_rad(unsigned az) const
-    {
-        return beam_info[az].elevation * M_PI / 180.;
     }
 
     /// Get a raw value in a beam
@@ -114,19 +229,19 @@ public:
     /// Get a beam value in DB
     double get_db(unsigned az, unsigned beam) const
     {
-        return scan[az][beam];
+        return (*this)[az][beam];
     }
 
     /// Set a raw value in a beam
     void set_raw(unsigned az, unsigned beam, unsigned char val)
     {
-        scan[az][beam] = BYTEtoDB(val);
+        (*this)[az][beam] = BYTEtoDB(val);
     }
 
     /// Set a beam value in DB
     void set_db(unsigned az, unsigned beam, double val)
     {
-        scan[az][beam] = val;
+        (*this)[az][beam] = val;
     }
 
     /**
@@ -149,22 +264,6 @@ public:
 
 
     void fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data);
-
-    /// Return the number of beams that have been filled with data while loading
-    unsigned count_rays_filled() const
-    {
-        unsigned count = 0;
-        for (std::vector<BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
-            if (!i->load_log.empty())
-                ++count;
-        return count;
-    }
-
-    /// Return the load log for the given beam
-    const LoadLog& get_beam_load_log(unsigned az) const
-    {
-        return beam_info[az].load_log;
-    }
 
 
 protected:
@@ -203,7 +302,7 @@ struct VolumeLoadOptions
 };
 
 template<typename T>
-class Volume
+class Volume : public volume::WithLoadInfo<VolumeLoadInfo>
 {
 protected:
     // Dato di base volume polare
@@ -213,10 +312,11 @@ protected:
     PolarScan<T>& make_scan(const VolumeLoadOptions& opts, unsigned idx, unsigned beam_size);
 
 public:
-    std::string filename;
+    // Acquisition date
     time_t acq_date;
+    // Length of a beam cell in meters
     double size_cell;
-    bool declutter_rsp; // ?
+    // How many elevations are in this volume
     unsigned int NEL;
 
     // Access a polar scan
@@ -227,7 +327,7 @@ public:
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
     Volume()
-        : acq_date(0), size_cell(0), declutter_rsp(false), NEL(0)
+        : acq_date(0), size_cell(0), NEL(0)
     {
     }
 
@@ -236,7 +336,6 @@ public:
         for (typename std::vector<PolarScan<T>*>::iterator i = scans.begin(); i != scans.end(); ++i)
             if (*i) delete *i;
     }
-
 
     /// Return the maximum beam count in all PolarScans
     const unsigned max_beam_count() const
@@ -269,12 +368,12 @@ public:
 
     inline double elevation_rad_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return scan(elev_fin[az_idx][ray_idx]).get_elevation_rad(az_idx);
+        return scan(elev_fin[az_idx][ray_idx]).load_info().get_elevation_rad(az_idx);
     }
 
     inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        return scan(elev_fin[az_idx][ray_idx]).get_elevation(az_idx);
+        return scan(elev_fin[az_idx][ray_idx]).load_info().get_elevation(az_idx);
     }
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
@@ -296,6 +395,10 @@ public:
 
 protected:
     void resize_elev_fin();
+
+private:
+    Volume(const Volume&);
+    Volume& operator=(const Volume&);
 };
 
 template<typename T>

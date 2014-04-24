@@ -33,6 +33,7 @@ int elev_array[15];
 
 namespace cumbac {
 
+namespace volume {
 void LoadLog::print(FILE* out) const
 {
     if (empty())
@@ -48,6 +49,7 @@ void LoadLog::print(FILE* out) const
         fprintf(out, "ϑ%.2f α%.2f", i->theta, i->alpha);
     }
     fprintf(out, "\n");
+}
 }
 
 template<typename T>
@@ -86,17 +88,21 @@ void PolarScan<T>::fill_beam(int el_num, double theta, double alpha, unsigned si
 template<typename T>
 void PolarScan<T>::merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati)
 {
+    PolarScanLoadInfo* li = get_load_info();
+    if (!li)
+        li = add_load_info(new PolarScanLoadInfo(beam_count));
+
     //LOG_CATEGORY("radar.io");
     // if (az_num >= vol_pol[el_num].size())
     //     vol_pol[el_num].resize(az_num + 1);
-    beam_info[az_num].load_log.log(theta, alpha);
+    li->beam_info[az_num].load_log.log(theta, alpha);
 
     unsigned overlap = min(beam_size, size);
     for (unsigned i = 0; i < overlap; ++i)
         if (get_db(az_num, i) < dati[i])
             set_db(az_num, i, dati[i]);
 
-    beam_info[az_num].elevation = theta;
+    li->beam_info[az_num].elevation = theta;
     //raggio.b_header.tipo_gran = INDEX_Z;  // FIXME: to be changed when we load different quantities
 }
 
@@ -158,7 +164,9 @@ void Volume<T>::read_sp20(const char* nome_file, const VolumeLoadOptions& opts)
     //LOG_CATEGORY("radar.io");
     HD_DBP_SP20_RAW hd_char;
 
-    filename = nome_file;
+    VolumeLoadInfo& li = obtain_load_info();
+
+    li.filename = nome_file;
 
     // Replicato qui la read_dbp_SP20, per poi metterci mano e condividere codice con la lettura di ODIM
 
@@ -179,7 +187,7 @@ void Volume<T>::read_sp20(const char* nome_file, const VolumeLoadOptions& opts)
     struct tm data_nome;
     acq_date = get_date_from_name(0, &data_nome, nome_file);
     size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
-    declutter_rsp = (bool)hd_file.filtro_clutter;
+    li.declutter_rsp = (bool)hd_file.filtro_clutter;
 
     BeamCleaner cleaner;
     cleaner.bin_wind_magic_number = opts.site.get_bin_wind_magic_number(acq_date);
@@ -198,7 +206,7 @@ void Volume<T>::read_sp20(const char* nome_file, const VolumeLoadOptions& opts)
         else
         {
           string errmsg("Error reading ");
-          errmsg += filename;
+          errmsg += li.filename;
           errmsg += ": ";
           errmsg += strerror(errno);
           fclose(sp20_in);
@@ -319,7 +327,8 @@ void Volume<T>::read_odim(const char* nome_file, const VolumeLoadOptions& opts)
     using namespace Radar;
     using namespace std;
 
-    filename = nome_file;
+    VolumeLoadInfo& li = obtain_load_info();
+    li.filename = nome_file;
 
     auto_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
     auto_ptr<odim::PolarVolume> volume(factory->openPolarVolume(nome_file));
