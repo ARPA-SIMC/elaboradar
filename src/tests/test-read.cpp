@@ -17,7 +17,7 @@ TESTGRP(read);
 
 namespace {
 
-void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume& v)
+void test_0120141530gat(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
 {
     // Ensure that nbeam_elev has been filled with the right values
     wassert(actual(v.scan(0).count_rays_filled()) == 400);
@@ -91,7 +91,7 @@ struct Difference
 };
 }
 
-void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume& vsp20, const Volume& vodim)
+void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const Volume<double>& vodim)
 {
     using namespace std;
 
@@ -157,9 +157,9 @@ void to::test<1>()
 {
     // Test loading of a radar volume via SP20
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
-    Volume vsp20;
+    Volume<double> vsp20;
     const Site& gat = Site::get("GAT");
-    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", Volume::LoadOptions(gat, false, false));
+    vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", VolumeLoadOptions(gat, false, false));
     // Check the contents of what we read
     wruntest(test_0120141530gat, vsp20);
 }
@@ -182,12 +182,12 @@ template<> template<>
 void to::test<3>()
 {
     using namespace std;
-    Volume vsp20;
-    Volume vodim;
+    Volume<double> vsp20;
+    Volume<double> vodim;
 
     // FIXME: get rid of the static elev_array as soon as it is convenient to do so
     const Site& gat = Site::get("GAT");
-    Volume::LoadOptions options(gat, false, false);
+    VolumeLoadOptions options(gat, false, false);
     vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", options);
     vodim.read_odim("testdata/MSG1400715300U.101.h5", options);
 
@@ -212,12 +212,12 @@ template<> template<>
 void to::test<5>()
 {
     using namespace std;
-    Volume vsp20;
-    Volume v_mod;
+    Volume<double> vsp20;
+    Volume<double> v_mod;
 
     const Site& gat = Site::get("GAT");
-    vsp20.read_sp20("testdata/DBP2_060220140140_GATTATICO", Volume::LoadOptions(gat, false, true, 494));
-    v_mod.read_sp20("testdata/DBP2_060220140140_GATTATICO_mod", Volume::LoadOptions(gat, false, false));
+    vsp20.read_sp20("testdata/DBP2_060220140140_GATTATICO", VolumeLoadOptions(gat, false, true, 494));
+    v_mod.read_sp20("testdata/DBP2_060220140140_GATTATICO_mod", VolumeLoadOptions(gat, false, false));
 
     wruntest(test_volumes_equal, vsp20, v_mod);
 }

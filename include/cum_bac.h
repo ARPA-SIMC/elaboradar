@@ -77,7 +77,7 @@ struct GridStats
     GridStats();
     ~GridStats();
 
-    void init(const Volume& volume);
+    void init(const Volume<double>& volume);
 
     inline unsigned idx(unsigned az, unsigned beam) const
     {
@@ -138,7 +138,7 @@ public:
     // dimensione matrice a 1x1 km
     const unsigned CART_DIM_ZLR;
 
-    cumbac::Volume volume;
+    cumbac::Volume<double> volume;
 
     CalcoloVPR* calcolo_vpr;
 

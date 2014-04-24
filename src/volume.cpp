@@ -108,24 +108,12 @@ void VolumeStats::print(FILE* out)
     }
 }
 
-Volume::Volume()
-    : acq_date(0), size_cell(0), declutter_rsp(false), NEL(0)
-{
-}
-
-Volume::~Volume()
-{
-    for (vector<PolarScan<double>*>::iterator i = scans.begin(); i != scans.end(); ++i)
-        if (*i)
-            delete *i;
-}
-
-Volume::LoadOptions::LoadOptions(const Site& site, bool medium, bool clean, unsigned max_bin)
+VolumeLoadOptions::VolumeLoadOptions(const Site& site, bool medium, bool clean, unsigned max_bin)
     : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium)), max_bin(max_bin)
 {
 }
 
-int Volume::LoadOptions::elevation_index(double elevation) const
+int VolumeLoadOptions::elevation_index(double elevation) const
 {
     for (unsigned i=0; i < elev_array.size(); ++i)
         if (elevation >= (elev_array[i]-0.5) && elevation < (elev_array[i]+0.5))
@@ -134,7 +122,8 @@ int Volume::LoadOptions::elevation_index(double elevation) const
 }
 
 
-PolarScan<double>& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size)
+template<typename T>
+PolarScan<T>& Volume<T>::make_scan(const VolumeLoadOptions& opts, unsigned idx, unsigned beam_size)
 {
     // Enlarge the scans vector if needed
     if (idx >= scans.size())
@@ -160,33 +149,8 @@ PolarScan<double>& Volume::make_scan(const LoadOptions& opts, unsigned idx, unsi
     return *scans[idx];
 }
 
-const unsigned Volume::max_beam_count() const
-{
-    unsigned res = 0;
-    for (size_t i = 0; i < scans.size(); ++i)
-        res = max(res, scans[i]->beam_count);
-    return res;
-}
-
-const unsigned Volume::max_beam_size() const
-{
-    unsigned res = 0;
-    for (size_t i = 0; i < scans.size(); ++i)
-        res = max(res, scans[i]->beam_size);
-    return res;
-}
-
-double Volume::elevation_min() const
-{
-    return scan(0).elevation;
-}
-
-double Volume::elevation_max() const
-{
-    return scan(NEL - 1).elevation;
-}
-
-void Volume::read_sp20(const char* nome_file, const LoadOptions& opts)
+template<typename T>
+void Volume<T>::read_sp20(const char* nome_file, const VolumeLoadOptions& opts)
 {
  LOG_CATEGORY("Volume");
     // dimensioni cella a seconda del tipo di acquisizione
@@ -346,7 +310,8 @@ unsigned int_to_unsigned(int val, const char* desc)
 
 }
 
-void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
+template<typename T>
+void Volume<T>::read_odim(const char* nome_file, const VolumeLoadOptions& opts)
 {
     LOG_CATEGORY("radar.io");
 
@@ -472,7 +437,8 @@ void Volume::read_odim(const char* nome_file, const LoadOptions& opts)
     resize_elev_fin();
 }
 
-void Volume::compute_stats(VolumeStats& stats) const
+template<typename T>
+void Volume<T>::compute_stats(VolumeStats& stats) const
 {
     stats.count_zeros.resize(scans.size());
     stats.count_ones.resize(scans.size());
@@ -505,7 +471,8 @@ void Volume::compute_stats(VolumeStats& stats) const
     }
 }
 
-void Volume::resize_elev_fin()
+template<typename T>
+void Volume<T>::resize_elev_fin()
 {
     // FIXME: set to 0 to have the right size. We start from 512 (MAX_BIN)
     // to allocate enough memory for legacy code that iterates on MAX_BIN
@@ -523,7 +490,8 @@ void Volume::resize_elev_fin()
     }
 }
 
-void Volume::write_info_to_debug_file(H5::H5File out)
+template<typename T>
+void Volume<T>::write_info_to_debug_file(H5::H5File out)
 {
     using namespace H5;
 
@@ -559,5 +527,7 @@ void Volume::write_info_to_debug_file(H5::H5File out)
         ds.write(elev_fin[i].data(), datatype, memory_data_space, file_data_space);
     }
 }
+
+template class Volume<double>;
 
 }
