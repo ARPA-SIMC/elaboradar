@@ -231,7 +231,7 @@ bool CUM_BAC::test_file(int file_type)
     switch (file_type)
     {
         case SHORT_DEC:
-            if (!volume.declutter_rsp)
+            if (!volume.load_info().declutter_rsp)
             {
                 LOG_WARN("File Senza Declutter Dinamico--cos' è???");
                 return false;
@@ -241,7 +241,7 @@ bool CUM_BAC::test_file(int file_type)
             break;
             //------------se tipo =1 esco
         case SHORT_FULL_VOLUME://-----??? DUBBIO
-            if (volume.declutter_rsp)
+            if (volume.load_info().declutter_rsp)
             {
                 LOG_WARN("File con Declutter Dinamico");
                 return false;
@@ -260,7 +260,7 @@ bool CUM_BAC::test_file(int file_type)
             LOG_INFO("CASO MEDIO OLD");
             break;
         case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
-            if (!volume.declutter_rsp)
+            if (!volume.load_info().declutter_rsp)
             {
                 LOG_WARN("File senza Declutter Dinamico");
                 return false;
@@ -281,13 +281,13 @@ bool CUM_BAC::test_file(int file_type)
 
     for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
-        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.scan(k).count_rays_filled(), k);
+        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", volume.scan(k).load_info().count_rays_filled(), k);
 
-        if (volume.scan(k).count_rays_filled() <  NUM_MIN_BEAM)
+        if (volume.scan(k).load_info().count_rays_filled() <  NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
         {
             //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.scan(k).count_rays_filled());
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,volume.scan(k).load_info().count_rays_filled());
             return false;
         }
     }                                                             /*end for*/
@@ -903,7 +903,7 @@ void CUM_BAC::caratterizzo_volume()
             // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
             //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
             //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
-            const float elevaz = volume.scan(l).get_elevation_rad(i);//--- elev reale
+            const float elevaz = volume.scan(l).load_info().get_elevation_rad(i);//--- elev reale
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
@@ -2441,7 +2441,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].teta_true)*CONV_RAD;
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].elevation*DTOR);
-                const float elevaz = scan.get_elevation_rad(i);
+                const float elevaz = scan.load_info().get_elevation_rad(i);
                 quota_true_st=cum_bac.quota_f(elevaz,k);
 
                 //--------trovo ilay---------
@@ -3052,7 +3052,7 @@ void CalcoloVPR::esegui_tutto()
 {
     test_vpr=fopen(getenv("TEST_VPR"),"a+");
 
-    LOG_INFO("processo file dati: %s", cum_bac.volume.filename.c_str());
+    LOG_INFO("processo file dati: %s", cum_bac.volume.load_info().filename.c_str());
     printf ("calcolo VPR \n") ;
 
     //VPR  // ------------inizializzo hvprmax ---------------

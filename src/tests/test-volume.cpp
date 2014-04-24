@@ -22,7 +22,7 @@ void to::test<1>()
     Volume<double> vsp20;
     vsp20.read_sp20("testdata/DBP2_070120141530_GATTATICO", VolumeLoadOptions(Site::get("GAT"), false, false));
 
-    wassert(actual(vsp20.scan(0).get_elevation_rad(0)) == vsp20.scan(0).get_elevation(0) * M_PI / 180);
+    wassert(actual(vsp20.scan(0).load_info().get_elevation_rad(0)) == vsp20.scan(0).load_info().get_elevation(0) * M_PI / 180);
 }
 
 }
