@@ -181,36 +181,36 @@ struct VolumeStats
     void print(FILE* out);
 };
 
+struct VolumeLoadOptions
+{
+    const Site& site;
+    bool medium;
+    bool clean;
+    std::vector<double> elev_array;
+    /**
+     * If this is greather than zero, truncate each beam to this number of
+     * samples
+     */
+    unsigned max_bin;
+
+    VolumeLoadOptions(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0);
+
+    /**
+     * Compute the vol_pol index of an elevation angle
+     * @returns -1 if no suitable index was found, else the index
+     */
+    int elevation_index(double elevation) const;
+};
+
+template<typename T>
 class Volume
 {
-public:
-    struct LoadOptions
-    {
-        const Site& site;
-        bool medium;
-        bool clean;
-        std::vector<double> elev_array;
-        /**
-         * If this is greather than zero, truncate each beam to this number of
-         * samples
-         */
-        unsigned max_bin;
-
-        LoadOptions(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0);
-
-        /**
-         * Compute the vol_pol index of an elevation angle
-         * @returns -1 if no suitable index was found, else the index
-         */
-        int elevation_index(double elevation) const;
-    };
-
 protected:
     // Dato di base volume polare
-    std::vector<PolarScan<double>*> scans;
+    std::vector<PolarScan<T>*> scans;
 
     // Create or reuse a scan at position idx, with the given beam size
-    PolarScan<double>& make_scan(const LoadOptions& opts, unsigned idx, unsigned beam_size);
+    PolarScan<T>& make_scan(const VolumeLoadOptions& opts, unsigned idx, unsigned beam_size);
 
 public:
     std::string filename;
@@ -220,22 +220,52 @@ public:
     unsigned int NEL;
 
     // Access a polar scan
-    PolarScan<double>& scan(unsigned idx) { return *scans[idx]; }
-    const PolarScan<double>& scan(unsigned idx) const { return *scans[idx]; }
+    PolarScan<T>& scan(unsigned idx) { return *scans[idx]; }
+    const PolarScan<T>& scan(unsigned idx) const { return *scans[idx]; }
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
-    Volume();
-    ~Volume();
+    Volume()
+        : acq_date(0), size_cell(0), declutter_rsp(false), NEL(0)
+    {
+    }
+
+    ~Volume()
+    {
+        for (typename std::vector<PolarScan<T>*>::iterator i = scans.begin(); i != scans.end(); ++i)
+            if (*i) delete *i;
+    }
+
 
     /// Return the maximum beam count in all PolarScans
-    const unsigned max_beam_count() const;
-    /// Return the maximum beam size in all PolarScans
-    const unsigned max_beam_size() const;
+    const unsigned max_beam_count() const
+    {
+        unsigned res = 0;
+        for (size_t i = 0; i < scans.size(); ++i)
+            res = std::max(res, scans[i]->beam_count);
+        return res;
+    }
 
-    double elevation_min() const;
-    double elevation_max() const;
+    /// Return the maximum beam size in all PolarScans
+    const unsigned max_beam_size() const
+    {
+        unsigned res = 0;
+        for (size_t i = 0; i < scans.size(); ++i)
+            res = std::max(res, scans[i]->beam_size);
+        return res;
+    }
+
+
+    double elevation_min() const
+    {
+        return scans.front()->elevation;
+    }
+
+    double elevation_max() const
+    {
+        return scans.back()->elevation;
+    }
 
     inline double elevation_rad_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
@@ -249,7 +279,7 @@ public:
 
     inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        const PolarScan<double>& s = scan(elev_fin[az_idx][ray_idx]);
+        const PolarScan<T>& s = scan(elev_fin[az_idx][ray_idx]);
         if (ray_idx < s.beam_size)
             return s.get_raw(az_idx, ray_idx);
         else
@@ -257,8 +287,8 @@ public:
             return 1;
     }
 
-    void read_sp20(const char* nome_file, const LoadOptions& options);
-    void read_odim(const char* nome_file, const LoadOptions& options);
+    void read_sp20(const char* nome_file, const VolumeLoadOptions& options);
+    void read_odim(const char* nome_file, const VolumeLoadOptions& options);
 
     void compute_stats(VolumeStats& stats) const;
 
@@ -318,7 +348,8 @@ protected:
     T* data;
 
 public:
-    VolumeInfo(const Volume& vol)
+    template<typename BIN>
+    VolumeInfo(const Volume<BIN>& vol)
         : sz_el(vol.NEL), sz_az(vol.max_beam_count()), sz_beam(vol.max_beam_size()),
           data(new T[sz_el * sz_az * sz_beam])
     {

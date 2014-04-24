@@ -127,7 +127,7 @@ GridStats::~GridStats()
     if (stat_elev) delete[] stat_elev;
 }
 
-void GridStats::init(const Volume& volume)
+void GridStats::init(const Volume<double>& volume)
 {
     size_az = volume.scan(0).beam_count / step_stat_az + 1;
     size_beam = volume.scan(0).beam_size / step_stat_range + 1;
@@ -305,7 +305,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 {
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume.read_sp20(nome_file, Volume::LoadOptions(site, do_medium, do_clean, MyMAX_BIN));
+    volume.read_sp20(nome_file, VolumeLoadOptions(site, do_medium, do_clean, MyMAX_BIN));
 
     /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
@@ -328,7 +328,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 {
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume.read_odim(nome_file, Volume::LoadOptions(site, do_medium, do_clean));
+    volume.read_odim(nome_file, VolumeLoadOptions(site, do_medium, do_clean));
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);
