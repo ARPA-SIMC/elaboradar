@@ -5,7 +5,6 @@
 #include <matrix.h>
 #include <string>
 #include <vector>
-#include <ctime>
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
@@ -14,11 +13,6 @@
 #define NUM_AZ_X_PPI 400
 
 namespace cumbac {
-struct Site;
-
-namespace volume {
-struct LoadInfo;
-}
 
 inline double BYTEtoDB(unsigned char z)
 {
