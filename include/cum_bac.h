@@ -20,6 +20,8 @@
 #include "logging.h"
 #include "assets.h"
 #include "volume.h"
+#include "volume/loader.h"
+#include "volume/elev_fin.h"
 #include "matrix.h"
 #include <stdexcept>
 #include <cmath>
@@ -138,7 +140,9 @@ public:
     // dimensione matrice a 1x1 km
     const unsigned CART_DIM_ZLR;
 
-    cumbac::Volume<double> volume;
+    volume::LoadInfo load_info;
+    Volume<double> volume;
+    volume::ElevFin<double> elev_fin;
 
     CalcoloVPR* calcolo_vpr;
 

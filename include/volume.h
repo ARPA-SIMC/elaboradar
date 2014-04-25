@@ -1,184 +1,24 @@
 #ifndef ARCHIVIATORE_VOLUME_CLASS_H
 #define ARCHIVIATORE_VOLUME_CLASS_H
 
+#include <logging.h>
+#include <matrix.h>
 #include <string>
 #include <vector>
 #include <ctime>
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
-#include <matrix.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
-
-namespace H5 {
-struct H5File;
-}
 
 namespace cumbac {
 struct Site;
 
 namespace volume {
-
-template<typename T> struct WithLoadInfo;
-
-class LoadInfo
-{
-private:
-    /**
-     * Reference counter, to share instances across many volumes
-     */
-    unsigned _refcount;
-
-protected:
-    LoadInfo() : _refcount(0) {}
-    virtual ~LoadInfo() {}
-
-    // Increment the reference count
-    void _ref() { ++_refcount; }
-
-    /**
-     * Decrement the reference count, and return true if it became zero and
-     * this structure should be deallocated
-     */
-    bool _unref() { return --_refcount == 0; }
-
-    template <typename T> friend struct WithLoadInfo;
-};
-
-template<class LI>
-struct WithLoadInfo
-{
-    LI* _load_info;
-
-    WithLoadInfo() : _load_info(0) {}
-    WithLoadInfo(const WithLoadInfo<LI>& o)
-        : _load_info(o._load_info ? o._load_info->_ref() : 0)
-    {
-    }
-    ~WithLoadInfo()
-    {
-        if (_load_info && _load_info->_unref())
-            delete _load_info;
-    }
-    WithLoadInfo<LI> operator=(const WithLoadInfo& o)
-    {
-        if (_load_info && _load_info != o._load_info && _load_info->_unref())
-            delete _load_info;
-        _load_info = o._load_info;
-        _load_info->_ref();
-        return *this;
-    }
-
-    LI* get_load_info() const { return _load_info; }
-
-    LI& obtain_load_info()
-    {
-        if (!_load_info)
-        {
-            _load_info = new LI();
-            _load_info->_ref();
-        }
-        return *_load_info;
-    }
-
-    const LI& load_info() const
-    {
-        if (!_load_info) throw std::runtime_error("this object has no loading information");
-        return *_load_info;
-    }
-
-    LI* add_load_info(LI* info)
-    {
-        if (_load_info && _load_info != info && _load_info->_unref())
-            delete _load_info;
-        _load_info = info;
-        _load_info->_ref();
-        return _load_info;
-    }
-};
-
-struct LoadLogEntry
-{
-    double theta;
-    double alpha;
-
-    LoadLogEntry(double theta, double alpha)
-        : theta(theta), alpha(alpha)
-    {
-    }
-
-    bool operator==(const LoadLogEntry& e) const
-    {
-        return theta == e.theta && alpha == e.alpha;
-    }
-};
-
-struct LoadLog : public std::vector<LoadLogEntry>
-{
-    void log(double theta, double alpha)
-    {
-        push_back(LoadLogEntry(theta, alpha));
-    }
-    void print(FILE* out) const;
-};
-
-struct BeamInfo
-{
-    /// Real beam elevation in degrees
-    LoadLog load_log;
-    double elevation;
-};
-
+struct LoadInfo;
 }
-
-struct PolarScanLoadInfo : public volume::LoadInfo
-{
-    std::vector<volume::BeamInfo> beam_info;
-
-    PolarScanLoadInfo(unsigned beam_count)
-    {
-        beam_info.resize(beam_count);
-    }
-
-    /// Return the number of beams that have been filled with data while loading
-    unsigned count_rays_filled() const
-    {
-        unsigned count = 0;
-        for (std::vector<volume::BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
-            if (!i->load_log.empty())
-                ++count;
-        return count;
-    }
-
-    /// Return the load log for the given beam
-    const volume::LoadLog& get_beam_load_log(unsigned az) const
-    {
-        return beam_info[az].load_log;
-    }
-
-    inline double get_elevation(unsigned az) const
-    {
-        return beam_info[az].elevation;
-    }
-
-    inline double get_elevation_rad(unsigned az) const
-    {
-        return beam_info[az].elevation * M_PI / 180.;
-    }
-};
-
-struct VolumeLoadInfo : public volume::LoadInfo
-{
-    std::string filename;
-    bool declutter_rsp; // ?
-
-    VolumeLoadInfo()
-        : declutter_rsp(false)
-    {
-    }
-};
 
 inline double BYTEtoDB(unsigned char z)
 {
@@ -198,7 +38,7 @@ inline unsigned char DBtoBYTE(double dB)
 
 
 template<typename T>
-class PolarScan : public Matrix2D<T>, public volume::WithLoadInfo<PolarScanLoadInfo>
+class PolarScan : public Matrix2D<T>
 {
 public:
     /// Count of beams in this scan
@@ -273,13 +113,6 @@ public:
         for (unsigned i = set_count; i < out_size; ++i)
             out[i] = missing;
     }
-
-
-    void fill_beam(int el_num, double theta, double alpha, unsigned size, const double* data);
-
-
-protected:
-    void merge_beam(int el_num, int az_num, double theta, double alpha, unsigned size, const double* dati);
 };
 
 struct VolumeStats
@@ -292,76 +125,41 @@ struct VolumeStats
     void print(FILE* out);
 };
 
-struct VolumeLoadOptions
-{
-    const Site& site;
-    bool medium;
-    bool clean;
-    std::vector<double> elev_array;
-    /**
-     * If this is greather than zero, truncate each beam to this number of
-     * samples
-     */
-    unsigned max_bin;
-
-    VolumeLoadOptions(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0);
-
-    /**
-     * Compute the vol_pol index of an elevation angle
-     * @returns -1 if no suitable index was found, else the index
-     */
-    int elevation_index(double elevation) const;
-};
-
 template<typename T>
-class Volume : public volume::WithLoadInfo<VolumeLoadInfo>
+class Volume : protected std::vector<PolarScan<T>*>
 {
-protected:
-    // Dato di base volume polare
-    std::vector<PolarScan<T>*> scans;
-
-    // Create or reuse a scan at position idx, with the given beam size
-    PolarScan<T>& make_scan(const VolumeLoadOptions& opts, unsigned idx, unsigned beam_size);
-
 public:
-    // Acquisition date
-    time_t acq_date;
-    // Length of a beam cell in meters
-    double size_cell;
     // How many elevations are in this volume
     unsigned int NEL;
 
-    // Access a polar scan
-    PolarScan<T>& scan(unsigned idx) { return *scans[idx]; }
-    const PolarScan<T>& scan(unsigned idx) const { return *scans[idx]; }
+    using std::vector<PolarScan<T>*>::size;
+    typedef typename std::vector<PolarScan<T>*>::iterator iterator;
+    typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
 
-    // elevazione finale in coordinate azimut range
-    std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
+    // Access a polar scan
+    PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
+    const PolarScan<T>& scan(unsigned idx) const { return *(*this)[idx]; }
 
     Volume()
-        : acq_date(0), size_cell(0), NEL(0)
+        : NEL(0)
     {
     }
 
     template<typename OT>
-    Volume(const Volume<OT>& v, const T& default_value, bool with_load_info=false)
-        : acq_date(v.acq_date), size_cell(v.size_cell), NEL(v.NEL)
+    Volume(const Volume<OT>& v, const T& default_value)
+        : NEL(v.NEL)
     {
-        scans.resize(NEL, 0);
-        if (with_load_info)
-            add_load_info(v._load_info);
-
-        for (unsigned i = 0; i < NEL; ++i)
+        this->resize(v.size(), 0);
+        for (unsigned i = 0; i < v.size(); ++i)
         {
-            scans[i] = new PolarScan<T>(v.scan(i).beam_size, default_value);
-            scans[i]->elevation = v.scan(i).elevation;
-            scans[i]->add_load_info(v.scan(i)._load_info);
+            (*this)[i] = new PolarScan<T>(v.scan(i).beam_size, default_value);
+            (*this)[i]->elevation = v.scan(i).elevation;
         }
     }
 
     ~Volume()
     {
-        for (typename std::vector<PolarScan<T>*>::iterator i = scans.begin(); i != scans.end(); ++i)
+        for (iterator i = this->begin(); i != this->end(); ++i)
             if (*i) delete *i;
     }
 
@@ -369,8 +167,8 @@ public:
     const unsigned max_beam_count() const
     {
         unsigned res = 0;
-        for (size_t i = 0; i < scans.size(); ++i)
-            res = std::max(res, scans[i]->beam_count);
+        for (size_t i = 0; i < size(); ++i)
+            res = std::max(res, (*this)[i]->beam_count);
         return res;
     }
 
@@ -378,53 +176,30 @@ public:
     const unsigned max_beam_size() const
     {
         unsigned res = 0;
-        for (size_t i = 0; i < scans.size(); ++i)
-            res = std::max(res, scans[i]->beam_size);
+        for (size_t i = 0; i < this->size(); ++i)
+            res = std::max(res, (*this)[i]->beam_size);
         return res;
     }
 
 
     double elevation_min() const
     {
-        return scans.front()->elevation;
+        return this->front()->elevation;
     }
 
     double elevation_max() const
     {
-        return scans.back()->elevation;
+        return this->back()->elevation;
     }
-
-    inline double elevation_rad_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
-    {
-        return scan(elev_fin[az_idx][ray_idx]).load_info().get_elevation_rad(az_idx);
-    }
-
-    inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
-    {
-        return scan(elev_fin[az_idx][ray_idx]).load_info().get_elevation(az_idx);
-    }
-
-    inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
-    {
-        const PolarScan<T>& s = scan(elev_fin[az_idx][ray_idx]);
-        if (ray_idx < s.beam_size)
-            return s.get_raw(az_idx, ray_idx);
-        else
-            // If we are reading out of bounds, return 1 (the missing value)
-            return 1;
-    }
-
-    void read_sp20(const char* nome_file, const VolumeLoadOptions& options);
-    void read_odim(const char* nome_file, const VolumeLoadOptions& options);
 
     void compute_stats(VolumeStats& stats) const
     {
-        stats.count_zeros.resize(scans.size());
-        stats.count_ones.resize(scans.size());
-        stats.count_others.resize(scans.size());
-        stats.sum_others.resize(scans.size());
+        stats.count_zeros.resize(this->size());
+        stats.count_ones.resize(this->size());
+        stats.count_others.resize(this->size());
+        stats.sum_others.resize(this->size());
 
-        for (int iel = 0; iel < scans.size(); ++iel)
+        for (int iel = 0; iel < this->size(); ++iel)
         {
             stats.count_zeros[iel] = 0;
             stats.count_ones[iel] = 0;
@@ -450,7 +225,32 @@ public:
         }
     }
 
-    void write_info_to_debug_file(H5::H5File out);
+    // Create or reuse a scan at position idx, with the given beam size
+    PolarScan<T>& make_scan(unsigned idx, unsigned beam_size, double elevation)
+    {
+        // Enlarge the scans vector if needed
+        if (idx >= this->size())
+        {
+            this->resize(idx + 1, 0);
+            this->NEL = idx + 1;
+        }
+
+        // Create the PolarScan if needed
+        if (!(*this)[idx])
+        {
+            (*this)[idx] = new PolarScan<T>(beam_size);
+            (*this)[idx]->elevation = elevation;
+        }
+        else if (beam_size != (*this)[idx]->beam_size)
+        {
+            LOG_CATEGORY("radar.io");
+            LOG_ERROR("make_scan(idx=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_size, (*this)[idx]->beam_size);
+            throw std::runtime_error("beam_size mismatch");
+        }
+
+        // Return it
+        return *(*this)[idx];
+    }
 
 protected:
     void resize_elev_fin();
@@ -459,6 +259,7 @@ private:
     Volume(const Volume&);
     Volume& operator=(const Volume&);
 };
+
 
 template<typename T>
 struct ArrayStats
