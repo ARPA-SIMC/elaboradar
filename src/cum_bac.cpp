@@ -1503,7 +1503,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                     for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
                             double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                            //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
+                            //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )  // aggiungo condizione quota
                             if ( sample > MINVAL_DB  ){
                                 Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
                                 bckgr[i] = bckgr[i] + sample;
@@ -1519,7 +1519,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                     for (unsigned j= 0  ; j< jmax ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
                             double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                            // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                            // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
                             if ( sample > MINVAL_DB  ) {
                                 Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
                                 bckgr[i] = bckgr[i] + sample;
@@ -1533,7 +1533,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                 for (unsigned j=jmin   ; j<jmax  ; j++) {
                     for (k=kmin  ; k<kmax   ; k++){
                         double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
                         if ( sample > MINVAL_DB ) {
                             Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
                             bckgr[i] = bckgr[i] + sample;
@@ -1546,7 +1546,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                 for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
                     for (k=0  ; k<kmax   ; k++){
                         double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
                         if ( sample > MINVAL_DB  ) {
                             Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
                             bckgr[i] = bckgr[i] + sample;
@@ -1557,7 +1557,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                 for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
                     for (k=0  ; k<-kmin   ; k++){
                         double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
                         if ( sample > MINVAL_DB  ) {
                             Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
                             bckgr[i] = bckgr[i] + sample;
