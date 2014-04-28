@@ -53,14 +53,14 @@ struct ElevFin
         return load_info.scan(az).get_elevation(az_idx);
     }
 
-    inline unsigned char sample_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
+    inline double db_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
         const PolarScan<T>& s = volume.scan(elev_fin[az_idx][ray_idx]);
         if (ray_idx < s.beam_size)
-            return s.get_raw(az_idx, ray_idx);
+            return s.get(az_idx, ray_idx);
         else
             // If we are reading out of bounds, return 1 (the missing value)
-            return 1;
+            return MINVAL_DB;
     }
 
     void write_info_to_debug_file(H5::H5File out)

@@ -925,9 +925,9 @@ void CUM_BAC::caratterizzo_volume()
             for (unsigned k=0; k<beam_size; k++)/*ciclo range*/
             {
                 // Enrico: cerca di non leggere fuori dal volume effettivo
-                unsigned char sample = 0;
+                double sample = MISSING_DB;
                 if (k < volume.scan(l).beam_size)
-                    sample = volume.scan(l).get_raw(i, k);
+                    sample = volume.scan(l).get(i, k);
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)
                 dist= k*load_info.size_cell+load_info.size_cell/2.;/*distanza radar */
@@ -944,7 +944,7 @@ void CUM_BAC::caratterizzo_volume()
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
                 if (l == elev_fin[i][k]) att_cart[i][k]=DBtoBYTE(PIA);
-                PIA=attenuation(sample,PIA);
+                PIA=attenuation(DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
                 dhst =quota_f(elevaz+0.45*DTOR,k)-quota_f(elevaz-0.45*DTOR,k);
@@ -997,7 +997,7 @@ void CUM_BAC::caratterizzo_volume()
                         calcolo_vpr->flag_vpr->set(l, i, k, 1);
                 }
                 //------------trovo il top per soglia
-                if (BYTEtoDB(sample) > SOGLIA_TOP )
+                if (sample > SOGLIA_TOP)
                     top[i][k]=(unsigned char)((quota_f(elevaz,k))/100.); //top in ettometri
 
             }
@@ -1413,11 +1413,11 @@ void CalcoloVPR::classifico_STEINER()
         int k = lista_bckg[i][1]; //ra=lista_bckg[i][1]
         if (j < 0 || k < 0) continue;
 
-        unsigned char BYTE=cum_bac.elev_fin.sample_at_elev_preci(j, k);
+        double db = cum_bac.elev_fin.db_at_elev_preci(j, k);
         // calcolo diff col background
-        float diff_bckgr=BYTEtoDB(BYTE)-bckgr[i];
+        float diff_bckgr = db - bckgr[i];
         // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
-        if ((BYTEtoDB(BYTE)>40.)||
+        if ((db > 40.)||
                 (bckgr[i]< 0 && diff_bckgr > 10) ||
                 (bckgr[i]< 42.43 &&  bckgr[i]>0 &&  diff_bckgr > 10. - bckgr[i]*bckgr[i]/180. )||
                 (bckgr[i]> 42.43 &&  diff_bckgr >0)  )
@@ -1450,7 +1450,7 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
         {
             //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
 
-            if (j < cum_bac.volume.scan(0).beam_size && cum_bac.volume.scan(0).get_raw(i, j) > 1)
+            if (j < cum_bac.volume.scan(0).beam_size && DBtoBYTE(cum_bac.volume.scan(0).get(i, j)) > 1)
             {
                 lista_bckg[np][0]=i;  //IAZIMUT
                 lista_bckg[np][1]=j;  //IRANGE
@@ -1502,11 +1502,11 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                     jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
                     for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
-                            unsigned char sample = cum_bac.elev_fin.sample_at_elev_preci(j, k);
+                            double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
                             //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {  // aggiungo condizione quota
-                            if ( sample > 1  ){
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(sample) ;
-                                bckgr[i]=bckgr[i]+BYTEtoDB(sample);
+                            if ( sample > MINVAL_DB  ){
+                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                                bckgr[i] = bckgr[i] + sample;
                                 npoints=npoints+1;
                             }
                         }
@@ -1518,11 +1518,11 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
                     jmax=jmax%NUM_AZ_X_PPI;
                     for (unsigned j= 0  ; j< jmax ; j++) {
                         for (k= kmin ; k< kmax  ; k++){
-                            unsigned char sample = cum_bac.elev_fin.sample_at_elev_preci(j, k);
+                            double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
                             // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                            if ( sample > 1  ) {
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(sample);
-                                bckgr[i]=bckgr[i]+BYTEtoDB(sample);
+                            if ( sample > MINVAL_DB  ) {
+                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                                bckgr[i] = bckgr[i] + sample;
                                 npoints=npoints+1;
                             }
                         }
@@ -1532,11 +1532,11 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
 
                 for (unsigned j=jmin   ; j<jmax  ; j++) {
                     for (k=kmin  ; k<kmax   ; k++){
-                        unsigned char sample = cum_bac.elev_fin.sample_at_elev_preci(j, k);
+                        double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
                         // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( sample > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(sample);
-                            bckgr[i]=bckgr[i]+BYTEtoDB(sample);
+                        if ( sample > MINVAL_DB ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                            bckgr[i] = bckgr[i] + sample;
                             npoints=npoints+1;
                         }
                     }
@@ -1545,22 +1545,22 @@ void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . 
             else{
                 for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
                     for (k=0  ; k<kmax   ; k++){
-                        unsigned char sample = cum_bac.elev_fin.sample_at_elev_preci(j, k);
+                        double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
                         // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( sample > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(sample);
-                            bckgr[i]=bckgr[i]+BYTEtoDB(sample);
+                        if ( sample > MINVAL_DB  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                            bckgr[i] = bckgr[i] + sample;
                             npoints=npoints+1;
                         }
                     }
                 }
                 for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
                     for (k=0  ; k<-kmin   ; k++){
-                        unsigned char sample = cum_bac.elev_fin.sample_at_elev_preci(j, k);
+                        double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
                         // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb ) {
-                        if ( sample > 1  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(sample);
-                            bckgr[i]=bckgr[i]+BYTEtoDB(sample);
+                        if ( sample > MINVAL_DB  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                            bckgr[i] = bckgr[i] + sample;
                             npoints=npoints+1;
                         }
                     }
@@ -2085,7 +2085,13 @@ int CalcoloVPR::corr_vpr()
 
                         corr=cum_bac.RtoDBZ(vpr[ilref])-cum_bac.RtoDBZ(vpr_hray);
 
-                        cum_bac.volume.scan(0).set_db(i, k, RtoDBZ( BYTE_to_mp_func(cum_bac.volume.scan(0).get_raw(i, k),aMP_SNOW,bMP_SNOW),aMP_class,bMP_class ));
+                        cum_bac.volume.scan(0).set_db(i, k, RtoDBZ(
+                                    BYTE_to_mp_func(
+                                        DBtoBYTE(cum_bac.volume.scan(0).get(i, k)),
+                                        aMP_SNOW,
+                                        bMP_SNOW),
+                                    aMP_class,
+                                    bMP_class));
 
                     }
                     else
@@ -2623,14 +2629,18 @@ void CUM_BAC::conversione_convettiva()
 {
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
         for (unsigned k=0; k<volume.scan(0).beam_size; k++){
-
             if (calcolo_vpr->conv[i][k] > 0){
-
-                volume.scan(0).set_db(i, k, ::RtoDBZ( BYTE_to_mp_func(volume.scan(0).get_raw(i, k),aMP_conv,bMP_conv),aMP_class,bMP_class ));
+                volume.scan(0).set(i, k,
+                        ::RtoDBZ(
+                            BYTE_to_mp_func(
+                                DBtoBYTE(volume.scan(0).get(i, k)),
+                                aMP_conv,
+                                bMP_conv),
+                            aMP_class,
+                            bMP_class));
 
             }
         }
-
     }
 }
 
@@ -2713,7 +2723,7 @@ void CUM_BAC::creo_cart()
                     // Enrico: cerca di non leggere fuori dal volume effettivo
                     unsigned char sample = 0;
                     if (irange < volume.scan(0).beam_size)
-                        sample = volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange);
+                        sample = DBtoBYTE(volume.scan(0).get(iaz%NUM_AZ_X_PPI, irange));
 
                     if(cart[x][y] <= sample){
                         cart[x][y] = sample;
