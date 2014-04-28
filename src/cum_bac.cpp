@@ -485,7 +485,7 @@ void CUM_BAC::elabora_dato()
 
             // ------------assegno bin_low e bin_high 
    
-            const float bin_low  = volume.scan(el_inf).get_db(i, k);
+            const float bin_low  = volume.scan(el_inf).get(i, k);
 	    float bin_high;
 	    if (el_up >= volume.NEL ) {
 	        bin_high=BYTEtoDB(0);
@@ -493,12 +493,12 @@ void CUM_BAC::elabora_dato()
 	        if ( k >= volume.scan(el_up).beam_size){
 	            bin_high=BYTEtoDB(0);
                 } else{
-                    bin_high = volume.scan(el_up).get_db(i, k);
+                    bin_high = volume.scan(el_up).get(i, k);
 	        }
 	    }
             // ------------assegno  bin_low_low (cioè il valore sotto il bin base)
            const float bin_low_low = (el_inf > 0)
-                ? volume.scan(el_inf-1).get_db(i, k)
+                ? volume.scan(el_inf-1).get(i, k)
                 : fondo_scala+1;
 
             //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
@@ -542,7 +542,7 @@ void CUM_BAC::elabora_dato()
 
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
                         for(l=0; l<el_up; l++) {
-                            volume.scan(l).set_db(i, k, volume.scan(el_up).get_db(i, k));
+                            volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
                         } //
 
                         //--------azzero beam_blocking ( ho cambiato elevazione, non ho disponible il bbeam blocking all' elev superiore)--------------
@@ -576,7 +576,7 @@ void CUM_BAC::elabora_dato()
 // 20140128 - errore nel limite superiore ciclo
 // for(l=0; l<=el_up; l++){
                         for(l=0; l<el_inf; l++){
-                            volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k)); // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
+                            volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k)); // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 
                         }
                         if (do_quality)
@@ -598,7 +598,7 @@ void CUM_BAC::elabora_dato()
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
                         for(l=0; l<el_up; l++){
            //                 volume.scan(l).set_raw(i, k, 1);
-                            volume.scan(l).set_db(i, k, volume.scan(el_up).get_db(i, k));  //ALTERN
+                            volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));  //ALTERN
                         }
                         //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
                         flag_anap = true;
@@ -619,7 +619,7 @@ void CUM_BAC::elabora_dato()
                     {
                         for(l=0; l<=el_inf; l++)
                         {
-                            volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k));
+                            volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
                             if (do_beamblocking && do_bloccorr)
                             {
                                 volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
@@ -648,7 +648,7 @@ void CUM_BAC::elabora_dato()
                 for(l=0; l<el_up; l++)
                 {
                     if (volume.scan(l).beam_size > k)
-                        volume.scan(l).set_db(i, k, volume.scan(el_up).get_db(i, k));
+                        volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
                 if (do_quality)
@@ -677,7 +677,7 @@ void CUM_BAC::elabora_dato()
                 for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
                     if (volume.scan(l).beam_size > k)
-                        volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k));
+                        volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
                 }
 
                 if (do_quality)
@@ -2041,7 +2041,7 @@ int CalcoloVPR::corr_vpr()
             }
             //--- impongo una soglia per la correzione pari a 0 dBZ
 
-            if (cum_bac.volume.scan(0).get_db(i, k) > THR_CORR && hbin > hliq  && strat){
+            if (cum_bac.volume.scan(0).get(i, k) > THR_CORR && hbin > hliq  && strat){
 
                 //---trovo lo strato del pixel, se maggiore o uguale a NMAXLAYER lo retrocedo di 2, se minore di livmn lo pongo uguale a livmin
                 ilray=(hbin>=livmin)?(floor(hbin/TCK_VPR)):(floor(livmin/TCK_VPR));//discutibile :livello del fascio se minore di livmin posto=livmin
@@ -2085,7 +2085,7 @@ int CalcoloVPR::corr_vpr()
 
                         corr=cum_bac.RtoDBZ(vpr[ilref])-cum_bac.RtoDBZ(vpr_hray);
 
-                        cum_bac.volume.scan(0).set_db(i, k, RtoDBZ(
+                        cum_bac.volume.scan(0).set(i, k, RtoDBZ(
                                     BYTE_to_mp_func(
                                         DBtoBYTE(cum_bac.volume.scan(0).get(i, k)),
                                         aMP_SNOW,
@@ -2103,7 +2103,7 @@ int CalcoloVPR::corr_vpr()
                     if (hbin<hvprmax && corr>0.) corr=0; /*evito effetti incrementi non giustificati*/
 
                     //controllo qualità su valore corretto e correzione
-                    double corrected = cum_bac.volume.scan(0).get_db(i, k) + corr;
+                    double corrected = cum_bac.volume.scan(0).get(i, k) + corr;
                     if (corrected > MAXVAL_DB) // se dato corretto va fuori scala assegno valore massimo
                         cum_bac.volume.scan(0).set(i, k, MAXVAL_DB);
                     else if ( corrected < MINVAL_DB) // se dato corretto va a fodoscala assegno valore di fondo scala
@@ -2506,7 +2506,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area
 
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
-                double sample = scan.get_db(i, k);
+                double sample = scan.get(i, k);
                 if (sample > THR_VPR &&  flag_vpr->get(l, i, k) > 0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area

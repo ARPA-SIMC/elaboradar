@@ -58,25 +58,13 @@ public:
     {
     }
 
-    /// Get a beam value in DB
-    double get_db(unsigned az, unsigned beam) const
-    {
-        return (*this)[az][beam];
-    }
-
-    /// Get a beam value in DB
+    /// Get a beam value
     T get(unsigned az, unsigned beam) const
     {
         return (*this)[az][beam];
     }
 
-    /// Set a beam value in DB
-    void set_db(unsigned az, unsigned beam, double val)
-    {
-        (*this)[az][beam] = val;
-    }
-
-    /// Set a beam value in DB
+    /// Set a beam value
     void set(unsigned az, unsigned beam, T val)
     {
         (*this)[az][beam] = val;
@@ -94,7 +82,7 @@ public:
         size_t set_count = min(beam_size, out_size);
 
         for (unsigned i = 0; i < set_count; ++i)
-            out[i] = get_db(az, i);
+            out[i] = get(az, i);
 
         for (unsigned i = set_count; i < out_size; ++i)
             out[i] = missing;
