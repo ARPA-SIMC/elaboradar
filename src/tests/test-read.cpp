@@ -86,9 +86,9 @@ namespace {
 struct Difference
 {
     unsigned idx;
-    unsigned char val;
+    double val;
     Difference() : idx(0), val(0) {}
-    Difference(unsigned idx, unsigned char val)
+    Difference(unsigned idx, double val)
         : idx(idx), val(val) {}
 };
 }
@@ -136,10 +136,10 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const V
             vector<Difference> vals_odim;
             for (unsigned ib = 0; ib < vsp20.scan(ie).beam_size; ++ib)
             {
-                if (vsp20.scan(ie).get_raw(ia, ib) != vodim.scan(ie).get_raw(ia, ib))
+                if (vsp20.scan(ie).get(ia, ib) != vodim.scan(ie).get(ia, ib))
                 {
-                    vals_sp20.push_back(Difference(ib, vsp20.scan(ie).get_raw(ia, ib)));
-                    vals_odim.push_back(Difference(ib, vodim.scan(ie).get_raw(ia, ib)));
+                    vals_sp20.push_back(Difference(ib, vsp20.scan(ie).get(ia, ib)));
+                    vals_odim.push_back(Difference(ib, vodim.scan(ie).get(ia, ib)));
                 }
             }
             if (!vals_sp20.empty())

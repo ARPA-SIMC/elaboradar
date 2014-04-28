@@ -58,12 +58,6 @@ public:
     {
     }
 
-    /// Get a raw value in a beam
-    unsigned char get_raw(unsigned az, unsigned beam) const
-    {
-        return DBtoBYTE(get_db(az, beam));
-    }
-
     /// Get a beam value in DB
     double get_db(unsigned az, unsigned beam) const
     {
@@ -202,7 +196,7 @@ public:
             {
                 for (size_t i = 0; i < scan(iel).beam_size; ++i)
                 {
-                    int val = scan(iel).get_raw(iaz, i);
+                    int val = DBtoBYTE(scan(iel).get(iaz, i));
                     switch (val)
                     {
                         case 0: stats.count_zeros[iel]++; break;
