@@ -425,13 +425,13 @@ void CUM_BAC::elabora_dato()
                     // Enrico: cerca di non leggere/scrivere fuori dal volume effettivo
                     if (k >= volume.scan(l).beam_size) continue;
                     if (k < volume.scan(el_inf).beam_size)
-                        volume.scan(l).set_raw(i, k, volume.scan(el_inf).get_raw(i, k));
+                        volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
                     else
-                        volume.scan(l).set_raw(i, k, 0);
+                        volume.scan(l).set(i, k, MISSING_DB);
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
                     {
-                        volume.scan(l).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
+                        volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
                         //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100:tab.)));
                         //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
                     }
@@ -568,7 +568,7 @@ void CUM_BAC::elabora_dato()
                         {
                             // FIXME: cosa dovrebbe essere l qui? Non siamo
                             // dentro a un ciclo for che itera su l [Enrico]
-                            volume.scan(el_inf).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
+                            volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
                             //volume.scan(el_inf).get_raw(i, k)=DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    volume.scan(l).get_raw(i, k)=volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
                             grid_stats.incr_bloc(i, k, beam_blocking[i][k]); // incremento statistica beam blocking
@@ -622,7 +622,7 @@ void CUM_BAC::elabora_dato()
                             volume.scan(l).set_db(i, k, volume.scan(el_inf).get_db(i, k));
                             if (do_beamblocking && do_bloccorr)
                             {
-                                volume.scan(l).set_db(i, k, BeamBlockingCorrection(volume.scan(l).get_raw(i, k),beam_blocking[i][k]));
+                                volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
                                 //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.)));
                                 //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
                                 grid_stats.incr_bloc(i, k, beam_blocking[i][k]);
@@ -2097,14 +2097,13 @@ int CalcoloVPR::corr_vpr()
                     if (hbin<hvprmax && corr>0.) corr=0; /*evito effetti incrementi non giustificati*/
 
                     //controllo qualità su valore corretto e correzione
-                    float corrected = cum_bac.volume.scan(0).get_db(i, k) + corr;
-                    if ( corrected > BYTEtoDB(255) ) // se dato corretto va fuori scala assegno valore massimo
-                        cum_bac.volume.scan(0).set_raw(i, k, 255);
+                    double corrected = cum_bac.volume.scan(0).get_db(i, k) + corr;
+                    if (corrected > MAXVAL_DB) // se dato corretto va fuori scala assegno valore massimo
+                        cum_bac.volume.scan(0).set(i, k, MAXVAL_DB);
+                    else if ( corrected < MINVAL_DB) // se dato corretto va a fodoscala assegno valore di fondo scala
+                        cum_bac.volume.scan(0).set(i, k, MINVAL_DB);
                     else
-                        if ( corrected < BYTEtoDB(1)) // se dato corretto va a fodoscala assegno valore di fondo scala
-                            cum_bac.volume.scan(0).set_raw(i, k, 1);
-                        else
-                            cum_bac.volume.scan(0).set_db(i, k, corrected);  // correggo
+                        cum_bac.volume.scan(0).set(i, k, corrected);  // correggo
 
                     corr_polar[i][k]=(unsigned char)(corr)+128;
 
@@ -3108,8 +3107,9 @@ void CalcoloVPR::esegui_tutto()
     }
 }
 
-float CUM_BAC::BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking){
-   return ( BYTEtoDB(bin_val)-10*log10(1.-(float)beamblocking/100.));
+double CUM_BAC::BeamBlockingCorrection(double val_db, unsigned char beamblocking)
+{
+   return val_db - 10 * log10(1. - (double)beamblocking / 100.);
 }
 
 float CUM_BAC::RtoDBZ(float rain) const
