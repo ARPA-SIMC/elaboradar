@@ -344,7 +344,7 @@ public:
     bool esegui_tutto(const char* nome_file, int file_type);
 // added function to calculate beamblocking correction
 //
-    float BeamBlockingCorrection(unsigned char bin_val, unsigned char beamblocking);
+    double BeamBlockingCorrection(double val_db, unsigned char beamblocking);
 
     // RtoDBZ calcolato su aMP e bMP
     float RtoDBZ(float rain) const;

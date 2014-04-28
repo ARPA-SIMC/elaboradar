@@ -12,6 +12,10 @@
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
 
+#define MISSING_DB (-20.)
+#define MINVAL_DB (80./255.-20.)
+#define MAXVAL_DB (60.)
+
 namespace cumbac {
 
 inline double BYTEtoDB(unsigned char z)
@@ -70,12 +74,6 @@ public:
     T get(unsigned az, unsigned beam) const
     {
         return (*this)[az][beam];
-    }
-
-    /// Set a raw value in a beam
-    void set_raw(unsigned az, unsigned beam, unsigned char val)
-    {
-        (*this)[az][beam] = BYTEtoDB(val);
     }
 
     /// Set a beam value in DB
