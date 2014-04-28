@@ -115,19 +115,57 @@ void SP20Loader::load(const std::string& pathname)
       int el_num = elevation_index(beam_info.elevation);
       if (el_num < 0) continue;
       make_scan(el_num, max_range);
-      PolarScan<double>& scan = vol_db->scan(el_num);
 
-      // Convert to DB
-      double* dbs = new double[max_range];
-      for (unsigned i = 0; i < max_range; ++i)
-          dbs[i] = BYTEtoDB(b->data_z[i]);
       //scan.elevation = beam_info.elevation;
+      if (vol_db)
+      {
+          // TODO: vol_db or vol_z?
+          // Convert to DB
+          double* dbs = new double[max_range];
+          for (unsigned i = 0; i < max_range; ++i)
+              dbs[i] = BYTEtoDB(b->data_z[i]);
+
+          PolarScan<double>& scan = vol_db->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-      fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
-      fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, dbs);
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, dbs);
 #endif
-      delete[] dbs;
+          delete[] dbs;
+      }
+
+      if (vol_d)
+      {
+          // TODO: how do we store values of d?
+          PolarScan<unsigned char>& scan = vol_d->scan(el_num);
+#ifdef IMPRECISE_AZIMUT
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_d);
+#else
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_d);
+#endif
+      }
+
+      if (vol_v)
+      {
+          // TODO: how do we store values of v?
+          PolarScan<unsigned char>& scan = vol_v->scan(el_num);
+#ifdef IMPRECISE_AZIMUT
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_v);
+#else
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_v);
+#endif
+      }
+
+      if (vol_w)
+      {
+          // TODO: how do we store values of w?
+          PolarScan<unsigned char>& scan = vol_w->scan(el_num);
+#ifdef IMPRECISE_AZIMUT
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_w);
+#else
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_w);
+#endif
+      }
     }
 
     fclose(sp20_in);
