@@ -416,6 +416,61 @@ struct CilindricalVolume
     }
 };
 
+struct CalcoloSteiner
+{
+    log4c_category_t* logging_category;
+
+    struct Bckg
+    {
+        int azimut;
+        int range;
+        Bckg() : azimut(-999), range(-999) {}
+        Bckg(int azimut, int range) : azimut(azimut), range(range) {}
+    };
+
+    const Volume<double>& volume;
+    const volume::ElevFin<double>& elev_fin;
+    const unsigned max_bin;
+    const unsigned x_size;
+    const double size_cell;
+
+    Matrix2D<unsigned char> conv_STEINER;
+
+    //lista punti di background iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
+    std::vector<Bckg> lista_bckg;
+
+    // array contenente i valori della Z di background per ogni pixel precipitante in dB
+    std::vector<double> bckgr;
+
+    std::vector<double> convective_radius;
+
+    CalcoloSteiner(const Volume<double>& volume, const volume::ElevFin<double>& elev_fin, unsigned max_bin, unsigned x_size, const double size_cell);
+    ~CalcoloSteiner();
+
+    /**
+     *  calcola valore di background per individuare pixel convettivo
+     *
+     *  @brief funzione  che calcola il background 
+     *  @details la classificazione di Steiner non ha bisogno di ricampionamento cilindrco perciò  uso direttamente la matrice polare
+     */
+    void calcolo_background();
+
+    /**
+     *  @brief funzione  che classifica secondo STEINER
+     *  @details segna come convettivi i punti che hanno valore superiore a 40 dBZ e differenza col background elevata, quindi ingrandisce i nuclei di un raggio variabile
+     */
+    void classifico_STEINER();
+
+    /**
+     *  @brief funzione  che ingrandisce i nuclei di Steiner
+     *  @details ingrandisce i nuclei di Steiner di un valore pari al raggio convettivo
+     *  @param[in] cr raggio convettivo
+     *  @param[in] ja indice di azimut
+     *  @param[in] kr indice di range
+     */ 
+    void ingrasso_nuclei(float cr,int ja,int kr);
+};
+
 struct CalcoloVPR
 {
     log4c_category_t* logging_category;
@@ -427,24 +482,19 @@ struct CalcoloVPR
     long int gap; /* distanza temporale dall'ultimo file vpr */
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
-    unsigned char *conv_VIZ[NUM_AZ_X_PPI],*conv_STEINER[NUM_AZ_X_PPI],*conv[NUM_AZ_X_PPI];
+    unsigned char *conv_VIZ[NUM_AZ_X_PPI];
+    unsigned char *conv[NUM_AZ_X_PPI];
     PolarMap<unsigned char> stratiform;
     float vpr[NMAXLAYER];/* vpr */
     int hvprmax; /* quota picco vpr */
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
     int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
-    //lista punti di background iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
-    int lista_bckg[NUM_AZ_X_PPI*MAX_BIN][2];
     // array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
     float resol[2];
     int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
     int x_size,z_size;
-    long int ncv,np;
-    float *convective_radius;
+    long int ncv;
     float htbb, hbbb;
-    // array contenenti Z di background
-    double *Z_bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
-    float *bckgr; // array contenente i valori della Z di background per ogni pixel precipitante in dB
     PolarMap<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
     PolarMap<unsigned char> neve;/* matrice az-range che memorizza punti di neve*/
     int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
@@ -515,14 +565,6 @@ struct CalcoloVPR
     int combina_profili();
 
     /**
-     *  calcola valore di background per individuare pixel convettivo
-     *
-     *  @brief funzione  che calcola il background 
-     *  @details la classificazione di Steiner non ha bisogno di ricampionamento cilindrco perciò  uso direttamente la matrice polare
-     */
-    void calcolo_background();
-
-    /**
      *
      *  @brief funzione  che classifica la precipitazione se stratiforme o convettiva
      *  @details esegue anche il ricampionamento cilindrico al suo interno
@@ -538,12 +580,6 @@ struct CalcoloVPR
     void classifico_VIZ();
 
     /**
-     *  @brief funzione  che classifica secondo STEINER
-     *  @details segna come convettivi i punti che hanno valore superiore a 40 dBZ e differenza col background elevata, quindi ingrandisce i nuclei di un raggio variabile
-     */
-    void classifico_STEINER();
-
-    /**
      *  correzione vpr
      *  @brief funzione che corregge per il profilo verticale
      *  @details ciclando su tutti i bins della cartesiana polare scelta per la stima della pioggia,
@@ -556,20 +592,11 @@ struct CalcoloVPR
     int corr_vpr();
 
     /**
-     *  @brief funzione  che ingrandisce i nuclei di Steiner
-     *  @details ingrandisce i nuclei di Steiner di un valore pari al raggio convettivo
-     *  @param[in] cr raggio convettivo
-     *  @param[in] ja indice di azimut
-     *  @param[in] kr indice di range
-     */ 
-    void ingrasso_nuclei(float cr,int ja,int kr);
-
-    /**
      *  fa il merge dei metodi
      *  @brief funzione  che interseca i punti convettivi delle due classificazioni Viz e Steiner e sottrae quelli con  picco stratiforme
      *  @return non ritorna valori
      */
-    void merge_metodi();
+    void merge_metodi(const CalcoloSteiner& steiner);
 
     // stampa profilo combinato
     int stampa_vpr();

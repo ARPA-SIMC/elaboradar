@@ -58,6 +58,8 @@ extern "C" {
 #define DTOR  M_PI/180. /* esternalizzo?*/ //fattore conversione gradi-radianti
 #define CONV_RAD 360./4096.*DTOR  // fattore conversione unità angolare radar-radianti
 
+using namespace std;
+
 namespace cumbac {
 
 namespace {
@@ -1030,6 +1032,251 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
     return att_tot;
 }
 
+CalcoloSteiner::CalcoloSteiner(
+        const Volume<double>& volume,
+        const volume::ElevFin<double>& elev_fin,
+        unsigned max_bin, unsigned x_size, const double size_cell)
+    : volume(volume), elev_fin(elev_fin), max_bin(max_bin), x_size(x_size), size_cell(size_cell),
+      conv_STEINER(NUM_AZ_X_PPI, x_size, MISSING),
+      convective_radius(0), bckgr(0)
+{
+    logging_category = log4c_category_get("radar.vpr");
+
+    // Traccio una lista dei punti che hanno valore non nullo e sotto base
+    // bright band (lista_bckg) contenente iaz e irange e conto i punti
+    for (unsigned i=0; i < NUM_AZ_X_PPI; ++i)
+        for (unsigned j=0; j < max_bin; ++j)  // propongo max_bin visto che risoluzione è la stessa
+            //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
+            if (j < volume.scan(0).beam_size && volume.scan(0).get(i, j) > MINVAL_DB)
+                lista_bckg.push_back(Bckg(i, j)); // IAZIMUT, IRANGE
+
+    if (lista_bckg.size() > 1)
+    {
+        convective_radius.resize(lista_bckg.size(), 0);
+        bckgr.resize(lista_bckg.size(), 0);
+    }
+}
+
+CalcoloSteiner::~CalcoloSteiner()
+{
+}
+
+void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
+    // definisco una lista di punti utili per l'analisi, cioè con valore non nullo e sotto la bright band o sopra (NB. per l'analisi considero i punti usati per la ZLR che si suppongono non affetti da clutter e beam blocking<50%. questo ha tutta una serie di implicazioni..... tra cui la proiezione, il fatto che nel confronto entrano dei 'buchi'...cioè il confronto è fatto su una matrice pseudo-orizzontale bucata e quote variabili tuttavia, considerato che i gradienti verticali in caso convettivo e fuori dalla bright band non sono altissimi spero funzioni ( andro' a verificare che l'ipotesi sia soddisfatta)
+    // per trovare il background uso uno pseudo quadrato anzichè cerchio, mantenendo come semi-lato il raggio di steiner (11KM); devo perciò  definire una semi-ampiezza delle finestre in azimut e range corrispondente al raggio di 11 km
+    // quella in azimut  dipende dal range
+
+{
+    int k,kmin,kmax,delta_naz=0,delta_nr;
+    long int npoints=0;
+
+    // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
+    delta_nr=(int)(STEINER_RADIUS*1000./size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+    LOG_DEBUG("delta_nrange per analisi Steiner = %i",delta_nr);
+
+    if (lista_bckg.size() < 2)
+        return;
+
+    //inizializzo vettori
+    // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
+    vector<double> Z_bckgr(lista_bckg.size(), 0);
+
+    for(unsigned i=0; i<lista_bckg.size();i++){       // M:tolto np -1 messo np
+        npoints=0;
+
+        // estremi della finestra in range
+        kmin=lista_bckg[i].range - delta_nr;
+        kmax=lista_bckg[i].range + delta_nr;
+
+        if (kmin>0) {
+
+            if (kmax>max_bin) kmax=max_bin;
+
+            //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
+            delta_naz=ceil(11./((lista_bckg[i].range * size_cell/1000. + size_cell/2000.)/(AMPLITUDE*DTOR)));
+            if (delta_naz>NUM_AZ_X_PPI/2)
+                delta_naz=NUM_AZ_X_PPI/2;
+
+            unsigned jmin=lista_bckg[i].azimut - delta_naz;
+            unsigned jmax=lista_bckg[i].azimut + delta_naz;
+
+
+            if (jmin<0) {
+                jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
+                for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
+                    for (k= kmin ; k< kmax  ; k++){
+                        double sample = elev_fin.db_at_elev_preci(j, k);
+                        //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )  // aggiungo condizione quota
+                        if ( sample > MINVAL_DB  ){
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                            bckgr[i] = bckgr[i] + sample;
+                            npoints=npoints+1;
+                        }
+                    }
+                }
+                jmin=0;
+            }
+
+            if (jmax>NUM_AZ_X_PPI) {
+                jmax=jmax%NUM_AZ_X_PPI;
+                for (unsigned j= 0  ; j< jmax ; j++) {
+                    for (k= kmin ; k< kmax  ; k++){
+                        double sample = elev_fin.db_at_elev_preci(j, k);
+                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
+                        if ( sample > MINVAL_DB  ) {
+                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                            bckgr[i] = bckgr[i] + sample;
+                            npoints=npoints+1;
+                        }
+                    }
+                    }
+                    jmax=NUM_AZ_X_PPI;
+            }
+
+            for (unsigned j=jmin   ; j<jmax  ; j++) {
+                for (k=kmin  ; k<kmax   ; k++){
+                    double sample = elev_fin.db_at_elev_preci(j, k);
+                    // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
+                    if ( sample > MINVAL_DB ) {
+                        Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                        bckgr[i] = bckgr[i] + sample;
+                        npoints=npoints+1;
+                    }
+                }
+            }
+        }
+        else{
+            for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
+                for (k=0  ; k<kmax   ; k++){
+                    double sample = elev_fin.db_at_elev_preci(j, k);
+                    // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
+                    if ( sample > MINVAL_DB  ) {
+                        Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                        bckgr[i] = bckgr[i] + sample;
+                        npoints=npoints+1;
+                    }
+                }
+            }
+            for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
+                for (k=0  ; k<-kmin   ; k++){
+                    double sample = elev_fin.db_at_elev_preci(j, k);
+                    // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
+                    if ( sample > MINVAL_DB  ) {
+                        Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
+                        bckgr[i] = bckgr[i] + sample;
+                        npoints=npoints+1;
+                    }
+                }
+            }
+        }
+        if (npoints > 0){
+            Z_bckgr[i]=Z_bckgr[i]/npoints;
+            //bckgr[i]=bckgr[i]/npoints; //no
+            if (Z_bckgr[i]>0) bckgr[i]=10*(log10(Z_bckgr[i]));
+        }
+        //il valore del raggio convettivo varia a seconda del background, da 1 a 5 km
+        if (  bckgr[i] < 25.) convective_radius[i] = 1.;
+        if (  bckgr[i] >= 25. && bckgr[i] <30. ) convective_radius[i] = 2.;
+        if (  bckgr[i] >= 30. && bckgr[i] <35. ) convective_radius[i] = 3.;
+        if (  bckgr[i] >= 35. && bckgr[i] <40. ) convective_radius[i] = 4.;
+        if (  bckgr[i] > 40.)  convective_radius[i] = 5.;
+
+    }
+}
+
+void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
+{
+    int daz, dr,jmin, jmax, kmin,kmax,j,k;
+
+
+    dr=(int)(cr*1000./size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+
+    kmin=kr-dr;
+    kmax=kr+dr;
+
+    daz=ceil(cr/((kr*size_cell/1000.+size_cell/2000.)/(AMPLITUDE*DTOR)));
+    jmin=ja-daz;
+    jmax=ja+daz;
+
+    LOG_DEBUG("dr cr kmin kmax  %d %f %d %d %d %d", dr,cr, kmin,kmax,jmin,jmax);
+
+    if (kmin>0) {
+        if (kmax>x_size) kmax=x_size;
+
+        if (jmin<0) {
+            jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
+            for (j=jmin; j< NUM_AZ_X_PPI ; j++) {
+                for (k=kmin ; k<kmax  ; k++) {
+                    conv_STEINER[j][k]=CONV_VAL;
+                }
+            }
+            LOG_DEBUG("jmin %d", jmin);
+            jmin=0;
+
+        }
+
+        if (jmax>NUM_AZ_X_PPI) {
+            jmax=jmax%NUM_AZ_X_PPI;
+            for (j=0; j<jmax ; j++) {
+                for (k=kmin; k<kmax  ; k++) {
+                    conv_STEINER[j][k]=CONV_VAL;
+                }
+            }
+            LOG_DEBUG("jmax %d", jmax);
+            jmax=NUM_AZ_X_PPI;
+        }
+        for (j=jmin; j<jmax ; j++) {
+            for (k=kmin; k<kmax  ; k++) {
+                conv_STEINER[j][k]=CONV_VAL;
+            }
+        }
+    }
+    else
+    {
+        for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
+            for (k=0  ; k<kmax   ; k++){
+                conv_STEINER[j][k]=CONV_VAL;
+            }
+        for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
+            for (k=0  ; k<-kmin   ; k++){
+                conv_STEINER[j][k]=CONV_VAL;
+            }
+
+    }
+
+    return;
+}
+
+void CalcoloSteiner::classifico_STEINER()
+{
+    for(int i=0; i<lista_bckg.size(); i++)
+    {
+        int j = lista_bckg[i].azimut; //az=lista_bckg[i][0]
+        int k = lista_bckg[i].range; //ra=lista_bckg[i][1]
+        if (j < 0 || k < 0) continue;
+
+        double db = elev_fin.db_at_elev_preci(j, k);
+        // calcolo diff col background
+        float diff_bckgr = db - bckgr[i];
+        // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
+        if ((db > 40.)||
+                (bckgr[i]< 0 && diff_bckgr > 10) ||
+                (bckgr[i]< 42.43 &&  bckgr[i]>0 &&  diff_bckgr > 10. - bckgr[i]*bckgr[i]/180. )||
+                (bckgr[i]> 42.43 &&  diff_bckgr >0)  )
+        {
+            // assegno il punto  nucleo di Steiner
+            conv_STEINER[j][k]=CONV_VAL;
+
+            // ingrasso il nucleo
+            float cr=convective_radius[i];
+            LOG_DEBUG(" %f cr", cr);
+            ingrasso_nuclei(cr,j,k);
+        }
+    }
+    return;
+}
+
+
 void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
@@ -1292,10 +1539,11 @@ void CalcoloVPR::classifica_rain()
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
-    calcolo_background();
-    classifico_STEINER();
+    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, cum_bac.MyMAX_BIN, x_size, cum_bac.load_info.size_cell);
+    steiner.calcolo_background();
+    steiner.classifico_STEINER();
     //  }
-    merge_metodi();
+    merge_metodi(steiner);
     return ;
 }
 
@@ -1320,7 +1568,6 @@ void CalcoloVPR::classifico_VIZ()
         Zabb[i]= (double *) malloc(x_size*sizeof(double ));
         Zbbb[i]= (double *) malloc(x_size*sizeof(double ));
         conv_VIZ[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
-        conv_STEINER[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
         conv[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
 
 
@@ -1329,7 +1576,6 @@ void CalcoloVPR::classifico_VIZ()
             Zabb[i][j]=0.;
             Zbbb[i][j]=0.;
             conv_VIZ[i][j]=MISSING;
-            conv_STEINER[i][j]=MISSING;
             conv[i][j]=MISSING;
             stratiform[i][j]=MISSING;
         }
@@ -1405,250 +1651,7 @@ void CalcoloVPR::classifico_VIZ()
 }
 
 
-void CalcoloVPR::classifico_STEINER()
-{
-    for(int i=0; i<np; i++)
-    {
-        int j = lista_bckg[i][0]; //az=lista_bckg[i][0]
-        int k = lista_bckg[i][1]; //ra=lista_bckg[i][1]
-        if (j < 0 || k < 0) continue;
-
-        double db = cum_bac.elev_fin.db_at_elev_preci(j, k);
-        // calcolo diff col background
-        float diff_bckgr = db - bckgr[i];
-        // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
-        if ((db > 40.)||
-                (bckgr[i]< 0 && diff_bckgr > 10) ||
-                (bckgr[i]< 42.43 &&  bckgr[i]>0 &&  diff_bckgr > 10. - bckgr[i]*bckgr[i]/180. )||
-                (bckgr[i]> 42.43 &&  diff_bckgr >0)  )
-        {
-            // assegno il punto  nucleo di Steiner
-            conv_STEINER[j][k]=CONV_VAL;
-
-            // ingrasso il nucleo
-            float cr=convective_radius[i];
-            LOG_DEBUG(" %f cr", cr);
-            ingrasso_nuclei(cr,j,k);
-        }
-    }
-    return;
-}
-
-void CalcoloVPR::calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
-    // definisco una lista di punti utili per l'analisi, cioè con valore non nullo e sotto la bright band o sopra (NB. per l'analisi considero i punti usati per la ZLR che si suppongono non affetti da clutter e beam blocking<50%. questo ha tutta una serie di implicazioni..... tra cui la proiezione, il fatto che nel confronto entrano dei 'buchi'...cioè il confronto è fatto su una matrice pseudo-orizzontale bucata e quote variabili tuttavia, considerato che i gradienti verticali in caso convettivo e fuori dalla bright band non sono altissimi spero funzioni ( andro' a verificare che l'ipotesi sia soddisfatta)
-    // per trovare il background uso uno pseudo quadrato anzichè cerchio, mantenendo come semi-lato il raggio di steiner (11KM); devo perciò  definire una semi-ampiezza delle finestre in azimut e range corrispondente al raggio di 11 km
-    // quella in azimut  dipende dal range
-
-{
-    int k,kmin,kmax,delta_naz=0,delta_nr;
-    long int npoints=0;
-
-
-    //traccio una lista dei punti che hanno valore non nullo e sotto base bright band (lista_bckg) contenente iaz e irange e conto i punti
-    for (unsigned i=0; i<NUM_AZ_X_PPI;i++) {
-        for (unsigned j=0; j<MyMAX_BIN;j++)  // propongo max_bin visto che risoluzione è la stessa
-        {
-            //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
-
-            if (j < cum_bac.volume.scan(0).beam_size && DBtoBYTE(cum_bac.volume.scan(0).get(i, j)) > 1)
-            {
-                lista_bckg[np][0]=i;  //IAZIMUT
-                lista_bckg[np][1]=j;  //IRANGE
-                np=np+1;
-            }
-        }
-
-    }
-
-    // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
-    delta_nr=(int)(STEINER_RADIUS*1000./cum_bac.load_info.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
-    LOG_DEBUG("delta_nrange per analisi Steiner = %i",delta_nr);
-
-
-
-    if (np > 1) {
-        //inizializzo vettori
-        convective_radius=(float *)malloc(np*sizeof(float));
-        Z_bckgr=(double *) malloc(np*sizeof(double));
-        bckgr=(float *) malloc(np*sizeof(float));
-
-        for (unsigned i=0;i<np;i++){ //M: tolto np-1 messo np
-            bckgr[i]=0.;
-            Z_bckgr[i]=0;
-            convective_radius[i]=0;
-        }
-
-        for(unsigned i=0; i<np;i++){       // M:tolto np -1 messo np
-            npoints=0;
-
-            // estremi della finestra in range
-            kmin=lista_bckg[i][1]-delta_nr;
-            kmax=lista_bckg[i][1]+delta_nr;
-
-            if (kmin>0) {
-
-                if (kmax>MyMAX_BIN) kmax=MyMAX_BIN;
-
-                //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
-                delta_naz=ceil(11./((lista_bckg[i][1]*cum_bac.load_info.size_cell/1000.+cum_bac.load_info.size_cell/2000.)/(AMPLITUDE*DTOR)));
-                if (delta_naz>NUM_AZ_X_PPI/2)
-                    delta_naz=NUM_AZ_X_PPI/2;
-
-                unsigned jmin=lista_bckg[i][0]-delta_naz;
-                unsigned jmax=lista_bckg[i][0]+delta_naz;
-
-
-                if (jmin<0) {
-                    jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
-                    for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
-                        for (k= kmin ; k< kmax  ; k++){
-                            double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                            //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )  // aggiungo condizione quota
-                            if ( sample > MINVAL_DB  ){
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                                bckgr[i] = bckgr[i] + sample;
-                                npoints=npoints+1;
-                            }
-                        }
-                    }
-                    jmin=0;
-                }
-
-                if (jmax>NUM_AZ_X_PPI) {
-                    jmax=jmax%NUM_AZ_X_PPI;
-                    for (unsigned j= 0  ; j< jmax ; j++) {
-                        for (k= kmin ; k< kmax  ; k++){
-                            double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                            // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                            if ( sample > MINVAL_DB  ) {
-                                Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                                bckgr[i] = bckgr[i] + sample;
-                                npoints=npoints+1;
-                            }
-                        }
-                        }
-                        jmax=NUM_AZ_X_PPI;
-                }
-
-                for (unsigned j=jmin   ; j<jmax  ; j++) {
-                    for (k=kmin  ; k<kmax   ; k++){
-                        double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                        if ( sample > MINVAL_DB ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                            bckgr[i] = bckgr[i] + sample;
-                            npoints=npoints+1;
-                        }
-                    }
-                }
-            }
-            else{
-                for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
-                    for (k=0  ; k<kmax   ; k++){
-                        double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                        if ( sample > MINVAL_DB  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                            bckgr[i] = bckgr[i] + sample;
-                            npoints=npoints+1;
-                        }
-                    }
-                }
-                for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
-                    for (k=0  ; k<-kmin   ; k++){
-                        double sample = cum_bac.elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                        if ( sample > MINVAL_DB  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                            bckgr[i] = bckgr[i] + sample;
-                            npoints=npoints+1;
-                        }
-                    }
-                }
-            }
-            if (npoints > 0){
-                Z_bckgr[i]=Z_bckgr[i]/npoints;
-                //bckgr[i]=bckgr[i]/npoints; //no
-                if (Z_bckgr[i]>0) bckgr[i]=10*(log10(Z_bckgr[i]));
-            }
-            //il valore del raggio convettivo varia a seconda del background, da 1 a 5 km
-            if (  bckgr[i] < 25.) convective_radius[i] = 1.;
-            if (  bckgr[i] >= 25. && bckgr[i] <30. ) convective_radius[i] = 2.;
-            if (  bckgr[i] >= 30. && bckgr[i] <35. ) convective_radius[i] = 3.;
-            if (  bckgr[i] >= 35. && bckgr[i] <40. ) convective_radius[i] = 4.;
-            if (  bckgr[i] > 40.)  convective_radius[i] = 5.;
-
-        }
-
-    }
-
-    return;
-}
-
-void CalcoloVPR::ingrasso_nuclei(float cr,int ja,int kr)
-{
-    int daz, dr,jmin, jmax, kmin,kmax,j,k;
-
-
-    dr=(int)(cr*1000./cum_bac.load_info.size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
-
-    kmin=kr-dr;
-    kmax=kr+dr;
-
-    daz=ceil(cr/((kr*cum_bac.load_info.size_cell/1000.+cum_bac.load_info.size_cell/2000.)/(AMPLITUDE*DTOR)));
-    jmin=ja-daz;
-    jmax=ja+daz;
-
-    LOG_DEBUG("dr cr kmin kmax  %d %f %d %d %d %d", dr,cr, kmin,kmax,jmin,jmax);
-
-    if (kmin>0) {
-        if (kmax>x_size) kmax=x_size;
-
-        if (jmin<0) {
-            jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
-            for (j=jmin; j< NUM_AZ_X_PPI ; j++) {
-                for (k=kmin ; k<kmax  ; k++) {
-                    conv_STEINER[j][k]=CONV_VAL;
-                }
-            }
-            LOG_DEBUG("jmin %d", jmin);
-            jmin=0;
-
-        }
-
-        if (jmax>NUM_AZ_X_PPI) {
-            jmax=jmax%NUM_AZ_X_PPI;
-            for (j=0; j<jmax ; j++) {
-                for (k=kmin; k<kmax  ; k++) {
-                    conv_STEINER[j][k]=CONV_VAL;
-                }
-            }
-            LOG_DEBUG("jmax %d", jmax);
-            jmax=NUM_AZ_X_PPI;
-        }
-        for (j=jmin; j<jmax ; j++) {
-            for (k=kmin; k<kmax  ; k++) {
-                conv_STEINER[j][k]=CONV_VAL;
-            }
-        }
-    }
-    else
-    {
-        for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
-            for (k=0  ; k<kmax   ; k++){
-                conv_STEINER[j][k]=CONV_VAL;
-            }
-        for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
-            for (k=0  ; k<-kmin   ; k++){
-                conv_STEINER[j][k]=CONV_VAL;
-            }
-
-    }
-
-    return;
-}
-
-void CalcoloVPR::merge_metodi()
+void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner)
 {
     int j,k;
 
@@ -1656,7 +1659,7 @@ void CalcoloVPR::merge_metodi()
         for(k=0; k<x_size; k++)
         {
 
-            if ( conv_STEINER[j][k] == conv_VIZ[j][k] &&  conv_STEINER[j][k]> 0 && stratiform[j][k]<1 ){
+            if ( steiner.conv_STEINER[j][k] == conv_VIZ[j][k] &&  steiner.conv_STEINER[j][k]> 0 && stratiform[j][k]<1 ){
                 conv[j][k]=conv_VIZ[j][k];
             }
 
@@ -3052,7 +3055,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
 {
     logging_category = log4c_category_get("radar.vpr");
     MyMAX_BIN=cum_bac.MyMAX_BIN;
-    ncv=0;np=0;
+    ncv=0;
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
 
@@ -3062,8 +3065,6 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     for (int k=0; k<NUM_AZ_X_PPI*MyMAX_BIN;k++ ){
       lista_conv[k][0]=-999;
       lista_conv[k][1]=-999;
-      lista_bckg[k][0]=-999;
-      lista_bckg[k][1]=-999;
     }
 
     flag_vpr = new VolumeInfo<unsigned char>(cum_bac.volume);
