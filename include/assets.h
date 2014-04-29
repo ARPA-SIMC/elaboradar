@@ -163,6 +163,7 @@ public:
     void write_vpr_hmax(int hvprmax);
 
     bool read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area);
+    void write_vpr0(std::vector<float>& vpr, std::vector<long int>& area);
 
     /**
      * Return an open HDF5 File to which we can write datasets used to debug

@@ -388,6 +388,21 @@ bool Assets::read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area)
     return true;
 }
 
+void Assets::write_vpr0(std::vector<float>& vpr, std::vector<long int>& area)
+{
+    const char* fname = getenv("VPR0_FILE");
+    if (!fname) throw runtime_error("$VPR0_FILE (ultimo vpr) is not set");
+    FILE* out = fopen_checked(fname, "wt", "ultimo vpr");
+    for (unsigned i = 0; i < vpr.size(); ++i)
+        if (fprintf(out, " %10.3f %li\n", vpr[i], area[i]) < 0)
+        {
+            LOG_ERROR("$VPR0_FILE=%s cannot be written: %s", fname, strerror(errno));
+            fclose(out);
+            throw std::runtime_error("cannot write to $VPR0_FILE");
+        }
+    fclose(out);
+}
+
 H5::H5File Assets::get_devel_data_output() const
 {
     if (!outfile_devel_data)
