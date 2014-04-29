@@ -22,7 +22,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
 
     // estremi x e z (si procede per rhi)
     double range_min=0.5 * size_cell/1000.;
-    double range_max=(max_bin-0.5) * size_cell/1000.;
+    //double range_max=(max_bin-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
     double zmin=pow(pow(range_min,2.)+pow(4./3*REARTH,2.)+2.*range_min*4./3.*REARTH*sin(volume.elevation_min() * DTOR),.5) -4./3.*REARTH+h_radar; // quota  minima in prop standard
@@ -36,21 +36,21 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
 
     //LOG_INFO("calcolati range_min e range_max , dimensione orizzontale e dimensione verticale range_min=%f  range_max=%f x_size=%d z_size=%d",range_min,range_max,x_size,z_size);
 
-    int w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
-    int w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
+    unsigned w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
+    unsigned w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
 
     if (w_x_size < 3) w_x_size=3;
     if (w_z_size < 3) w_z_size=3;
 
-    int w_x_size_2=w_x_size/2;
-    int w_z_size_2=w_z_size/2;
+    unsigned w_x_size_2=w_x_size/2;
+    unsigned w_z_size_2=w_z_size/2;
 
-    Matrix2D<int> i_xx_min(max_bin, volume.NEL);
-    Matrix2D<int> i_zz_min(max_bin, volume.NEL);
-    Matrix2D<int> im(max_bin, volume.NEL);
-    Matrix2D<int> ix(max_bin, volume.NEL);
-    Matrix2D<int> jm(max_bin, volume.NEL);
-    Matrix2D<int> jx(max_bin, volume.NEL);
+    Matrix2D<unsigned> i_xx_min(max_bin, volume.NEL);
+    Matrix2D<unsigned> i_zz_min(max_bin, volume.NEL);
+    Matrix2D<unsigned> im(max_bin, volume.NEL);
+    Matrix2D<unsigned> ix(max_bin, volume.NEL);
+    Matrix2D<unsigned> jm(max_bin, volume.NEL);
+    Matrix2D<unsigned> jx(max_bin, volume.NEL);
 
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * size_cell/1000.;
@@ -59,8 +59,8 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
             double elev_rad = volume.scan(k).elevation * DTOR;
             double zz = pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*REARTH*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
             double xx = range*cos(elev_rad); // distanza
-            int i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
-            int i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
+            unsigned i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
+            unsigned i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
             // Enrico RHI_ind[k][i]=i_xx+i_zz*x_size;
             //shift orizzontale negativo del punto di indice i_xx per costruire la finestra in x
             // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
@@ -163,14 +163,14 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
                     }
                 }
 
-                int imin=im[ibin][iel];
-                int imax=ix[ibin][iel];
-                int jmin=jm[ibin][iel];
-                int jmax=jx[ibin][iel];
+                unsigned imin=im[ibin][iel];
+                unsigned imax=ix[ibin][iel];
+                unsigned jmin=jm[ibin][iel];
+                unsigned jmax=jx[ibin][iel];
 
-                int wimin=w_x_size_2-i_xx_min[ibin][iel];
+                unsigned wimin=w_x_size_2-i_xx_min[ibin][iel];
                 //wimax=w_x_size_2+i_xx_max[ibin][iel];
-                int wjmin=w_z_size_2-i_zz_min[ibin][iel];
+                unsigned wjmin=w_z_size_2-i_zz_min[ibin][iel];
                 //wjmax=w_z_size_2+i_zz_max[ibin][iel];
                 for (unsigned i=imin;i<=imax;i++) {
                     for (unsigned j=jmin;j<=jmax;j++) {
