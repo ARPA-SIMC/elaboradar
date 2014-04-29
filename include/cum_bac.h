@@ -44,14 +44,14 @@ struct PolarMap : public Matrix2D<T>
 {
     PolarMap(const PolarMap& pm) : Matrix2D<T>(pm) {}
     PolarMap(unsigned beam_size=512, unsigned beam_count=400)
-        : Matrix2D<T>(beam_size, beam_count) {}
+        : Matrix2D<T>(beam_count, beam_size) {}
 };
 
 template<typename T>
 struct Image : public Matrix2D<T>
 {
     Image(unsigned sx, unsigned sy=0)
-        : Matrix2D<T>(sx, sy ? sy : sx) {}
+        : Matrix2D<T>(sy ? sy : sx, sx) {}
 
 };
 
@@ -376,7 +376,7 @@ struct CilindricalVolume
     {
         slices.reserve(slice_count);
         for (unsigned i = 0; i < slice_count; ++i)
-            slices.push_back(new Matrix2D<double>(z_size, x_size, missing_value));
+            slices.push_back(new Matrix2D<double>(x_size, z_size, missing_value));
     }
     ~CilindricalVolume()
     {

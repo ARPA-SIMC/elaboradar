@@ -50,7 +50,7 @@ public:
     double elevation;
 
     PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
-        : Matrix2D<T>(beam_size, NUM_AZ_X_PPI, default_value), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+        : Matrix2D<T>(NUM_AZ_X_PPI, beam_size, default_value), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
     {
     }
 
