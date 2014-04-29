@@ -1175,10 +1175,6 @@ int CalcoloVPR::combina_profili()
     FILE *file;
 
     mode=MOD_VPR;
-
-    for (i=0;i<NMAXLAYER;i++) {
-        area_vpr[i]=0;
-    }
     noval=NODATAVPR;
 
 
@@ -1352,12 +1348,8 @@ int CalcoloVPR::combina_profili()
     if (livmin>=(NMAXLAYER-1)*TCK_VPR+TCK_VPR/2  || !foundlivmin) return (1);
 
 
-
     //-----scrivo il profilo e la sua area-----
-    file=controllo_apertura(getenv("VPR0_FILE")," ultimo vpr ","w");
-    for (ilay=0;  ilay<NMAXLAYER; ilay++)
-        fprintf(file," %10.3f %li\n",vpr[ilay], area_vpr[ilay]);
-    fclose(file);
+    cum_bac.assets.write_vpr0(vpr, area_vpr);
 
     return(0);
 }
@@ -1739,7 +1731,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
             case 0:
             case 1:
             case 2:
-                ier=iv.interpola_VPR(vpr, hvprmax, livmin);
+                ier=iv.interpola_VPR(vpr.data(), hvprmax, livmin);
                 if (ier){
                     LOG_INFO(" interpolazione fallita");
                     switch (tipo_profilo)
@@ -1868,7 +1860,7 @@ long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del sin
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
-int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, long int area_vpr[])
+int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector<long int>& area_vpr)
 {
     LOG_CATEGORY("radar.vpr");
     int i,iA,ilay,il,ilast,iaz_min,iaz_max;
@@ -2492,15 +2484,12 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
-    : cum_bac(cum_bac), corr_polar(MAX_BIN), neve(MAX_BIN), flag_vpr(0)
+    : cum_bac(cum_bac), area_vpr(NMAXLAYER, 0), vpr(NMAXLAYER, NODATAVPR), corr_polar(MAX_BIN), neve(MAX_BIN), flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
     MyMAX_BIN=cum_bac.MyMAX_BIN;
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
-
-    for (int i=0; i<NMAXLAYER; i++)
-      vpr[i]=NODATAVPR;
 
     /*
     for (int k=0; k<NUM_AZ_X_PPI*MyMAX_BIN;k++ ){

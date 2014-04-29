@@ -371,12 +371,12 @@ struct CalcoloVPR
     log4c_category_t* logging_category;
 
     CUM_BAC& cum_bac;
-    long int area_vpr[NMAXLAYER]; /*area degli strati*/
     long int gap; /* distanza temporale dall'ultimo file vpr */
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
     unsigned char *conv[NUM_AZ_X_PPI];
-    float vpr[NMAXLAYER];/* vpr */
+    std::vector<long int> area_vpr; /*area degli strati*/
+    std::vector<float> vpr;/* vpr */
     int hvprmax; /* quota picco vpr */
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
     //int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
@@ -443,7 +443,7 @@ struct CalcoloVPR
      *  @param[in]  sito  sito radar
      *  @return  0 se ok 1 se fallisce
      */ 
-    int func_vpr(long int *cv, long int *ct, std::vector<float>& vpr1, long int area_vpr[]);
+    int func_vpr(long int *cv, long int *ct, std::vector<float>& vpr1, std::vector<long int>& area_vpr);
 
     /**
      *
