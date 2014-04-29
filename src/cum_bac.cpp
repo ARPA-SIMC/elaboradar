@@ -1157,7 +1157,6 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     }
 */
     Matrix2D<double> RHI_beam(max_bin, volume.NEL);
-    double beamXweight[max_bin][20][10]; // da inizializzare in fase di programma
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = cil[iaz];
@@ -1178,22 +1177,18 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
 
         for (unsigned iel=0;iel<volume.NEL;iel++){
             for (unsigned ibin=0;ibin<ray_size;ibin++) {
-                if ( ibin >= max_bin) {
-                    std::cout<<"ibin troppo grande "<<std::endl;
-                    throw std::runtime_error("ERRORE");
-                }
+                double beamXweight[w_x_size][w_z_size];
+
                 for(unsigned kx=0;kx<w_x_size;kx++){
                     for(unsigned kz=0;kz<w_z_size;kz++){
 //std::cout<<"ibin , kx, kz "<<ibin<<" "<<kx<<" "<<kz<<" "<<w_x_size<< " "<<w_z_size<<" "<<MAX_BIN<<std::endl;
 //std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
 //std::cout<<"RHI "<<  RHI_beam[iel][ibin]<<std::endl;
 //std::cout<<"w_tot "<<  w_tot[kx][kz]<<std::endl;
-                        beamXweight[ibin][kx][kz]=RHI_beam[iel][ibin]*w_tot[kx][kz];
+                        beamXweight[kx][kz] = RHI_beam[iel][ibin] * w_tot[kx][kz];
                     }
                 }
-            }
 
-            for (unsigned ibin=0;ibin<volume.scan(0).beam_size;ibin++) {
                 int imin=im[ibin][iel];
                 int imax=ix[ibin][iel];
                 int jmin=jm[ibin][iel];
@@ -1205,8 +1200,8 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
                 //wjmax=w_z_size_2+i_zz_max[ibin][iel];
                 for (unsigned i=imin;i<=imax;i++) {
                     for (unsigned j=jmin;j<=jmax;j++) {
-                        rhi_cart[i][j]=rhi_cart[i][j] +  beamXweight[ibin][wimin+(i-imin)][wjmin+(j-jmin)];
-                        rhi_weight[i][j]=rhi_weight[i][j]+w_tot[wimin+(i-imin)][wjmin+(j-jmin)];
+                        rhi_cart[i][j] = rhi_cart[i][j] + beamXweight[wimin+(i-imin)][wjmin+(j-jmin)];
+                        rhi_weight[i][j] = rhi_weight[i][j]+w_tot[wimin+(i-imin)][wjmin+(j-jmin)];
                     }
                 }
             }
