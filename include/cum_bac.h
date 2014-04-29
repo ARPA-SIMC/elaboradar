@@ -395,6 +395,8 @@ struct CilindricalVolume
         if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
         return *slices[i];
     }
+
+    void resample(const Volume<double>& volume, unsigned max_bin, double size_cell);
 };
 
 struct CalcoloVIZ
