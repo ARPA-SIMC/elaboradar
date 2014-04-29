@@ -1071,57 +1071,49 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     int w_x_size_2=w_x_size/2;
     int w_z_size_2=w_z_size/2;
 
-    vector<double> w_x(w_x_size);
-    vector<double> w_z(w_z_size);
-    Matrix2D<double> w_tot(w_z_size, w_x_size);
-
-    Matrix2D<double> zz(volume.NEL, max_bin);
-    Matrix2D<double> xx(volume.NEL, max_bin);
-
     // TODO: replace with Matrix2D
     const unsigned NEL = volume.NEL;
     const unsigned MyMAX_BIN = max_bin;
-    int  i_xx[MyMAX_BIN][NEL],i_zz[MyMAX_BIN][NEL],i_xx_min[MyMAX_BIN][NEL],i_xx_max[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL],i_zz_max[MyMAX_BIN][NEL];
-    int  im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
+    int i_xx_min[MyMAX_BIN][NEL],i_xx_max[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL],i_zz_max[MyMAX_BIN][NEL];
+    int im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
     const double a = REARTH;
-    float RHI_beam[NEL][MyMAX_BIN],beamXweight[MyMAX_BIN][20][10]; // da inizializzare in fase di programma
 
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * size_cell/1000.;
 
         for (unsigned k=0; k < volume.NEL; k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
-            zz[i][k]=pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*a*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
-            xx[i][k]=range*cos(elev_rad); // distanza
-            i_zz[i][k]=floor((zz[i][k]-zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
-            i_xx[i][k]=floor((xx[i][k]-xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
-            // Enrico RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;
-            //shift orizzontale negativo del punto di indice i_xx[i][k] per costruire la finestra in x
+            double zz = pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*a*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
+            double xx = range*cos(elev_rad); // distanza
+            int i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
+            int i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
+            // Enrico RHI_ind[k][i]=i_xx+i_zz*x_size;
+            //shift orizzontale negativo del punto di indice i_xx per costruire la finestra in x
             // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
-            i_xx_min[i][k]=i_xx[i][k];
-            if (i_xx[i][k]-w_x_size_2 >= 0)
+            i_xx_min[i][k]=i_xx;
+            if (i_xx-w_x_size_2 >= 0)
                 i_xx_min[i][k]= w_x_size_2;
 
-            //shift orizzontale positivo attorno al punto di indice i_xx[i][k] per costruire la finestra in x
-            i_xx_max[i][k]=x_size-i_xx[i][k]-1;
-            if (i_xx[i][k]+w_x_size_2 < x_size)
+            //shift orizzontale positivo attorno al punto di indice i_xx per costruire la finestra in x
+            i_xx_max[i][k]=x_size-i_xx-1;
+            if (i_xx+w_x_size_2 < x_size)
                 i_xx_max[i][k]= w_x_size_2;
 
-            //shift verticale negativo attorno al punto di indice i_zz[i][k] per costruire la finestra in z
-            i_zz_min[i][k]=i_zz[i][k];
+            //shift verticale negativo attorno al punto di indice i_zz per costruire la finestra in z
+            i_zz_min[i][k]=i_zz;
             if (i_zz_min[i][k] - w_z_size_2 > 0)
                 i_zz_min[i][k] = w_z_size_2;
 
-            //shift verticale positivo attorno al punto di indice i_zz[i][k] per costruire la finestra in z
-            i_zz_max[i][k]=z_size-i_zz[i][k]-1;
-            if (i_zz[i][k]+w_z_size_2 < z_size)
+            //shift verticale positivo attorno al punto di indice i_zz per costruire la finestra in z
+            i_zz_max[i][k]=z_size-i_zz-1;
+            if (i_zz+w_z_size_2 < z_size)
                 i_zz_max[i][k]= w_z_size_2;
 
             //indici minimo e massimo in x e z per definire la finestra sul punto
-            im[i][k]=i_xx[i][k]-i_xx_min[i][k];
-            ix[i][k]=i_xx[i][k]+i_xx_max[i][k];
-            jm[i][k]=i_zz[i][k]-i_zz_min[i][k];
-            jx[i][k]=i_zz[i][k]+i_zz_max[i][k];
+            im[i][k]=i_xx-i_xx_min[i][k];
+            ix[i][k]=i_xx+i_xx_max[i][k];
+            jm[i][k]=i_zz-i_zz_min[i][k];
+            jx[i][k]=i_zz+i_zz_max[i][k];
 
         }
     }
@@ -1134,10 +1126,15 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
        ;   Questa matrice contiene i pesi (in funzione della distanza) per ogni punto.
        ;-----------------------------------------------------------------------------*/
 
+    vector<double> w_x(w_x_size);
     for (unsigned k=0;k<w_x_size;k++)
         w_x[k]=exp(-pow(k-w_x_size_2,2.)/pow(w_x_size_2/2.,2.));
+
+    vector<double> w_z(w_z_size);
     for (unsigned k=0;k<w_z_size;k++)
         w_z[k]=exp(-pow(k-w_z_size_2,2.)/pow(w_z_size_2/2.,2.));
+
+    Matrix2D<double> w_tot(w_z_size, w_x_size);
     for (unsigned i=0;i<w_x_size;i++){
         for (unsigned j=0;j<w_z_size;j++){
             w_tot[i][j]=w_x[i]*w_z[j];
@@ -1161,6 +1158,8 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         }
     }
 */
+    double RHI_beam[NEL][MyMAX_BIN];
+    double beamXweight[MyMAX_BIN][20][10]; // da inizializzare in fase di programma
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = cil[iaz];
