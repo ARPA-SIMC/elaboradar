@@ -1050,8 +1050,6 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
     double zmin=pow(pow(range_min,2.)+pow(4./3*REARTH,2.)+2.*range_min*4./3.*REARTH*sin(volume.elevation_min() * DTOR),.5) -4./3.*REARTH+h_radar; // quota  minima in prop standard
-    double xmax=floor(range_max*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
-    double zmax=pow(pow(range_max,2.)+pow(4./3*REARTH,2.)+2.*range_max*4./3.*REARTH*sin(volume.elevation_max() * DTOR),.5) -4./3.*REARTH+h_radar;//quota massima
 
     double resol[2];
     resol[0]=RES_HOR_CIL; // uguale a dimensione cella volume polare .. va parametrizzato
@@ -1158,16 +1156,14 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         }
     }
 */
-    // TODO: make a Vector method to fill a Matrix2D with a vertical slice
-    double RHI_beam[volume.NEL][max_bin];
+    Matrix2D<double> RHI_beam(max_bin, volume.NEL);
     double beamXweight[max_bin][20][10]; // da inizializzare in fase di programma
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = cil[iaz];
         Matrix2D<double> rhi_weight(z_size, x_size, 0);
 
-        for (unsigned i=0;i<volume.NEL;i++)
-            volume.scan(i).read_beam_db(iaz, RHI_beam[i], max_bin, BYTEtoDB(0));
+        volume.read_vertical_slice(iaz, RHI_beam, MISSING_DB);
 
         /* ;---------------------------------- */
         /* ;          FASE 4 */
@@ -1232,7 +1228,6 @@ void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
     const unsigned int NEL = cum_bac.volume.NEL;
-    int i,j,kx,kz,k,iel;// Enrico RHI_ind[NEL][MAX_BIN];
     int hmax=-9999, ier_ap,ier_0term=0;
 
     FILE *file;
