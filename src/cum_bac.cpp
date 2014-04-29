@@ -761,7 +761,7 @@ void CUM_BAC::leggo_first_level()
       -------------------------------*/
     if(do_medium){
         PolarMap<unsigned char> first_level_tmp(first_level);
-	LOG_INFO(" Dentro patch %d ",MyMAX_BIN);
+        LOG_INFO(" Dentro patch %u ",MyMAX_BIN);
         int k;
         for (int i=NUM_AZ_X_PPI; i<800; i++)
         {
@@ -772,7 +772,7 @@ void CUM_BAC::leggo_first_level()
                         first_level[i%NUM_AZ_X_PPI][j]=first_level_tmp[k%NUM_AZ_X_PPI][j];
             }
         }
-	LOG_INFO(" fine patch %d ",MyMAX_BIN);
+        LOG_INFO(" fine patch %u ",MyMAX_BIN);
     }
 }
 
@@ -1039,10 +1039,7 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
 void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
-    const unsigned int NEL = cum_bac.volume.NEL;
-    int hmax=-9999, ier_ap;
-
-    FILE *file;
+    int hmax=-9999;
 
     /* ;---------------------------------- */
     /* ;          FASE 0 :                  */
@@ -1361,7 +1358,6 @@ int CalcoloVPR::profile_heating()
     LOG_CATEGORY("radar.vpr");
     //---leggo ultimo file contenente riscaldamento , se non esiste impongo heating=0 (verificare comando)
     int heating = cum_bac.assets.read_vpr_heating();
-    FILE *file;
 
     //--una volta letto il file, se il calcolo del vpr è andato bene incremento di uno heating sottraendo però la differenza di date (in quarti d'ora)-1 tra gli ultimi due profili
     //--lo faccio perchè potrei avere heating più alto del dovuto se ho avuto un interruzione del flusso dei dati
@@ -2109,11 +2105,11 @@ void CUM_BAC::creo_cart()
     static CartData* cd = 0;
     if (!cd) cd = new CartData(MyMAX_BIN);
 
-    for(int i=0; i<MyMAX_BIN *2; i++)
-        for(int j=0; j<MyMAX_BIN *2; j++)
+    for(unsigned i=0; i<MyMAX_BIN *2; i++)
+        for(unsigned j=0; j<MyMAX_BIN *2; j++)
             cart[i][j] = MISSING;
 
-    LOG_INFO("Creo_cart - %d",MyMAX_BIN);
+    LOG_INFO("Creo_cart - %u",MyMAX_BIN);
 
     for(int quad=0; quad<4; quad++)
         for(int i=0; i<MyMAX_BIN; i++)
