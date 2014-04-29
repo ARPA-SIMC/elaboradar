@@ -762,16 +762,11 @@ void CUM_BAC::leggo_first_level()
     if(do_medium){
         PolarMap<unsigned char> first_level_tmp(first_level);
         LOG_INFO(" Dentro patch %u ",MyMAX_BIN);
-        int k;
-        for (int i=NUM_AZ_X_PPI; i<800; i++)
-        {
-            for (int j=0; j<MyMAX_BIN; j++)
-            {
-                for (k=i-1; k<i+2; k++)
+        for (unsigned i=NUM_AZ_X_PPI; i<800; i++)
+            for (unsigned j=0; j<MyMAX_BIN; j++)
+                for (unsigned k=i-1; k<i+2; k++)
                     if(first_level[i%NUM_AZ_X_PPI][j] < first_level_tmp[k%NUM_AZ_X_PPI][j])
                         first_level[i%NUM_AZ_X_PPI][j]=first_level_tmp[k%NUM_AZ_X_PPI][j];
-            }
-        }
         LOG_INFO(" fine patch %u ",MyMAX_BIN);
     }
 }
