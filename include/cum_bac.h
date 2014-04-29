@@ -368,15 +368,15 @@ public:
 struct CilindricalVolume
 {
     std::vector<Matrix2D<double>*> slices;
-    const unsigned size_x;
-    const unsigned size_z;
+    const unsigned x_size;
+    const unsigned z_size;
 
-    CilindricalVolume(unsigned slice_count, unsigned size_x, unsigned size_z, double missing_value)
-        : size_x(size_x), size_z(size_z)
+    CilindricalVolume(unsigned slice_count, unsigned x_size, unsigned z_size, double missing_value)
+        : x_size(x_size), z_size(z_size)
     {
         slices.reserve(slice_count);
         for (unsigned i = 0; i < slice_count; ++i)
-            slices.push_back(new Matrix2D<double>(size_z, size_x, missing_value));
+            slices.push_back(new Matrix2D<double>(z_size, x_size, missing_value));
     }
     ~CilindricalVolume()
     {
@@ -412,7 +412,7 @@ struct CalcoloVIZ
     Matrix2D<unsigned char> conv_VIZ;
     Matrix2D<unsigned char> stratiform;
 
-    CalcoloVIZ(const CilindricalVolume& cil, unsigned x_size, unsigned z_size, double htbb, double hbbb, double t_ground);
+    CalcoloVIZ(const CilindricalVolume& cil, double htbb, double hbbb, double t_ground);
 
     /**
      *  classifica tramite Vertical Integrated Z
