@@ -383,7 +383,7 @@ struct CalcoloVPR
     // array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
     float resol[2];
     int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
-    int x_size,z_size;
+    unsigned x_size,z_size;
     double htbb, hbbb;
     PolarMap<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
     PolarMap<unsigned char> neve;/* matrice az-range che memorizza punti di neve*/
