@@ -479,8 +479,9 @@ void CUM_BAC::elabora_dato()
                 LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
                 loc_el_inf--;
             }
+            if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
             //const int el_inf = first_level[i][k];
-            const int el_inf = loc_el_inf;
+            const unsigned el_inf = loc_el_inf;
 
             if (do_quality)
                 elev_fin[i][k]=el_inf;
