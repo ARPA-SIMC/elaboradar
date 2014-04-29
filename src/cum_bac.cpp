@@ -1160,7 +1160,7 @@ void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& v
 int CalcoloVPR::combina_profili()
 {
     LOG_CATEGORY("radar.vpr");
-    long int c0,*cv,*ct;
+    long int c0, cv = 0, ct = 0;
     float vpr0[NMAXLAYER],vpr1[NMAXLAYER],vpr_dbz;
     float alfat,noval;
     int mode,ilay,i,foundlivmin=0,il,ier_ap,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
@@ -1188,14 +1188,7 @@ int CalcoloVPR::combina_profili()
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
 
-    cv=( long int *)malloc(sizeof(long int));
-    ct=( long int *)malloc(sizeof(long int));
-    if (ct == NULL) throw std::runtime_error("malloc fallita per ct");
-    if (cv == NULL) throw std::runtime_error("malloc fallita per cv");
-    *cv=0;
-    *ct=0;
-
-    ier_vpr=func_vpr(cv,ct,vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    ier_vpr=func_vpr(&cv,&ct,vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %d", ier_vpr);
 
 
@@ -1205,7 +1198,7 @@ int CalcoloVPR::combina_profili()
 
         /*----calcolo il peso c0 per la combinazione dei profili*/
 
-        c0=2*(*cv);
+        c0=2*(cv);
 
         /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
         /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
@@ -1293,12 +1286,8 @@ int CalcoloVPR::combina_profili()
 
         //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
 
-        if ( !combinante && ier_vpr){
-
-            free(cv);
-            free(ct);
+        if ( !combinante && ier_vpr)
             return (1);
-        }
 
 
         //----------------se invece l'istantaneo c'è o ho trovato un file con cui combinare
@@ -1325,7 +1314,7 @@ int CalcoloVPR::combina_profili()
                 }
             }
             // peso vpr corrente per combinazione
-            alfat=(float)(*ct)/(c0+(*ct));
+            alfat=(float)ct/(c0+ct);
             for (ilay=0;  ilay<NMAXLAYER; ilay++){
                 if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
                     vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli
@@ -1352,11 +1341,8 @@ int CalcoloVPR::combina_profili()
     /*fine mode=0 VPR combinato, mode=1 VPR istantaneo controllo se l'istantaneo è andato ok e in caso affermativo continuo*/
 
     else  {
-        if (ier_vpr) {
-            free(cv);
-            free(ct);
+        if (ier_vpr)
             return (1);
-        }
         for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
     }
 
@@ -1382,11 +1368,6 @@ int CalcoloVPR::combina_profili()
     for (ilay=0;  ilay<NMAXLAYER; ilay++)
         fprintf(file," %10.3f %li\n",vpr[ilay], area_vpr[ilay]);
     fclose(file);
-
-
-    //-----libero memoria-----
-    free(cv);
-    free(ct);
 
     return(0);
 }
