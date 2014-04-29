@@ -1069,12 +1069,12 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     int w_x_size_2=w_x_size/2;
     int w_z_size_2=w_z_size/2;
 
-    Matrix2D<int> i_xx_min(volume.NEL, max_bin);
-    Matrix2D<int> i_zz_min(volume.NEL, max_bin);
-    Matrix2D<int> im(volume.NEL, max_bin);
-    Matrix2D<int> ix(volume.NEL, max_bin);
-    Matrix2D<int> jm(volume.NEL, max_bin);
-    Matrix2D<int> jx(volume.NEL, max_bin);
+    Matrix2D<int> i_xx_min(max_bin, volume.NEL);
+    Matrix2D<int> i_zz_min(max_bin, volume.NEL);
+    Matrix2D<int> im(max_bin, volume.NEL);
+    Matrix2D<int> ix(max_bin, volume.NEL);
+    Matrix2D<int> jm(max_bin, volume.NEL);
+    Matrix2D<int> jx(max_bin, volume.NEL);
 
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * size_cell/1000.;
@@ -1132,7 +1132,7 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     for (unsigned k=0;k<w_z_size;k++)
         w_z[k]=exp(-pow(k-w_z_size_2,2.)/pow(w_z_size_2/2.,2.));
 
-    Matrix2D<double> w_tot(w_z_size, w_x_size);
+    Matrix2D<double> w_tot(w_x_size, w_z_size);
     for (unsigned i=0;i<w_x_size;i++){
         for (unsigned j=0;j<w_z_size;j++){
             w_tot[i][j]=w_x[i]*w_z[j];
@@ -1154,11 +1154,11 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         }
     }
 */
-    Matrix2D<double> RHI_beam(max_bin, volume.NEL);
+    Matrix2D<double> RHI_beam(volume.NEL, max_bin);
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = (*this)[iaz];
-        Matrix2D<double> rhi_weight(z_size, x_size, 0);
+        Matrix2D<double> rhi_weight(x_size, z_size, 0);
 
         volume.read_vertical_slice(iaz, RHI_beam, MISSING_DB);
 
@@ -1309,7 +1309,7 @@ void CalcoloVPR::classifica_rain()
 
 CalcoloVIZ::CalcoloVIZ(const CilindricalVolume& cil, double htbb, double hbbb, double t_ground)
     : cil(cil), x_size(cil.x_size), z_size(cil.z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground),
-      conv_VIZ(NUM_AZ_X_PPI, x_size, MISSING), stratiform(NUM_AZ_X_PPI, x_size, MISSING)
+      conv_VIZ(x_size, NUM_AZ_X_PPI, MISSING), stratiform(x_size, NUM_AZ_X_PPI, MISSING)
 {
     logging_category = log4c_category_get("radar.vpr");
 }
@@ -1318,8 +1318,8 @@ void CalcoloVIZ::classifico_VIZ()
 {
     int i,j,k,kbbb=0,ktbb=0,kmax=0;
     float cil_Z,base;
-    Matrix2D<double> Zabb(NUM_AZ_X_PPI, x_size, 0.);
-    Matrix2D<double> Zbbb(NUM_AZ_X_PPI, x_size, 0.);
+    Matrix2D<double> Zabb(x_size, NUM_AZ_X_PPI, 0.);
+    Matrix2D<double> Zbbb(x_size, NUM_AZ_X_PPI, 0.);
     double ext_abb,ext_bbb;
     float LIM_VERT= 8.;//questo l'ho messo io
     long int ncv = 0;

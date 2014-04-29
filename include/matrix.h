@@ -10,8 +10,8 @@ namespace cumbac {
 template<typename T>
 struct Matrix2D
 {
-    const unsigned SX;
     const unsigned SY;
+    const unsigned SX;
     T* data;
 
     // Copy constructor, making a copy of the whole matrix
@@ -24,10 +24,10 @@ struct Matrix2D
     }
 
     // Create a new matrix, with all elements set to a fill value
-    Matrix2D(unsigned SX, unsigned int SY, const T& fill=0)
-        : SX(SX), SY(SY), data(new T[SX * SY])
+    Matrix2D(unsigned SY, unsigned int SX, const T& fill=0)
+        : SY(SY), SX(SX), data(new T[SY * SX])
     {
-        for (unsigned i = 0; i < SX * SY; ++i)
+        for (unsigned i = 0; i < SY * SX; ++i)
             data[i] = fill;
     }
 
