@@ -365,73 +365,35 @@ public:
     void StampoFlag();
 };
 
-struct CilindricalColumn
-{
-    std::vector<float> data;
-
-    CilindricalColumn(unsigned zsize, float def_val=-20)
-    {
-        data.resize(zsize, def_val);
-    }
-
-    float& operator[](unsigned z)
-    {
-        if (z >= data.size()) throw std::runtime_error("cil: fuori coordinata z");
-        return data[z];
-    }
-
-    const float& operator[](unsigned z) const
-    {
-        if (z >= data.size()) throw std::runtime_error("cil: fuori coordinata z");
-        return data[z];
-    }
-};
-
-struct CilindricalSlice
-{
-    std::vector<CilindricalColumn> columns;
-
-    CilindricalSlice(unsigned xsize, unsigned zsize, float def_val=-20)
-    {
-        columns.reserve(xsize);
-        for (unsigned i = 0; i < xsize; ++i)
-            columns.push_back(CilindricalColumn(zsize, def_val));
-    }
-
-    CilindricalColumn& operator[](unsigned x)
-    {
-        if (x >= columns.size()) throw std::runtime_error("cil: fuori coordinata x");
-        return columns[x];
-    }
-
-    const CilindricalColumn& operator[](unsigned x) const
-    {
-        if (x >= columns.size()) throw std::runtime_error("cil: fuori coordinata x");
-        return columns[x];
-    }
-};
-
 struct CilindricalVolume
 {
-    std::vector<CilindricalSlice> slices;
+    std::vector<Matrix2D<double>*> slices;
+    const unsigned size_x;
+    const unsigned size_z;
 
-    void allocate(unsigned xsize, unsigned zsize)
+    CilindricalVolume(unsigned slice_count, unsigned size_x, unsigned size_z, double missing_value)
+        : size_x(size_x), size_z(size_z)
     {
-        slices.reserve(NUM_AZ_X_PPI);
-        for (unsigned i = 0; i < NUM_AZ_X_PPI; ++i)
-            slices.push_back(CilindricalSlice(xsize, zsize));
+        slices.reserve(slice_count);
+        for (unsigned i = 0; i < slice_count; ++i)
+            slices.push_back(new Matrix2D<double>(size_z, size_x, missing_value));
+    }
+    ~CilindricalVolume()
+    {
+        for (std::vector<Matrix2D<double>*>::iterator i = slices.begin(); i != slices.end(); ++i)
+            delete *i;
     }
 
-    CilindricalSlice& operator[](unsigned i)
+    Matrix2D<double>& operator[](unsigned i)
     {
         if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
-        return slices[i];
+        return *slices[i];
     }
 
-    const CilindricalSlice& operator[](unsigned i) const
+    const Matrix2D<double>& operator[](unsigned i) const
     {
         if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
-        return slices[i];
+        return *slices[i];
     }
 };
 
