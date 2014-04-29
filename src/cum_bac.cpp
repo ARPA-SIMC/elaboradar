@@ -1139,8 +1139,6 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         }
     }
 
-    CilindricalVolume& cil(*this);
-
     /* ;----------------------------------------------------------- */
     /* ;   Matrici per puntare sul piano cartesiano velocemente */
     /* ;---------------------------------- */
@@ -1159,7 +1157,7 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     Matrix2D<double> RHI_beam(max_bin, volume.NEL);
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
-        Matrix2D<double>& rhi_cart = cil[iaz];
+        Matrix2D<double>& rhi_cart = (*this)[iaz];
         Matrix2D<double> rhi_weight(z_size, x_size, 0);
 
         volume.read_vertical_slice(iaz, RHI_beam, MISSING_DB);
