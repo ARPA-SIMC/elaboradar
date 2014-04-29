@@ -96,7 +96,7 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
     {
         // estremi della finestra in range
         int kmin = i->range - delta_nr;
-        int kmax = min(i->range + delta_nr, max_bin);
+        unsigned kmax = min(i->range + delta_nr, max_bin);
 
         if (kmin>0)
         {
@@ -116,7 +116,7 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
             // -kmin. Sempre gli stessi mezzi scan a prescindere dalla
             // posizione di i. Ha senso?
             for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
-                for (int k=0  ; k<kmax   ; k++)
+                for (unsigned k=0  ; k<kmax   ; k++)
                     i->add_sample(elev_fin.db_at_elev_preci(j, k));
 
             for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
@@ -129,16 +129,14 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
 
 void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
 {
-    int daz, dr,jmin, jmax, kmin,kmax,j,k;
+    int dr=(int)(cr*1000./size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
 
-    dr=(int)(cr*1000./size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
+    int kmin=kr-dr;
+    unsigned kmax=kr+dr;
 
-    kmin=kr-dr;
-    kmax=kr+dr;
-
-    daz=ceil(cr/((kr*size_cell/1000.+size_cell/2000.)/(AMPLITUDE*DTOR)));
-    jmin=ja-daz;
-    jmax=ja+daz;
+    int daz=ceil(cr/((kr*size_cell/1000.+size_cell/2000.)/(AMPLITUDE*DTOR)));
+    int jmin=ja-daz;
+    unsigned jmax=ja+daz;
 
     LOG_DEBUG("dr cr kmin kmax  %d %f %d %d %d %d", dr,cr, kmin,kmax,jmin,jmax);
 
@@ -147,8 +145,8 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
 
         if (jmin<0) {
             jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
-            for (j=jmin; j< NUM_AZ_X_PPI ; j++) {
-                for (k=kmin ; k<kmax  ; k++) {
+            for (unsigned j=jmin; j< NUM_AZ_X_PPI ; j++) {
+                for (unsigned k=kmin ; k<kmax  ; k++) {
                     conv_STEINER[j][k]=CONV_VAL;
                 }
             }
@@ -159,31 +157,30 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
 
         if (jmax>NUM_AZ_X_PPI) {
             jmax=jmax%NUM_AZ_X_PPI;
-            for (j=0; j<jmax ; j++) {
-                for (k=kmin; k<kmax  ; k++) {
+            for (unsigned j=0; j<jmax ; j++) {
+                for (unsigned k=kmin; k<kmax  ; k++) {
                     conv_STEINER[j][k]=CONV_VAL;
                 }
             }
             LOG_DEBUG("jmax %d", jmax);
             jmax=NUM_AZ_X_PPI;
         }
-        for (j=jmin; j<jmax ; j++) {
-            for (k=kmin; k<kmax  ; k++) {
+        for (unsigned j=jmin; j<jmax ; j++) {
+            for (unsigned k=kmin; k<kmax  ; k++) {
                 conv_STEINER[j][k]=CONV_VAL;
             }
         }
     }
     else
     {
-        for (j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
-            for (k=0  ; k<kmax   ; k++){
+        for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
+            for (unsigned k=0  ; k<kmax   ; k++){
                 conv_STEINER[j][k]=CONV_VAL;
             }
-        for (j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
-            for (k=0  ; k<-kmin   ; k++){
+        for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
+            for (unsigned k=0  ; k < (unsigned)-kmin   ; k++){
                 conv_STEINER[j][k]=CONV_VAL;
             }
-
     }
 
     return;
