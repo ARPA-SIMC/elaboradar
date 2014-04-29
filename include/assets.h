@@ -5,6 +5,7 @@
 #include <ctime>
 #include <cstdio>
 #include <logging.h>
+#include <vector>
 #include <H5Cpp.h>
 
 namespace cumbac {
@@ -160,6 +161,8 @@ public:
     int read_vpr_hmax();
 
     void write_vpr_hmax(int hvprmax);
+
+    bool read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area);
 
     /**
      * Return an open HDF5 File to which we can write datasets used to debug

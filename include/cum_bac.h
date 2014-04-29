@@ -443,7 +443,7 @@ struct CalcoloVPR
      *  @param[in]  sito  sito radar
      *  @return  0 se ok 1 se fallisce
      */ 
-    int func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[]);
+    int func_vpr(long int *cv, long int *ct, std::vector<float>& vpr1, long int area_vpr[]);
 
     /**
      *

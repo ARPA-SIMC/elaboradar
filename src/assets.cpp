@@ -270,7 +270,6 @@ void Assets::write_vpr_heating(int value) const
         return;
     }
 
-    int heating;
     if (fprintf(file, " %i \n", value) < 0);
     {
         LOG_ERROR("Cannot write $VPR_HEATING=%s: %s", fname, strerror(errno));
@@ -358,6 +357,35 @@ void Assets::write_vpr_hmax(int hvprmax)
     FILE* out = fopen_checked(fname, "wt", "hmax VPR");
     fprintf(out, "%d", hvprmax);
     fclose(out);
+}
+
+bool Assets::read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area)
+{
+    const char* fname = getenv("VPR0_FILE");
+    if (!fname)
+    {
+        LOG_ERROR("$VPR0_FILE is not set");
+        return false;
+    }
+
+    FILE *fd = fopen(fname, "rt");
+    if (fd == NULL)
+    {
+        LOG_ERROR("$VPR0_FILE=%s cannot be opened: %s", fname, strerror(errno));
+        return false;
+    }
+
+    for (unsigned i = 0; i < vpr0.size(); ++i)
+        //-----leggo vpr e area per ogni strato----
+        if (fscanf(fd, "%f %li\n", &vpr0[i], &area[i]) != 2)
+        {
+            fclose(fd);
+            LOG_ERROR("$VPR0_FILE=%s cannot be read: %s", fname, strerror(errno));
+            throw std::runtime_error("cannot read $VPR0_FILE");
+        }
+
+    fclose(fd);
+    return true;
 }
 
 H5::H5File Assets::get_devel_data_output() const
