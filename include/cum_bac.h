@@ -38,6 +38,7 @@ namespace cumbac {
 
 struct Site;
 struct CalcoloSteiner;
+struct CalcoloVIZ;
 
 template<typename T>
 struct PolarMap : public Matrix2D<T>
@@ -363,65 +364,6 @@ public:
     time_t NormalizzoData(time_t time);
 
     void StampoFlag();
-};
-
-struct CilindricalVolume
-{
-    std::vector<Matrix2D<double>*> slices;
-    const unsigned x_size;
-    const unsigned z_size;
-
-    CilindricalVolume(unsigned slice_count, unsigned x_size, unsigned z_size, double missing_value)
-        : x_size(x_size), z_size(z_size)
-    {
-        slices.reserve(slice_count);
-        for (unsigned i = 0; i < slice_count; ++i)
-            slices.push_back(new Matrix2D<double>(x_size, z_size, missing_value));
-    }
-    ~CilindricalVolume()
-    {
-        for (std::vector<Matrix2D<double>*>::iterator i = slices.begin(); i != slices.end(); ++i)
-            delete *i;
-    }
-
-    Matrix2D<double>& operator[](unsigned i)
-    {
-        if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
-        return *slices[i];
-    }
-
-    const Matrix2D<double>& operator[](unsigned i) const
-    {
-        if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
-        return *slices[i];
-    }
-
-    void resample(const Volume<double>& volume, unsigned max_bin, double size_cell);
-};
-
-struct CalcoloVIZ
-{
-    log4c_category_t* logging_category;
-
-    const CilindricalVolume& cil;
-
-    const unsigned x_size;
-    const unsigned z_size;
-    const double htbb;
-    const double hbbb;
-    const double t_ground;
-
-    Matrix2D<unsigned char> conv_VIZ;
-    Matrix2D<unsigned char> stratiform;
-
-    CalcoloVIZ(const CilindricalVolume& cil, double htbb, double hbbb, double t_ground);
-
-    /**
-     *  classifica tramite Vertical Integrated Z
-     *  @brief funzione  che classifica secondo il metodo VIZ
-     *  @details calcolo per ogni pixel polare l'integrale verticale esclusa la fascia della bright band
-     */
-    void classifico_VIZ();
 };
 
 struct CalcoloVPR
