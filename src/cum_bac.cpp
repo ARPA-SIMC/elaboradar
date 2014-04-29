@@ -1205,6 +1205,9 @@ void CalcoloVPR::classifica_rain()
         }
     }
 
+    // ricampionamento del volume in coordinate cilindriche
+    CilindricalVolume cil;
+
     /* ;----------------------------------------------------------- */
     /* ;   Matrici per puntare sul piano cartesiano velocemente */
     /* ;---------------------------------- */
