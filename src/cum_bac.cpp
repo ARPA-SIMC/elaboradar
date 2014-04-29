@@ -1071,19 +1071,19 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     int w_x_size_2=w_x_size/2;
     int w_z_size_2=w_z_size/2;
 
-    // TODO: replace with Matrix2D
-    const unsigned NEL = volume.NEL;
-    const unsigned MyMAX_BIN = max_bin;
-    int i_xx_min[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL];
-    int im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
-    const double a = REARTH;
+    Matrix2D<int> i_xx_min(volume.NEL, max_bin);
+    Matrix2D<int> i_zz_min(volume.NEL, max_bin);
+    Matrix2D<int> im(volume.NEL, max_bin);
+    Matrix2D<int> ix(volume.NEL, max_bin);
+    Matrix2D<int> jm(volume.NEL, max_bin);
+    Matrix2D<int> jx(volume.NEL, max_bin);
 
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * size_cell/1000.;
 
         for (unsigned k=0; k < volume.NEL; k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
-            double zz = pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*a*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
+            double zz = pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*REARTH*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
             double xx = range*cos(elev_rad); // distanza
             int i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
             int i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
@@ -1158,8 +1158,9 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         }
     }
 */
-    double RHI_beam[NEL][MyMAX_BIN];
-    double beamXweight[MyMAX_BIN][20][10]; // da inizializzare in fase di programma
+    // TODO: make a Vector method to fill a Matrix2D with a vertical slice
+    double RHI_beam[volume.NEL][max_bin];
+    double beamXweight[max_bin][20][10]; // da inizializzare in fase di programma
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = cil[iaz];
