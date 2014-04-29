@@ -466,8 +466,6 @@ struct CalcoloVPR
 
     CUM_BAC& cum_bac;
     long int area_vpr[NMAXLAYER]; /*area degli strati*/
-    // ricampionamento del volume in coordinate cilindriche
-    CilindricalVolume cil;
     long int gap; /* distanza temporale dall'ultimo file vpr */
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
