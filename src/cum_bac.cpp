@@ -1161,10 +1161,13 @@ int CalcoloVPR::combina_profili()
 {
     LOG_CATEGORY("radar.vpr");
     long int c0, cv = 0, ct = 0;
-    float vpr0[NMAXLAYER],vpr1[NMAXLAYER],vpr_dbz;
+    vector<float> vpr0(NMAXLAYER, NODATAVPR);
+    vector<float> vpr1(NMAXLAYER, NODATAVPR);
+    float vpr_dbz;
     float alfat,noval;
     int mode,ilay,i,foundlivmin=0,il,ier_ap,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
-    long int  area[NMAXLAYER],ar=0;
+    vector<long int> area(NMAXLAYER, NODATAVPR);
+    long int ar=0;
     int n=0,diff=0;
     char nomefile[150],stringa[100];
     struct tm *T_tempo;
@@ -1174,10 +1177,7 @@ int CalcoloVPR::combina_profili()
     mode=MOD_VPR;
 
     for (i=0;i<NMAXLAYER;i++) {
-        area[i]=0;//inizializzo area
         area_vpr[i]=0;
-        vpr0[i]=NODATAVPR;
-        vpr1[i]=NODATAVPR;
     }
     noval=NODATAVPR;
 
@@ -1209,8 +1209,8 @@ int CalcoloVPR::combina_profili()
         /*------leggo il profilo vecchio più recente di MEMORY ----*/
         /*------nota bene: è in R ovvero  pioggia!! ----*/
 
-        file=fopen(getenv("VPR0_FILE"),"r");
-        if(file == NULL ) {
+        if (!cum_bac.assets.read_vpr0(vpr0, area))
+        {
             LOG_WARN("non esiste file vpr vecchio: %s",getenv("VPR0_FILE"));
 
             //----se file non esiste assegno gap=100----
@@ -1220,28 +1220,18 @@ int CalcoloVPR::combina_profili()
         //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
         //--------qui dentro c'è la funzione controllo_apertura, per la quale rimandiamo a dopo qualsiasi commento--------
 
-        if (gap<=MEMORY){
+        if (gap <= MEMORY)
+        {
             combinante=1;
-            controllo_apertura(getenv("VPR0_FILE")," old VPR ","r");
-            for(ilay=0; ilay<NMAXLAYER; ilay++){
+        } else {
+            //-----Se gap > MEMORY
 
-                //-----leggo vpr e area per ogni strato----
-                fscanf(file,"%f %li\n",&vpr0[ilay],&area[ilay]);
-            }
-            LOG_INFO("fatta lettura vpr");
-            fclose(file);
+            //a)----- tento .. sono in POST-ELABORAZIONE:----
 
-        }
+            //-----devo andare a ricercare tra i profili 'buoni' in archivio quello con cui combinare il dato----
+            //---- trattandosi di profili con data nel nome del file, costruisco il nome a partire dall'istante corrente ciclando su un numero di quarti d'ora
+            //---- pari a memory finchè non trovo un profilo. se non lo trovo gap resta=100
 
-        //-----Se gap > MEMORY
-
-        //a)----- tento .. sono in POST-ELABORAZIONE:----
-
-        //-----devo andare a ricercare tra i profili 'buoni' in archivio quello con cui combinare il dato----
-        //---- trattandosi di profili con data nel nome del file, costruisco il nome a partire dall'istante corrente ciclando su un numero di quarti d'ora
-        //---- pari a memory finchè non trovo un profilo. se non lo trovo gap resta=100
-
-        else {
             for (i=0;i<MEMORY;i++){
 
                 //---calcolo della data---//
@@ -1878,7 +1868,7 @@ long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del sin
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
-int CalcoloVPR::func_vpr(long int *cv, long int *ct, float vpr1[], long int area_vpr[])
+int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, long int area_vpr[])
 {
     LOG_CATEGORY("radar.vpr");
     int i,iA,ilay,il,ilast,iaz_min,iaz_max;
