@@ -148,7 +148,7 @@ void GridStats::init(const Volume<double>& volume)
         stat_anap[i] = stat_tot[i] = stat_bloc[i] = stat_elev[i] = 0;
 }
 
-CUM_BAC::CUM_BAC(const char* site_name, bool medium, int max_bin)
+CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium), do_clean(false),
       do_quality(false), do_beamblocking(false), do_declutter(false),
