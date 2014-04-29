@@ -420,12 +420,22 @@ struct CalcoloSteiner
 {
     log4c_category_t* logging_category;
 
-    struct Bckg
+    struct Point
     {
         int azimut;
         int range;
-        Bckg() : azimut(-999), range(-999) {}
-        Bckg(int azimut, int range) : azimut(azimut), range(range) {}
+        unsigned npoints;
+        // Valore della Z di background in dB
+        double bckgr;
+        // Valore della Z di background in mm^6/m^3
+        double Z_bckgr;
+        double convective_radius;
+
+        Point() : azimut(-999), range(-999), npoints(0), bckgr(0), Z_bckgr(0), convective_radius(0) {}
+        Point(int azimut, int range) : azimut(azimut), range(range), npoints(0), bckgr(0), Z_bckgr(0), convective_radius(0) {}
+
+        void add_sample(double sample);
+        void finalize();
     };
 
     const Volume<double>& volume;
@@ -436,21 +446,10 @@ struct CalcoloSteiner
 
     Matrix2D<unsigned char> conv_STEINER;
 
-    //lista punti di background iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
-    std::vector<Bckg> lista_bckg;
-
-    // array contenente i valori della Z di background per ogni pixel precipitante in dB
-    std::vector<double> bckgr;
-
-    // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
-    std::vector<double> Z_bckgr;
-
-    std::vector<double> convective_radius;
-
-    unsigned npoints;
+    // Pixel precipitanti
+    std::vector<Point> lista_bckg;
 
     CalcoloSteiner(const Volume<double>& volume, const volume::ElevFin<double>& elev_fin, unsigned max_bin, unsigned x_size, const double size_cell);
-    ~CalcoloSteiner();
 
     /**
      *  calcola valore di background per individuare pixel convettivo
