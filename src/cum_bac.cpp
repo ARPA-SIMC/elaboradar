@@ -1039,7 +1039,7 @@ void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
     const unsigned int NEL = cum_bac.volume.NEL;
-    int hmax=-9999, ier_ap,ier_0term=0;
+    int hmax=-9999, ier_ap;
 
     FILE *file;
 
@@ -1054,20 +1054,16 @@ void CalcoloVPR::classifica_rain()
     gap = cum_bac.assets.read_profile_gap();
     //-- se gap < memory leggo hmax da VPR
     if (gap<=MEMORY){
-        ier_ap=access(getenv("VPR_HMAX"),R_OK);
-        if (!ier_ap) {
-            file = fopen(getenv("VPR_HMAX"),"r");
-            //file=controllo_apertura(getenv("VPR_HMAX")," altezza hmax ultimo vpr ","r");
-            fscanf(file,"%i", &hmax);
-            LOG_INFO("fatta lettura hmax vpr = %i",hmax);
+        hmax = cum_bac.assets.read_vpr_hmax();
             //---suppongo una semiampiezza massima della bright band di 600 m e definisco htopbb e hbasebb come hmassimo +600 m (che da clima ci sta) e hmassimo -600 m
-            hbbb=(hmax-600.)/1000.;
-            htbb=(hmax+600.)/1000.;
-            fclose(file);
-        }
     }
-    //-- se gap > memory o se non ho trovato il file
-    if (hmax <0 ){
+
+    if (hmax >= 0)
+    {
+        hbbb=(hmax-600.)/1000.;
+        htbb=(hmax+600.)/1000.;
+    } else {
+        //-- se gap > memory o se non ho trovato il file
         // Lettura 0 termico da modello, e calcolo base e top bright band
         LOG_INFO("leggo 0termico per class da file %s",getenv("FILE_ZERO_TERMICO"));
         //  leggo informazioni di temperatura da modello*/

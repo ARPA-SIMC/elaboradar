@@ -156,6 +156,9 @@ public:
     /// Write the acquisition time in $LAST_VPR file
     void write_last_vpr();
 
+    /// Read VPR_HMAX, returning -9999 if not found
+    int read_vpr_hmax();
+
     void write_vpr_hmax(int hvprmax);
 
     /**

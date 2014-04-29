@@ -320,6 +320,37 @@ void Assets::write_last_vpr()
     fclose(out);
 }
 
+int Assets::read_vpr_hmax()
+{
+    const char* fname = getenv("VPR_HMAX");
+    if (!fname)
+    {
+        LOG_ERROR("$VPR_HMAX is not set");
+        return -9999;
+    }
+
+    FILE *fd = fopen(fname, "rt");
+    if (fd == NULL)
+    {
+        LOG_ERROR("$VPR_HMAX=%s cannot be opened: %s", fname, strerror(errno));
+        return -9999;
+    }
+
+    int value;
+    if (fscanf(fd, "%i", &value) != 1)
+    {
+        fclose(fd);
+        LOG_ERROR("$VPR_HMAX=%s cannot be read: %s", fname, strerror(errno));
+        return -9999;
+    }
+
+    fclose(fd);
+
+    LOG_INFO("fatta lettura hmax vpr = %i", value);
+
+    return value;
+}
+
 void Assets::write_vpr_hmax(int hvprmax)
 {
     const char* fname = getenv("VPR_HMAX");
