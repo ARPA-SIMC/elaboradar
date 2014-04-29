@@ -1291,7 +1291,7 @@ void CalcoloVPR::classifica_rain()
 
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
-    CalcoloVIZ viz(cil, x_size, z_size, htbb, hbbb, t_ground);
+    CalcoloVIZ viz(cil, htbb, hbbb, t_ground);
     viz.classifico_VIZ();
 
     //classificazione con STEINER
@@ -1305,8 +1305,8 @@ void CalcoloVPR::classifica_rain()
     return ;
 }
 
-CalcoloVIZ::CalcoloVIZ(const CilindricalVolume& cil, unsigned x_size, unsigned z_size, double htbb, double hbbb, double t_ground)
-    : cil(cil), x_size(x_size), z_size(z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground),
+CalcoloVIZ::CalcoloVIZ(const CilindricalVolume& cil, double htbb, double hbbb, double t_ground)
+    : cil(cil), x_size(cil.x_size), z_size(cil.z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground),
       conv_VIZ(NUM_AZ_X_PPI, x_size, MISSING), stratiform(NUM_AZ_X_PPI, x_size, MISSING)
 {
     logging_category = log4c_category_get("radar.vpr");
