@@ -1074,7 +1074,7 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     // TODO: replace with Matrix2D
     const unsigned NEL = volume.NEL;
     const unsigned MyMAX_BIN = max_bin;
-    int i_xx_min[MyMAX_BIN][NEL],i_xx_max[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL],i_zz_max[MyMAX_BIN][NEL];
+    int i_xx_min[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL];
     int im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
     const double a = REARTH;
 
@@ -1095,9 +1095,9 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
                 i_xx_min[i][k]= w_x_size_2;
 
             //shift orizzontale positivo attorno al punto di indice i_xx per costruire la finestra in x
-            i_xx_max[i][k]=x_size-i_xx-1;
+            int i_xx_max = x_size-i_xx-1;
             if (i_xx+w_x_size_2 < x_size)
-                i_xx_max[i][k]= w_x_size_2;
+                i_xx_max = w_x_size_2;
 
             //shift verticale negativo attorno al punto di indice i_zz per costruire la finestra in z
             i_zz_min[i][k]=i_zz;
@@ -1105,15 +1105,15 @@ void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
                 i_zz_min[i][k] = w_z_size_2;
 
             //shift verticale positivo attorno al punto di indice i_zz per costruire la finestra in z
-            i_zz_max[i][k]=z_size-i_zz-1;
+            int i_zz_max = z_size-i_zz-1;
             if (i_zz+w_z_size_2 < z_size)
-                i_zz_max[i][k]= w_z_size_2;
+                i_zz_max = w_z_size_2;
 
             //indici minimo e massimo in x e z per definire la finestra sul punto
             im[i][k]=i_xx-i_xx_min[i][k];
-            ix[i][k]=i_xx+i_xx_max[i][k];
+            ix[i][k]=i_xx+i_xx_max;
             jm[i][k]=i_zz-i_zz_min[i][k];
-            jx[i][k]=i_zz+i_zz_max[i][k];
+            jx[i][k]=i_zz+i_zz_max;
 
         }
     }
