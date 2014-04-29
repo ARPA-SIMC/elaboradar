@@ -1033,35 +1033,209 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
     return att_tot;
 }
 
+void CilindricalVolume::resample(const Volume<double>& volume, unsigned max_bin, double size_cell)
+{
+    /* ---------------------------------- */
+    /*           FASE 1 */
+    /* ---------------------------------- */
+    /*    Costruzione matrice generale per indicizzare il caricamento dei dati */
+    /*    da coordinate radar a coordinate (X,Z) */
+    /*  Calcolo distanza per ogni punto sul raggio */
+    /*  xx contiene la distanza sulla superfice terrestre in funzione del range radar e dell'elevazione */
+    /*  Metodo 1 - -Calcolo le coordinate di ogni punto del RHI mediante utilizzo di cicli */
+
+    // estremi x e z (si procede per rhi)
+    double range_min=0.5 * size_cell/1000.;
+    double range_max=(max_bin-0.5) * size_cell/1000.;
+
+    double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
+    double zmin=pow(pow(range_min,2.)+pow(4./3*REARTH,2.)+2.*range_min*4./3.*REARTH*sin(volume.elevation_min() * DTOR),.5) -4./3.*REARTH+h_radar; // quota  minima in prop standard
+    double xmax=floor(range_max*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
+    double zmax=pow(pow(range_max,2.)+pow(4./3*REARTH,2.)+2.*range_max*4./3.*REARTH*sin(volume.elevation_max() * DTOR),.5) -4./3.*REARTH+h_radar;//quota massima
+
+    double resol[2];
+    resol[0]=RES_HOR_CIL; // uguale a dimensione cella volume polare .. va parametrizzato
+    resol[1]=RES_VERT_CIL;
+
+    //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
+    const double w_size[2]={3.,0.3}; //dimensione della matrice pesi
+
+    //LOG_INFO("calcolati range_min e range_max , dimensione orizzontale e dimensione verticale range_min=%f  range_max=%f x_size=%d z_size=%d",range_min,range_max,x_size,z_size);
+
+    int w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
+    int w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
+
+    if (w_x_size < 3) w_x_size=3;
+    if (w_z_size < 3) w_z_size=3;
+
+    int w_x_size_2=w_x_size/2;
+    int w_z_size_2=w_z_size/2;
+
+    vector<double> w_x(w_x_size);
+    vector<double> w_z(w_z_size);
+    Matrix2D<double> w_tot(w_z_size, w_x_size);
+
+    Matrix2D<double> zz(volume.NEL, max_bin);
+    Matrix2D<double> xx(volume.NEL, max_bin);
+
+    // TODO: replace with Matrix2D
+    const unsigned NEL = volume.NEL;
+    const unsigned MyMAX_BIN = max_bin;
+    int  i_xx[MyMAX_BIN][NEL],i_zz[MyMAX_BIN][NEL],i_xx_min[MyMAX_BIN][NEL],i_xx_max[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL],i_zz_max[MyMAX_BIN][NEL];
+    int  im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
+    const double a = REARTH;
+    float RHI_beam[NEL][MyMAX_BIN],beamXweight[MyMAX_BIN][20][10]; // da inizializzare in fase di programma
+
+    for (unsigned i = 0; i < max_bin; i++){
+        double range = (i + 0.5) * size_cell/1000.;
+
+        for (unsigned k=0; k < volume.NEL; k++){
+            double elev_rad = volume.scan(k).elevation * DTOR;
+            zz[i][k]=pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*a*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
+            xx[i][k]=range*cos(elev_rad); // distanza
+            i_zz[i][k]=floor((zz[i][k]-zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
+            i_xx[i][k]=floor((xx[i][k]-xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
+            // Enrico RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;
+            //shift orizzontale negativo del punto di indice i_xx[i][k] per costruire la finestra in x
+            // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
+            i_xx_min[i][k]=i_xx[i][k];
+            if (i_xx[i][k]-w_x_size_2 >= 0)
+                i_xx_min[i][k]= w_x_size_2;
+
+            //shift orizzontale positivo attorno al punto di indice i_xx[i][k] per costruire la finestra in x
+            i_xx_max[i][k]=x_size-i_xx[i][k]-1;
+            if (i_xx[i][k]+w_x_size_2 < x_size)
+                i_xx_max[i][k]= w_x_size_2;
+
+            //shift verticale negativo attorno al punto di indice i_zz[i][k] per costruire la finestra in z
+            i_zz_min[i][k]=i_zz[i][k];
+            if (i_zz_min[i][k] - w_z_size_2 > 0)
+                i_zz_min[i][k] = w_z_size_2;
+
+            //shift verticale positivo attorno al punto di indice i_zz[i][k] per costruire la finestra in z
+            i_zz_max[i][k]=z_size-i_zz[i][k]-1;
+            if (i_zz[i][k]+w_z_size_2 < z_size)
+                i_zz_max[i][k]= w_z_size_2;
+
+            //indici minimo e massimo in x e z per definire la finestra sul punto
+            im[i][k]=i_xx[i][k]-i_xx_min[i][k];
+            ix[i][k]=i_xx[i][k]+i_xx_max[i][k];
+            jm[i][k]=i_zz[i][k]-i_zz_min[i][k];
+            jx[i][k]=i_zz[i][k]+i_zz_max[i][k];
+
+        }
+    }
+
+    /*
+       ;------------------------------------------------------------------------------
+       ;          FASE 2
+       ;------------------------------------------------------------------------------
+       ;   Costruzione matrice pesi
+       ;   Questa matrice contiene i pesi (in funzione della distanza) per ogni punto.
+       ;-----------------------------------------------------------------------------*/
+
+    for (unsigned k=0;k<w_x_size;k++)
+        w_x[k]=exp(-pow(k-w_x_size_2,2.)/pow(w_x_size_2/2.,2.));
+    for (unsigned k=0;k<w_z_size;k++)
+        w_z[k]=exp(-pow(k-w_z_size_2,2.)/pow(w_z_size_2/2.,2.));
+    for (unsigned i=0;i<w_x_size;i++){
+        for (unsigned j=0;j<w_z_size;j++){
+            w_tot[i][j]=w_x[i]*w_z[j];
+        }
+    }
+
+    CilindricalVolume& cil(*this);
+
+    /* ;----------------------------------------------------------- */
+    /* ;   Matrici per puntare sul piano cartesiano velocemente */
+    /* ;---------------------------------- */
+    /* ;          FASE 3 */
+    /* ;---------------------------------- */
+    /* ; Selezione dati per formare RHI */
+    /* ;---------------------------------- */
+
+/*     for(k=0;k<MAX_BIN;k++){
+        beamXweight[k]=(float **) malloc(w_x_size*sizeof(float *));
+        for(i=0;i<w_x_size;i++){
+            beamXweight[k][i]=(float *) malloc(w_z_size*sizeof(float));
+        }
+    }
+*/
+    for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
+    {
+        Matrix2D<double>& rhi_cart = cil[iaz];
+        Matrix2D<double> rhi_weight(z_size, x_size, 0);
+
+        for (unsigned i=0;i<volume.NEL;i++)
+            volume.scan(i).read_beam_db(iaz, RHI_beam[i], max_bin, BYTEtoDB(0));
+
+        /* ;---------------------------------- */
+        /* ;          FASE 4 */
+        /* ;---------------------------------- */
+        /* ;   Costruzione RHI */
+        /* ;---------------------------------- */
+
+        // Enrico: non sforare se il raggio è piú lungo di MAX_BIN
+        unsigned ray_size = volume.scan(0).beam_size;
+        if (ray_size > max_bin)
+            ray_size = max_bin;
+
+        for (unsigned iel=0;iel<volume.NEL;iel++){
+            for (unsigned ibin=0;ibin<ray_size;ibin++) {
+                if ( ibin >= max_bin) {
+                    std::cout<<"ibin troppo grande "<<std::endl;
+                    throw std::runtime_error("ERRORE");
+                }
+                for(unsigned kx=0;kx<w_x_size;kx++){
+                    for(unsigned kz=0;kz<w_z_size;kz++){
+//std::cout<<"ibin , kx, kz "<<ibin<<" "<<kx<<" "<<kz<<" "<<w_x_size<< " "<<w_z_size<<" "<<MAX_BIN<<std::endl;
+//std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
+//std::cout<<"RHI "<<  RHI_beam[iel][ibin]<<std::endl;
+//std::cout<<"w_tot "<<  w_tot[kx][kz]<<std::endl;
+                        beamXweight[ibin][kx][kz]=RHI_beam[iel][ibin]*w_tot[kx][kz];
+                    }
+                }
+            }
+
+            for (unsigned ibin=0;ibin<volume.scan(0).beam_size;ibin++) {
+                int imin=im[ibin][iel];
+                int imax=ix[ibin][iel];
+                int jmin=jm[ibin][iel];
+                int jmax=jx[ibin][iel];
+
+                int wimin=w_x_size_2-i_xx_min[ibin][iel];
+                //wimax=w_x_size_2+i_xx_max[ibin][iel];
+                int wjmin=w_z_size_2-i_zz_min[ibin][iel];
+                //wjmax=w_z_size_2+i_zz_max[ibin][iel];
+                for (unsigned i=imin;i<=imax;i++) {
+                    for (unsigned j=jmin;j<=jmax;j++) {
+                        rhi_cart[i][j]=rhi_cart[i][j] +  beamXweight[ibin][wimin+(i-imin)][wjmin+(j-jmin)];
+                        rhi_weight[i][j]=rhi_weight[i][j]+w_tot[wimin+(i-imin)][wjmin+(j-jmin)];
+                    }
+                }
+            }
+        }
+        for (unsigned i=0;i<x_size;i++) {
+            for (unsigned j=0;j<z_size;j++) {
+                if (rhi_weight[i][j] > 0.0)
+                    rhi_cart[i][j]=rhi_cart[i][j]/rhi_weight[i][j];
+                else {
+                    rhi_cart[i][j]=missing_value;
+
+                }
+            }
+        }
+    }
+}
+
 void CalcoloVPR::classifica_rain()
 {
     LOG_CATEGORY("radar.class");
     const unsigned int NEL = cum_bac.volume.NEL;
-    float a;// raggio terra, non so perchè lo rendo variabile
-    float range[MyMAX_BIN];
-    float zz[MyMAX_BIN][NEL];
-    float xx[MyMAX_BIN][NEL];
-    int  i_xx[MyMAX_BIN][NEL],i_zz[MyMAX_BIN][NEL],i_xx_min[MyMAX_BIN][NEL],i_xx_max[MyMAX_BIN][NEL],i_zz_min[MyMAX_BIN][NEL],i_zz_max[MyMAX_BIN][NEL];
-    int  im[MyMAX_BIN][NEL], ix[MyMAX_BIN][NEL], jm[MyMAX_BIN][NEL], jx[MyMAX_BIN][NEL];
-    int i,j,kx,kz,k,iel,imin,imax,jmin,jmax;// Enrico RHI_ind[NEL][MAX_BIN];
-    int wimin,wjmin; // Enrico ,wimax,wjmax;
+    int i,j,kx,kz,k,iel;// Enrico RHI_ind[NEL][MAX_BIN];
     int hmax=-9999, ier_ap,ier_0term=0;
 
-    //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
-    float w_size[2]={3.,0.3}; //dimensione della matrice pesi
-//    float **rhi_cart,**rhi_weight,RHI_beam[NEL][MAX_BIN],*w_x,*w_z,**w_tot,**beamXweight[MAX_BIN]; // da inizializzare in fase di programma
-    float RHI_beam[NEL][MyMAX_BIN],*w_x,*w_z,**w_tot,beamXweight[MyMAX_BIN][20][10]; // da inizializzare in fase di programma
-    float range_min,range_max,xmin,zmin,xmax,zmax;
-    int w_x_size,w_z_size,w_x_size_2,w_z_size_2;
     FILE *file;
-
-    //definisco e così inizializzo resol e a
-    resol[0]=RES_HOR_CIL; // uguale a dimensione cella volume polare .. va parametrizzato
-    resol[1]=RES_VERT_CIL;
-    a=REARTH;
-    // inizializzazione variabili
-
-
 
     /* ;---------------------------------- */
     /* ;          FASE 0 :                  */
@@ -1109,185 +1283,25 @@ void CalcoloVPR::classifica_rain()
     if (hbbb<0) hbbb=0;
 
     LOG_INFO("calcolati livelli sopra e sotto bright band hbbb=%f  htbb=%f",hbbb,htbb);
-    /* ---------------------------------- */
-    /*           FASE 1 */
-    /* ---------------------------------- */
-    /*    Costruzione matrice generale per indicizzare il caricamento dei dati */
-    /*    da coordinate radar a coordinate (X,Z) */
-    /*  Calcolo distanza per ogni punto sul raggio */
-    /*  xx contiene la distanza sulla superfice terrestre in funzione del range radar e dell'elevazione */
-    /*  Metodo 1 - -Calcolo le coordinate di ogni punto del RHI mediante utilizzo di cicli */
 
-    // estremi x e z (si procede per rhi)
-    range_min=0.5*cum_bac.load_info.size_cell/1000.;
-    range_max=(MyMAX_BIN-0.5)*cum_bac.load_info.size_cell/1000.;
+    // TODO: remove duplication with CilindricalVolume::resample
+    const Volume<double>& volume = cum_bac.volume;
+    const double size_cell = cum_bac.load_info.size_cell;
+    double range_min=0.5 * size_cell/1000.;
+    double range_max=(MyMAX_BIN-0.5) * size_cell/1000.;
+    double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
+    double zmin=pow(pow(range_min,2.)+pow(4./3*REARTH,2.)+2.*range_min*4./3.*REARTH*sin(volume.elevation_min() * DTOR),.5) -4./3.*REARTH+h_radar; // quota  minima in prop standard
+    double xmax=floor(range_max*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
+    double zmax=pow(pow(range_max,2.)+pow(4./3*REARTH,2.)+2.*range_max*4./3.*REARTH*sin(volume.elevation_max() * DTOR),.5) -4./3.*REARTH+h_radar;//quota massima
 
-    xmin=floor(range_min*cos(cum_bac.volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
-    zmin=pow(pow(range_min,2.)+pow(4./3*a,2.)+2.*range_min*4./3.*a*sin(cum_bac.volume.elevation_min() * DTOR),.5) -4./3.*a+h_radar; // quota  minima in prop standard
-    xmax=floor(range_max*cos(cum_bac.volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
-    zmax=pow(pow(range_max,2.)+pow(4./3*a,2.)+2.*range_max*4./3.*a*sin(cum_bac.volume.elevation_max() * DTOR),.5) -4./3.*a+h_radar;//quota massima
 
-    x_size=(xmax-xmin)/resol[0]; //dimensione orizzontale
-    z_size=(zmax-zmin)/resol[1]; //dimensione verticale
-    LOG_INFO("calcolati range_min e range_max , dimensione orizzontale e dimensione verticale range_min=%f  range_max=%f x_size=%d z_size=%d",range_min,range_max,x_size,z_size);
+    x_size=(xmax-xmin)/RES_HOR_CIL; //dimensione orizzontale
     if (x_size > MyMAX_BIN) x_size=MyMAX_BIN;
-
-    w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
-    w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
-
-    if (w_x_size < 3)  w_x_size=3;
-    if (w_z_size < 3 ) w_z_size=3;
-
-    w_x_size_2=w_x_size/2;
-    w_z_size_2=w_z_size/2;
-
-    w_x=(float *)malloc(w_x_size*sizeof(float));
-    w_z=(float *)malloc(w_z_size*sizeof(float));
-    w_tot=(float **) malloc(w_x_size*sizeof(float *));
-    for(k=0;k<w_x_size;k++)
-        w_tot[k]=(float *) malloc(w_z_size*sizeof(float));
-
-    for (i=0; i<MyMAX_BIN; i++){
-        range[i]=(i+0.5)*cum_bac.load_info.size_cell/1000.;
-
-        for (k=0; k<cum_bac.volume.NEL; k++){
-            double elev_rad = cum_bac.volume.scan(k).elevation * DTOR;
-            zz[i][k]=pow(pow(range[i],2.)+pow(4./3*a,2.)+2.*range[i]*4./3.*a*sin(elev_rad),.5) -4./3.*a+h_radar;// quota
-            xx[i][k]=range[i]*cos(elev_rad); // distanza
-            i_zz[i][k]=floor((zz[i][k]-zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
-            i_xx[i][k]=floor((xx[i][k]-xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
-            // Enrico RHI_ind[k][i]=i_xx[i][k]+i_zz[i][k]*x_size;
-            //shift orizzontale negativo del punto di indice i_xx[i][k] per costruire la finestra in x
-            // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
-            i_xx_min[i][k]=i_xx[i][k];
-            if (i_xx[i][k]-w_x_size_2 >= 0)
-                i_xx_min[i][k]= w_x_size_2;
-
-            //shift orizzontale positivo attorno al punto di indice i_xx[i][k] per costruire la finestra in x
-            i_xx_max[i][k]=x_size-i_xx[i][k]-1;
-            if (i_xx[i][k]+w_x_size_2 < x_size)
-                i_xx_max[i][k]= w_x_size_2;
-
-            //shift verticale negativo attorno al punto di indice i_zz[i][k] per costruire la finestra in z
-            i_zz_min[i][k]=i_zz[i][k];
-            if (i_zz_min[i][k] - w_z_size_2 > 0)
-                i_zz_min[i][k] = w_z_size_2;
-
-            //shift verticale positivo attorno al punto di indice i_zz[i][k] per costruire la finestra in z
-            i_zz_max[i][k]=z_size-i_zz[i][k]-1;
-            if (i_zz[i][k]+w_z_size_2 < z_size)
-                i_zz_max[i][k]= w_z_size_2;
-
-            //indici minimo e massimo in x e z per definire la finestra sul punto
-            im[i][k]=i_xx[i][k]-i_xx_min[i][k];
-            ix[i][k]=i_xx[i][k]+i_xx_max[i][k];
-            jm[i][k]=i_zz[i][k]-i_zz_min[i][k];
-            jx[i][k]=i_zz[i][k]+i_zz_max[i][k];
-
-        }
-    }
-
-    /*
-       ;------------------------------------------------------------------------------
-       ;          FASE 2
-       ;------------------------------------------------------------------------------
-       ;   Costruzione matrice pesi
-       ;   Questa matrice contiene i pesi (in funzione della distanza) per ogni punto.
-       ;-----------------------------------------------------------------------------*/
-
-    for (k=0;k<w_x_size;k++)
-        w_x[k]=exp(-pow(k-w_x_size_2,2.)/pow(w_x_size_2/2.,2.));
-    for (k=0;k<w_z_size;k++)
-        w_z[k]=exp(-pow(k-w_z_size_2,2.)/pow(w_z_size_2/2.,2.));
-    for (i=0;i<w_x_size;i++){
-        for (j=0;j<w_z_size;j++){
-            w_tot[i][j]=w_x[i]*w_z[j];
-        }
-    }
+    z_size=(zmax-zmin)/RES_VERT_CIL; //dimensione verticale
 
     // ricampionamento del volume in coordinate cilindriche
     CilindricalVolume cil(NUM_AZ_X_PPI, x_size, z_size, 0);
-
-    /* ;----------------------------------------------------------- */
-    /* ;   Matrici per puntare sul piano cartesiano velocemente */
-    /* ;---------------------------------- */
-    /* ;          FASE 3 */
-    /* ;---------------------------------- */
-    /* ; Selezione dati per formare RHI */
-    /* ;---------------------------------- */
-
-/*     for(k=0;k<MAX_BIN;k++){
-        beamXweight[k]=(float **) malloc(w_x_size*sizeof(float *));
-        for(i=0;i<w_x_size;i++){
-            beamXweight[k][i]=(float *) malloc(w_z_size*sizeof(float));
-        }
-    }
-*/
-    for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
-    {
-        Matrix2D<double>& rhi_cart = cil[iaz];
-        Matrix2D<double> rhi_weight(z_size, x_size, 0);
-
-        for (i=0;i<cum_bac.volume.NEL;i++)
-            cum_bac.volume.scan(i).read_beam_db(iaz, RHI_beam[i], MyMAX_BIN, BYTEtoDB(0));
-
-        /* ;---------------------------------- */
-        /* ;          FASE 4 */
-        /* ;---------------------------------- */
-        /* ;   Costruzione RHI */
-        /* ;---------------------------------- */
-
-        // Enrico: non sforare se il raggio è piú lungo di MAX_BIN
-        unsigned ray_size = cum_bac.volume.scan(0).beam_size;
-        if (ray_size > MyMAX_BIN)
-            ray_size = MyMAX_BIN;
-
-        for (iel=0;iel<cum_bac.volume.NEL;iel++){
-            for (unsigned ibin=0;ibin<ray_size;ibin++) {
-                if ( ibin >= MyMAX_BIN) {
-                    std::cout<<"ibin troppo grande "<<std::endl;
-                    throw std::runtime_error("ERRORE");
-                }
-                for(kx=0;kx<w_x_size;kx++){
-                    for(kz=0;kz<w_z_size;kz++){
-//std::cout<<"ibin , kx, kz "<<ibin<<" "<<kx<<" "<<kz<<" "<<w_x_size<< " "<<w_z_size<<" "<<MAX_BIN<<std::endl;
-//std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
-//std::cout<<"RHI "<<  RHI_beam[iel][ibin]<<std::endl;
-//std::cout<<"w_tot "<<  w_tot[kx][kz]<<std::endl;
-                        beamXweight[ibin][kx][kz]=RHI_beam[iel][ibin]*w_tot[kx][kz];
-                    }
-                }
-            }
-
-            for (unsigned ibin=0;ibin<cum_bac.volume.scan(0).beam_size;ibin++) {
-                imin=im[ibin][iel];
-                imax=ix[ibin][iel];
-                jmin=jm[ibin][iel];
-                jmax=jx[ibin][iel];
-
-                wimin=w_x_size_2-i_xx_min[ibin][iel];
-                //wimax=w_x_size_2+i_xx_max[ibin][iel];
-                wjmin=w_z_size_2-i_zz_min[ibin][iel];
-                //wjmax=w_z_size_2+i_zz_max[ibin][iel];
-                for (i=imin;i<=imax;i++) {
-                    for (j=jmin;j<=jmax;j++) {
-                        rhi_cart[i][j]=rhi_cart[i][j] +  beamXweight[ibin][wimin+(i-imin)][wjmin+(j-jmin)];
-                        rhi_weight[i][j]=rhi_weight[i][j]+w_tot[wimin+(i-imin)][wjmin+(j-jmin)];
-                    }
-                }
-            }
-        }
-        for (i=0;i<x_size;i++) {
-            for (j=0;j<z_size;j++) {
-                if (rhi_weight[i][j] > 0.0)
-                    rhi_cart[i][j]=rhi_cart[i][j]/rhi_weight[i][j];
-                else {
-                    rhi_cart[i][j]=missing_value;
-
-                }
-            }
-        }
-    }
+    cil.resample(cum_bac.volume, MyMAX_BIN, cum_bac.load_info.size_cell);
 
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
