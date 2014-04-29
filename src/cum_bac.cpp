@@ -2111,9 +2111,9 @@ void CUM_BAC::creo_cart()
 
     LOG_INFO("Creo_cart - %u",MyMAX_BIN);
 
-    for(int quad=0; quad<4; quad++)
-        for(int i=0; i<MyMAX_BIN; i++)
-            for(int j=0; j<MyMAX_BIN; j++)
+    for(unsigned quad=0; quad<4; quad++)
+        for(unsigned i=0; i<MyMAX_BIN; i++)
+            for(unsigned j=0; j<MyMAX_BIN; j++)
             {
                 unsigned irange = (unsigned)round(cd->range[i][j]);
                 if (irange >= MyMAX_BIN)
