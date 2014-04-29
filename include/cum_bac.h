@@ -442,7 +442,12 @@ struct CalcoloSteiner
     // array contenente i valori della Z di background per ogni pixel precipitante in dB
     std::vector<double> bckgr;
 
+    // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
+    std::vector<double> Z_bckgr;
+
     std::vector<double> convective_radius;
+
+    unsigned npoints;
 
     CalcoloSteiner(const Volume<double>& volume, const volume::ElevFin<double>& elev_fin, unsigned max_bin, unsigned x_size, const double size_cell);
     ~CalcoloSteiner();
@@ -469,6 +474,8 @@ struct CalcoloSteiner
      *  @param[in] kr indice di range
      */ 
     void ingrasso_nuclei(float cr,int ja,int kr);
+
+    void add_sample(unsigned pos, unsigned azimut, unsigned range);
 };
 
 struct CalcoloVPR
