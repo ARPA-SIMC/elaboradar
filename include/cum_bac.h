@@ -379,6 +379,12 @@ struct CilindricalColumn
         if (z >= data.size()) throw std::runtime_error("cil: fuori coordinata z");
         return data[z];
     }
+
+    const float& operator[](unsigned z) const
+    {
+        if (z >= data.size()) throw std::runtime_error("cil: fuori coordinata z");
+        return data[z];
+    }
 };
 
 struct CilindricalSlice
@@ -393,6 +399,12 @@ struct CilindricalSlice
     }
 
     CilindricalColumn& operator[](unsigned x)
+    {
+        if (x >= columns.size()) throw std::runtime_error("cil: fuori coordinata x");
+        return columns[x];
+    }
+
+    const CilindricalColumn& operator[](unsigned x) const
     {
         if (x >= columns.size()) throw std::runtime_error("cil: fuori coordinata x");
         return columns[x];
@@ -415,6 +427,37 @@ struct CilindricalVolume
         if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
         return slices[i];
     }
+
+    const CilindricalSlice& operator[](unsigned i) const
+    {
+        if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
+        return slices[i];
+    }
+};
+
+struct CalcoloVIZ
+{
+    log4c_category_t* logging_category;
+
+    const CilindricalVolume& cil;
+
+    const unsigned x_size;
+    const unsigned z_size;
+    const double htbb;
+    const double hbbb;
+    const double t_ground;
+
+    Matrix2D<unsigned char> conv_VIZ;
+    Matrix2D<unsigned char> stratiform;
+
+    CalcoloVIZ(const CilindricalVolume& cil, unsigned x_size, unsigned z_size, double htbb, double hbbb, double t_ground);
+
+    /**
+     *  classifica tramite Vertical Integrated Z
+     *  @brief funzione  che classifica secondo il metodo VIZ
+     *  @details calcolo per ogni pixel polare l'integrale verticale esclusa la fascia della bright band
+     */
+    void classifico_VIZ();
 };
 
 struct CalcoloVPR
@@ -428,19 +471,16 @@ struct CalcoloVPR
     long int gap; /* distanza temporale dall'ultimo file vpr */
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
-    unsigned char *conv_VIZ[NUM_AZ_X_PPI];
     unsigned char *conv[NUM_AZ_X_PPI];
-    PolarMap<unsigned char> stratiform;
     float vpr[NMAXLAYER];/* vpr */
     int hvprmax; /* quota picco vpr */
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
-    int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
+    //int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
     // array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
     float resol[2];
     int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
     int x_size,z_size;
-    long int ncv;
-    float htbb, hbbb;
+    double htbb, hbbb;
     PolarMap<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
     PolarMap<unsigned char> neve;/* matrice az-range che memorizza punti di neve*/
     int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
@@ -519,13 +559,6 @@ struct CalcoloVPR
     void classifica_rain();
 
     /**
-     *  classifica tramite Vertical Integrated Z
-     *  @brief funzione  che classifica secondo il metodo VIZ
-     *  @details calcolo per ogni pixel polare l'integrale verticale esclusa la fascia della bright band
-     */
-    void classifico_VIZ();
-
-    /**
      *  correzione vpr
      *  @brief funzione che corregge per il profilo verticale
      *  @details ciclando su tutti i bins della cartesiana polare scelta per la stima della pioggia,
@@ -542,7 +575,7 @@ struct CalcoloVPR
      *  @brief funzione  che interseca i punti convettivi delle due classificazioni Viz e Steiner e sottrae quelli con  picco stratiforme
      *  @return non ritorna valori
      */
-    void merge_metodi(const CalcoloSteiner& steiner);
+    void merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& viz);
 
     // stampa profilo combinato
     int stampa_vpr();

@@ -1291,7 +1291,9 @@ void CalcoloVPR::classifica_rain()
 
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
-    classifico_VIZ();
+    CalcoloVIZ viz(cil, x_size, z_size, htbb, hbbb, t_ground);
+    viz.classifico_VIZ();
+
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
@@ -1299,43 +1301,35 @@ void CalcoloVPR::classifica_rain()
     steiner.calcolo_background();
     steiner.classifico_STEINER();
     //  }
-    merge_metodi(steiner);
+    merge_metodi(steiner, viz);
     return ;
 }
 
-void CalcoloVPR::classifico_VIZ()
+CalcoloVIZ::CalcoloVIZ(const CilindricalVolume& cil, unsigned x_size, unsigned z_size, double htbb, double hbbb, double t_ground)
+    : cil(cil), x_size(x_size), z_size(z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground),
+      conv_VIZ(NUM_AZ_X_PPI, x_size, MISSING), stratiform(NUM_AZ_X_PPI, x_size, MISSING)
+{
+    logging_category = log4c_category_get("radar.vpr");
+}
+
+void CalcoloVIZ::classifico_VIZ()
 {
     int i,j,k,kbbb=0,ktbb=0,kmax=0;
     float cil_Z,base;
-    double *Zabb[NUM_AZ_X_PPI],*Zbbb[NUM_AZ_X_PPI], ext_abb,ext_bbb;
+    Matrix2D<double> Zabb(NUM_AZ_X_PPI, x_size, 0.);
+    Matrix2D<double> Zbbb(NUM_AZ_X_PPI, x_size, 0.);
+    double ext_abb,ext_bbb;
     float LIM_VERT= 8.;//questo l'ho messo io
+    long int ncv = 0;
 
-    kbbb=floor(hbbb/resol[1]);   //08/01/2013...MODIFICA, inserito questo dato
-    ktbb=ceil(htbb/resol[1]);
+    kbbb=floor(hbbb/RES_VERT_CIL);   //08/01/2013...MODIFICA, inserito questo dato
+    ktbb=ceil(htbb/RES_VERT_CIL);
 
-    kmax=ceil(LIM_VERT/resol[1]);
-    // kmax=ceil(z_size/resol[1]);
+    kmax=ceil(LIM_VERT/RES_VERT_CIL);
+    // kmax=ceil(z_size/RES_VERT_CIL);
     if (t_ground < T_MAX_ML) kmax=0;/////se t suolo dentro t melting layer pongo kmax=00 e in tal modo non classifico
     if (ktbb>z_size) ktbb=z_size;
     LOG_DEBUG("kmax= %i \n kbbb= %i \n ktbb= %i \n  z_size= %i",kmax,kbbb,ktbb,z_size);
-
-    //inizializzazione vettori e matrici
-    for (i=0; i<NUM_AZ_X_PPI; i++){
-        Zabb[i]= (double *) malloc(x_size*sizeof(double ));
-        Zbbb[i]= (double *) malloc(x_size*sizeof(double ));
-        conv_VIZ[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
-        conv[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
-
-
-
-        for (j=0; j<x_size; j++){ // cambiato da x_size
-            Zabb[i][j]=0.;
-            Zbbb[i][j]=0.;
-            conv_VIZ[i][j]=MISSING;
-            conv[i][j]=MISSING;
-            stratiform[i][j]=MISSING;
-        }
-    }
 
     //inizio l'integrazione
     for(i=0; i<NUM_AZ_X_PPI; i++){
@@ -1350,8 +1344,8 @@ void CalcoloVPR::classifico_VIZ()
                 if (cil[i][j][k] > -19.){   // 08/01/2013..modifica, prendo fin dove ho un segnale
                     base=(cil[i][j][k])/10.;
                     cil_Z=pow(10.,base);
-                    Zbbb[i][j] = Zbbb[i][j] + resol[1]*cil_Z;
-                    ext_bbb=resol[1]+ext_bbb;
+                    Zbbb[i][j] = Zbbb[i][j] + RES_VERT_CIL*cil_Z;
+                    ext_bbb=RES_VERT_CIL+ext_bbb;
                 }
             }
 //std::cout<<"Z_size :"<<z_size<<" kbbb :"<<kbbb<<" ktbb "<<ktbb<<std::endl;
@@ -1378,8 +1372,8 @@ void CalcoloVPR::classifico_VIZ()
                     if (cil[i][j][k] > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
                         base=(cil[i][j][k])/10.;
                         cil_Z=pow(10.,base);
-                        Zabb[i][j] = Zabb[i][j] + resol[1]*cil_Z;
-                        ext_abb=resol[1]+ext_abb;
+                        Zabb[i][j] = Zabb[i][j] + RES_VERT_CIL*cil_Z;
+                        ext_abb=RES_VERT_CIL+ext_abb;
                     }
 
                 }
@@ -1392,8 +1386,8 @@ void CalcoloVPR::classifico_VIZ()
                     if ((Zabb[i][j] +Zbbb[i][j])/(ext_bbb+ext_abb) > THR_VIZ){
                         //if ((Zabb[i][j] /ext_abb) > THR_VIZ){
                         conv_VIZ[i][j]=CONV_VAL;
-                        lista_conv[ncv][0]= i;
-                        lista_conv[ncv][1]= j;
+                        //lista_conv[ncv][0]= i;
+                        //lista_conv[ncv][1]= j;
                         ncv=ncv+1;
                     }
                 }
@@ -1407,21 +1401,21 @@ void CalcoloVPR::classifico_VIZ()
 }
 
 
-void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner)
+void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& viz)
 {
-    int j,k;
+    //inizializzazione vettori e matrici
+    for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
+        conv[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
 
-    for(j=0; j<NUM_AZ_X_PPI; j++){
-        for(k=0; k<x_size; k++)
-        {
-
-            if ( steiner.conv_STEINER[j][k] == conv_VIZ[j][k] &&  steiner.conv_STEINER[j][k]> 0 && stratiform[j][k]<1 ){
-                conv[j][k]=conv_VIZ[j][k];
-            }
-
+        for (unsigned j=0; j<x_size; j++){ // cambiato da x_size
+            conv[i][j]=MISSING;
         }
     }
-    return;
+
+    for (unsigned j=0; j<NUM_AZ_X_PPI; j++)
+        for (unsigned k=0; k<x_size; k++)
+            if (steiner.conv_STEINER[j][k] == viz.conv_VIZ[j][k] && steiner.conv_STEINER[j][k] > 0 && viz.stratiform[j][k] < 1)
+                conv[j][k] = viz.conv_VIZ[j][k];
 }
 
 //----------ALGORITMO
@@ -2807,21 +2801,22 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
-    : cum_bac(cum_bac), stratiform(MAX_BIN), corr_polar(MAX_BIN), neve(MAX_BIN), flag_vpr(0)
+    : cum_bac(cum_bac), corr_polar(MAX_BIN), neve(MAX_BIN), flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
     MyMAX_BIN=cum_bac.MyMAX_BIN;
-    ncv=0;
     htbb=-9999.; hbbb=-9999.;
     t_ground=NODATAVPR;
 
     for (int i=0; i<NMAXLAYER; i++)
       vpr[i]=NODATAVPR;
 
+    /*
     for (int k=0; k<NUM_AZ_X_PPI*MyMAX_BIN;k++ ){
       lista_conv[k][0]=-999;
       lista_conv[k][1]=-999;
     }
+    */
 
     flag_vpr = new VolumeInfo<unsigned char>(cum_bac.volume);
     flag_vpr->init(0);

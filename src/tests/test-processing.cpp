@@ -149,12 +149,14 @@ void to::test<2>()
 
     cb->calcolo_vpr->classifica_rain();
 
+    /*
     ArrayStats<unsigned char> stratiform_stats;
     stratiform_stats.fill(cb->calcolo_vpr->stratiform);
     wassert(actual((unsigned)stratiform_stats.first).isfalse());
     wassert(actual((unsigned)stratiform_stats.min) == 0);
     wassert(actual((unsigned)stratiform_stats.max) == 1);
     wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 0);
+    */
 
     // calcolo_vpr->esegui_tutto();
     // conversione_convettiva();
