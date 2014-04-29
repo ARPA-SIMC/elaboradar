@@ -1206,7 +1206,7 @@ void CalcoloVPR::classifica_rain()
     }
 
     // ricampionamento del volume in coordinate cilindriche
-    CilindricalVolume cil;
+    CilindricalVolume cil(NUM_AZ_X_PPI, x_size, z_size, 0);
 
     /* ;----------------------------------------------------------- */
     /* ;   Matrici per puntare sul piano cartesiano velocemente */
@@ -1215,8 +1215,6 @@ void CalcoloVPR::classifica_rain()
     /* ;---------------------------------- */
     /* ; Selezione dati per formare RHI */
     /* ;---------------------------------- */
-
-    cil.slices.reserve(NUM_AZ_X_PPI);
 
 /*     for(k=0;k<MAX_BIN;k++){
         beamXweight[k]=(float **) malloc(w_x_size*sizeof(float *));
@@ -1227,8 +1225,8 @@ void CalcoloVPR::classifica_rain()
 */
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
-        CilindricalSlice rhi_cart(x_size, z_size, 0);
-        CilindricalSlice rhi_weight(x_size, z_size, 0);
+        Matrix2D<double>& rhi_cart = cil[iaz];
+        Matrix2D<double> rhi_weight(z_size, x_size, 0);
 
         for (i=0;i<cum_bac.volume.NEL;i++)
             cum_bac.volume.scan(i).read_beam_db(iaz, RHI_beam[i], MyMAX_BIN, BYTEtoDB(0));
@@ -1289,7 +1287,6 @@ void CalcoloVPR::classifica_rain()
                 }
             }
         }
-        cil.slices.push_back(rhi_cart);
     }
 
     //-------------------------------------------------------------------------------------------------------------------------
