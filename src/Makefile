@@ -29,9 +29,9 @@ CFLAGS_LEGACY=$(CFLAGS) -DANAPROP -DTIME -DZ_LOWRIS -DMEDIUM
 
 CXXFLAGS=$(CFLAGS)
 
-OBJ_VOLUME=volume.o volume_cleaner.o volume_loader.o volume_sp20.o volume_odim.o 
+OBJ_VOLUME=volume.o volume_cleaner.o volume_loader.o volume_sp20.o volume_odim.o
 
-OBJ_COMMON=$(OBJ_VOLUME) cum_bac.o interpola_vpr.o interpola_vpr_nr.o interpola_vpr_gsl.o setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o
+OBJ_COMMON=$(OBJ_VOLUME) steiner.o cum_bac.o interpola_vpr.o interpola_vpr_nr.o interpola_vpr_gsl.o setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o
 
 OBJ=cum_bac_SP20.o
 
