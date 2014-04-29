@@ -16,7 +16,7 @@ struct Matrix2D
 
     // Copy constructor, making a copy of the whole matrix
     Matrix2D(const Matrix2D& m)
-        : SX(m.SX), SY(m.SY), data(new T[SX * SY])
+        : SY(m.SY), SX(m.SX), data(new T[SY * SX])
 
     {
         for (unsigned i = 0; i < SX * SY; ++i)
