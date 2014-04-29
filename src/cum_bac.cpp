@@ -1147,9 +1147,9 @@ void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& v
     f) cerco il profilo con cui combinare (->proprio, se gap<MEMORY ->dell'altro radar se gap_res<MEMORY e profile_heating_res=WARM)
     g) Combino livelli con peso sottostante
     Dati cv e ct, volume totale e volume precipitante il peso del vpr istantaneo è calcolato come segue:
-    c0=2*(*cv);
-    peso=(float)(*ct)/(c0+(*ct))
-    long int c0,*cv,*ct; costanti di combinazione (v. ref.)
+    c0=2*cv;
+    peso=(float)ct/(c0+ct)
+    long int c0,cv,ct; costanti di combinazione (v. ref.)
     h) trovo livello minimo, se livello minimo profilo combinato più alto del precedente calcolo la diff media e sommo al vecchio
     e) ricalcolo livello minimo
     float vpr0[NMAXLAYER],vpr1[NMAXLAYER],vpr[NMAXLAYER]; profilo precedente, ultimo e combinato
