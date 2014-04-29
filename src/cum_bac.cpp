@@ -1054,11 +1054,22 @@ CalcoloSteiner::CalcoloSteiner(
     {
         convective_radius.resize(lista_bckg.size(), 0);
         bckgr.resize(lista_bckg.size(), 0);
+        Z_bckgr.resize(lista_bckg.size(), 0);
     }
 }
 
 CalcoloSteiner::~CalcoloSteiner()
 {
+}
+
+void CalcoloSteiner::add_sample(unsigned pos, unsigned azimut, unsigned range)
+{
+    double sample = elev_fin.db_at_elev_preci(azimut, range);
+    //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )  // aggiungo condizione quota
+    if (sample <= MINVAL_DB) return;
+    Z_bckgr[pos] += BYTEtoZ(DBtoBYTE(sample));
+    bckgr[pos] += sample;
+    ++npoints;
 }
 
 void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckgr . nb LA CLASSIFICAZIONE DI STEINER NON HA BISOGNO DI RICAMPIONAMENTO CILINDRICO PERCIÒ uso direttamente la matrice polare
@@ -1068,7 +1079,7 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
 
 {
     int k,kmin,kmax,delta_naz=0,delta_nr;
-    long int npoints=0;
+    npoints=0;
 
     // per il calcolo della finestra range su cui calcolare il background divido il raggio di Steiner (11km) per la dimensione della cella
     delta_nr=(int)(STEINER_RADIUS*1000./size_cell);//definisco ampiezza semi-finestra range corrispondente al raggio di steiner (11km), unità matrice polare
@@ -1076,10 +1087,6 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
 
     if (lista_bckg.size() < 2)
         return;
-
-    //inizializzo vettori
-    // array contenente i valori della Z di background per ogni pixel precipitante in mm^6/m^3
-    vector<double> Z_bckgr(lista_bckg.size(), 0);
 
     for(unsigned i=0; i<lista_bckg.size();i++){       // M:tolto np -1 messo np
         npoints=0;
@@ -1103,72 +1110,33 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
 
             if (jmin<0) {
                 jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
-                for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++) {
-                    for (k= kmin ; k< kmax  ; k++){
-                        double sample = elev_fin.db_at_elev_preci(j, k);
-                        //        if ( cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )  // aggiungo condizione quota
-                        if ( sample > MINVAL_DB  ){
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                            bckgr[i] = bckgr[i] + sample;
-                            npoints=npoints+1;
-                        }
-                    }
-                }
+                for (unsigned j= jmin  ; j< NUM_AZ_X_PPI ; j++)
+                    for (k= kmin ; k< kmax  ; k++)
+                        add_sample(i, j, k);
                 jmin=0;
             }
 
             if (jmax>NUM_AZ_X_PPI) {
                 jmax=jmax%NUM_AZ_X_PPI;
-                for (unsigned j= 0  ; j< jmax ; j++) {
-                    for (k= kmin ; k< kmax  ; k++){
-                        double sample = elev_fin.db_at_elev_preci(j, k);
-                        // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                        if ( sample > MINVAL_DB  ) {
-                            Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                            bckgr[i] = bckgr[i] + sample;
-                            npoints=npoints+1;
-                        }
-                    }
-                    }
-                    jmax=NUM_AZ_X_PPI;
+                for (unsigned j= 0  ; j< jmax ; j++)
+                    for (k= kmin ; k< kmax  ; k++)
+                        add_sample(i, j, k);
+                jmax=NUM_AZ_X_PPI;
             }
 
-            for (unsigned j=jmin   ; j<jmax  ; j++) {
-                for (k=kmin  ; k<kmax   ; k++){
-                    double sample = elev_fin.db_at_elev_preci(j, k);
-                    // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                    if ( sample > MINVAL_DB ) {
-                        Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                        bckgr[i] = bckgr[i] + sample;
-                        npoints=npoints+1;
-                    }
-                }
-            }
+            for (unsigned j=jmin   ; j<jmax  ; j++)
+                for (k=kmin  ; k<kmax   ; k++)
+                    add_sample(i, j, k);
+        } else {
+            for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
+                for (k=0  ; k<kmax   ; k++)
+                    add_sample(i, j, k);
+
+            for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
+                for (k=0  ; k<-kmin   ; k++)
+                    add_sample(i, j, k);
         }
-        else{
-            for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++){
-                for (k=0  ; k<kmax   ; k++){
-                    double sample = elev_fin.db_at_elev_preci(j, k);
-                    // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                    if ( sample > MINVAL_DB  ) {
-                        Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                        bckgr[i] = bckgr[i] + sample;
-                        npoints=npoints+1;
-                    }
-                }
-            }
-            for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++) {
-                for (k=0  ; k<-kmin   ; k++){
-                    double sample = elev_fin.db_at_elev_preci(j, k);
-                    // if (cum_bac.volume.sample_at_elev_preci(j, k) > 1 &&  (float)(quota[j][k])/1000. < hbbb )
-                    if ( sample > MINVAL_DB  ) {
-                        Z_bckgr[i]=Z_bckgr[i]+ BYTEtoZ(DBtoBYTE(sample));
-                        bckgr[i] = bckgr[i] + sample;
-                        npoints=npoints+1;
-                    }
-                }
-            }
-        }
+
         if (npoints > 0){
             Z_bckgr[i]=Z_bckgr[i]/npoints;
             //bckgr[i]=bckgr[i]/npoints; //no
