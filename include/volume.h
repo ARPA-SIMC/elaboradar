@@ -74,7 +74,7 @@ public:
      * Riempie un array di float con i dati del raggio convertiti in DB
      * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
      */
-    void read_beam_db(unsigned az, T* out, unsigned out_size, T missing=0) const
+    void read_beam(unsigned az, T* out, unsigned out_size, T missing=0) const
     {
         using namespace std;
 
@@ -174,7 +174,7 @@ public:
     {
         unsigned size_z = std::max(size(), (size_t)slice.SY);
         for (unsigned el = 0; el < size_z; ++el)
-            scan(el).read_beam_db(az, slice[el], slice.SX, missing_value);
+            scan(el).read_beam(az, slice[el], slice.SX, missing_value);
     }
 
     void compute_stats(VolumeStats& stats) const
