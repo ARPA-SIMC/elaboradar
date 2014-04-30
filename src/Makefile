@@ -20,7 +20,7 @@ CC=cc
 CXX=g++ 
 
 # CFLAGS for all current code
-CFLAGS=-g -I../include -Wall -fstack-protector -Wstack-protector -D_FORTIFY_SOURCE=2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags)
+CFLAGS=-g --std=c++11 -I../include -Wall -fstack-protector -Wstack-protector -D_FORTIFY_SOURCE=2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags)
 # Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
 # CFLAGS_COMMON += -DGSL_RANGE_CHECK_OFF
 

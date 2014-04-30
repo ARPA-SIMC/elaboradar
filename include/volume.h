@@ -133,8 +133,8 @@ public:
 
     ~Volume()
     {
-        for (iterator i = this->begin(); i != this->end(); ++i)
-            if (*i) delete *i;
+        for (auto &i: *this)
+            if (i) delete i;
     }
 
     /// Return the maximum beam count in all PolarScans

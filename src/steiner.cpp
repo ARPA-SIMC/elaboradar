@@ -92,38 +92,38 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
     unsigned delta_nr = round(STEINER_RADIUS * 1000. / size_cell);
     LOG_DEBUG("delta_n range per analisi Steiner = %u", delta_nr);
 
-    for (vector<Point>::iterator i = lista_bckg.begin(); i != lista_bckg.end(); ++i)
+    for (auto& i: lista_bckg)
     {
         // estremi della finestra in range
-        int kmin = i->range - delta_nr;
-        unsigned kmax = min(i->range + delta_nr, max_bin);
+        int kmin = i.range - delta_nr;
+        unsigned kmax = min(i.range + delta_nr, max_bin);
 
         if (kmin>0)
         {
             //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
-            unsigned delta_naz=ceil(STEINER_RADIUS/((i->range * size_cell/1000. + size_cell/2000.)/(AMPLITUDE*DTOR)));
+            unsigned delta_naz=ceil(STEINER_RADIUS/((i.range * size_cell/1000. + size_cell/2000.)/(AMPLITUDE*DTOR)));
             if (delta_naz > NUM_AZ_X_PPI / 2)
                 delta_naz = NUM_AZ_X_PPI / 2;
 
-            int jmin = i->azimut - delta_naz;
-            int jmax = i->azimut + delta_naz;
+            int jmin = i.azimut - delta_naz;
+            int jmax = i.azimut + delta_naz;
 
             for (int j = jmin; j < jmax; ++j)
                 for (unsigned k = kmin; k < kmax; ++k)
-                    i->add_sample(elev_fin.db_at_elev_preci((j + NUM_AZ_X_PPI) % NUM_AZ_X_PPI, k));
+                    i.add_sample(elev_fin.db_at_elev_preci((j + NUM_AZ_X_PPI) % NUM_AZ_X_PPI, k));
         } else {
             // FIXME: questo fa mezzo scan tra 0 e kmax, e mezzo scan tra 0 e
             // -kmin. Sempre gli stessi mezzi scan a prescindere dalla
             // posizione di i. Ha senso?
             for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
                 for (unsigned k=0  ; k<kmax   ; k++)
-                    i->add_sample(elev_fin.db_at_elev_preci(j, k));
+                    i.add_sample(elev_fin.db_at_elev_preci(j, k));
 
             for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
                 for (int k=0  ; k<-kmin   ; k++)
-                    i->add_sample(elev_fin.db_at_elev_preci(j, k));
+                    i.add_sample(elev_fin.db_at_elev_preci(j, k));
         }
-        i->finalize();
+        i.finalize();
     }
 }
 
@@ -190,26 +190,26 @@ void CalcoloSteiner::classifico_STEINER()
 {
     using namespace steiner;
 
-    for (vector<Point>::const_iterator i = lista_bckg.begin(); i != lista_bckg.end(); ++i)
+    for (const auto& i: lista_bckg)
     {
-        int j = i->azimut;
-        int k = i->range;
+        int j = i.azimut;
+        int k = i.range;
         if (j < 0 || k < 0) continue;
 
         double db = elev_fin.db_at_elev_preci(j, k);
         // calcolo diff col background
-        float diff_bckgr = db - i->bckgr;
+        float diff_bckgr = db - i.bckgr;
         // test su differenza con bckground , se soddisfatto e simultaneamente il VIZ non ha dato class convettiva (?)
         if ((db > 40.) ||
-            (i->bckgr < 0 && diff_bckgr > 10) ||
-            (i->bckgr < 42.43 && i->bckgr > 0 && diff_bckgr > 10. - i->bckgr * i->bckgr / 180.) ||
-            (i->bckgr > 42.43 && diff_bckgr > 0))
+            (i.bckgr < 0 && diff_bckgr > 10) ||
+            (i.bckgr < 42.43 && i.bckgr > 0 && diff_bckgr > 10. - i.bckgr * i.bckgr / 180.) ||
+            (i.bckgr > 42.43 && diff_bckgr > 0))
         {
             // assegno il punto nucleo di Steiner
             conv_STEINER[j][k] = CONV_VAL;
 
             // ingrasso il nucleo
-            float cr = i->convective_radius;
+            float cr = i.convective_radius;
             LOG_DEBUG(" %f cr", cr);
             ingrasso_nuclei(cr, j, k);
         }
