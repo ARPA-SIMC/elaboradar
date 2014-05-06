@@ -31,7 +31,7 @@ namespace volume {
 void SP20Loader::make_scan(unsigned idx, unsigned beam_size)
 {
     Loader::make_scan(idx, beam_size);
-    if (vol_db) vol_db->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx]);
 }
 
 void SP20Loader::load(const std::string& pathname)
@@ -117,15 +117,14 @@ void SP20Loader::load(const std::string& pathname)
       make_scan(el_num, max_range);
 
       //scan.elevation = beam_info.elevation;
-      if (vol_db)
+      if (vol_z)
       {
-          // TODO: vol_db or vol_z?
           // Convert to DB
           double* dbs = new double[max_range];
           for (unsigned i = 0; i < max_range; ++i)
               dbs[i] = BYTEtoDB(b->data_z[i]);
 
-          PolarScan<double>& scan = vol_db->scan(el_num);
+          PolarScan<double>& scan = vol_z->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
           fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
@@ -170,9 +169,9 @@ void SP20Loader::load(const std::string& pathname)
 
     fclose(sp20_in);
 
-    LOG_DEBUG ("Nel volume ci sono %d scan", vol_db->size());
-    for (size_t i = 0; i < vol_db->size(); ++i)
-        LOG_DEBUG (" Scan %2zd - dimensione beam %5d", i, vol_db->scan(i).beam_size);
+    LOG_DEBUG ("Nel volume ci sono %d scan", vol_z->size());
+    for (size_t i = 0; i < vol_z->size(); ++i)
+        LOG_DEBUG (" Scan %2zd - dimensione beam %5d", i, vol_z->scan(i).beam_size);
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono

@@ -25,7 +25,7 @@ void to::test<1>()
 
     volume::SP20Loader sp20(Site::get("GAT"), false, false);
     sp20.load_info = &liSP20;
-    sp20.vol_db = &vsp20;
+    sp20.vol_z = &vsp20;
     sp20.load("testdata/DBP2_070120141530_GATTATICO");
 
     wassert(actual(liSP20.scan(0).get_elevation_rad(0)) == liSP20.scan(0).get_elevation(0) * M_PI / 180);
