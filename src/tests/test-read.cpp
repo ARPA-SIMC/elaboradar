@@ -179,7 +179,7 @@ void to::test<1>()
     volume::LoadInfo load_info;
     const Site& gat = Site::get("GAT");
     volume::SP20Loader loader(gat, false, false);
-    loader.vol_db = &vsp20;
+    loader.vol_z = &vsp20;
     loader.load_info = &load_info;
     loader.load("testdata/DBP2_070120141530_GATTATICO");
     // Check the contents of what we read
@@ -214,12 +214,12 @@ void to::test<3>()
 
     volume::SP20Loader sp20(gat, false, false);
     sp20.load_info = &liSP20;
-    sp20.vol_db = &vsp20;
+    sp20.vol_z = &vsp20;
     sp20.load("testdata/DBP2_070120141530_GATTATICO");
 
     volume::ODIMLoader odim(gat, false, false);
     odim.load_info = &liODIM;
-    odim.vol_db = &vodim;
+    odim.vol_z = &vodim;
     odim.load("testdata/MSG1400715300U.101.h5");
 
     wruntest(test_volumes_equal, vsp20, vodim);
@@ -253,12 +253,12 @@ void to::test<5>()
 
     volume::SP20Loader sp20(gat, false, false);
     sp20.load_info = &liSP20;
-    sp20.vol_db = &vsp20;
+    sp20.vol_z = &vsp20;
     sp20.load("testdata/DBP2_060220140140_GATTATICO");
 
     volume::SP20Loader _mod(gat, false, false);
     _mod.load_info = &li_mod;
-    _mod.vol_db = &v_mod;
+    _mod.vol_z = &v_mod;
     _mod.load("testdata/DBP2_060220140140_GATTATICO_mod");
 
     wruntest(test_volumes_equal, vsp20, v_mod);

@@ -66,7 +66,7 @@ namespace volume {
 void ODIMLoader::make_scan(unsigned idx, unsigned beam_size)
 {
     Loader::make_scan(idx, beam_size);
-    if (vol_db) vol_db->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx]);
 }
 
 void ODIMLoader::load(const std::string& pathname)
@@ -164,7 +164,7 @@ void ODIMLoader::load(const std::string& pathname)
         if (el_num < 0) continue;
 
         make_scan(el_num, beam_size);
-        PolarScan<double>& vol_pol_scan = vol_db->scan(el_num);
+        PolarScan<double>& vol_pol_scan = vol_z->scan(el_num);
 
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
