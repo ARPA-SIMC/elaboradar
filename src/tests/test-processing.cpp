@@ -127,14 +127,14 @@ void to::test<2>()
     cb->caratterizzo_volume();
 
     ArrayStats<unsigned char> qual_stats;
-    cb->qual->fill_array_stats(qual_stats);
+    qual_stats.fill(*cb->qual);
     wassert(actual((unsigned)qual_stats.first).isfalse());
     wassert(actual((unsigned)qual_stats.min) == 1);
     wassert(actual((unsigned)qual_stats.max) == 99);
     wassert(actual((unsigned)(qual_stats.avg * 100)) == 5506);
 
     ArrayStats<unsigned char> vpr_stats;
-    cb->calcolo_vpr->flag_vpr->fill_array_stats(vpr_stats);
+    vpr_stats.fill(*cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)vpr_stats.first).isfalse());
     wassert(actual((unsigned)vpr_stats.min) == 0);
     wassert(actual((unsigned)vpr_stats.max) == 1);
@@ -254,7 +254,7 @@ void to::test<4>()
     // out flag_vpr
     // out top
     ArrayStats<unsigned char> stats_qual;
-    cb->qual->fill_array_stats(stats_qual);
+    stats_qual.fill(*cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
     //wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
     wassert(actual((unsigned)stats_qual.count_zeros) == 0);
@@ -263,7 +263,7 @@ void to::test<4>()
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5507);
     ArrayStats<unsigned char> stats_flag_vpr;
-    cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
+    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143635);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1041965);
@@ -369,7 +369,7 @@ LOG_INFO("Chiamo caratterizzo volumi");
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
-    cb->qual->fill_array_stats(stats_qual);
+    stats_qual.fill(*cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
     wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 141553);
@@ -377,7 +377,7 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5508);
     ArrayStats<unsigned char> stats_flag_vpr;
-    cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
+    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143320);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1042280);
@@ -499,7 +499,7 @@ unlink("LAST_VPR");
 
     cb->caratterizzo_volume();
     ArrayStats<unsigned char> stats_qual;
-    cb->qual->fill_array_stats(stats_qual);
+    stats_qual.fill(*cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
     wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 141553);
@@ -507,7 +507,7 @@ unlink("LAST_VPR");
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5508);
     ArrayStats<unsigned char> stats_flag_vpr;
-    cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
+    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143320);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1042280);
@@ -724,7 +724,7 @@ void to::test<7>()
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     ArrayStats<unsigned char> stats_qual;
-    cb->qual->fill_array_stats(stats_qual);
+    stats_qual.fill(*cb->qual);
     wassert(actual((unsigned)stats_qual.first).isfalse());
     wassert(actual((unsigned)stats_qual.count_zeros) == 0);
     wassert(actual((unsigned)stats_qual.count_ones) == 159357);
@@ -733,7 +733,7 @@ void to::test<7>()
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 5761);
 
     ArrayStats<unsigned char> stats_flag_vpr;
-    cb->calcolo_vpr->flag_vpr->fill_array_stats(stats_flag_vpr);
+    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
     wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
     wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 163267);
     wassert(actual((unsigned)stats_flag_vpr.count_ones) == 2010333);

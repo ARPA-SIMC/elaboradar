@@ -283,55 +283,6 @@ struct ArrayStats
     }
 };
 
-/**
- * Store one element for each sample in a volume
- */
-template<typename T>
-class VolumeInfo
-{
-protected:
-    const unsigned sz_el;
-    const unsigned sz_az;
-    const unsigned sz_beam;
-    T* data;
-
-public:
-    template<typename BIN>
-    VolumeInfo(const Volume<BIN>& vol)
-        : sz_el(vol.NEL), sz_az(vol.max_beam_count()), sz_beam(vol.max_beam_size()),
-          data(new T[sz_el * sz_az * sz_beam])
-    {
-    }
-
-    ~VolumeInfo()
-    {
-        delete[] data;
-    }
-
-    // Fill all the volume info with the given value
-    void init(const T& val)
-    {
-        for (unsigned i = 0; i < sz_el * sz_az * sz_beam; ++i)
-            data[i] = val;
-    }
-
-    const T& get(unsigned el, unsigned az, unsigned beam) const
-    {
-        return data[el * (sz_az * sz_beam) + az * sz_beam + beam];
-    }
-
-    void set(unsigned el, unsigned az, unsigned beam, const T& val)
-    {
-        data[el * (sz_az * sz_beam) + az * sz_beam + beam] = val;
-    }
-
-    void fill_array_stats(ArrayStats<T>& stats) const
-    {
-        for (unsigned i = 0; i < sz_el * sz_az * sz_beam; ++i)
-            stats.count_sample(data[i], sz_el * sz_az * sz_beam);
-    }
-};
-
 }
 
 #endif
