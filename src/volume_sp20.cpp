@@ -102,7 +102,7 @@ void SP20Loader::load(const std::string& pathname)
 
       // Calcola la nuova dimensione dei raggi
       unsigned max_range = beam_info.cell_num;;
-      if (clean && max_bin)
+      if (max_bin)
           max_range = min(max_range, max_bin);
 
       // TODO: controllare il valore di ritorno delle fread
