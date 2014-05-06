@@ -266,4 +266,19 @@ void to::test<5>()
 }
 
 
+template<> template<>
+void to::test<6>()
+{
+
+    // Test loading of a radar volume via SP20
+    static const char* fname = "testdata/DBP2_020520141110_BOLOGNA";
+    CUM_BAC* cb = new CUM_BAC("SPC");
+    bool res = cb->read_sp20_volume(fname, 0);
+    // Ensure that reading was successful
+    wassert(actual(res).istrue());
+    // TODO: Check the contents of what we read
+    //wruntest(test_0120141530gat, cb->volume);
+    delete cb;
+}
+
 }

@@ -213,24 +213,33 @@ public:
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_size, double elevation)
     {
-        // Enlarge the scans vector if needed
-        if (idx >= this->size())
+        if (idx < this->size())
         {
-            this->resize(idx + 1, 0);
-            this->NEL = idx + 1;
-        }
+            if (beam_size != (*this)[idx]->beam_size)
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("make_scan(idx=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_size, (*this)[idx]->beam_size);
+                throw std::runtime_error("beam_size mismatch");
+            }
+        } else {
+            // If some elevation has been skipped, fill in the gap
+            if (idx > this->size())
+            {
+                if (this->empty())
+                {
+                    this->push_back(new PolarScan<T>(beam_size));
+                    this->NEL++;
+                }
+                while (this->size() < idx)
+                {
+                    this->push_back(new PolarScan<T>(this->back()->beam_size));
+                    this->NEL++;
+                }
+            }
 
-        // Create the PolarScan if needed
-        if (!(*this)[idx])
-        {
-            (*this)[idx] = new PolarScan<T>(beam_size);
-            (*this)[idx]->elevation = elevation;
-        }
-        else if (beam_size != (*this)[idx]->beam_size)
-        {
-            LOG_CATEGORY("radar.io");
-            LOG_ERROR("make_scan(idx=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_size, (*this)[idx]->beam_size);
-            throw std::runtime_error("beam_size mismatch");
+            // Add the new polar scan
+            this->push_back(new PolarScan<T>(beam_size));
+            this->NEL++;
         }
 
         // Return it

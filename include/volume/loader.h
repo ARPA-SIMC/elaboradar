@@ -117,12 +117,8 @@ struct LoadInfo
 
     void make_scan(unsigned idx, unsigned beam_count)
     {
-        if (idx < scans.size())
-            return;
-        else if (idx == scans.size())
+        while (idx >= scans.size())
             scans.push_back(PolarScanLoadInfo(beam_count));
-        else
-            throw std::runtime_error("scans created out of order");
     }
 };
 
