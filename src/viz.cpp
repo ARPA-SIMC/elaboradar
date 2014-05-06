@@ -44,10 +44,10 @@ void CalcoloVIZ::classifico_VIZ()
             //modifica 08/01/2013 .. afggiungo questo ..per fare l'integrazione anche con i dati sotto la bright band
             for(unsigned k=0; k<kbbb; k++)
             {
-                if (cil[i][j][k] > -19.){   // 08/01/2013..modifica, prendo fin dove ho un segnale
-                    base=(cil[i][j][k])/10.;
+                if (cil(i, j, k) > -19.){   // 08/01/2013..modifica, prendo fin dove ho un segnale
+                    base=(cil(i, j, k))/10.;
                     cil_Z=pow(10.,base);
-                    Zbbb[i][j] = Zbbb[i][j] + RES_VERT_CIL*cil_Z;
+                    Zbbb(i, j) = Zbbb(i, j) + RES_VERT_CIL*cil_Z;
                     ext_bbb=RES_VERT_CIL+ext_bbb;
                 }
             }
@@ -55,27 +55,27 @@ void CalcoloVIZ::classifico_VIZ()
             for(unsigned k=kbbb; k<ktbb; k++)
             {
                 if (k < 4 ){
-                    if (cil[i][j][k]>10. &&  cil[i][j][k+4]> 5.){
-                        if (cil[i][j][k] - cil[i][j][k+4] > 5.)
-                            stratiform[i][j]=1;
+                    if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5.){
+                        if (cil(i, j, k) - cil(i, j, k+4) > 5.)
+                            stratiform(i, j)=1;
                     }
                 }
-                else if (cil[i][j][k]>10. &&  cil[i][j][k+4]> 5. &&  cil[i][j][k-4] > 5.){
-                    if (cil[i][j][k] - cil[i][j][k+4] > 5.&&   cil[i][j][k]- cil[i][j][k-4] > 5. )
-                        stratiform[i][j]=1;
+                else if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5. &&  cil(i, j, k-4) > 5.){
+                    if (cil(i, j, k) - cil(i, j, k+4) > 5.&&   cil(i, j, k)- cil(i, j, k-4) > 5. )
+                        stratiform(i, j)=1;
 
                 }
 
 
-                if (cil[i][j][k] - cil[i][j][k+4] > 5.)
-                    stratiform[i][j]=1;
+                if (cil(i, j, k) - cil(i, j, k+4) > 5.)
+                    stratiform(i, j)=1;
 
                 for(k=ktbb; k<kmax; k++)
                 {
-                    if (cil[i][j][k] > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
-                        base=(cil[i][j][k])/10.;
+                    if (cil(i, j, k) > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
+                        base=(cil(i, j, k))/10.;
                         cil_Z=pow(10.,base);
-                        Zabb[i][j] = Zabb[i][j] + RES_VERT_CIL*cil_Z;
+                        Zabb(i, j) = Zabb(i, j) + RES_VERT_CIL*cil_Z;
                         ext_abb=RES_VERT_CIL+ext_abb;
                     }
                 }
@@ -85,9 +85,9 @@ void CalcoloVIZ::classifico_VIZ()
 
                 if (ext_bbb +  ext_abb>0.8) {
                     //if ( ext_abb>0.8) {
-                    if ((Zabb[i][j] +Zbbb[i][j])/(ext_bbb+ext_abb) > THR_VIZ){
-                        //if ((Zabb[i][j] /ext_abb) > THR_VIZ){
-                        conv_VIZ[i][j]=CONV_VAL;
+                    if ((Zabb(i, j) +Zbbb(i, j))/(ext_bbb+ext_abb) > THR_VIZ){
+                        //if ((Zabb(i, j) /ext_abb) > THR_VIZ){
+                        conv_VIZ(i, j)=CONV_VAL;
                         //lista_conv[ncv][0]= i;
                         //lista_conv[ncv][1]= j;
                         ncv=ncv+1;

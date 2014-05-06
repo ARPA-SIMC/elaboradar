@@ -176,7 +176,7 @@ public:
     {
         unsigned size_z = std::max(size(), (size_t)slice.SY);
         for (unsigned el = 0; el < size_z; ++el)
-            scan(el).read_beam(az, slice[el], slice.SX, missing_value);
+            scan(el).read_beam(az, slice.row(el), slice.SX, missing_value);
     }
 
     void compute_stats(VolumeStats& stats) const

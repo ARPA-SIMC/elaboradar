@@ -147,7 +147,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
             jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
             for (unsigned j=jmin; j< NUM_AZ_X_PPI ; j++) {
                 for (unsigned k=kmin ; k<kmax  ; k++) {
-                    conv_STEINER[j][k]=CONV_VAL;
+                    conv_STEINER(j, k)=CONV_VAL;
                 }
             }
             LOG_DEBUG("jmin %d", jmin);
@@ -159,7 +159,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
             jmax=jmax%NUM_AZ_X_PPI;
             for (unsigned j=0; j<jmax ; j++) {
                 for (unsigned k=kmin; k<kmax  ; k++) {
-                    conv_STEINER[j][k]=CONV_VAL;
+                    conv_STEINER(j, k)=CONV_VAL;
                 }
             }
             LOG_DEBUG("jmax %d", jmax);
@@ -167,7 +167,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
         }
         for (unsigned j=jmin; j<jmax ; j++) {
             for (unsigned k=kmin; k<kmax  ; k++) {
-                conv_STEINER[j][k]=CONV_VAL;
+                conv_STEINER(j, k)=CONV_VAL;
             }
         }
     }
@@ -175,11 +175,11 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
     {
         for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
             for (unsigned k=0  ; k<kmax   ; k++){
-                conv_STEINER[j][k]=CONV_VAL;
+                conv_STEINER(j, k)=CONV_VAL;
             }
         for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
             for (unsigned k=0  ; k < (unsigned)-kmin   ; k++){
-                conv_STEINER[j][k]=CONV_VAL;
+                conv_STEINER(j, k)=CONV_VAL;
             }
     }
 
@@ -206,7 +206,7 @@ void CalcoloSteiner::classifico_STEINER()
             (i->bckgr > 42.43 && diff_bckgr > 0))
         {
             // assegno il punto nucleo di Steiner
-            conv_STEINER[j][k] = CONV_VAL;
+            conv_STEINER(j, k) = CONV_VAL;
 
             // ingrasso il nucleo
             float cr = i->convective_radius;

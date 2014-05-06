@@ -64,9 +64,9 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
             // Enrico RHI_ind[k][i]=i_xx+i_zz*x_size;
             //shift orizzontale negativo del punto di indice i_xx per costruire la finestra in x
             // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
-            i_xx_min[i][k]=i_xx;
+            i_xx_min(i, k)=i_xx;
             if (i_xx-w_x_size_2 >= 0)
-                i_xx_min[i][k]= w_x_size_2;
+                i_xx_min(i, k)= w_x_size_2;
 
             //shift orizzontale positivo attorno al punto di indice i_xx per costruire la finestra in x
             int i_xx_max = x_size-i_xx-1;
@@ -74,9 +74,9 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
                 i_xx_max = w_x_size_2;
 
             //shift verticale negativo attorno al punto di indice i_zz per costruire la finestra in z
-            i_zz_min[i][k]=i_zz;
-            if (i_zz_min[i][k] - w_z_size_2 > 0)
-                i_zz_min[i][k] = w_z_size_2;
+            i_zz_min(i, k)=i_zz;
+            if (i_zz_min(i, k) - w_z_size_2 > 0)
+                i_zz_min(i, k) = w_z_size_2;
 
             //shift verticale positivo attorno al punto di indice i_zz per costruire la finestra in z
             int i_zz_max = z_size-i_zz-1;
@@ -84,10 +84,10 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
                 i_zz_max = w_z_size_2;
 
             //indici minimo e massimo in x e z per definire la finestra sul punto
-            im[i][k]=i_xx-i_xx_min[i][k];
-            ix[i][k]=i_xx+i_xx_max;
-            jm[i][k]=i_zz-i_zz_min[i][k];
-            jx[i][k]=i_zz+i_zz_max;
+            im(i, k)=i_xx-i_xx_min(i, k);
+            ix(i, k)=i_xx+i_xx_max;
+            jm(i, k)=i_zz-i_zz_min(i, k);
+            jx(i, k)=i_zz+i_zz_max;
 
         }
     }
@@ -111,7 +111,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     Matrix2D<double> w_tot(w_x_size, w_z_size);
     for (unsigned i=0;i<w_x_size;i++){
         for (unsigned j=0;j<w_z_size;j++){
-            w_tot[i][j]=w_x[i]*w_z[j];
+            w_tot(i, j)=w_x[i]*w_z[j];
         }
     }
 
@@ -133,7 +133,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     Matrix2D<double> RHI_beam(volume.NEL, max_bin);
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
-        Matrix2D<double>& rhi_cart = (*this)[iaz];
+        Matrix2D<double>& rhi_cart = *slices[iaz];
         Matrix2D<double> rhi_weight(x_size, z_size, 0);
 
         volume.read_vertical_slice(iaz, RHI_beam, MISSING_DB);
@@ -159,33 +159,33 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
 //std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
 //std::cout<<"RHI "<<  RHI_beam[iel][ibin]<<std::endl;
 //std::cout<<"w_tot "<<  w_tot[kx][kz]<<std::endl;
-                        beamXweight[kx][kz] = RHI_beam[iel][ibin] * w_tot[kx][kz];
+                        beamXweight[kx][kz] = RHI_beam(iel, ibin) * w_tot(kx, kz);
                     }
                 }
 
-                unsigned imin=im[ibin][iel];
-                unsigned imax=ix[ibin][iel];
-                unsigned jmin=jm[ibin][iel];
-                unsigned jmax=jx[ibin][iel];
+                unsigned imin = im(ibin, iel);
+                unsigned imax = ix(ibin, iel);
+                unsigned jmin = jm(ibin, iel);
+                unsigned jmax = jx(ibin, iel);
 
-                unsigned wimin=w_x_size_2-i_xx_min[ibin][iel];
+                unsigned wimin=w_x_size_2-i_xx_min(ibin, iel);
                 //wimax=w_x_size_2+i_xx_max[ibin][iel];
-                unsigned wjmin=w_z_size_2-i_zz_min[ibin][iel];
+                unsigned wjmin=w_z_size_2-i_zz_min(ibin, iel);
                 //wjmax=w_z_size_2+i_zz_max[ibin][iel];
                 for (unsigned i=imin;i<=imax;i++) {
                     for (unsigned j=jmin;j<=jmax;j++) {
-                        rhi_cart[i][j] = rhi_cart[i][j] + beamXweight[wimin+(i-imin)][wjmin+(j-jmin)];
-                        rhi_weight[i][j] = rhi_weight[i][j]+w_tot[wimin+(i-imin)][wjmin+(j-jmin)];
+                        rhi_cart(i, j) = rhi_cart(i, j) + beamXweight[wimin+(i-imin)][wjmin+(j-jmin)];
+                        rhi_weight(i, j) = rhi_weight(i, j)+w_tot(wimin+(i-imin), wjmin+(j-jmin));
                     }
                 }
             }
         }
         for (unsigned i=0;i<x_size;i++) {
             for (unsigned j=0;j<z_size;j++) {
-                if (rhi_weight[i][j] > 0.0)
-                    rhi_cart[i][j]=rhi_cart[i][j]/rhi_weight[i][j];
+                if (rhi_weight(i, j) > 0.0)
+                    rhi_cart(i, j)=rhi_cart(i, j)/rhi_weight(i, j);
                 else {
-                    rhi_cart[i][j]=MISSING_DB;
+                    rhi_cart(i, j)=MISSING_DB;
 
                 }
             }
