@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
+#include <Eigen/Dense>
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
@@ -36,7 +37,7 @@ inline unsigned char DBtoBYTE(double dB)
 
 
 template<typename T>
-class PolarScan : public Matrix2D<T>
+class PolarScan : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
 {
 public:
     /// Count of beams in this scan
@@ -50,7 +51,8 @@ public:
     double elevation;
 
     PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
-        : Matrix2D<T>(NUM_AZ_X_PPI, beam_size, default_value), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+        : Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(
+                PolarScan::Constant(NUM_AZ_X_PPI, beam_size, default_value)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
     {
     }
 
@@ -61,13 +63,13 @@ public:
     /// Get a beam value
     T get(unsigned az, unsigned beam) const
     {
-        return (*this)[az][beam];
+        return (*this)(az, beam);
     }
 
     /// Set a beam value
     void set(unsigned az, unsigned beam, T val)
     {
-        (*this)[az][beam] = val;
+        (*this)(az, beam) = val;
     }
 
     /**

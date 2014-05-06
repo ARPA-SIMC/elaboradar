@@ -14,13 +14,13 @@ LDLIBS_SP20= -L$(libSP20_DIR) -lSP20_utility
 LDLIBS_ZR= -L$(libZR_DIR) -lfunc_Z_R
 LDLIBS_NR=-L$(libNR_DIR) -lNR_C_ANSI
 
-LDLIBS=$(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs) $(shell pkg-config --libs radarlib) -lhdf5_cpp -lhdf5 $(shell gsl-config --libs)
+LDLIBS=$(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm $(shell log4c-config --libs) $(shell pkg-config --libs radarlib) -lhdf5_cpp -lhdf5 $(shell gsl-config --libs) $(shell pkg-config eigen3 --libs)
 
 CC=cc 
 CXX=g++ 
 
 # CFLAGS for all current code
-CFLAGS=-g -I../include -Wall -fstack-protector -Wstack-protector -D_FORTIFY_SOURCE=2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags)
+CFLAGS=-g -I../include -Wall -fstack-protector -Wstack-protector -D_FORTIFY_SOURCE=2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags) $(shell pkg-config eigen3 --cflags)
 # Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
 # CFLAGS_COMMON += -DGSL_RANGE_CHECK_OFF
 
