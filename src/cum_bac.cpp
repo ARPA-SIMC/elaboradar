@@ -886,8 +886,7 @@ void CUM_BAC::caratterizzo_volume()
     HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     hray_inf.load_hray_inf(assets);
 
-    qual = new VolumeInfo<unsigned char>(volume);
-    qual->init(0);
+    qual = new Volume<unsigned char>(volume, 0);
 
     // path integrated attenuation
     double PIA;
@@ -909,9 +908,9 @@ void CUM_BAC::caratterizzo_volume()
 
     //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
 
-    const unsigned beam_size = volume.scan(0).beam_size;
     for (int l=0; l<volume.NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
+        const unsigned beam_size = volume.scan(l).beam_size;
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
             //-----elevazione reale letta da file* fattore di conversione 360/4096
@@ -979,7 +978,7 @@ void CUM_BAC::caratterizzo_volume()
                 //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%)
                 //--------------assegno qualità zero sotto il livello di elev_fin (si può discutere...), potrei usare first_level_static confrontare e in caso sia sotto porre cl=1
                 if (l-elev_fin[i][k] <0) {
-                    qual->set(l, i, k, 0);
+                    qual->scan(l).set(i, k, 0);
                     cl=2;
                 }
                 //--------bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.----------
@@ -987,15 +986,15 @@ void CUM_BAC::caratterizzo_volume()
 
                     //-----------calcolo la qualità----------
                     // FIXME: qui tronca: meglio un round?
-                    qual->set(l, i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,hray_inf.dtrs,dh,dhst,PIA)*100));
+                    qual->scan(l).set(i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,hray_inf.dtrs,dh,dhst,PIA)*100));
                 }
 
-                if (qual->get(l, i, k) ==0) qual->set(l, i, k, 1);//????a che serve???
+                if (qual->scan(l).get(i, k) ==0) qual->scan(l).set(i, k, 1);//????a che serve???
                 if (do_vpr)
                 {
                     /* sezione PREPARAZIONE DATI VPR*/
                     if(cl==0 && bb<BBMAX_VPR )   /*pongo le condizioni per individuare l'area visibile per calcolo VPR, riduco il bb ammesso (BBMAX_VPR=20)*/ //riveder.....?????
-                        calcolo_vpr->flag_vpr->set(l, i, k, 1);
+                        calcolo_vpr->flag_vpr->scan(l).set(i, k, 1);
                 }
                 //------------trovo il top per soglia
                 if (sample > SOGLIA_TOP)
@@ -1914,19 +1913,19 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
 
                 dist_plain=(long int)(dist*cos(elevaz));
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
-                    flag_vpr->set(l, i, k, 0);
+                    flag_vpr->scan(l).set(i, k, 0);
 
-                if (cum_bac.qual->get(l, i, k) < QMIN_VPR) flag_vpr->set(l, i, k, 0);
+                if (cum_bac.qual->scan(l).get(i, k) < QMIN_VPR) flag_vpr->scan(l).set(i, k, 0);
 
                 //AGGIUNTA PER CLASS
                 if(cum_bac.do_class){
                     if(conv[i][k]>= CONV_VAL){
-                        flag_vpr->set(l, i, k, 0);
+                        flag_vpr->scan(l).set(i, k, 0);
                     }
                 }
 
                 // ------per calcolare l'area del pixel lo considero un rettangolo dim bin x ampiezzamediafascio x flag vpr/1000 per evitare problemi di memoria?
-                area=cum_bac.load_info.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr->get(l, i, k)/1000.; // divido per  mille per evitare nr troppo esagerato
+                area=cum_bac.load_info.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr->scan(l).get(i, k)/1000.; // divido per  mille per evitare nr troppo esagerato
 
                 // ------incremento il volume totale di area
 
@@ -1935,7 +1934,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
                 double sample = scan.get(i, k);
-                if (sample > THR_VPR &&  flag_vpr->get(l, i, k) > 0 )
+                if (sample > THR_VPR &&  flag_vpr->scan(l).get(i, k) > 0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area
                     vol_rain=(long int)(BYTE_to_mp_func(DBtoBYTE(sample),cum_bac.aMP,cum_bac.bMP)*area);//peso ogni cella con la sua area
@@ -2158,7 +2157,10 @@ void CUM_BAC::creo_cart()
                         topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
                         if (do_quality)
                         {
-                            qual_Z_cart[x][y] = qual->get(elev_fin[iaz%NUM_AZ_X_PPI][irange], iaz%NUM_AZ_X_PPI, irange);
+                            if (irange < volume.scan(elev_fin[iaz%NUM_AZ_X_PPI][irange]).beam_size)
+                                qual_Z_cart[x][y] = qual->scan(elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
+                            else
+                                qual_Z_cart[x][y] = 0;
                             quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
                             dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
                             beam_blocking_xy[x][y]=beam_blocking[iaz%NUM_AZ_X_PPI][irange];
@@ -2490,8 +2492,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     }
     */
 
-    flag_vpr = new VolumeInfo<unsigned char>(cum_bac.volume);
-    flag_vpr->init(0);
+    flag_vpr = new Volume<unsigned char>(cum_bac.volume, 0);
 
     if (cum_bac.do_vpr)
         t_ground = cum_bac.assets.read_t_ground();
