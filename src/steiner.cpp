@@ -57,9 +57,9 @@ void Point::finalize()
 CalcoloSteiner::CalcoloSteiner(
         const Volume<double>& volume,
         const volume::ElevFin<double>& elev_fin,
-        unsigned max_bin, unsigned x_size, const double size_cell)
-    : volume(volume), elev_fin(elev_fin), max_bin(max_bin), x_size(x_size), size_cell(size_cell),
-      conv_STEINER(NUM_AZ_X_PPI, x_size, MISSING)
+        unsigned max_bin, const double size_cell)
+    : volume(volume), elev_fin(elev_fin), max_bin(max_bin), size_cell(size_cell),
+      conv_STEINER(NUM_AZ_X_PPI, max_bin, MISSING)
 {
     using namespace steiner;
 
@@ -141,7 +141,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
     LOG_DEBUG("dr cr kmin kmax  %d %f %d %d %d %d", dr,cr, kmin,kmax,jmin,jmax);
 
     if (kmin>0) {
-        if (kmax>x_size) kmax=x_size;
+        if (kmax > max_bin) kmax = max_bin;
 
         if (jmin<0) {
             jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
@@ -206,8 +206,7 @@ void CalcoloSteiner::classifico_STEINER()
             (i->bckgr > 42.43 && diff_bckgr > 0))
         {
             // assegno il punto nucleo di Steiner
-            // FIXME: conv_STEINER(j, k) = CONV_VAL;
-            // FIXME: j, k iterano su NUM_AZ_X_PPI x max_bin, mentre conv_STEINER è solo NUM_AZ_X_PPI x x_size
+            conv_STEINER(j, k) = CONV_VAL;
 
             // ingrasso il nucleo
             float cr = i->convective_radius;

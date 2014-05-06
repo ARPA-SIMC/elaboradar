@@ -1105,7 +1105,7 @@ void CalcoloVPR::classifica_rain()
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
-    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, cum_bac.MyMAX_BIN, x_size, cum_bac.load_info.size_cell);
+    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, cum_bac.MyMAX_BIN, cum_bac.load_info.size_cell);
     steiner.calcolo_background();
     steiner.classifico_STEINER();
     //  }
