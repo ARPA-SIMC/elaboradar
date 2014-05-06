@@ -38,11 +38,11 @@ void to::test<1>()
     assets.configure("GAT", 1389108600);
     Matrix2D<float> dem(400, 512);
     assets.load_dem(dem);
-    wassert(actual(dem[0][0]) == 34);
+    wassert(actual(dem(0, 0)) == 34);
 
     assets.configure("SPC", 1389108600);
     assets.load_dem(dem);
-    wassert(actual(dem[0][0]) == 9);
+    wassert(actual(dem(0, 0)) == 9);
 }
 
 template<> template<>

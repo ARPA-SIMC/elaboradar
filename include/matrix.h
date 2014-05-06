@@ -38,9 +38,6 @@ struct Matrix2D
     // Number of elements in the matrix
     size_t size() const { return SX * SY; }
 
-    // Access a matrix row
-    T* operator[](unsigned y) { return data + y * SX; }
-    const T* operator[](unsigned y) const { return data + y * SX; }
     T& operator()(unsigned row, unsigned col) { return data[row * SX + col]; }
     const T& operator()(unsigned row, unsigned col) const { return data[row * SX + col]; }
     T* row(unsigned y) { return data + y * SX; }
