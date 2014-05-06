@@ -135,34 +135,46 @@ void SP20Loader::load(const std::string& pathname)
 
       if (vol_d)
       {
-          // TODO: how do we store values of d?
-          PolarScan<unsigned char>& scan = vol_d->scan(el_num);
+          // Convert to DB 
+          double* dbs = new double[max_range];
+          for (unsigned i = 0; i < max_range; ++i)
+              dbs[i] = BYTEtoDB(b->data_d[i]); // TODO: use the right conversion function
+
+          PolarScan<double>& scan = vol_d->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_d);
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_d);
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, dbs);
 #endif
       }
 
       if (vol_v)
       {
-          // TODO: how do we store values of v?
-          PolarScan<unsigned char>& scan = vol_v->scan(el_num);
+          // Convert to m/s 
+          double* ms = new double[max_range];
+          for (unsigned i = 0; i < max_range; ++i)
+              ms[i] = BYTEtoDB(b->data_v[i]); // TODO: use the right conversion function
+
+          PolarScan<double>& scan = vol_v->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_v);
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_v);
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, ms);
 #endif
       }
 
       if (vol_w)
       {
-          // TODO: how do we store values of w?
-          PolarScan<unsigned char>& scan = vol_w->scan(el_num);
+          // Convert to m/s 
+          double* ms = new double[max_range];
+          for (unsigned i = 0; i < max_range; ++i)
+              ms[i] = BYTEtoDB(b->data_v[i]); // TODO: use the right conversion function
+
+          PolarScan<double>& scan = vol_w->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, b->data_w);
+          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, b->data_w);
+          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, ms);
 #endif
       }
     }
