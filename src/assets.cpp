@@ -385,10 +385,10 @@ void Assets::load_raw(const std::string& fname, const char* desc, Matrix2D<T>& m
                 fsize, matrix.size() * sizeof(T));
         throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
     }
-    LOG_INFO ("DIMENSIONE MAPPA STATICA %u %u", matrix.SY, matrix.SX);
+    LOG_INFO ("DIMENSIONE MAPPA STATICA %u %u", matrix.rows(), matrix.cols());
 
-    for (unsigned i = 0; i < matrix.SY; ++i)
-        if (fread(matrix.data + i * matrix.SX, matrix.SX, 1, in) != 1)
+    for (unsigned i = 0; i < matrix.rows(); ++i)
+        if (fread(matrix.data() + i * matrix.cols(), matrix.cols(), 1, in) != 1)
         {
             std::string errmsg("Error reading ");
             errmsg += fname;
@@ -406,8 +406,8 @@ void Assets::load_ascii(const std::string& fname, const char* desc, Matrix2D<flo
     LOG_INFO("Opening %s %s", desc, fname.c_str());
     FILE* in = fopen_checked(fname.c_str(), "rt", desc);
 
-    for (unsigned x = 0; x < matrix.SX; ++x)
-        for (unsigned y = 0; y < matrix.SY; ++y)
+    for (unsigned x = 0; x < matrix.cols(); ++x)
+        for (unsigned y = 0; y < matrix.rows(); ++y)
         {
             float val;
             fscanf(in, "%f ", &val);

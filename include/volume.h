@@ -174,9 +174,9 @@ public:
      */
     void read_vertical_slice(unsigned az, Matrix2D<T>& slice, double missing_value) const
     {
-        unsigned size_z = std::max(size(), (size_t)slice.SY);
+        unsigned size_z = std::max(size(), (size_t)slice.rows());
         for (unsigned el = 0; el < size_z; ++el)
-            scan(el).read_beam(az, slice.row(el), slice.SX, missing_value);
+            scan(el).read_beam(az, slice.row(el), slice.cols(), missing_value);
     }
 
     void compute_stats(VolumeStats& stats) const
