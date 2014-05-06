@@ -167,7 +167,7 @@ void SP20Loader::load(const std::string& pathname)
                   if (b->data_v[i] == -128)
                       ms[i] = -range_v / 2;
                   else
-                      ms[i] = -b->data_v[i] * range_v / 254;
+                      ms[i] = b->data_v[i] * range_v / 254.;
           } else {
               // range variabilita V - velocità radiale
               const double range_v = 99.;
@@ -175,7 +175,7 @@ void SP20Loader::load(const std::string& pathname)
                   if (b->data_v[i] == -128)
                       ms[i] = -range_v / 2;
                   else
-                      ms[i] = -b->data_v[i] * range_v / 254;
+                      ms[i] = b->data_v[i] * range_v / 254.;
           }
               // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
               // if ( beam_info->PRF == 'S')

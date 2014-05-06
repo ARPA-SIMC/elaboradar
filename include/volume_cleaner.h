@@ -12,7 +12,7 @@ struct Beams
 {
   unsigned char data_z[1024];
   unsigned char data_d[1024];
-  unsigned char data_v[1024];
+  signed char data_v[1024];
   unsigned char data_w[1024];
 };
 
