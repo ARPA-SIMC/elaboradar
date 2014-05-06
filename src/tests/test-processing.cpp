@@ -30,8 +30,8 @@ struct ArrayStats : public cumbac::ArrayStats<T>
 
     void fill(const Matrix2D<T>& arr)
     {
-        for (int i = 0; i < arr.size(); ++i)
-            this->count_sample(arr.data[i], arr.size());
+        for (int i = 0; i < arr.rows() * arr.cols(); ++i)
+            this->count_sample(arr.data()[i], arr.rows() * arr.cols());
     }
 
     void fill(const PolarScan<T>& arr)
