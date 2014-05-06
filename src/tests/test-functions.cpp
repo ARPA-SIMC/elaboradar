@@ -26,6 +26,6 @@ void to::test<2>()
 {
     // Test BeamBlockingCorrection
     CUM_BAC* cb = new CUM_BAC("SPC");
-    wassert(actual((unsigned)DBtoBYTE(cb->BeamBlockingCorrection(128,50))) == 138);
+    wassert(actual((unsigned)DBtoBYTE(cb->BeamBlockingCorrection(BYTEtoDB(128),50))) == 138);
 }
 }
