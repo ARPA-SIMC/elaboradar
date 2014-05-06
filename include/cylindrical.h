@@ -25,16 +25,16 @@ struct CylindricalVolume
             delete *i;
     }
 
-    Matrix2D<double>& operator[](unsigned i)
+    double& operator()(unsigned slice, unsigned row, unsigned col)
     {
-        if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
-        return *slices[i];
+        //if (slice >= slices.size()) throw std::runtime_error("slices: fuori coordinata slice");
+        return (*slices[slice])(row, col);
     }
 
-    const Matrix2D<double>& operator[](unsigned i) const
+    const double& operator()(unsigned slice, unsigned row, unsigned col) const
     {
-        if (i >= slices.size()) throw std::runtime_error("slices: fuori coordinata i");
-        return *slices[i];
+        //if (slice >= slices.size()) throw std::runtime_error("slices: fuori coordinata slice");
+        return (*slices[slice])(row, col);
     }
 
     void resample(const Volume<double>& volume, unsigned max_bin, double size_cell);

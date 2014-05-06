@@ -41,6 +41,9 @@ struct Matrix2D
     // Access a matrix row
     T* operator[](unsigned y) { return data + y * SX; }
     const T* operator[](unsigned y) const { return data + y * SX; }
+    T& operator()(unsigned row, unsigned col) { return data[row * SX + col]; }
+    const T& operator()(unsigned row, unsigned col) const { return data[row * SX + col]; }
+    T* row(unsigned y) { return data + y * SX; }
 
     Matrix2D& operator=(const Matrix2D& m)
     {
