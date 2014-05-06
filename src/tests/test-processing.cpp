@@ -34,6 +34,12 @@ struct ArrayStats : public cumbac::ArrayStats<T>
             this->count_sample(arr.data[i], arr.size());
     }
 
+    void fill(const PolarScan<T>& arr)
+    {
+        for (int i = 0; i < arr.rows() * arr.cols(); ++i)
+            this->count_sample(arr.data()[i], arr.rows() * arr.cols());
+    }
+
     void fill(const Volume<T>& vol)
     {
         for (unsigned i = 0; i < vol.NEL; ++i)
