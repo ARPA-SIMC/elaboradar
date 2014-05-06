@@ -239,6 +239,7 @@ public:
 
             // Add the new polar scan
             this->push_back(new PolarScan<T>(beam_size));
+            this->back()->elevation = elevation;
             this->NEL++;
         }
 

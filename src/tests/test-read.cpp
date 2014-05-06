@@ -276,6 +276,19 @@ void to::test<6>()
     bool res = cb->read_sp20_volume(fname, 0);
     // Ensure that reading was successful
     wassert(actual(res).istrue());
+    // Make sure the elevations are what we want
+    wassert(actual(cb->volume.size()) == 11);
+    wassert(actual(round(cb->volume.scan(0).elevation * 10)) ==    5);
+    wassert(actual(round(cb->volume.scan(1).elevation * 10)) ==   14);
+    wassert(actual(round(cb->volume.scan(2).elevation * 10)) ==   23);
+    wassert(actual(round(cb->volume.scan(3).elevation * 10)) ==   32);
+    wassert(actual(round(cb->volume.scan(4).elevation * 10)) ==   41);
+    wassert(actual(round(cb->volume.scan(5).elevation * 10)) ==   50);
+    wassert(actual(round(cb->volume.scan(6).elevation * 10)) ==   70);
+    wassert(actual(round(cb->volume.scan(7).elevation * 10)) ==   95);
+    wassert(actual(round(cb->volume.scan(8).elevation * 10)) ==  130);
+    wassert(actual(round(cb->volume.scan(9).elevation * 10)) ==  180);
+    wassert(actual(round(cb->volume.scan(10).elevation * 10)) == 250);
     // TODO: Check the contents of what we read
     //wruntest(test_0120141530gat, cb->volume);
     delete cb;
