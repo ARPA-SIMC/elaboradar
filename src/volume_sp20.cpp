@@ -119,13 +119,13 @@ void SP20Loader::load(const std::string& pathname)
       if (el_num < 0) continue;
       make_scan(el_num, max_range);
 
-      //scan.elevation = beam_info.elevation;
-      if (vol_z)
+      if (vol_z) // Riflettività Z
       {
           // Convert to DB
           double* dbs = new double[max_range];
           for (unsigned i = 0; i < max_range; ++i)
               dbs[i] = BYTEtoDB(b->data_z[i]);
+              //f_ray[p]=data->beam[p]*RANGE_Z/255. + min_zeta;
 
           PolarScan<double>& scan = vol_z->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
@@ -136,12 +136,16 @@ void SP20Loader::load(const std::string& pathname)
           delete[] dbs;
       }
 
-      if (vol_d)
+      if (vol_d) // Riflettività differenziale ZDR
       {
+          // range variabilita ZDR
+          const double range_zdr = 16.;
+          const double min_zdr = -6.;
+
           // Convert to DB 
           double* dbs = new double[max_range];
           for (unsigned i = 0; i < max_range; ++i)
-              dbs[i] = BYTEtoDB(b->data_d[i]); // TODO: use the right conversion function
+              dbs[i] = b->data_d[i] * range_zdr / 255. + min_zdr;
 
           PolarScan<double>& scan = vol_d->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
@@ -151,13 +155,33 @@ void SP20Loader::load(const std::string& pathname)
 #endif
       }
 
-      if (vol_v)
+      if (vol_v) // Velocità V
       {
           // Convert to m/s 
           double* ms = new double[max_range];
-          for (unsigned i = 0; i < max_range; ++i)
-              ms[i] = BYTEtoDB(b->data_v[i]); // TODO: use the right conversion function
-
+          if (beam_info->PRF == 'S')
+          {
+              // range variabilita V - velocità radiale
+              const double range_v = 33.;
+              for (unsigned i = 0; i < max_range; ++i)
+                  if (b->data_v[i] == -128)
+                      ms[i] = -range / 2;
+                  else
+                      ms[i] = -b->data_v[i] * range_v / 254;
+          } else {
+              // range variabilita V - velocità radiale
+              const double range_v = 99.;
+              for (unsigned i = 0; i < max_range; ++i)
+                  if (b->data_v[i] == -128)
+                      ms[i] = -range / 2;
+                  else
+                      ms[i] = -b->data_v[i] * range_v / 254;
+          }
+              // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
+              // if ( beam_info->PRF == 'S')
+              //   f_ray[p] = data->beam_w[p] * RANGE_V / 127.*.5;
+              // else
+              //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
           PolarScan<double>& scan = vol_v->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
           fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
@@ -166,12 +190,14 @@ void SP20Loader::load(const std::string& pathname)
 #endif
       }
 
-      if (vol_w)
+      if (vol_w) // Spread - Sigma V
       {
+          // range variabilita Sigma V - Spread velocità
+          const double range_sig_v = 10.;
           // Convert to m/s 
           double* ms = new double[max_range];
           for (unsigned i = 0; i < max_range; ++i)
-              ms[i] = BYTEtoDB(b->data_w[i]); // TODO: use the right conversion function
+              ms[i] = b->data_w[i] * range_sig_v / 255.0;
 
           PolarScan<double>& scan = vol_w->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
