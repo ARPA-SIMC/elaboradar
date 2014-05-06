@@ -251,7 +251,7 @@ void to::test<5>()
 
     const Site& gat = Site::get("GAT");
 
-    volume::SP20Loader sp20(gat, false, false);
+    volume::SP20Loader sp20(gat, false, true, 494);
     sp20.load_info = &liSP20;
     sp20.vol_z = &vsp20;
     sp20.load("testdata/DBP2_060220140140_GATTATICO");
