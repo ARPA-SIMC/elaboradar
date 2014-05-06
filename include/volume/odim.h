@@ -9,10 +9,10 @@ namespace volume {
 
 struct ODIMLoader : public volume::Loader
 {
-    Volume<double>* vol_db;
+    Volume<double>* vol_z;
 
     ODIMLoader(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0)
-        : Loader(site, medium, clean, max_bin), vol_db(0)
+        : Loader(site, medium, clean, max_bin), vol_z(0)
     {
     }
 
