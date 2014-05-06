@@ -32,6 +32,9 @@ void SP20Loader::make_scan(unsigned idx, unsigned beam_size)
 {
     Loader::make_scan(idx, beam_size);
     if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_d) vol_d->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_v) vol_v->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_w) vol_w->make_scan(idx, beam_size, elev_array[idx]);
 }
 
 void SP20Loader::load(const std::string& pathname)
@@ -168,7 +171,7 @@ void SP20Loader::load(const std::string& pathname)
           // Convert to m/s 
           double* ms = new double[max_range];
           for (unsigned i = 0; i < max_range; ++i)
-              ms[i] = BYTEtoDB(b->data_v[i]); // TODO: use the right conversion function
+              ms[i] = BYTEtoDB(b->data_w[i]); // TODO: use the right conversion function
 
           PolarScan<double>& scan = vol_w->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
