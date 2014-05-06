@@ -423,7 +423,7 @@ void CUM_BAC::elabora_dato()
             for(unsigned k=0; k<volume.scan(0).beam_size; k++)
             {
                 //---assegno el_inf a mappa statica
-                unsigned el_inf = first_level_static[i][k];
+                unsigned el_inf = first_level_static(i, k);
                 //---ricopio valori a mappa statica sotto
                 for(unsigned l=0; l<=el_inf; l++)
                 {
@@ -436,7 +436,7 @@ void CUM_BAC::elabora_dato()
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
                     {
-                        volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
+                        volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking(i, k)));
                         //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100:tab.)));
                         //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
                     }
@@ -473,14 +473,14 @@ void CUM_BAC::elabora_dato()
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            int loc_el_inf =  first_level[i][k];
+            int loc_el_inf =  first_level(i, k);
             while ( k >= volume.scan(loc_el_inf).beam_size)
             {
                 LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
                 loc_el_inf--;
             }
             if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
-            //const int el_inf = first_level[i][k];
+            //const int el_inf = first_level(i, k);
             const unsigned el_inf = loc_el_inf;
 
             if (do_quality)
@@ -553,16 +553,16 @@ void CUM_BAC::elabora_dato()
 
                         //--------azzero beam_blocking ( ho cambiato elevazione, non ho disponible il bbeam blocking all' elev superiore)--------------
                         if (do_beamblocking)
-                            beam_blocking[i][k]=0;/* beam blocking azzerato */
+                            beam_blocking(i, k)=0;/* beam blocking azzerato */
 
                         //--------------------incremento la statitica anaprop e di cambio elevazione-------------
                         grid_stats.incr_anap(i, k);
-                        if (el_up > first_level_static[i][k]) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
+                        if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
 
                         //-------------------memorizzo dati di qualita '-------------
                         if (do_quality)
                         {
-                            dato_corrotto[i][k]=ANAP_YES;/*  risultato test: propagazione anomala*/
+                            dato_corrotto(i, k)=ANAP_YES;/*  risultato test: propagazione anomala*/
                             elev_fin[i][k]=el_up;
                         }
                     }
@@ -574,10 +574,10 @@ void CUM_BAC::elabora_dato()
                         {
                             // FIXME: cosa dovrebbe essere l qui? Non siamo
                             // dentro a un ciclo for che itera su l [Enrico]
-                            volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
+                            volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking(i, k)));
                             //volume.scan(el_inf).get_raw(i, k)=DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    volume.scan(l).get_raw(i, k)=volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
-                            grid_stats.incr_bloc(i, k, beam_blocking[i][k]); // incremento statistica beam blocking
+                            grid_stats.incr_bloc(i, k, beam_blocking(i, k)); // incremento statistica beam blocking
                         }
 // 20140128 - errore nel limite superiore ciclo
 // for(l=0; l<=el_up; l++){
@@ -587,10 +587,10 @@ void CUM_BAC::elabora_dato()
                         }
                         if (do_quality)
                         {
-                            dato_corrotto[i][k]=ANAP_OK;/* matrice risultato test: no propagazione anomala*/
+                            dato_corrotto(i, k)=ANAP_OK;/* matrice risultato test: no propagazione anomala*/
                             elev_fin[i][k]=el_inf;
                         }
-                        if (el_inf > first_level_static[i][k]) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
+                        if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
 
                     }
                 }
@@ -612,15 +612,15 @@ void CUM_BAC::elabora_dato()
                         grid_stats.incr_anap(i, k);
                         if (do_quality)
                         {
-                            dato_corrotto[i][k]=ANAP_YES;/*matrice risultato test: propagazione anomala*/
+                            dato_corrotto(i, k)=ANAP_YES;/*matrice risultato test: propagazione anomala*/
                             elev_fin[i][k]=el_up;
                         }
-                        if (el_up > first_level_static[i][k]) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
+                        if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                         if (do_beamblocking)
-                            beam_blocking[i][k]=0;
+                            beam_blocking(i, k)=0;
                     }
 
-                    //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static[i][k]-----------
+                    //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
                     else
                     {
                         for(l=0; l<=el_inf; l++)
@@ -628,20 +628,20 @@ void CUM_BAC::elabora_dato()
                             volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
                             if (do_beamblocking && do_bloccorr)
                             {
-                                volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking[i][k]));
-                                //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.)));
-                                //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5));
-                                grid_stats.incr_bloc(i, k, beam_blocking[i][k]);
+                                volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking(i, k)));
+                                //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking(i, k)/100.)));
+                                //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking(i, k)/100.)-0.5));
+                                grid_stats.incr_bloc(i, k, beam_blocking(i, k));
                             }
                         }
 
                         if (do_quality)
                         {
-                            dato_corrotto[i][k]=ANAP_OK;
+                            dato_corrotto(i, k)=ANAP_OK;
                             elev_fin[i][k]=el_inf;
                         }
 
-                        if (el_inf > first_level_static[i][k]) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
+                        if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                         flag_anap = false;
 
                     } /*endif test anaprop*/
@@ -656,23 +656,23 @@ void CUM_BAC::elabora_dato()
                     if (volume.scan(l).beam_size > k)
                         volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
                 }
-                //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto[i][k])
+                //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto(i, k))
                 if (do_quality)
                 {
-                    if (bin_high<fondo_scala)   dato_corrotto[i][k]=ANAP_NODAT;/*manca dato sotto e sopra*/
+                    if (bin_high<fondo_scala)   dato_corrotto(i, k)=ANAP_NODAT;/*manca dato sotto e sopra*/
                     bool test_an1;
                     if (cont_anap< THR_CONT_ANAP )
                         test_an1=(bin_high>=fondo_scala); //modificato per contemplare > o >=
                     else
                         test_an1=(bin_high>fondo_scala);
 
-                    // if (bin_high>=fondo_scala)  dato_corrotto[i][k]=ANAP_NOCONTROL;/*manca controllo (sotto non ho nulla)*/ //messo l=
-                    if (test_an1) dato_corrotto[i][k]=ANAP_NOCONTROL;
-                    if (bin_high==fondo_scala) dato_corrotto[i][k]=ANAP_OK;/*non piove (oppure sono sopra livello preci...)*/
+                    // if (bin_high>=fondo_scala)  dato_corrotto(i, k)=ANAP_NOCONTROL;/*manca controllo (sotto non ho nulla)*/ //messo l=
+                    if (test_an1) dato_corrotto(i, k)=ANAP_NOCONTROL;
+                    if (bin_high==fondo_scala) dato_corrotto(i, k)=ANAP_OK;/*non piove (oppure sono sopra livello preci...)*/
                 }
 
                 if (do_beamblocking)
-                    beam_blocking[i][k]=0;
+                    beam_blocking(i, k)=0;
             }
 
             //----------------se bin_low == fondo_scala riempio matrice volume.vol_pol con dato a el_inf (mi resta il dubbio di quest'if se seve o basti un else ) azzero matrice anap (dato ok)
@@ -688,11 +688,11 @@ void CUM_BAC::elabora_dato()
 
                 if (do_quality)
                 {
-                    dato_corrotto[i][k]=ANAP_OK; // dubbio
+                    dato_corrotto(i, k)=ANAP_OK; // dubbio
                     elev_fin[i][k]=el_inf;
                 }
 
-                if (el_inf > first_level_static[i][k]) grid_stats.incr_elev(i, k);
+                if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);
             }
             /*-----------------------------------------------------------fine di tutti gli if-----------*/
             //-----finiti tutti i controlli assegno le varibili di qualita definitive: elevazione, quota calcolata sull'elevazione reale con propagazione standard , e quota relativa al suolo calcolata con elevazione nominale e propagazione da radiosondaggio.
@@ -702,9 +702,9 @@ void CUM_BAC::elabora_dato()
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //float elevaz=(float)(volume.ray_at_elev_preci(i, k).teta_true)*CONV_RAD;
                 const float elevaz = elev_fin.elevation_rad_at_elev_preci(i, k);
-                // elev_fin[i][k]=first_level_static[i][k];//da togliere
-                quota[i][k]=(unsigned short)(quota_f(elevaz,k));
-                quota_rel[i][k]=(unsigned short)(hray[k][elev_fin[i][k]]-dem[i][k]);/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
+                // elev_fin[i][k]=first_level_static(i, k);//da togliere
+                quota(i, k)=(unsigned short)(quota_f(elevaz,k));
+                quota_rel(i, k)=(unsigned short)(hray[k][elev_fin[i][k]]-dem(i, k));/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
             }
         }
     }
@@ -740,18 +740,18 @@ void CUM_BAC::leggo_first_level()
             {
                 if (do_bloccorr)
                 {
-                    if (first_level_static[i][j]<=bb_first_level[i][j])
-                        first_level[i][j]=bb_first_level[i][j];
+                    if (first_level_static(i, j)<=bb_first_level(i, j))
+                        first_level(i, j)=bb_first_level(i, j);
                     else
                     {
-                        beam_blocking[i][j]=0;
-                        first_level[i][j]=first_level_static[i][j];
+                        beam_blocking(i, j)=0;
+                        first_level(i, j)=first_level_static(i, j);
                     }
                 } else {
-                    if (first_level_static[i][j]>bb_first_level[i][j])
-                        beam_blocking[i][j]=0;
-                    if (first_level_static[i][j]<bb_first_level[i][j])
-                        beam_blocking[i][j]=OVERBLOCKING;
+                    if (first_level_static(i, j)>bb_first_level(i, j))
+                        beam_blocking(i, j)=0;
+                    if (first_level_static(i, j)<bb_first_level(i, j))
+                        beam_blocking(i, j)=OVERBLOCKING;
                 }
             }
     }
@@ -765,8 +765,8 @@ void CUM_BAC::leggo_first_level()
         for (unsigned i=NUM_AZ_X_PPI; i<800; i++)
             for (unsigned j=0; j<MyMAX_BIN; j++)
                 for (unsigned k=i-1; k<i+2; k++)
-                    if(first_level[i%NUM_AZ_X_PPI][j] < first_level_tmp[k%NUM_AZ_X_PPI][j])
-                        first_level[i%NUM_AZ_X_PPI][j]=first_level_tmp[k%NUM_AZ_X_PPI][j];
+                    if(first_level(i%NUM_AZ_X_PPI, j) < first_level_tmp(k%NUM_AZ_X_PPI, j))
+                        first_level(i%NUM_AZ_X_PPI, j)=first_level_tmp(k%NUM_AZ_X_PPI, j);
         LOG_INFO(" fine patch %u ",MyMAX_BIN);
     }
 }
@@ -943,7 +943,7 @@ void CUM_BAC::caratterizzo_volume()
 
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                if (l == elev_fin[i][k]) att_cart[i][k]=DBtoBYTE(PIA);
+                if (l == elev_fin[i][k]) att_cart(i, k)=DBtoBYTE(PIA);
                 PIA=attenuation(DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
@@ -966,12 +966,12 @@ void CUM_BAC::caratterizzo_volume()
                     bb=BBMAX;
                 }
                 if (l == elev_fin[i][k] ) {
-                    cl=dato_corrotto[i][k];  /*cl al livello della mappa dinamica*/
-                    bb=beam_blocking[i][k];  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così
+                    cl=dato_corrotto(i, k);  /*cl al livello della mappa dinamica*/
+                    bb=beam_blocking(i, k);  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così
                 }
                 if (l-elev_fin[i][k] >0 ) {
                     cl=0;       /*per come viene scelta la mappa dinamica si suppone che al livello superiore cl=0 e bb=0*/
-                    bb=0;   // sarebbe if (l-bb_first_level[i][k] >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa
+                    bb=0;   // sarebbe if (l-bb_first_level(i, k) >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa
                 }
 
                 //------dato che non ho il valore di beam blocking sotto i livelli che ricevo in ingresso ada progrmma beam blocking e
@@ -998,7 +998,7 @@ void CUM_BAC::caratterizzo_volume()
                 }
                 //------------trovo il top per soglia
                 if (sample > SOGLIA_TOP)
-                    top[i][k]=(unsigned char)((quota_f(elevaz,k))/100.); //top in ettometri
+                    top(i, k)=(unsigned char)((quota_f(elevaz,k))/100.); //top in ettometri
 
             }
 
@@ -1126,8 +1126,8 @@ void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& v
 
     for (unsigned j=0; j<NUM_AZ_X_PPI; j++)
         for (unsigned k=0; k<x_size; k++)
-            if (steiner.conv_STEINER[j][k] == viz.conv_VIZ[j][k] && steiner.conv_STEINER[j][k] > 0 && viz.stratiform[j][k] < 1)
-                conv[j][k] = viz.conv_VIZ[j][k];
+            if (steiner.conv_STEINER(j, k) == viz.conv_VIZ(j, k) && steiner.conv_STEINER(j, k) > 0 && viz.stratiform(j, k) < 1)
+                conv[j][k] = viz.conv_VIZ(j, k);
 }
 
 //----------ALGORITMO
@@ -1455,10 +1455,10 @@ int CalcoloVPR::corr_vpr()
             corr=0.;
             /* trovo elevazione reale e quota bin*/
             //elevaz=(float)(volume_at_elev_preci(i, k).teta_true)*CONV_RAD;
-            hbin=(float)cum_bac.quota[i][k];
+            hbin=(float)cum_bac.quota(i, k);
 
             /* se dall'analisi risulta che nevica assegno neve ovunque*/
-            if (snow) neve[i][k]=1;
+            if (snow) neve(i, k)=1;
             strat=1;
             if (cum_bac.do_class)
             {
@@ -1482,7 +1482,7 @@ int CalcoloVPR::corr_vpr()
                 //trovo ilref: livello di riferimento per ricostruire il valore vpr al suolo nel caso di neve.
                 // in caso di profilo di pioggia mi riporto sempre al valore del livello liquido e questo può essere un punto critico.. vedere come modificarlo.
 
-                ilref=(cum_bac.dem[i][k]>livmin)?(floor(cum_bac.dem[i][k]/TCK_VPR)):(floor(livmin/TCK_VPR));//livello di riferimento; se livello dem>livmin = livello dem altrimenti livmin
+                ilref=(cum_bac.dem(i, k)>livmin)?(floor(cum_bac.dem(i, k)/TCK_VPR)):(floor(livmin/TCK_VPR));//livello di riferimento; se livello dem>livmin = livello dem altrimenti livmin
 
 
                 if (vpr[ilref] > 0 && vpr[ilray] > 0 ){ /*devo avere dati validi nel VPR alle quote considerate!*/
@@ -1490,8 +1490,8 @@ int CalcoloVPR::corr_vpr()
                     vpr_hray=vpr[ilray]+((vpr[ilray]-vpr[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2); /*per rendere la correzione continua non a gradini */
                     //--identifico le aree dove nevica stando alla quota teorica dello zero termico
 
-                    if (cum_bac.dem[i][k]> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/
-                        neve[i][k]=1;
+                    if (cum_bac.dem(i, k)> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/
+                        neve(i, k)=1;
 
                     }
 
@@ -1499,7 +1499,7 @@ int CalcoloVPR::corr_vpr()
 
 
                     //if(snow) //A rimosso, faccio una cosa diversa
-                    if(neve[i][k]){
+                    if(neve(i, k)){
 
                         //faccio la regressione lineare dei punti del profilo sopra il punto del dem
                         //calcolo il valore al livello del dem e lo sostituisco a vpr[ilref] nella correzione
@@ -1538,7 +1538,7 @@ int CalcoloVPR::corr_vpr()
                     else
                         cum_bac.volume.scan(0).set(i, k, corrected);  // correggo
 
-                    corr_polar[i][k]=(unsigned char)(corr)+128;
+                    corr_polar(i, k)=(unsigned char)(corr)+128;
 
 
                     //inserisco un ponghino per rifare la neve con aMP e bMP modificati // DA SCOMMENTARE SE DECIDO DI FARLO
@@ -2083,8 +2083,8 @@ struct CartData
         for(int i=0; i<max_bin; i++)
             for(int j=0; j<max_bin; j++)
             {
-                range[i][j] = hypot(i+.5,j+.5);
-                azimut[i][j] = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
+                range(i, j) = hypot(i+.5,j+.5);
+                azimut(i, j) = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
             }
     }
 };
@@ -2101,7 +2101,7 @@ void CUM_BAC::creo_cart()
 
     for(unsigned i=0; i<MyMAX_BIN *2; i++)
         for(unsigned j=0; j<MyMAX_BIN *2; j++)
-            cart[i][j] = MISSING;
+            cart(i, j) = MISSING;
 
     LOG_INFO("Creo_cart - %u",MyMAX_BIN);
 
@@ -2109,7 +2109,7 @@ void CUM_BAC::creo_cart()
         for(unsigned i=0; i<MyMAX_BIN; i++)
             for(unsigned j=0; j<MyMAX_BIN; j++)
             {
-                unsigned irange = (unsigned)round(cd->range[i][j]);
+                unsigned irange = (unsigned)round(cd->range(i, j));
                 if (irange >= MyMAX_BIN)
                     continue;
                 switch(quad)
@@ -2117,22 +2117,22 @@ void CUM_BAC::creo_cart()
                     case 0:
                         x = MyMAX_BIN + i;
                         y = MyMAX_BIN + j;
-                        az = cd->azimut[i][j];
+                        az = cd->azimut(i, j);
                         break;
                     case 1:
                         x = MyMAX_BIN + j;
                         y = MyMAX_BIN - i;
-                        az = cd->azimut[i][j] + 90.;
+                        az = cd->azimut(i, j) + 90.;
                         break;
                     case 2:
                         x = MyMAX_BIN - i;
                         y = MyMAX_BIN - j;
-                        az = cd->azimut[i][j] + 180.;
+                        az = cd->azimut(i, j) + 180.;
                         break;
                     case 3:
                         x = MyMAX_BIN - j;
                         y = MyMAX_BIN + i;
-                        az = cd->azimut[i][j]+270.;
+                        az = cd->azimut(i, j)+270.;
                         break;
                 }
 
@@ -2152,30 +2152,30 @@ void CUM_BAC::creo_cart()
                     if (irange < volume.scan(0).beam_size)
                         sample = DBtoBYTE(volume.scan(0).get(iaz%NUM_AZ_X_PPI, irange));
 
-                    if(cart[x][y] <= sample){
-                        cart[x][y] = sample;
-                        topxy[x][y]=top[iaz%NUM_AZ_X_PPI][irange];
+                    if(cart(x, y) <= sample){
+                        cart(x, y) = sample;
+                        topxy(x, y)=top(iaz%NUM_AZ_X_PPI, irange);
                         if (do_quality)
                         {
                             if (irange < volume.scan(elev_fin[iaz%NUM_AZ_X_PPI][irange]).beam_size)
-                                qual_Z_cart[x][y] = qual->scan(elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
+                                qual_Z_cart(x, y) = qual->scan(elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
                             else
-                                qual_Z_cart[x][y] = 0;
-                            quota_cart[x][y]=quota[iaz%NUM_AZ_X_PPI][irange];
-                            dato_corr_xy[x][y]=dato_corrotto[iaz%NUM_AZ_X_PPI][irange];
-                            beam_blocking_xy[x][y]=beam_blocking[iaz%NUM_AZ_X_PPI][irange];
-                            elev_fin_xy[x][y]=elev_fin[iaz%NUM_AZ_X_PPI][irange];
-                            /*neve_cart[x][y]=qual_Z_cart[x][y];*/
+                                qual_Z_cart(x, y) = 0;
+                            quota_cart(x, y)=quota(iaz%NUM_AZ_X_PPI, irange);
+                            dato_corr_xy(x, y)=dato_corrotto(iaz%NUM_AZ_X_PPI, irange);
+                            beam_blocking_xy(x, y)=beam_blocking(iaz%NUM_AZ_X_PPI, irange);
+                            elev_fin_xy(x, y)=elev_fin[iaz%NUM_AZ_X_PPI][irange];
+                            /*neve_cart(x, y)=qual_Z_cart(x, y);*/
                             if (do_vpr)
                             {
-                                neve_cart[x][y]=(calcolo_vpr->neve[iaz%NUM_AZ_X_PPI][irange])?0:1;
-                                corr_cart[x][y]=calcolo_vpr->corr_polar[iaz%NUM_AZ_X_PPI][irange];
+                                neve_cart(x, y)=(calcolo_vpr->neve(iaz%NUM_AZ_X_PPI, irange))?0:1;
+                                corr_cart(x, y)=calcolo_vpr->corr_polar(iaz%NUM_AZ_X_PPI, irange);
                             }
                         }
                         if (do_class)
                         {
                             if (irange<calcolo_vpr->x_size)
-                                conv_cart[x][y]=calcolo_vpr->conv[iaz%NUM_AZ_X_PPI][irange];
+                                conv_cart(x, y)=calcolo_vpr->conv[iaz%NUM_AZ_X_PPI][irange];
                         }
                     }
                     if (do_zlr_media)
@@ -2183,7 +2183,7 @@ void CUM_BAC::creo_cart()
                         //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
                         if (sample > 0)
                     {
-                            cartm[x][y]=cartm[x][y]+BYTEtoZ(sample);
+                            cartm(x, y)=cartm(x, y)+BYTEtoZ(sample);
                             cont=cont+1;
                         }
                     }
@@ -2191,15 +2191,15 @@ void CUM_BAC::creo_cart()
 
                 if (do_zlr_media)
                 {
-                    if (cont > 0) cartm[x][y]=cartm[x][y]/(float)(cont);
+                    if (cont > 0) cartm(x, y)=cartm(x, y)/(float)(cont);
                 }
                 /*
                  *****  per scrivere in griglia cartesiana************
-                 bloc_xy[MAX_BIN*2-y][x]=beam_blocking[(int)((float)(az)/.9)][irange];
+                 bloc_xy[MAX_BIN*2-y][x]=beam_blocking((int)((float)(az)/.9), irange);
                  elev_xy[MAX_BIN*2-y][x]=volume.elev_fin[(int)((float)(az)/.9)][irange];
-                 dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange];
-                 elev_fin_xy[MAX_BIN*2-y][x]=first_level[(int)((float)(az)/.9)][irange];
-                 dato_corrotto_xy[MAX_BIN*2-y][x]= dato_corrotto[(int)((float)(az)/.9)][irange]; */
+                 dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange);
+                 elev_fin_xy[MAX_BIN*2-y][x]=first_level((int)((float)(az)/.9), irange);
+                 dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange); */
             }
 }
 
@@ -2237,61 +2237,61 @@ void CUM_BAC::creo_cart_z_lowris()
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
                     if (src_x >= MyMAX_BIN*2) printf("X è fuori\n");
                     if (src_y >= MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
-                    if(cart[src_x][src_y] != MISSING)
-                        if(cart[src_x][src_y] > z){
-                            z= cart[src_x][src_y];
-                            traw=topxy[src_x][src_y];
+                    if(cart(src_x, src_y) != MISSING)
+                        if(cart(src_x, src_y) > z){
+                            z= cart(src_x, src_y);
+                            traw=topxy(src_x, src_y);
                             if (do_quality)
                             {
-                                q=qual_Z_cart[src_x][src_y];
-                                q1x1=quota_cart[src_x][src_y];
-                                dc1x1=dato_corr_xy[src_x][src_y];
-                                el1x1=elev_fin_xy[src_x][src_y];
-                                bl1x1=beam_blocking_xy[src_x][src_y];
+                                q=qual_Z_cart(src_x, src_y);
+                                q1x1=quota_cart(src_x, src_y);
+                                dc1x1=dato_corr_xy(src_x, src_y);
+                                el1x1=elev_fin_xy(src_x, src_y);
+                                bl1x1=beam_blocking_xy(src_x, src_y);
 
                                 if (do_vpr)
                                 {
-                                    c1x1=corr_cart[src_x][src_y];
-                                    nv= neve_cart[src_x][src_y];
+                                    c1x1=corr_cart(src_x, src_y);
+                                    nv= neve_cart(src_x, src_y);
                                 }
                             }
 
                             if (do_class)
                             {
-                                conv_1x1[i][j]=conv_cart[src_x][src_y];
+                                conv_1x1(i, j)=conv_cart(src_x, src_y);
                             }
 
                             if (do_zlr_media)
                             {
-                                if (cartm[src_x][src_y] > 0) {
-                                    zm = zm + cartm[src_x][src_y];
+                                if (cartm(src_x, src_y) > 0) {
+                                    zm = zm + cartm(src_x, src_y);
                                     cont=cont+1;
                                 }
                             }
                         }
-                    z_out[i][j]=z;
+                    z_out(i, j)=z;
                     if (do_quality)
                     {
-                        qual_Z_1x1[i][j]=q;
-                        quota_1x1[i][j]=128+(unsigned char)(q1x1/100);
-                        dato_corr_1x1[i][j]=dc1x1;
-                        elev_fin_1x1[i][j]=el1x1;
-                        beam_blocking_1x1[i][j]=bl1x1;
+                        qual_Z_1x1(i, j)=q;
+                        quota_1x1(i, j)=128+(unsigned char)(q1x1/100);
+                        dato_corr_1x1(i, j)=dc1x1;
+                        elev_fin_1x1(i, j)=el1x1;
+                        beam_blocking_1x1(i, j)=bl1x1;
                     }
-                    top_1x1[i][j]=traw;
+                    top_1x1(i, j)=traw;
 
                     if (do_vpr)
                     {
-                        neve_1x1[i][j]=nv;
-                        corr_1x1[i][j]=c1x1;
+                        neve_1x1(i, j)=nv;
+                        corr_1x1(i, j)=c1x1;
                     }
 
                     if (do_zlr_media)
                     {
                         if (cont >0 ) {
-                            z_out[i][j]=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
+                            z_out(i, j)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
                         }
-                        if (cont == 0 ) z_out[i][j]=MISSING;
+                        if (cont == 0 ) z_out(i, j)=MISSING;
                     }
                 }
         }

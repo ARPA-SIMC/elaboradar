@@ -408,7 +408,11 @@ void Assets::load_ascii(const std::string& fname, const char* desc, Matrix2D<flo
 
     for (unsigned x = 0; x < matrix.SX; ++x)
         for (unsigned y = 0; y < matrix.SY; ++y)
-            fscanf(in, "%f ", matrix[y] + x);
+        {
+            float val;
+            fscanf(in, "%f ", &val);
+            matrix(y, x) = val;
+        }
 
     fclose(in);
 }
