@@ -2096,8 +2096,7 @@ void CUM_BAC::creo_cart()
     //int x,y,irange,az,iaz,az_min,az_max,cont;
     int x,y,iaz,az_min,az_max,cont;
     float az;
-    static CartData* cd = 0;
-    if (!cd) cd = new CartData(MyMAX_BIN);
+    CartData cd(MyMAX_BIN);
 
     for(unsigned i=0; i<MyMAX_BIN *2; i++)
         for(unsigned j=0; j<MyMAX_BIN *2; j++)
@@ -2109,7 +2108,7 @@ void CUM_BAC::creo_cart()
         for(unsigned i=0; i<MyMAX_BIN; i++)
             for(unsigned j=0; j<MyMAX_BIN; j++)
             {
-                unsigned irange = (unsigned)round(cd->range(i, j));
+                unsigned irange = (unsigned)round(cd.range(i, j));
                 if (irange >= MyMAX_BIN)
                     continue;
                 switch(quad)
@@ -2117,22 +2116,22 @@ void CUM_BAC::creo_cart()
                     case 0:
                         x = MyMAX_BIN + i;
                         y = MyMAX_BIN + j;
-                        az = cd->azimut(i, j);
+                        az = cd.azimut(i, j);
                         break;
                     case 1:
                         x = MyMAX_BIN + j;
                         y = MyMAX_BIN - i;
-                        az = cd->azimut(i, j) + 90.;
+                        az = cd.azimut(i, j) + 90.;
                         break;
                     case 2:
                         x = MyMAX_BIN - i;
                         y = MyMAX_BIN - j;
-                        az = cd->azimut(i, j) + 180.;
+                        az = cd.azimut(i, j) + 180.;
                         break;
                     case 3:
                         x = MyMAX_BIN - j;
                         y = MyMAX_BIN + i;
-                        az = cd->azimut(i, j)+270.;
+                        az = cd.azimut(i, j)+270.;
                         break;
                 }
 
