@@ -461,9 +461,6 @@ void CUM_BAC::elabora_dato()
 
     //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala----------------
 
-    // FIXME: togliere la definizione di l da qui e metterla nei for dove viene usata
-    unsigned l;
-
     for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
     {
         bool flag_anap = false;
@@ -547,7 +544,7 @@ void CUM_BAC::elabora_dato()
                         cont_anap=cont_anap+1;
 
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
-                        for(l=0; l<el_up; l++) {
+                        for(unsigned l=0; l<el_up; l++) {
                             volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
                         } //
 
@@ -574,14 +571,15 @@ void CUM_BAC::elabora_dato()
                         {
                             // FIXME: cosa dovrebbe essere l qui? Non siamo
                             // dentro a un ciclo for che itera su l [Enrico]
-                            volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking(i, k)));
+                            // Nella get, abbiamo messo el_inf
+                            volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(el_inf).get(i, k), beam_blocking(i, k)));
                             //volume.scan(el_inf).get_raw(i, k)=DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.));
                             //    volume.scan(l).get_raw(i, k)=volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
                             grid_stats.incr_bloc(i, k, beam_blocking(i, k)); // incremento statistica beam blocking
                         }
 // 20140128 - errore nel limite superiore ciclo
 // for(l=0; l<=el_up; l++){
-                        for(l=0; l<el_inf; l++){
+                        for(unsigned l=0; l<el_inf; l++){
                             volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k)); // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
 
                         }
@@ -602,7 +600,7 @@ void CUM_BAC::elabora_dato()
 
                     {
                         //--------ricopio valore a el_up su tutte elev inferiori--------------
-                        for(l=0; l<el_up; l++){
+                        for(unsigned l=0; l<el_up; l++){
            //                 volume.scan(l).set_raw(i, k, 1);
                             volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));  //ALTERN
                         }
@@ -623,7 +621,7 @@ void CUM_BAC::elabora_dato()
                     //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
                     else
                     {
-                        for(l=0; l<=el_inf; l++)
+                        for(unsigned l=0; l<=el_inf; l++)
                         {
                             volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
                             if (do_beamblocking && do_bloccorr)
@@ -651,7 +649,7 @@ void CUM_BAC::elabora_dato()
             //----------------se al livello base non ho dato riempio con i valori di el_up tutte le elevazioni sotto (ricostruisco il volume) e assegno beam_blocking 0
             else if (bin_low < fondo_scala)
             {
-                for(l=0; l<el_up; l++)
+                for(unsigned l=0; l<el_up; l++)
                 {
                     if (volume.scan(l).beam_size > k)
                         volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
@@ -680,7 +678,7 @@ void CUM_BAC::elabora_dato()
 
             {
 
-                for(l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
+                for(unsigned l=0; l<el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
                 {
                     if (volume.scan(l).beam_size > k)
                         volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));

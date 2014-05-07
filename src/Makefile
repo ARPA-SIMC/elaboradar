@@ -20,11 +20,12 @@ CC=cc
 CXX=g++ 
 
 # CFLAGS for all current code
-CFLAGS=-g -I../include -Wall -fstack-protector -Wstack-protector -D_FORTIFY_SOURCE=2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags) $(shell pkg-config eigen3 --cflags)
+CFLAGS=-g --std=c++11 -I../include -Wall -O2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags) $(shell pkg-config eigen3 --cflags)
 # Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
 # CFLAGS += -DGSL_RANGE_CHECK_OFF
 # Scommentare per disabilitare il range checking di Eigen e guadagnare un po' in velocità
 # CFLAGS += -DEIGEN_NO_DEBUG
+# Opzioni per debugging: -D_FORTIFY_SOURCE=2 -fstack-protector -Wstack-protector 
 
 # CFLAGS for old code
 CFLAGS_LEGACY=$(CFLAGS) -DANAPROP -DTIME -DZ_LOWRIS -DMEDIUM
