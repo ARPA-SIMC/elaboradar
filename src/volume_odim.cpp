@@ -92,12 +92,12 @@ void ODIMLoader::load(const std::string& pathname)
         double v = elevationAngles[i];
         if (v <= elev_array[i] - 0.5 || elev_array[i] + 0.5 <= v)
         {
-            LOG_ERROR("elevation %f does not match our expectation: we want %d but we got %f", i, elev_array[i], v);
+            LOG_ERROR("elevation %d does not match our expectation: we want %f but we got %f", i, elev_array[i], v);
             throw runtime_error("elevation mismatch");
         }
     }
 
-    double range_scale;
+    double range_scale = 0;
 
     // Iterate all scans
     unsigned scan_count = int_to_unsigned(volume->getScanCount(), "scan count");

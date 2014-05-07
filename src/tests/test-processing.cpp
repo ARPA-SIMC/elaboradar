@@ -75,7 +75,7 @@ template<typename T>
 int avg(const Matrix2D<T>& m)
 {
     unsigned size = m.rows() * m.cols();
-    double mean;
+    double mean = 0;
     for (unsigned i = 0; i < size; ++i)
         mean += (double)m.data()[i] / size;
     return round(mean);

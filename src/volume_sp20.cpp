@@ -210,7 +210,7 @@ void SP20Loader::load(const std::string& pathname)
 
     fclose(sp20_in);
 
-    LOG_DEBUG ("Nel volume ci sono %d scan", vol_z->size());
+    LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
         LOG_DEBUG (" Scan %2zd - dimensione beam %5d", i, vol_z->scan(i).beam_size);
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
