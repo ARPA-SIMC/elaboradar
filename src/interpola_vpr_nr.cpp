@@ -1,4 +1,5 @@
 #include "interpola_vpr.h"
+#ifdef DO_INTERPOLA_VPR_NR
 #include "cum_bac.h"
 #include "logging.h"
 
@@ -269,3 +270,4 @@ int InterpolaVPR_NR::interpola_VPR(const float* vpr, int hvprmax, int livmin)
 }
 
 }
+#endif

@@ -130,8 +130,8 @@ public:
 
     ~Volume()
     {
-        for (iterator i = this->begin(); i != this->end(); ++i)
-            if (*i) delete *i;
+        for (auto i: *this)
+            if (i) delete i;
     }
 
     /// Return the maximum beam count in all PolarScans
@@ -245,43 +245,6 @@ private:
     Volume& operator=(const Volume&);
 };
 
-
-template<typename T>
-struct ArrayStats
-{
-    bool first = true;
-    T min = 0;
-    T max = 0;
-    double avg = 0;
-    unsigned count_zeros = 0;
-    unsigned count_ones = 0;
-
-    ArrayStats() {}
-
-    void count_sample(const T& sample, unsigned item_count)
-    {
-        if (sample == 0)
-            ++count_zeros;
-        else if (sample == 1)
-            ++count_ones;
-
-        if (first)
-        {
-            min = sample;
-            max = sample;
-            avg = (double)min / item_count;
-            first = false;
-        }
-        else
-        {
-            if (sample < min)
-                min = sample;
-            if (sample > max)
-                max = sample;
-            avg += (double)sample / item_count;
-        }
-    }
-};
 
 }
 
