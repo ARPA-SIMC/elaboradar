@@ -105,9 +105,6 @@ template<typename T>
 class Volume : protected std::vector<PolarScan<T>*>
 {
 public:
-    // How many elevations are in this volume
-    unsigned int NEL;
-
     using std::vector<PolarScan<T>*>::size;
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
@@ -117,13 +114,11 @@ public:
     const PolarScan<T>& scan(unsigned idx) const { return *(*this)[idx]; }
 
     Volume()
-        : NEL(0)
     {
     }
 
     template<typename OT>
     Volume(const Volume<OT>& v, const T& default_value)
-        : NEL(v.NEL)
     {
         this->resize(v.size(), 0);
         for (unsigned i = 0; i < v.size(); ++i)
@@ -228,21 +223,14 @@ public:
             if (idx > this->size())
             {
                 if (this->empty())
-                {
                     this->push_back(new PolarScan<T>(beam_size));
-                    this->NEL++;
-                }
                 while (this->size() < idx)
-                {
                     this->push_back(new PolarScan<T>(this->back()->beam_size));
-                    this->NEL++;
-                }
             }
 
             // Add the new polar scan
             this->push_back(new PolarScan<T>(beam_size));
             this->back()->elevation = elevation;
-            this->NEL++;
         }
 
         // Return it
@@ -261,14 +249,14 @@ private:
 template<typename T>
 struct ArrayStats
 {
-    bool first;
-    T min;
-    T max;
-    double avg;
-    unsigned count_zeros;
-    unsigned count_ones;
+    bool first = true;
+    T min = 0;
+    T max = 0;
+    double avg = 0;
+    unsigned count_zeros = 0;
+    unsigned count_ones = 0;
 
-    ArrayStats() : first(true), count_zeros(0), count_ones(0) {}
+    ArrayStats() {}
 
     void count_sample(const T& sample, unsigned item_count)
     {

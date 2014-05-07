@@ -490,7 +490,7 @@ void CUM_BAC::elabora_dato()
    
             const float bin_low  = volume.scan(el_inf).get(i, k);
 	    float bin_high;
-	    if (el_up >= volume.NEL ) {
+	    if (el_up >= volume.size() ) {
 	        bin_high=BYTEtoDB(0);
 	    } else {               
 	        if ( k >= volume.scan(el_up).beam_size){
@@ -906,7 +906,7 @@ void CUM_BAC::caratterizzo_volume()
 
     //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
 
-    for (int l=0; l<volume.NEL; l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
+    for (int l=0; l<volume.size(); l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
         const unsigned beam_size = volume.scan(l).beam_size;
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
@@ -1872,7 +1872,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
     iaz_min=cum_bac.site.vpr_iaz_min;
     iaz_max=cum_bac.site.vpr_iaz_max;
 
-    for (unsigned l=0; l<cum_bac.volume.NEL; l++)//ciclo elevazioni
+    for (unsigned l=0; l<cum_bac.volume.size(); l++)//ciclo elevazioni
     {
         const PolarScan<double>& scan = cum_bac.volume.scan(l);
         const volume::PolarScanLoadInfo& scan_info = cum_bac.load_info.scan(l);

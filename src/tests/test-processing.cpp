@@ -42,7 +42,7 @@ struct ArrayStats : public cumbac::ArrayStats<T>
 
     void fill(const Volume<T>& vol)
     {
-        for (unsigned i = 0; i < vol.NEL; ++i)
+        for (unsigned i = 0; i < vol.size(); ++i)
             fill(vol.scan(i));
     }
 
