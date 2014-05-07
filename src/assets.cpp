@@ -237,7 +237,7 @@ long int Assets::read_profile_gap() const
     fread(&last_time, 4, 1, in.file);
 
     long int gap1 = abs(conf_acq_time - last_time)/900;
-    LOG_INFO("old_data_header.norm.maq.acq_date last_time gap %d %ld %ld", conf_acq_time, last_time, gap1);
+    LOG_INFO("old_data_header.norm.maq.acq_date last_time gap %ld %u %ld", conf_acq_time, last_time, gap1);
 
     return gap1;
 }
@@ -382,10 +382,10 @@ void Assets::load_raw(const std::string& fname, const char* desc, Matrix2D<T>& m
     if (fsize != matrix.size() * sizeof(T))
     {
         LOG_ERROR("Il file %s è %ld byte ma dovrebbe invece essere %ld byte\n",
-                fsize, matrix.size() * sizeof(T));
+                fname.c_str(), fsize, matrix.size() * sizeof(T));
         throw std::runtime_error("La dimensione della mappa statica non è quello che mi aspetto");
     }
-    LOG_INFO ("DIMENSIONE MAPPA STATICA %u %u", matrix.rows(), matrix.cols());
+    LOG_INFO ("DIMENSIONE MAPPA STATICA %ld %ld", matrix.rows(), matrix.cols());
 
     for (unsigned i = 0; i < matrix.rows(); ++i)
         if (fread(matrix.data() + i * matrix.cols(), matrix.cols(), 1, in) != 1)

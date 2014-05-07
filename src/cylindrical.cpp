@@ -45,17 +45,17 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     unsigned w_x_size_2=w_x_size/2;
     unsigned w_z_size_2=w_z_size/2;
 
-    Matrix2D<unsigned> i_xx_min(max_bin, volume.NEL);
-    Matrix2D<unsigned> i_zz_min(max_bin, volume.NEL);
-    Matrix2D<unsigned> im(max_bin, volume.NEL);
-    Matrix2D<unsigned> ix(max_bin, volume.NEL);
-    Matrix2D<unsigned> jm(max_bin, volume.NEL);
-    Matrix2D<unsigned> jx(max_bin, volume.NEL);
+    Matrix2D<unsigned> i_xx_min(max_bin, volume.size());
+    Matrix2D<unsigned> i_zz_min(max_bin, volume.size());
+    Matrix2D<unsigned> im(max_bin, volume.size());
+    Matrix2D<unsigned> ix(max_bin, volume.size());
+    Matrix2D<unsigned> jm(max_bin, volume.size());
+    Matrix2D<unsigned> jx(max_bin, volume.size());
 
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * size_cell/1000.;
 
-        for (unsigned k=0; k < volume.NEL; k++){
+        for (unsigned k=0; k < volume.size(); k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
             double zz = pow(pow(range,2.)+pow(4./3*REARTH,2.)+2.*range*4./3.*REARTH*sin(elev_rad),.5) -4./3.*REARTH+h_radar;// quota
             double xx = range*cos(elev_rad); // distanza
@@ -130,7 +130,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         }
     }
 */
-    Matrix2D<double> RHI_beam(volume.NEL, max_bin);
+    Matrix2D<double> RHI_beam(volume.size(), max_bin);
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = *slices[iaz];
@@ -149,7 +149,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
         if (ray_size > max_bin)
             ray_size = max_bin;
 
-        for (unsigned iel=0;iel<volume.NEL;iel++){
+        for (unsigned iel=0;iel<volume.size();iel++){
             for (unsigned ibin=0;ibin<ray_size;ibin++) {
                 double beamXweight[w_x_size][w_z_size];
 
