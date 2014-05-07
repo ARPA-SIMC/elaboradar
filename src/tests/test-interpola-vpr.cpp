@@ -34,6 +34,7 @@ const float vpr1[] = { -9999.000000, 2.136112, 1.879434, 1.757904, 2.025282, 3.7
 template<> template<>
 void to::test<1>()
 {
+#ifdef DO_INTERPOLA_VPR_NR
     InterpolaVPR_NR iv;
     int res = iv.interpola_VPR(vpr1, 1300, 300);
     wassert(actual(res) == 0);
@@ -45,6 +46,7 @@ void to::test<1>()
     //wassert(actual(iv.chisqfin) == 0);
     //wassert(actual(iv.rmsefin) == 0);
     //double vpr_int[NMAXLAYER];
+#endif
 }
 
 template<> template<>

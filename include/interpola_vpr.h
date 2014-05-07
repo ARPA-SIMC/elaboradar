@@ -1,5 +1,7 @@
 #include "vpr_par.h"
 
+// #define DO_INTERPOLA_VPR_NR
+
 namespace cumbac {
 
 struct CalcoloVPR;
@@ -25,10 +27,12 @@ struct InterpolaVPR
     virtual int interpola_VPR(const float* vpr, int hvprmax, int livmin) = 0;
 };
 
+#ifdef DO_INTERPOLA_VPR_NR
 struct InterpolaVPR_NR : public InterpolaVPR
 {
     virtual int interpola_VPR(const float* vpr, int hvprmax, int livmin);
 };
+#endif
 
 struct InterpolaVPR_GSL : public InterpolaVPR
 {

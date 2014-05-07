@@ -5,10 +5,12 @@
 #include <cstdlib>
 #include <vector>
 #include "setwork.h"
+#include "test-utils.h"
 #include <unistd.h>
 
 using namespace wibble::tests;
 using namespace cumbac;
+using namespace testradar;
 
 namespace tut {
 
@@ -16,72 +18,6 @@ struct process_shar {
     Logging logging;
 };
 TESTGRP(process);
-
-namespace {
-
-template<typename T>
-struct ArrayStats : public cumbac::ArrayStats<T>
-{
-    void fill(const T* arr, unsigned size)
-    {
-        for (unsigned i = 0; i < size; ++i)
-            this->count_sample(arr[i], size);
-    }
-
-    void fill(const Matrix2D<T>& arr)
-    {
-        for (int i = 0; i < arr.rows() * arr.cols(); ++i)
-            this->count_sample(arr.data()[i], arr.rows() * arr.cols());
-    }
-
-    void fill(const PolarScan<T>& arr)
-    {
-        for (int i = 0; i < arr.rows() * arr.cols(); ++i)
-            this->count_sample(arr.data()[i], arr.rows() * arr.cols());
-    }
-
-    void fill(const Volume<T>& vol)
-    {
-        for (unsigned i = 0; i < vol.size(); ++i)
-            fill(vol.scan(i));
-    }
-
-    template<int A, int B>
-    void fill2(const T (&arr)[A][B])
-    {
-        for (int i = 0; i < A; ++i)
-            for (int j = 0; j < B; ++j)
-                this->count_sample(arr[i][j], A * B);
-    }
-
-    template<int A, int B, int C>
-    void fill3(const T (&arr)[A][B][C])
-    {
-        for (int i = 0; i < A; ++i)
-            for (int j = 0; j < B; ++j)
-                for (int k = 0; k < C; ++k)
-                    this->count_sample(arr[i][j][k], A * B * C);
-    }
-
-    void print()
-    {
-        fprintf(stderr, "min %f max %f avg %f, zeros: %u, ones: %u\n",
-                (double)this->min, (double)this->max, this->avg,
-                this->count_zeros, this->count_ones);
-    }
-};
-
-template<typename T>
-int avg(const Matrix2D<T>& m)
-{
-    unsigned size = m.rows() * m.cols();
-    double mean = 0;
-    for (unsigned i = 0; i < size; ++i)
-        mean += (double)m.data()[i] / size;
-    return round(mean);
-}
-
-}
 
 template<> template<>
 void to::test<1>()
