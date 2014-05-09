@@ -149,13 +149,43 @@ void ODIMLoader::load(const std::string& pathname)
 
         unsigned beam_size = int_to_unsigned(data->getNumBins(), "beam size");
 
+
+/* 
+ *  per permettere al cleaner di funzionare per dati ODIm bisogna fare i seguenti passi
+ *  
+ *  1) leggere Z come valore fisico  data->readTranslatedData(matrix);
+ *
+ *  2) verificare che siano presenti le grandezze PRODUCT_QUANTITY_VRAD e PRODUCT_QUANTITY_WRAD
+ *
+ *  3) leggere VRAD (valore fisico)
+ *
+ *  4) leggere WRAD valore fisico)
+ *
+ *  5) calcolare bin_wind_magic_number  -> = VRAD.undetect*VRAD.gain+VRAD.offset
+ *
+ *  6) calcolare z_missing  -> noData
+ *
+ *  7) calcolare v_missing -> noData
+ *
+ *  8) soglia W = 0.
+ *
+ *  9) riempire la struttura Beams
+ *
+ * 10) eseguire il cleaner sulla struttura
+ *
+ * 11) copiare i dati ripuliti in volume
+ *
+ * 12) nuovo raggio si ricomincia da 1 fino a fine PolarScan
+ *
+ * */
+
+
         // Read all scan beam data
 
         // RayMatrix<float> matrix;
-        // data->readTranslatedData(matrix);
         odim::RayMatrix<unsigned short> matrix;
         matrix.resize(nrays, beam_size);
-        //data->readData(matrix);
+        // data->readTranslatedData(matrix);
         data->readData(const_cast<unsigned short*>(matrix.get()));
 
         double* beam = new double[beam_size];
