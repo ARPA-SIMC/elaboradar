@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdio>
 #include <algorithm>
-
+#include <iostream>
 namespace cumbac {
 
 unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range=0);
@@ -35,12 +35,20 @@ struct BeamCleaner
 
 //  void clean_beams(Beams<TB>& b, unsigned beam_size, std::vector<bool>& corrected) const;
 
+	BeamCleaner(TB V, TB Z, TB W)
+	{
+	  bin_wind_magic_number =  V;
+	  Z_missing             =  Z;
+	  W_threshold           =  W;
+	  V_missing		=  V;
+	}
 	BeamCleaner(TB V, TB Z, TB W, TB VM)
 	{
 	  bin_wind_magic_number =  V;
 	  Z_missing             =  Z;
 	  W_threshold           =  W;
 	  V_missing		= VM;
+//std::cout<<bin_wind_magic_number<<" "<<Z_missing<<" "<<W_threshold<<" "<<V_missing<<std::endl;
 	}
 
 
@@ -62,11 +70,14 @@ INIZIO CODICE RIPULITURA
   bool in_a_segment = false;
   bool before, after;
   int ib, ia;
+unsigned counter = 0;
+
   for (ibin =0; ibin < beam_size; ibin++)
   {
     if (!in_a_segment) {
 /* cerco la prima cella segmento da pulire*/
       //if (b.data_w[ibin] == 0 && b.data_v_w[ibin] == -125 )
+  //    std::cout<<ibin<<" "<<b.data_w[ibin]<<" "<< b.data_v[ibin]<<std::endl;
       if (b.data_w[ibin] == W_threshold && b.data_v[ibin] == bin_wind_magic_number ){
         in_a_segment = true;
         start = ibin;
@@ -82,6 +93,7 @@ INIZIO CODICE RIPULITURA
         if ( ibin == (beam_size -1) ) end=ibin;  // caso particolare per fine raggio
 /* Fine trovata ora procedo alla pulizia eventuale */
         segment_length = end - start;
+	counter = counter + (unsigned)(segment_length);
 /* Cerco dati validi in Z prima del segmento */
         for (ib = ibin - 12; ib < ibin ; ib ++) 
           if (ib >= 0 && b.data_z[ib] >= 2 ) before = true;
@@ -104,6 +116,7 @@ INIZIO CODICE RIPULITURA
       }
     }
   }
+//std::cout<<"trovate #"<<counter<<" celle corrette"<<std::endl;
 }
 
 
