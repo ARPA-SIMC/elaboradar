@@ -35,7 +35,8 @@ unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range)
 }
 
 
-template struct BeamCleaner <unsigned char>;  // perchè ci va messo?
+//template struct BeamCleaner <unsigned char>;  // perchè ci va messo?
+template struct BeamCleaner <double>;  // perchè ci va messo?
 
 
 }
