@@ -232,7 +232,8 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
 
 bool CUM_BAC::test_file(int file_type)
 {
-    int n_elev, expected_size_cell;// != volume.resolution?
+    int n_elev = -1;
+    int expected_size_cell = 0;// != volume.resolution?
 
     //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
 
@@ -906,7 +907,7 @@ void CUM_BAC::caratterizzo_volume()
 
     //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
 
-    for (int l=0; l<volume.size(); l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
+    for (unsigned l=0; l<volume.size(); l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
         const unsigned beam_size = volume.scan(l).beam_size;
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
@@ -2327,7 +2328,10 @@ void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const cha
 bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 {
     // Legge e controlla il volume dal file SP20
-    if (!read_sp20_volume(nome_file, file_type))
+//    if (!read_sp20_volume(nome_file, file_type))
+//        return false;
+    // Legge e controlla il volume dal file ODIM
+    if (!read_odim_volume(nome_file, file_type))
         return false;
 
     ///-------------------------ELABORAZIONE -------------------------
