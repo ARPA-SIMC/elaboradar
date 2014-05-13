@@ -11,7 +11,8 @@ namespace cumbac {
 
 CalcoloVIZ::CalcoloVIZ(const CylindricalVolume& cil, double htbb, double hbbb, double t_ground)
     : cil(cil), x_size(cil.x_size), z_size(cil.z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground),
-      conv_VIZ(NUM_AZ_X_PPI, x_size, MISSING), stratiform(NUM_AZ_X_PPI, x_size, MISSING)
+      conv_VIZ(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, x_size, MISSING)),
+      stratiform(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, x_size, MISSING))
 {
     logging_category = log4c_category_get("radar.vpr");
 }
@@ -19,8 +20,8 @@ CalcoloVIZ::CalcoloVIZ(const CylindricalVolume& cil, double htbb, double hbbb, d
 void CalcoloVIZ::classifico_VIZ()
 {
     float cil_Z,base;
-    Matrix2D<double> Zabb(NUM_AZ_X_PPI, x_size, 0.);
-    Matrix2D<double> Zbbb(NUM_AZ_X_PPI, x_size, 0.);
+    Matrix2D<double> Zabb(Matrix2D<double>::Zero(NUM_AZ_X_PPI, x_size));
+    Matrix2D<double> Zbbb(Matrix2D<double>::Zero(NUM_AZ_X_PPI, x_size));
     double ext_abb,ext_bbb;
     float LIM_VERT= 8.;//questo l'ho messo io
     long int ncv = 0;

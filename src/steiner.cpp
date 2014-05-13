@@ -59,7 +59,7 @@ CalcoloSteiner::CalcoloSteiner(
         const volume::ElevFin<double>& elev_fin,
         unsigned max_bin, const double size_cell)
     : volume(volume), elev_fin(elev_fin), max_bin(max_bin), size_cell(size_cell),
-      conv_STEINER(NUM_AZ_X_PPI, max_bin, MISSING)
+      conv_STEINER(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, max_bin, MISSING))
 {
     using namespace steiner;
 

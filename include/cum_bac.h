@@ -41,14 +41,6 @@ struct CalcoloSteiner;
 struct CalcoloVIZ;
 
 template<typename T>
-struct PolarMap : public Matrix2D<T>
-{
-    PolarMap(const PolarMap& pm) : Matrix2D<T>(pm) {}
-    PolarMap(unsigned beam_size=512, unsigned beam_count=400)
-        : Matrix2D<T>(beam_count, beam_size) {}
-};
-
-template<typename T>
 struct Image : public Matrix2D<T>
 {
     Image(unsigned sx, unsigned sy=0)
@@ -167,27 +159,27 @@ public:
     GridStats grid_stats;
 
     //matrici first_level e first level da beam blocking e valore beam blocking
-    PolarMap<unsigned char> first_level; //mappa dinamica complessiva
-    PolarMap<unsigned char> first_level_static;//mappa statica
+    PolarScan<unsigned char> first_level; //mappa dinamica complessiva
+    PolarScan<unsigned char> first_level_static;//mappa statica
 
-    PolarMap<unsigned char> bb_first_level;  /* mappa di elevazioni da beam blocking (input)*/
-    PolarMap<unsigned char> beam_blocking;   /* mappa di beam blocking (input)*/
+    PolarScan<unsigned char> bb_first_level;  /* mappa di elevazioni da beam blocking (input)*/
+    PolarScan<unsigned char> beam_blocking;   /* mappa di beam blocking (input)*/
 
     //variabili legate a propagazione e beam blocking, da prog_bb
-    PolarMap <float> dem; /*dem in coordinate azimut range*/
+    PolarScan <float> dem; /*dem in coordinate azimut range*/
 
     // attenuazione in formato cartesiano max risoluzione
-    PolarMap <unsigned char> att_cart; /* matrice azimut-range di attenuazione */
+    PolarScan <unsigned char> att_cart; /* matrice azimut-range di attenuazione */
     //quota centro fascio polare, cartesiana max risoluzione e cartesiana 1x1
-    PolarMap <unsigned short> quota_rel; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
-    PolarMap <unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
+    //PolarScan <unsigned short> quota_rel; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
+    Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
     Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
     Image<unsigned char> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
     //beam blocking cartesiano max resol e 1x1
     Image<unsigned char> beam_blocking_xy; //beamblocking cartesiano max resol
     Image<unsigned char> beam_blocking_1x1;//beam blocking cartesiano 1x1
     //uscite anaprop
-    PolarMap <unsigned char> dato_corrotto; /*uscita controllo anaprop in coordinate azimut range */
+    Matrix2D<unsigned char> dato_corrotto; /*uscita controllo anaprop in coordinate azimut range */
     Image<unsigned char> dato_corr_xy; //uscite anap  cartesiano max resol
     Image<unsigned char> dato_corr_1x1; //uscite anap cartesiano  1x1
     Image<unsigned char> elev_fin_xy;
@@ -197,7 +189,7 @@ public:
     Image<unsigned char> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
     Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra
-    PolarMap <unsigned char> top;
+    PolarScan <unsigned char> top;
     Image<unsigned char> topxy;
     Image<unsigned char> top_1x1;
 
@@ -209,7 +201,7 @@ public:
     Image<unsigned char> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
 
     //matrici per classificazione: cappi
-    PolarMap <unsigned char> cappi;
+    PolarScan <unsigned char> cappi;
     // uscite: matrici class max resol e 1x1
     Image<unsigned char> conv_cart;
     Image<unsigned char> conv_1x1;
@@ -385,8 +377,8 @@ struct CalcoloVPR
     int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
     unsigned x_size,z_size;
     double htbb, hbbb;
-    PolarMap<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
-    PolarMap<unsigned char> neve;/* matrice az-range che memorizza punti di neve*/
+    PolarScan<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
+    PolarScan<unsigned char> neve;/* matrice az-range che memorizza punti di neve*/
     int ier_vpr, ier_comb,ier_max,ier_stampa_vpr;/* flag d'errore su calcolo vpr istantaneo, combinazione vpr, funzione get_t_ground */
     // dati per vpr
     Volume<unsigned char>* flag_vpr; // punti del volume polare ok per calcolo VPR*/
