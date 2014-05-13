@@ -89,6 +89,13 @@ public:
         for (unsigned i = set_count; i < out_size; ++i)
             out[i] = missing;
     }
+
+    void resize_beams_and_propagate_last_bin(unsigned new_beam_size)
+    {
+        this->conservativeResize(Eigen::NoChange, new_beam_size);
+        this->rightCols(new_beam_size - this->beam_size).colwise() = this->col(this->beam_size - 1);
+        this->beam_size = new_beam_size;
+    }
 };
 
 struct VolumeStats

@@ -722,6 +722,9 @@ void CUM_BAC::leggo_first_level()
     {
         // Leggo mappa statica
         assets.load_first_level(first_level_static);
+        // Allargo per coprire la dimensione del volume
+        if (first_level_static.cols() < volume.max_beam_size())
+            first_level_static.resize_beams_and_propagate_last_bin(volume.max_beam_size());
 
         // copio mappa statica su matrice first_level
         first_level = first_level_static;
@@ -732,9 +735,15 @@ void CUM_BAC::leggo_first_level()
     {
         // Leggo file elevazioni per BB
         assets.load_first_level_bb_el(bb_first_level);
+        // Allargo per coprire la dimensione del volume
+        if (bb_first_level.cols() < volume.max_beam_size())
+            bb_first_level.resize_beams_and_propagate_last_bin(volume.max_beam_size());
 
         // Leggo file valore di BB
         assets.load_first_level_bb_bloc(beam_blocking);
+        // Allargo per coprire la dimensione del volume
+        if (beam_blocking.cols() < volume.max_beam_size())
+            beam_blocking.resize_beams_and_propagate_last_bin(volume.max_beam_size());
 
         /* Se elevazione clutter statico < elevazione BB, prendi elevazione BB,
            altrimeti prendi elevazione clutter statico e metti a 0 il valore di BB*/
