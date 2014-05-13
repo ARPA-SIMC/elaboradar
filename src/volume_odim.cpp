@@ -187,32 +187,32 @@ void ODIMLoader::load(const std::string& pathname)
         matrix.resize(nrays, beam_size);
         data->readTranslatedData(matrix); // 1)
       //  data->readData(const_cast<unsigned short*>(matrix.get()));
-	// define containe for VRAD adnd WRAD
+        // define containe for VRAD adnd WRAD
         auto_ptr<odim::PolarScanData> VRAD;
         auto_ptr<odim::PolarScanData> WRAD;
         odim::RayMatrix<double> VRAD_matrix;
         odim::RayMatrix<double> WRAD_matrix;
-	double bin_wind_magic_number= 0;
-  	double Z_missing    = -40.;
-  	double W_threshold  = 0.;
- 	double V_missing    = -100.;
+        double bin_wind_magic_number= 0;
+        double Z_missing    = -40.;
+        double W_threshold  = 0.;
+        double V_missing    = -100.;
         if (clean) {
-	   if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){      				// 2)
+           if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){                                      // 2)
              VRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_VRAD));
              VRAD_matrix.resize(nrays, beam_size);
-             VRAD->readTranslatedData(VRAD_matrix); 						// 3)
- 	     //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();	// 5)
-	     bin_wind_magic_number = 0;
-	     V_missing=VRAD->getNodata() * VRAD->getGain()+VRAD->getOffset();			// 7)
-	   } else clean = false;
-	   if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){      				// 2)
+             VRAD->readTranslatedData(VRAD_matrix);                                             // 3)
+             //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();  // 5)
+             bin_wind_magic_number = 0;
+             V_missing=VRAD->getNodata() * VRAD->getGain()+VRAD->getOffset();                   // 7)
+           } else clean = false;
+           if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){                                      // 2)
              WRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_WRAD));
              WRAD_matrix.resize(nrays, beam_size);
-             WRAD->readTranslatedData(VRAD_matrix);						// 4)
-	     W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();		// 8)
-	   } else clean = false;
+             WRAD->readTranslatedData(VRAD_matrix);                                             // 4)
+             W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();               // 8)
+           } else clean = false;
 // TODO: al momento setto il dato al valore minimo, ma biosognerà aggiornarlo a NoData e gestire attraverso una flag di qualità.
-	   Z_missing=data->getUndetect() * data->getGain()+data->getOffset();			// 6)
+           Z_missing=data->getUndetect() * data->getGain()+data->getOffset();                   // 6)
         }
 
         int el_num = elevation_index(elevation);
@@ -232,18 +232,18 @@ std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
 
            if (clean) {
 //std::cout<<"PASSO PER IL CLEANER - Raggio "<<src_az<<std::endl;
-	     BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
+             BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
              auto_ptr<Beams<double>> b(new Beams<double>);
              for (unsigned i = 0; i < beam_size; ++i){
-			b->data_z[i]=matrix.elem(src_az,i);         
-			b->data_v[i]=VRAD_matrix.elem(src_az,i);         
-			b->data_w[i]=WRAD_matrix.elem(src_az,i);         
+                        b->data_z[i]=matrix.elem(src_az,i);         
+                        b->data_v[i]=VRAD_matrix.elem(src_az,i);         
+                        b->data_w[i]=WRAD_matrix.elem(src_az,i);         
               }
-	      vector <bool> cleaned(beam_size,false);
-	      cleaner.clean_beams(*b,beam_size,cleaned);
+              vector <bool> cleaned(beam_size,false);
+              cleaner.clean_beams(*b,beam_size,cleaned);
               for (unsigned i = 0; i < beam_size; ++i)
                 beam[i] = b->data_z[i];
-	   } else {     
+           } else {     
             // Convert back to bytes, to fit into vol_pol as it is now
               for (unsigned i = 0; i < beam_size; ++i){
                 // FIXME: QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
@@ -252,7 +252,7 @@ std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
                 beam[i] = matrix.elem(src_az, i);
                 //beam[i] = BYTEtoDB(eldes_counter_to_db(matrix.elem(src_az, i)));
              }
-	   }
+           }
             //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
             fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
             delete[] beam;
