@@ -5,9 +5,8 @@
 #include <cstdio>
 #include <algorithm>
 #include <iostream>
-namespace cumbac {
 
-unsigned get_new_cell_num(unsigned orig_cell_num, unsigned max_range=0);
+namespace cumbac {
 
 template <class TB>
 struct Beams
