@@ -150,7 +150,7 @@ void ODIMLoader::load(const std::string& pathname)
         std::vector<double> elevation_angles = scan->getElevationAngles();
 
         unsigned beam_size = int_to_unsigned(data->getNumBins(), "beam size");
-	if (beam_size >= 512) beam_size=512;
+        //if (beam_size >= 512) beam_size=512;
 
 /* 
  *  per permettere al cleaner di funzionare per dati ODIm bisogna fare i seguenti passi
