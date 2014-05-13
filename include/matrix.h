@@ -7,16 +7,13 @@
 
 namespace cumbac {
 
-/// Generic 2D matrix
+/// Base for all matrices we use, since we rely on row-major data
 template<typename T>
-struct Matrix2D : Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+struct Matrix2D : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
 {
-    // Create a new matrix, with all elements set to a fill value
-    Matrix2D(unsigned SY, unsigned int SX, const T& fill=0)
-        : Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(
-                Matrix2D::Constant(SY, SX, fill)) {}
+    using Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Matrix;
 
-    T* row(unsigned y) { return this->data() + y * this->cols(); }
+    T* row_ptr(unsigned y) { return this->data() + y * this->cols(); }
 };
 
 }

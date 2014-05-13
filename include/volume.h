@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
-#include <Eigen/Dense>
+#include <Eigen/Core>
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
@@ -37,13 +37,13 @@ inline unsigned char DBtoBYTE(double dB)
 
 
 template<typename T>
-class PolarScan : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+class PolarScan : public Matrix2D<T>
 {
 public:
     /// Count of beams in this scan
-    const unsigned beam_count;
+    unsigned beam_count;
     /// Number of samples in each beam
-    const unsigned beam_size;
+    unsigned beam_size;
     /**
      * Nominal elevation of this PolarScan, which may be different from the
      * effective elevation of each single beam
@@ -51,8 +51,8 @@ public:
     double elevation;
 
     PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
-        : Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(
-                PolarScan::Constant(NUM_AZ_X_PPI, beam_size, default_value)), beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+        : Matrix2D<T>(PolarScan::Constant(NUM_AZ_X_PPI, beam_size, default_value)),
+          beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
     {
     }
 
@@ -171,7 +171,7 @@ public:
     {
         unsigned size_z = std::max(size(), (size_t)slice.rows());
         for (unsigned el = 0; el < size_z; ++el)
-            scan(el).read_beam(az, slice.row(el), slice.cols(), missing_value);
+            scan(el).read_beam(az, slice.row_ptr(el), slice.cols(), missing_value);
     }
 
     void compute_stats(VolumeStats& stats) const

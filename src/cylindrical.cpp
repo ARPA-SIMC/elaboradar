@@ -45,12 +45,12 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     unsigned w_x_size_2=w_x_size/2;
     unsigned w_z_size_2=w_z_size/2;
 
-    Matrix2D<unsigned> i_xx_min(max_bin, volume.size());
-    Matrix2D<unsigned> i_zz_min(max_bin, volume.size());
-    Matrix2D<unsigned> im(max_bin, volume.size());
-    Matrix2D<unsigned> ix(max_bin, volume.size());
-    Matrix2D<unsigned> jm(max_bin, volume.size());
-    Matrix2D<unsigned> jx(max_bin, volume.size());
+    Matrix2D<unsigned> i_xx_min(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
+    Matrix2D<unsigned> i_zz_min(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
+    Matrix2D<unsigned> im(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
+    Matrix2D<unsigned> ix(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
+    Matrix2D<unsigned> jm(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
+    Matrix2D<unsigned> jx(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
 
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * size_cell/1000.;
@@ -134,7 +134,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = *slices[iaz];
-        Matrix2D<double> rhi_weight(x_size, z_size, 0);
+        Matrix2D<double> rhi_weight(Matrix2D<double>::Zero(x_size, z_size));
 
         volume.read_vertical_slice(iaz, RHI_beam, MISSING_DB);
 

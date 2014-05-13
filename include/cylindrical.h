@@ -17,7 +17,7 @@ struct CylindricalVolume
     {
         slices.reserve(slice_count);
         for (unsigned i = 0; i < slice_count; ++i)
-            slices.push_back(new Matrix2D<double>(x_size, z_size, missing_value));
+            slices.push_back(new Matrix2D<double>(Matrix2D<double>::Constant(x_size, z_size, missing_value)));
     }
     ~CylindricalVolume()
     {

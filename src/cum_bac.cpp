@@ -159,9 +159,8 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
       calcolo_vpr(0), cart(MyMAX_BIN*2), cartm(MyMAX_BIN*2), z_out(CART_DIM_ZLR),
       first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
       bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN), att_cart(MyMAX_BIN),
-      quota_rel(MyMAX_BIN),quota(MyMAX_BIN),
       quota_cart(MyMAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MyMAX_BIN*2),
-      beam_blocking_1x1(CART_DIM_ZLR), dato_corrotto(MyMAX_BIN),
+      beam_blocking_1x1(CART_DIM_ZLR),
       dato_corr_xy(MyMAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
       elev_fin_xy(MyMAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
       qual(0), qual_Z_cart(MyMAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),top(MyMAX_BIN),
@@ -224,6 +223,11 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
         bMP=bMP_strat;
 
     }
+
+    dato_corrotto.resize(400, volume.max_beam_size());
+    dato_corrotto.fill(0);
+    quota.resize(400, volume.max_beam_size());
+    quota.fill(0);
 
     //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
     if (do_vpr) calcolo_vpr = new CalcoloVPR(*this);
@@ -471,7 +475,7 @@ void CUM_BAC::elabora_dato()
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            int loc_el_inf =  first_level(i, k);
+            int loc_el_inf = first_level(i, k);
             while ( k >= volume.scan(loc_el_inf).beam_size)
             {
                 LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
@@ -703,7 +707,7 @@ void CUM_BAC::elabora_dato()
                 const float elevaz = elev_fin.elevation_rad_at_elev_preci(i, k);
                 // elev_fin[i][k]=first_level_static(i, k);//da togliere
                 quota(i, k)=(unsigned short)(quota_f(elevaz,k));
-                quota_rel(i, k)=(unsigned short)(hray[k][elev_fin[i][k]]-dem(i, k));/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
+                //quota_rel(i, k)=(unsigned short)(hray[k][elev_fin[i][k]]-dem(i, k));/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
             }
         }
     }
@@ -759,7 +763,7 @@ void CUM_BAC::leggo_first_level()
       patch per espandere il clutter
       -------------------------------*/
     if(do_medium){
-        PolarMap<unsigned char> first_level_tmp(first_level);
+        PolarScan<unsigned char> first_level_tmp(first_level);
         LOG_INFO(" Dentro patch %u ",MyMAX_BIN);
         for (unsigned i=NUM_AZ_X_PPI; i<800; i++)
             for (unsigned j=0; j<MyMAX_BIN; j++)
