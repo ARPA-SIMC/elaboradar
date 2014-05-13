@@ -121,8 +121,6 @@ private:
 }
 
 GridStats::GridStats()
-    : step_stat_az(25), step_stat_range(40), size_az(0), size_beam(0),
-      stat_anap(0), stat_tot(0), stat_bloc(0), stat_elev(0)
 {
 }
 
@@ -150,10 +148,7 @@ void GridStats::init(const Volume<double>& volume)
 
 CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
-      do_medium(medium), do_clean(false),
-      do_quality(false), do_beamblocking(false), do_declutter(false),
-      do_bloccorr(false), do_vpr(false), do_class(false), do_zlr_media(false),
-      do_devel(false),do_readStaticMap(false),
+      do_medium(medium),
       CART_DIM_ZLR(do_medium ? 512: 256),
       elev_fin(volume, load_info),
       calcolo_vpr(0), cart(MyMAX_BIN*2), cartm(MyMAX_BIN*2), z_out(CART_DIM_ZLR),

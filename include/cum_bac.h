@@ -44,7 +44,7 @@ template<typename T>
 struct Image : public Matrix2D<T>
 {
     Image(unsigned sx, unsigned sy=0)
-        : Matrix2D<T>(sy ? sy : sx, sx) {}
+        : Matrix2D<T>(Matrix2D<T>::Zero(sy ? sy : sx, sx)) {}
 
 };
 
@@ -52,23 +52,23 @@ struct Image : public Matrix2D<T>
 struct GridStats
 {
     // dim azim griglia per stat anap
-    const unsigned step_stat_az;
+    const unsigned step_stat_az = 25;
     // dim range griglia per stat anap
-    const unsigned step_stat_range;
+    const unsigned step_stat_range = 40;
 
     // Number of cells in the azimut direction
-    unsigned size_az;
+    unsigned size_az = 0;
     // Number of cells in the beam direction
-    unsigned size_beam;
+    unsigned size_beam = 0;
 
     // statistica anaprop
-    unsigned* stat_anap;
+    unsigned* stat_anap = 0;
     // contatore punti dentro ogni box per statistica
-    unsigned* stat_tot;
+    unsigned* stat_tot = 0;
     // statistica beam blocking
-    unsigned* stat_bloc;
+    unsigned* stat_bloc = 0;
     // statistica cambio elevazione rispetto mappa statica
-    unsigned* stat_elev;
+    unsigned* stat_elev = 0;
 
     GridStats();
     ~GridStats();
@@ -120,16 +120,16 @@ public:
     bool do_medium;
 
     /// Feature set required for this run
-    bool do_clean;        // Clean and truncate input volume
-    bool do_quality;
-    bool do_beamblocking;
-    bool do_declutter;
-    bool do_bloccorr;
-    bool do_vpr;
-    bool do_class;
-    bool do_zlr_media;
-    bool do_devel;
-    bool do_readStaticMap;
+    bool do_clean = false;        // Clean and truncate input volume
+    bool do_quality = false;
+    bool do_beamblocking = false;
+    bool do_declutter = false;
+    bool do_bloccorr = false;
+    bool do_vpr = false;
+    bool do_class = false;
+    bool do_zlr_media = false;
+    bool do_devel = false;
+    bool do_readStaticMap = false;
 
     // dimensione matrice a 1x1 km
     const unsigned CART_DIM_ZLR;
