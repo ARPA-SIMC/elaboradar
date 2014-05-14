@@ -933,24 +933,22 @@ void CUM_BAC::caratterizzo_volume()
 
     for (unsigned l=0; l<volume.size(); l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
-        const unsigned beam_size = volume.scan(l).beam_size;
+        const auto& scan = volume.scan(l);
+        const auto& scan_info = load_info.scan(l);
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
             //-----elevazione reale letta da file* fattore di conversione 360/4096
             // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
             //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
             //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
-            const float elevaz = load_info.scan(l).get_elevation_rad(i);//--- elev reale
+            const double elevaz = scan_info.get_elevation_rad(i);//--- elev reale
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
 
-            for (unsigned k=0; k<beam_size; k++)/*ciclo range*/
+            for (unsigned k=0; k<scan.beam_size; k++)/*ciclo range*/
             {
-                // Enrico: cerca di non leggere fuori dal volume effettivo
-                double sample = MISSING_DB;
-                if (k < volume.scan(l).beam_size)
-                    sample = volume.scan(l).get(i, k);
+                double sample = volume.scan(l).get(i, k);
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)
                 dist= k*load_info.size_cell+load_info.size_cell/2.;/*distanza radar */
@@ -983,15 +981,13 @@ void CUM_BAC::caratterizzo_volume()
                     // hray[k][l]=quota_f(elevaz,k);//non lo assegno
                 }
 
-                if (l-elev_fin[i][k] <0) {
+                if (l < elev_fin[i][k]) {
                     cl=ANAP_YES;
                     bb=BBMAX;
-                }
-                if (l == elev_fin[i][k] ) {
+                } else if (l == elev_fin[i][k]) {
                     cl=dato_corrotto(i, k);  /*cl al livello della mappa dinamica*/
                     bb=beam_blocking(i, k);  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così
-                }
-                if (l-elev_fin[i][k] >0 ) {
+                } else if (l > elev_fin[i][k]) {
                     cl=0;       /*per come viene scelta la mappa dinamica si suppone che al livello superiore cl=0 e bb=0*/
                     bb=0;   // sarebbe if (l-bb_first_level(i, k) >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa
                 }
@@ -999,14 +995,13 @@ void CUM_BAC::caratterizzo_volume()
                 //------dato che non ho il valore di beam blocking sotto i livelli che ricevo in ingresso ada progrmma beam blocking e
                 //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%)
                 //--------------assegno qualità zero sotto il livello di elev_fin (si può discutere...), potrei usare first_level_static confrontare e in caso sia sotto porre cl=1
-                if (l-elev_fin[i][k] <0) {
+                if (l < elev_fin[i][k]) {
                     qual->scan(l).set(i, k, 0);
                     cl=2;
-                }
-                //--------bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.----------
-                else {
+                } else {
+                    //--bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.--
 
-                    //-----------calcolo la qualità----------
+                    //--calcolo la qualità--
                     // FIXME: qui tronca: meglio un round?
                     qual->scan(l).set(i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,hray_inf.dtrs,dh,dhst,PIA)*100));
                 }
