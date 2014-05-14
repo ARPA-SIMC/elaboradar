@@ -149,22 +149,11 @@ void GridStats::init(const Volume<double>& volume)
 CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), site(Site::get(site_name)),
       do_medium(medium),
-      CART_DIM_ZLR(do_medium ? 512: 256),
       elev_fin(volume, load_info),
-      calcolo_vpr(0), z_out(CART_DIM_ZLR),
+      calcolo_vpr(0),
       first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
       bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN),
-      quota_1x1(CART_DIM_ZLR),
-      beam_blocking_1x1(CART_DIM_ZLR),
-      dato_corr_1x1(CART_DIM_ZLR),
-      elev_fin_1x1(CART_DIM_ZLR),
-      qual(0), qual_Z_1x1(CART_DIM_ZLR),
-      top_1x1(CART_DIM_ZLR),
-      corr_1x1(CART_DIM_ZLR),
-      neve_1x1(CART_DIM_ZLR),
-      cappi(MyMAX_BIN),
-      conv_1x1(CART_DIM_ZLR),
-      cappi_1x1(CART_DIM_ZLR)
+      qual(0), cappi(MyMAX_BIN)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 }
@@ -2085,130 +2074,6 @@ void CUM_BAC::conversione_convettiva()
     }
 }
 
-void CUM_BAC::creo_cart_z_lowris(const Cart& c)
-{
-    unsigned ZLR_OFFSET = do_medium && MyMAX_BIN != 1024 ? CART_DIM_ZLR/2 : 0;
-    unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium && MyMAX_BIN != 1024 ? 1 : 4;
-    int cont;
-    unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
-    unsigned short q1x1;
-    float zm;
-
-    //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
-    // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
-    for(unsigned i=0; i<CART_DIM_ZLR; i++)
-        for(unsigned j=0; j<CART_DIM_ZLR; j++)
-        {
-            //reinizializzo tutte le variabili calcolate dentro la funzione .
-            z = 0;
-            q = 0;
-            nv = 0;
-            zm = 0.;
-            dc1x1=0;
-            el1x1=0;
-            q1x1=0;
-            c1x1=0;
-            bl1x1=0;
-            cont=0;
-            traw=0;
-            for(unsigned x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
-                for(unsigned y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
-                    //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
-                {
-                    unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
-                    unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
-                    if (src_x >= MyMAX_BIN*2) printf("X è fuori\n");
-                    if (src_y >= MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
-                    if(c.cart(src_x, src_y) != MISSING)
-                        if(c.cart(src_x, src_y) > z){
-                            z= c.cart(src_x, src_y);
-                            traw=c.topxy(src_x, src_y);
-                            if (do_quality)
-                            {
-                                q=c.qual_Z_cart(src_x, src_y);
-                                q1x1=c.quota_cart(src_x, src_y);
-                                dc1x1=c.dato_corr_xy(src_x, src_y);
-                                el1x1=c.elev_fin_xy(src_x, src_y);
-                                bl1x1=c.beam_blocking_xy(src_x, src_y);
-
-                                if (do_vpr)
-                                {
-                                    c1x1=c.corr_cart(src_x, src_y);
-                                    nv= c.neve_cart(src_x, src_y);
-                                }
-                            }
-
-                            if (do_class)
-                            {
-                                conv_1x1(i, j)=c.conv_cart(src_x, src_y);
-                            }
-
-                            if (do_zlr_media)
-                            {
-                                if (c.cartm(src_x, src_y) > 0) {
-                                    zm = zm + c.cartm(src_x, src_y);
-                                    cont=cont+1;
-                                }
-                            }
-                        }
-                    z_out(i, j)=z;
-                    if (do_quality)
-                    {
-                        qual_Z_1x1(i, j)=q;
-                        quota_1x1(i, j)=128+(unsigned char)(q1x1/100);
-                        dato_corr_1x1(i, j)=dc1x1;
-                        elev_fin_1x1(i, j)=el1x1;
-                        beam_blocking_1x1(i, j)=bl1x1;
-                    }
-                    top_1x1(i, j)=traw;
-
-                    if (do_vpr)
-                    {
-                        neve_1x1(i, j)=nv;
-                        corr_1x1(i, j)=c1x1;
-                    }
-
-                    if (do_zlr_media)
-                    {
-                        if (cont >0 ) {
-                            z_out(i, j)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
-                        }
-                        if (cont == 0 ) z_out(i, j)=MISSING;
-                    }
-                }
-        }
-}
-
-void CUM_BAC::scrivo_out_file_bin (const char *ext,const char *content,const char *dir,size_t size, const void  *matrice)
-{
-    char nome_file [512];
-    FILE *output;
-    struct tm *tempo;
-    time_t time;
-    /*----------------------------------------------------------------------------*/
-    /*    apertura file dati di output                                          */
-    /*----------------------------------------------------------------------------*/
-    //definisco stringa data in modo predefinito
-    if( do_medium){
-    	tempo = gmtime(&load_info.acq_date);
-    	time = NormalizzoData(load_info.acq_date);
-    	tempo = gmtime(&time);
-    } else {
-    	time = NormalizzoData(load_info.acq_date);
-    	tempo = gmtime(&time);
-    }
-    snprintf(nome_file, 512, "%s/%04d%02d%02d%02d%02d%s",dir,
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min, ext);
-
-    output=controllo_apertura(nome_file,content,"w");
-    printf("aperto file %s dimensione matrice %zd\n",nome_file,size);
-
-    fwrite(matrice,size,1,output);
-    fclose(output);
-    return;
-}
-
 bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 {
     // Legge e controlla il volume dal file SP20
@@ -2299,11 +2164,8 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
 
     LOG_INFO("Estrazione Precipitazione 1X1");
-    creo_cart_z_lowris(cart_maker);
-
-    //-------------------scritture output -----------------------
-    LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
-    scrivo_out_file_bin(".ZLR","dati output 1X1",getenv("OUTPUT_Z_LOWRIS_DIR"),z_out.size(),z_out.data());
+    CartLowris cart_low(do_medium ? 512: 256);
+    cart_low.creo_cart_z_lowris(*this, cart_maker);
 
     unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
     MP_coeff[0]=(unsigned char)(aMP/10);
@@ -2316,47 +2178,18 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     fclose(output);
     printf(" dopo scrivo_z_lowris\n");
 
-
-    //-------------------scritture output -----------------------
-    if (do_quality)
+    if (do_quality && do_devel)
     {
-        //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
-        // temporanee
-        // in archivio
-        scrivo_out_file_bin(".qual_ZLR","file qualita' Z",getenv("OUTPUT_Z_LOWRIS_DIR"),qual_Z_1x1.size(),qual_Z_1x1.data());
-
-        //------------------ stampe extra per studio
-        if (do_devel)
-        {
-            H5::H5File outfile = assets.get_devel_data_output();
-            //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-            //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
-            //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-            //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
-            elev_fin.write_info_to_debug_file(outfile);
-            scrivo_out_file_bin(".bloc_ZLR","file bloc",getenv("DIR_QUALITY"),beam_blocking_1x1.size(),beam_blocking_1x1.data());
-            scrivo_out_file_bin(".anap_ZLR","file anap",getenv("DIR_QUALITY"),dato_corr_1x1.size(),dato_corr_1x1.data()); //flag di propagazione anomala
-            scrivo_out_file_bin(".quota_ZLR","file qel1uota",getenv("DIR_QUALITY"),quota_1x1.size(),quota_1x1.data());// m/100 +128
-            scrivo_out_file_bin(".elev_ZLR","file elev",getenv("DIR_QUALITY"),elev_fin_1x1.size(),elev_fin_1x1.data());
-            scrivo_out_file_bin(".top20_ZLR","file top20",getenv("DIR_QUALITY"),top_1x1.size(),top_1x1.data());
-        }
-
-        //------------------ stampe correzioni da profili verticali in formato ZLR
-        if (do_vpr)
-        {
-            scrivo_out_file_bin(".corr_ZLR","file correzione VPR",getenv("DIR_QUALITY"),corr_1x1.size(),corr_1x1.data());
-            //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
-            // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
-        }
-
-        //------------------se definita CLASS  stampo punti convettivi
-        if (do_class)
-        {
-            // in archivio?
-            // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
-            scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("DIR_QUALITY"),conv_1x1.size(),conv_1x1.data());
-        }
+        H5::H5File outfile = assets.get_devel_data_output();
+        //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
+        //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
+        //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
+        //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
+        elev_fin.write_info_to_debug_file(outfile);
     }
+
+    LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
+    cart_low.write_out(*this, assets);
 
     return true;
 }
@@ -2603,6 +2436,154 @@ void Cart::creo_cart(const CUM_BAC& cb)
                  dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange); */
             }
 }
+
+CartLowris::CartLowris(unsigned cart_dim_zlr)
+    : CART_DIM_ZLR(cart_dim_zlr),
+      z_out(CART_DIM_ZLR),
+      quota_1x1(CART_DIM_ZLR),
+      beam_blocking_1x1(CART_DIM_ZLR),
+      dato_corr_1x1(CART_DIM_ZLR),
+      elev_fin_1x1(CART_DIM_ZLR),
+      qual_Z_1x1(CART_DIM_ZLR),
+      top_1x1(CART_DIM_ZLR),
+      corr_1x1(CART_DIM_ZLR),
+      neve_1x1(CART_DIM_ZLR),
+      conv_1x1(CART_DIM_ZLR),
+      cappi_1x1(CART_DIM_ZLR)
+{
+}
+
+void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
+{
+    unsigned ZLR_OFFSET = cb.do_medium && cb.MyMAX_BIN != 1024 ? CART_DIM_ZLR/2 : 0;
+    unsigned ZLR_N_ELEMENTARY_PIXEL = cb.do_medium && cb.MyMAX_BIN != 1024 ? 1 : 4;
+
+    //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
+    // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
+    for(unsigned i=0; i<CART_DIM_ZLR; i++)
+        for(unsigned j=0; j<CART_DIM_ZLR; j++)
+        {
+            //reinizializzo tutte le variabili calcolate dentro la funzione .
+            unsigned cont=0;
+            for(unsigned x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
+                for(unsigned y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
+                    //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
+                {
+                    unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
+                    unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
+                    unsigned char z = 0;
+                    unsigned char traw = 0;
+                    unsigned char q = 0;
+                    unsigned short q1x1=0;
+                    unsigned char dc1x1=0;
+                    unsigned char el1x1=0;
+                    unsigned char c1x1=0;
+                    unsigned char bl1x1=0;
+                    unsigned char nv = 0;
+                    double zm = 0;
+                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && c.cart(src_x, src_y) != MISSING)
+                    {
+                        if(c.cart(src_x, src_y) > z){
+                            z= c.cart(src_x, src_y);
+                            traw=c.topxy(src_x, src_y);
+                            if (cb.do_quality)
+                            {
+                                q=c.qual_Z_cart(src_x, src_y);
+                                q1x1=c.quota_cart(src_x, src_y);
+                                dc1x1=c.dato_corr_xy(src_x, src_y);
+                                el1x1=c.elev_fin_xy(src_x, src_y);
+                                bl1x1=c.beam_blocking_xy(src_x, src_y);
+
+                                if (cb.do_vpr)
+                                {
+                                    c1x1=c.corr_cart(src_x, src_y);
+                                    nv= c.neve_cart(src_x, src_y);
+                                }
+                            }
+
+                            if (cb.do_class)
+                            {
+                                conv_1x1(i, j)=c.conv_cart(src_x, src_y);
+                            }
+
+                            if (cb.do_zlr_media)
+                            {
+                                if (c.cartm(src_x, src_y) > 0) {
+                                    zm = zm + c.cartm(src_x, src_y);
+                                    cont=cont+1;
+                                }
+                            }
+                        }
+                    }
+                    z_out(i, j)=z;
+                    if (cb.do_quality)
+                    {
+                        qual_Z_1x1(i, j)=q;
+                        quota_1x1(i, j)=128+(unsigned char)(q1x1/100);
+                        dato_corr_1x1(i, j)=dc1x1;
+                        elev_fin_1x1(i, j)=el1x1;
+                        beam_blocking_1x1(i, j)=bl1x1;
+                    }
+                    top_1x1(i, j)=traw;
+
+                    if (cb.do_vpr)
+                    {
+                        neve_1x1(i, j)=nv;
+                        corr_1x1(i, j)=c1x1;
+                    }
+
+                    if (cb.do_zlr_media)
+                    {
+                        if (cont >0 ) {
+                            z_out(i, j)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
+                        }
+                        if (cont == 0 ) z_out(i, j)=MISSING;
+                    }
+                }
+        }
+}
+
+void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
+{
+    //-------------------scritture output -----------------------
+    assets.write_image(z_out, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
+
+    //-------------------scritture output -----------------------
+    if (cb.do_quality)
+    {
+        //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
+        // temporanee
+        // in archivio
+        assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
+
+        //------------------ stampe extra per studio
+        if (cb.do_devel)
+        {
+            assets.write_image(beam_blocking_1x1, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
+            assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
+            assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
+            assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
+            assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
+        }
+
+        //------------------ stampe correzioni da profili verticali in formato ZLR
+        if (cb.do_vpr)
+        {
+            assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+            //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
+            // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
+        }
+
+        //------------------se definita CLASS  stampo punti convettivi
+        if (cb.do_class)
+        {
+            // in archivio?
+            // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
+            assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
+        }
+    }
+}
+
 
 }
 

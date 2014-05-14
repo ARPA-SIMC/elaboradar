@@ -16,6 +16,14 @@ struct Matrix2D : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen:
     T* row_ptr(unsigned y) { return this->data() + y * this->cols(); }
 };
 
+template<typename T>
+struct Image : public Matrix2D<T>
+{
+    Image(unsigned sx, unsigned sy=0)
+        : Matrix2D<T>(Matrix2D<T>::Zero(sy ? sy : sx, sx)) {}
+
+};
+
 }
 
 #endif

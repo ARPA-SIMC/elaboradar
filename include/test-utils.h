@@ -5,6 +5,12 @@
 #include <volume.h>
 #include <iomanip>
 
+namespace cumbac {
+struct Cart;
+struct CartLowris;
+struct CUM_BAC;
+}
+
 namespace testradar {
 
 template<typename T>
@@ -109,6 +115,10 @@ int avg(const cumbac::Matrix2D<T>& m)
     return round(mean);
 }
 
+template<typename T> inline T to_num(const T& val) { return val; }
+inline unsigned to_num(const unsigned char& val) { return val; }
+inline int to_num(const char& val) { return val; }
+
 template<typename DATA, typename T>
 struct TestStatsEqual
 {
@@ -154,15 +164,15 @@ struct TestStatsEqual
             ss << "stats (";
             if (has_missing)
                 ss << "missing: " << stats.count_missing << " ";
-            ss << "min: " << (double)stats.min
+            ss << "min: " << to_num(stats.min)
                << " avg: " << fixed << setprecision(2) << (double)stats.avg
-               << " max: " << (double)stats.max
+               << " max: " << resetiosflags(ios::fixed) << to_num(stats.max)
                << ") differ from expected (";
             if (has_missing)
                 ss << "missing: " << count_missing << " ";
-            ss << "min: " << (double)min
+            ss << "min: " << to_num(min)
                << " avg: " << fixed << setprecision(2) << (double)avg
-               << " max: " << (double)max
+               << " max: " << resetiosflags(ios::fixed) << to_num(max)
                << ")";
             wibble_test_location.fail_test(ss.str());
         }
@@ -205,6 +215,36 @@ inline ActualMatrix2D<T> actual(const cumbac::Image<T>& actual) { return ActualM
 template<typename T>
 inline ActualVolume<T> actual(const cumbac::Volume<T>& actual) { return ActualVolume<T>(actual); }
 
+template<typename DATA, typename T>
+void print_stats(const std::string& name, const DATA& data, const T& missing, std::ostream& out)
+{
+    using namespace std;
+    ArrayStats<T> stats;
+    stats.fill(missing, data);
+    out << "wassert(actual(" << name << ").statsEqual"
+        << "(" << stats.count_missing
+        << ", " << to_num(stats.min) << ", "
+        << fixed << setprecision(2) << stats.avg
+        << resetiosflags(ios::fixed) << ", " << to_num(stats.max)
+        << "));" << endl;
+}
+
+template<typename DATA>
+void print_stats(const std::string& name, const DATA& data, std::ostream& out)
+{
+    using namespace std;
+    ArrayStats<typename DATA::Scalar> stats;
+    stats.fill(data);
+    out << "wassert(actual(" << name << ").statsEqual"
+        << "(" << to_num(stats.min) << ", "
+        << fixed << setprecision(2) << stats.avg
+        << resetiosflags(ios::fixed) << ", " << to_num(stats.max)
+        << "));" << endl;
+}
+
+void print_stats(const std::string& name, const cumbac::CUM_BAC& cb, std::ostream& out);
+void print_stats(const std::string& name, const cumbac::Cart& cart, std::ostream& out);
+void print_stats(const std::string& name, const cumbac::CartLowris& cart, std::ostream& out);
 
 }
 
