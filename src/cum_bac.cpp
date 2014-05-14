@@ -781,14 +781,11 @@ void CUM_BAC::leggo_first_level()
 //---------funzione che calcola la quota in metri del centro del fascio-----------------------
 //--------distanza=k*dimensionecella +semidimensionecella in metri ----------------------
 //--------quota=f(distinkm, rstinkm, elevazinrad) in metri
-float CUM_BAC::quota_f(float elevaz, int k) // quota funzione di elev(radianti) e range
+double CUM_BAC::quota_f(double elevaz, int k) // quota funzione di elev(radianti) e range
 {
-    float dist;
-    float q_st;
-    dist=k*(load_info.size_cell)+(load_info.size_cell)/2.;
-    q_st=(sqrt(pow(dist/1000.,2)+(rst*rst)+2.0*dist/1000.*rst*sin(elevaz))-rst)*1000.; /*quota in prop. standard da elevazione reale  */;
-
-    return q_st;
+    double dist = k * load_info.size_cell + load_info.size_cell / 2.;
+    // quota in prop. standard da elevazione reale
+    return (sqrt(pow(dist / 1000., 2) + (rst * rst) + 2.0 * dist / 1000. * rst * sin(elevaz)) - rst) * 1000.;
 }
 
 void CUM_BAC::ScrivoStatistica()
