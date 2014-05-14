@@ -72,7 +72,7 @@ void SP20Loader::load(const std::string& pathname)
     BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
 //    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
 
-    auto_ptr<Beams<unsigned char>> b(new Beams<unsigned char>);
+    unique_ptr<Beams<unsigned char>> b(new Beams<unsigned char>);
 
     /* Ciclo su tutti i raggi del volume */
     while (true)
