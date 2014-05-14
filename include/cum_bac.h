@@ -185,7 +185,7 @@ public:
     Image<unsigned char> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
     Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra
-    PolarScan <unsigned char> top;
+    Matrix2D<unsigned char> top;
     Image<unsigned char> topxy;
     Image<unsigned char> top_1x1;
 
@@ -225,6 +225,10 @@ public:
     bool test_file(int tipofile);
 
     void setup_elaborazione(const char* nome_file);
+
+    /// Resize and fill the top matrix
+    void compute_top();
+
     /**
      *
      *  @brief funzione che elabora il dato radar rimuovendo anaprop e beam blocking

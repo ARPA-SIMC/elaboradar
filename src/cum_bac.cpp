@@ -158,7 +158,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
       beam_blocking_1x1(CART_DIM_ZLR),
       dato_corr_xy(MyMAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
       elev_fin_xy(MyMAX_BIN*2), elev_fin_1x1(CART_DIM_ZLR),
-      qual(0), qual_Z_cart(MyMAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),top(MyMAX_BIN),
+      qual(0), qual_Z_cart(MyMAX_BIN*2), qual_Z_1x1(CART_DIM_ZLR),
       topxy(MyMAX_BIN*2), top_1x1(CART_DIM_ZLR),
       corr_cart(MyMAX_BIN*2), corr_1x1(CART_DIM_ZLR), neve_cart(MyMAX_BIN*2), neve_1x1(CART_DIM_ZLR),
       cappi(MyMAX_BIN),conv_cart(MyMAX_BIN*2), conv_1x1(CART_DIM_ZLR),
@@ -224,9 +224,29 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
     quota.resize(400, volume.max_beam_size());
     quota.fill(0);
 
+    compute_top();
+
     //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
     if (do_vpr) calcolo_vpr = new CalcoloVPR(*this);
     LOG_INFO(" End setup_elaborazione");
+}
+
+void CUM_BAC::compute_top()
+{
+    top.resize(400, volume.max_beam_size());
+    top.fill(0);
+    for (unsigned l=0; l<volume.size(); l++)
+    {
+        const auto& scan = volume.scan(l);
+        const auto& scan_info = load_info.scan(l);
+        for (int i=0; i<NUM_AZ_X_PPI; i++)
+        {
+            const double elevaz = scan_info.get_elevation_rad(i); //--- elev reale
+            for (unsigned k = 0; k < scan.beam_size; ++k)
+                if (scan.get(i, k) > SOGLIA_TOP)
+                    top(i, k) = (unsigned char)((quota_f(elevaz, k))/100.); //top in ettometri
+        }
+    }
 }
 
 bool CUM_BAC::test_file(int file_type)
@@ -998,12 +1018,7 @@ void CUM_BAC::caratterizzo_volume()
                     if(cl==0 && bb<BBMAX_VPR )   /*pongo le condizioni per individuare l'area visibile per calcolo VPR, riduco il bb ammesso (BBMAX_VPR=20)*/ //riveder.....?????
                         calcolo_vpr->flag_vpr->scan(l).set(i, k, 1);
                 }
-                //------------trovo il top per soglia
-                if (sample > SOGLIA_TOP)
-                    top(i, k)=(unsigned char)((quota_f(elevaz,k))/100.); //top in ettometri
-
             }
-
         }
     }
 
