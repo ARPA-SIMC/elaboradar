@@ -3,7 +3,6 @@
 
 #include <wibble/tests.h>
 #include <volume.h>
-#include <iomanip>
 
 namespace cumbac {
 struct Cart;
@@ -116,27 +115,33 @@ int avg(const cumbac::Matrix2D<T>& m)
 }
 
 template<typename T> inline T to_num(const T& val) { return val; }
+inline double to_num(const double& val) { return round(val * 100.0) / 100.0; }
+inline float to_num(const float& val) { return round(val * 100.0) / 100.0; }
 inline unsigned to_num(const unsigned char& val) { return val; }
 inline int to_num(const char& val) { return val; }
 
-template<typename DATA, typename T>
+template<typename T> inline bool approx_equals(const T& v1, const T& v2) { return v1 == v2; }
+inline bool approx_equals(const double& v1, const double& v2) { return round(v1 * 100) == round(v2 * 100); }
+
+template<typename DATA>
 struct TestStatsEqual
 {
+    typedef typename DATA::Scalar Scalar;
     const DATA& matrix;
     bool has_missing = false;
+    Scalar missing;
     unsigned count_missing = 0;
-    T missing;
-    T min;
+    Scalar min;
     double avg;
-    T max;
+    Scalar max;
 
-    TestStatsEqual(const DATA& actual, T min, double avg, T max)
+    TestStatsEqual(const DATA& actual, Scalar min, double avg, Scalar max)
         : matrix(actual), min(min), avg(avg), max(max)
     {
     }
 
-    TestStatsEqual(const DATA& actual, unsigned count_missing, T missing, T min, double avg, T max)
-        : matrix(actual), count_missing(count_missing), missing(missing), min(min), avg(avg), max(max)
+    TestStatsEqual(const DATA& actual, Scalar missing, unsigned count_missing, Scalar min, double avg, Scalar max)
+        : matrix(actual), has_missing(true), missing(missing), count_missing(count_missing), min(min), avg(avg), max(max)
     {
     }
 
@@ -145,7 +150,7 @@ struct TestStatsEqual
         using namespace wibble::tests;
         using namespace std;
 
-        ArrayStats<T> stats;
+        ArrayStats<Scalar> stats;
         bool failed = false;
         if (has_missing)
         {
@@ -154,9 +159,9 @@ struct TestStatsEqual
                 failed = true;
         } else
             stats.fill(matrix);
-        if (stats.min != min) failed = true;
-        if (stats.max != max) failed = true;
-        if (round(stats.avg * 100) != round(avg*100)) failed = true;
+        if (!approx_equals(stats.min, min)) failed = true;
+        if (!approx_equals(stats.max, max)) failed = true;
+        if (!approx_equals(stats.avg, avg)) failed = true;
 
         if (failed)
         {
@@ -165,14 +170,14 @@ struct TestStatsEqual
             if (has_missing)
                 ss << "missing: " << stats.count_missing << " ";
             ss << "min: " << to_num(stats.min)
-               << " avg: " << fixed << setprecision(2) << (double)stats.avg
-               << " max: " << resetiosflags(ios::fixed) << to_num(stats.max)
+               << " avg: " << to_num(stats.avg)
+               << " max: " << to_num(stats.max)
                << ") differ from expected (";
             if (has_missing)
                 ss << "missing: " << count_missing << " ";
             ss << "min: " << to_num(min)
-               << " avg: " << fixed << setprecision(2) << (double)avg
-               << " max: " << resetiosflags(ios::fixed) << to_num(max)
+               << " avg: " << to_num(avg)
+               << " max: " << to_num(max)
                << ")";
             wibble_test_location.fail_test(ss.str());
         }
@@ -185,9 +190,9 @@ struct ActualMatrix2D : public wibble::tests::Actual<const cumbac::Matrix2D<T>&>
     using wibble::tests::Actual<const cumbac::Matrix2D<T>&>::Actual;
 
     template<typename... args>
-    TestStatsEqual<cumbac::Matrix2D<T>, T> statsEqual(args&&... params) const
+    TestStatsEqual<cumbac::Matrix2D<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<cumbac::Matrix2D<T>, T>(this->actual, params...);
+        return TestStatsEqual<cumbac::Matrix2D<T>>(this->actual, params...);
     }
 };
 
@@ -197,9 +202,9 @@ struct ActualVolume : public wibble::tests::Actual<const cumbac::Volume<T>&>
     using wibble::tests::Actual<const cumbac::Volume<T>&>::Actual;
 
     template<typename... args>
-    TestStatsEqual<cumbac::Volume<T>, T> statsEqual(args&&... params) const
+    TestStatsEqual<cumbac::Volume<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<cumbac::Volume<T>, T>(this->actual, params...);
+        return TestStatsEqual<cumbac::Volume<T>>(this->actual, params...);
     }
 };
 
@@ -223,9 +228,9 @@ void print_stats(const std::string& name, const DATA& data, const T& missing, st
     stats.fill(missing, data);
     out << "wassert(actual(" << name << ").statsEqual"
         << "(" << stats.count_missing
-        << ", " << to_num(stats.min) << ", "
-        << fixed << setprecision(2) << stats.avg
-        << resetiosflags(ios::fixed) << ", " << to_num(stats.max)
+        << ", " << to_num(stats.min)
+        << ", " << to_num(stats.avg)
+        << ", " << to_num(stats.max)
         << "));" << endl;
 }
 
@@ -236,9 +241,9 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
     ArrayStats<typename DATA::Scalar> stats;
     stats.fill(data);
     out << "wassert(actual(" << name << ").statsEqual"
-        << "(" << to_num(stats.min) << ", "
-        << fixed << setprecision(2) << stats.avg
-        << resetiosflags(ios::fixed) << ", " << to_num(stats.max)
+        << "(" << to_num(stats.min)
+        << ", " << to_num(stats.avg)
+        << ", " << to_num(stats.max)
         << "));" << endl;
 }
 

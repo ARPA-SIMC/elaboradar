@@ -1093,6 +1093,7 @@ void CalcoloVPR::classifica_rain()
 
 
     x_size=(xmax-xmin)/RES_HOR_CIL; //dimensione orizzontale
+    // FIXME: usiamo volume.max_beam_size invece di MyMAX_BIN?
     if (x_size > MyMAX_BIN) x_size=MyMAX_BIN;
     z_size=(zmax-zmin)/RES_VERT_CIL; //dimensione verticale
 
@@ -2196,7 +2197,12 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
 
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
-    : cum_bac(cum_bac), area_vpr(NMAXLAYER, 0), vpr(NMAXLAYER, NODATAVPR), corr_polar(MAX_BIN), neve(MAX_BIN), flag_vpr(0)
+    : cum_bac(cum_bac),
+      area_vpr(NMAXLAYER, 0),
+      vpr(NMAXLAYER, NODATAVPR),
+      corr_polar(cum_bac.volume.max_beam_size()),
+      neve(cum_bac.volume.max_beam_size()),
+      flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
     MyMAX_BIN=cum_bac.MyMAX_BIN;
