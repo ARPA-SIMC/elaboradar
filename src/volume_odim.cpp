@@ -81,8 +81,8 @@ void ODIMLoader::load(const std::string& pathname)
 
     if (load_info) load_info->filename = pathname;
 
-    auto_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
-    auto_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
+    unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
+    unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
     if (load_info) load_info->acq_date = volume->getDateTime();
 
@@ -105,7 +105,7 @@ void ODIMLoader::load(const std::string& pathname)
     unsigned scan_count = int_to_unsigned(volume->getScanCount(), "scan count");
     for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
     {
-        auto_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
+        unique_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
 
         // Read and and validate resolution information
@@ -122,7 +122,7 @@ void ODIMLoader::load(const std::string& pathname)
         }
 
         // Pick the best quantity among the ones available
-        auto_ptr<odim::PolarScanData> data;
+        unique_ptr<odim::PolarScanData> data;
         if (scan->hasQuantityData(odim::PRODUCT_QUANTITY_DBZH))
             data.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_DBZH));
         else if (scan->hasQuantityData(odim::PRODUCT_QUANTITY_TH))
@@ -188,8 +188,8 @@ void ODIMLoader::load(const std::string& pathname)
         data->readTranslatedData(matrix); // 1)
       //  data->readData(const_cast<unsigned short*>(matrix.get()));
         // define containe for VRAD adnd WRAD
-        auto_ptr<odim::PolarScanData> VRAD;
-        auto_ptr<odim::PolarScanData> WRAD;
+        unique_ptr<odim::PolarScanData> VRAD;
+        unique_ptr<odim::PolarScanData> WRAD;
         odim::RayMatrix<double> VRAD_matrix;
         odim::RayMatrix<double> WRAD_matrix;
         double bin_wind_magic_number= 0;
@@ -233,7 +233,7 @@ std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
            if (clean) {
 //std::cout<<"PASSO PER IL CLEANER - Raggio "<<src_az<<std::endl;
              BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
-             auto_ptr<Beams<double>> b(new Beams<double>);
+             unique_ptr<Beams<double>> b(new Beams<double>);
              for (unsigned i = 0; i < beam_size; ++i){
                         b->data_z[i]=matrix.elem(src_az,i);         
                         b->data_v[i]=VRAD_matrix.elem(src_az,i);         
