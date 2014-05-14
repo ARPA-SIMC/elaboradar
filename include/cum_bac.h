@@ -329,7 +329,7 @@ public:
      * @param[in] k distanza in n0 bin
      * @return q_st quota standard
      */
-    float quota_f(float elevaz, int k);
+    double quota_f(double elevaz, int k);
     void conversione_convettiva();
     bool esegui_tutto(const char* nome_file, int file_type);
 // added function to calculate beamblocking correction
