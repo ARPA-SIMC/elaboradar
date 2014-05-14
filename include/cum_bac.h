@@ -169,7 +169,7 @@ public:
     PolarScan <float> dem; /*dem in coordinate azimut range*/
 
     // attenuazione in formato cartesiano max risoluzione
-    PolarScan <unsigned char> att_cart; /* matrice azimut-range di attenuazione */
+    //PolarScan <unsigned char> att_cart; /* matrice azimut-range di attenuazione */
     //quota centro fascio polare, cartesiana max risoluzione e cartesiana 1x1
     //PolarScan <unsigned short> quota_rel; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
     Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
