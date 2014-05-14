@@ -1,35 +1,30 @@
 #ifndef ARCHIVIATORE_TEST_UTILS_CLASS_H
 #define ARCHIVIATORE_TEST_UTILS_CLASS_H
 
+#include <wibble/tests.h>
 #include <volume.h>
+#include <iomanip>
 
 namespace testradar {
 
 template<typename T>
 struct ArrayStats
 {
-    bool first = true;
+    bool all_missing = false;
     T min = 0;
     T max = 0;
     double avg = 0;
-    unsigned count_zeros = 0;
-    unsigned count_ones = 0;
+    unsigned count_missing = 0;
 
     ArrayStats() {}
 
     void count_sample(const T& sample, unsigned item_count)
     {
-        if (sample == 0)
-            ++count_zeros;
-        else if (sample == 1)
-            ++count_ones;
-
-        if (first)
+        if (all_missing)
         {
             min = sample;
             max = sample;
-            avg = (double)min / item_count;
-            first = false;
+            all_missing = false;
         }
         else
         {
@@ -37,9 +32,18 @@ struct ArrayStats
                 min = sample;
             if (sample > max)
                 max = sample;
-            avg += (double)sample / item_count;
         }
+        avg += (double)sample / item_count;
     }
+
+    void count_sample(const T& missing, const T& sample, unsigned item_count)
+    {
+        if (sample == missing)
+            ++count_missing;
+        else
+            count_sample(sample, item_count);
+    }
+
 
     void fill(const T* arr, unsigned size)
     {
@@ -49,38 +53,43 @@ struct ArrayStats
 
     void fill(const cumbac::Matrix2D<T>& arr)
     {
-        for (int i = 0; i < arr.rows() * arr.cols(); ++i)
-            this->count_sample(arr.data()[i], arr.rows() * arr.cols());
-    }
-
-    void fill(const cumbac::PolarScan<T>& arr)
-    {
-        for (int i = 0; i < arr.rows() * arr.cols(); ++i)
-            this->count_sample(arr.data()[i], arr.rows() * arr.cols());
+        this->fill(arr.data(), arr.size());
     }
 
     void fill(const cumbac::Volume<T>& vol)
     {
+        unsigned nsamples = 0;
         for (unsigned i = 0; i < vol.size(); ++i)
-            fill(vol.scan(i));
+            nsamples += vol.scan(i).size();
+
+        for (unsigned i = 0; i < vol.size(); ++i)
+            for (size_t j = 0; j < vol.scan(i).size(); ++j)
+                this->count_sample(vol.scan(i).data()[j], nsamples);
     }
 
-    template<int A, int B>
-    void fill2(const T (&arr)[A][B])
+
+    void fill(const T& missing, const T* arr, unsigned size)
     {
-        for (int i = 0; i < A; ++i)
-            for (int j = 0; j < B; ++j)
-                this->count_sample(arr[i][j], A * B);
+        for (unsigned i = 0; i < size; ++i)
+            this->count_sample(missing, arr[i], size);
     }
 
-    template<int A, int B, int C>
-    void fill3(const T (&arr)[A][B][C])
+    void fill(const T& missing, const cumbac::Matrix2D<T>& arr)
     {
-        for (int i = 0; i < A; ++i)
-            for (int j = 0; j < B; ++j)
-                for (int k = 0; k < C; ++k)
-                    this->count_sample(arr[i][j][k], A * B * C);
+        this->fill(missing, arr.data(), arr.size());
     }
+
+    void fill(const T& missing, const cumbac::Volume<T>& vol)
+    {
+        unsigned nsamples = 0;
+        for (unsigned i = 0; i < vol.size(); ++i)
+            nsamples += vol.scan(i).size();
+
+        for (unsigned i = 0; i < vol.size(); ++i)
+            for (size_t j = 0; j < vol.scan(i).size(); ++j)
+                this->count_sample(missing, vol.scan(i).data()[j], nsamples);
+    }
+
 
     void print()
     {
@@ -99,6 +108,103 @@ int avg(const cumbac::Matrix2D<T>& m)
         mean += (double)m.data()[i] / size;
     return round(mean);
 }
+
+template<typename DATA, typename T>
+struct TestStatsEqual
+{
+    const DATA& matrix;
+    bool has_missing = false;
+    unsigned count_missing = 0;
+    T missing;
+    T min;
+    double avg;
+    T max;
+
+    TestStatsEqual(const DATA& actual, T min, double avg, T max)
+        : matrix(actual), min(min), avg(avg), max(max)
+    {
+    }
+
+    TestStatsEqual(const DATA& actual, unsigned count_missing, T missing, T min, double avg, T max)
+        : matrix(actual), count_missing(count_missing), missing(missing), min(min), avg(avg), max(max)
+    {
+    }
+
+    void check(WIBBLE_TEST_LOCPRM) const
+    {
+        using namespace wibble::tests;
+        using namespace std;
+
+        ArrayStats<T> stats;
+        bool failed = false;
+        if (has_missing)
+        {
+            stats.fill(missing, matrix);
+            if (stats.count_missing != count_missing)
+                failed = true;
+        } else
+            stats.fill(matrix);
+        if (stats.min != min) failed = true;
+        if (stats.max != max) failed = true;
+        if (round(stats.avg * 100) != round(avg*100)) failed = true;
+
+        if (failed)
+        {
+            std::stringstream ss;
+            ss << "stats (";
+            if (has_missing)
+                ss << "missing: " << stats.count_missing << " ";
+            ss << "min: " << (double)stats.min
+               << " avg: " << fixed << setprecision(2) << (double)stats.avg
+               << " max: " << (double)stats.max
+               << ") differ from expected (";
+            if (has_missing)
+                ss << "missing: " << count_missing << " ";
+            ss << "min: " << (double)min
+               << " avg: " << fixed << setprecision(2) << (double)avg
+               << " max: " << (double)max
+               << ")";
+            wibble_test_location.fail_test(ss.str());
+        }
+    }
+};
+
+template<typename T>
+struct ActualMatrix2D : public wibble::tests::Actual<const cumbac::Matrix2D<T>&>
+{
+    using wibble::tests::Actual<const cumbac::Matrix2D<T>&>::Actual;
+
+    template<typename... args>
+    TestStatsEqual<cumbac::Matrix2D<T>, T> statsEqual(args&&... params) const
+    {
+        return TestStatsEqual<cumbac::Matrix2D<T>, T>(this->actual, params...);
+    }
+};
+
+template<typename T>
+struct ActualVolume : public wibble::tests::Actual<const cumbac::Volume<T>&>
+{
+    using wibble::tests::Actual<const cumbac::Volume<T>&>::Actual;
+
+    template<typename... args>
+    TestStatsEqual<cumbac::Volume<T>, T> statsEqual(args&&... params) const
+    {
+        return TestStatsEqual<cumbac::Volume<T>, T>(this->actual, params...);
+    }
+};
+
+template<typename T>
+inline ActualMatrix2D<T> actual(const cumbac::Matrix2D<T>& actual) { return ActualMatrix2D<T>(actual); }
+
+template<typename T>
+inline ActualMatrix2D<T> actual(const cumbac::PolarScan<T>& actual) { return ActualMatrix2D<T>(actual); }
+
+template<typename T>
+inline ActualMatrix2D<T> actual(const cumbac::Image<T>& actual) { return ActualMatrix2D<T>(actual); }
+
+template<typename T>
+inline ActualVolume<T> actual(const cumbac::Volume<T>& actual) { return ActualVolume<T>(actual); }
+
 
 }
 

@@ -78,33 +78,16 @@ void to::test<1>()
 
     cb->caratterizzo_volume();
 
-    ArrayStats<unsigned char> qual_stats;
-    qual_stats.fill(*cb->qual);
-    wassert(actual((unsigned)qual_stats.first).isfalse());
-    wassert(actual((unsigned)qual_stats.min) == 1);
-    wassert(actual((unsigned)qual_stats.max) == 99);
-    wassert(actual((unsigned)(qual_stats.avg * 100)) == 33038);
-
-    ArrayStats<unsigned char> vpr_stats;
-    vpr_stats.fill(*cb->calcolo_vpr->flag_vpr);
-    wassert(actual((unsigned)vpr_stats.first).isfalse());
-    wassert(actual((unsigned)vpr_stats.min) == 0);
-    wassert(actual((unsigned)vpr_stats.max) == 1);
-    wassert(actual((unsigned)(vpr_stats.avg * 100)) == 527);
-
-    ArrayStats<unsigned char> top_stats;
-    top_stats.fill(cb->top);
-    wassert(actual((unsigned)top_stats.first).isfalse());
-    wassert(actual((unsigned)top_stats.min) == 0);
-    wassert(actual((unsigned)top_stats.max) == 15);
-    wassert(actual((unsigned)(top_stats.avg * 100)) == 0);
+    wassert(actual(*cb->qual).statsEqual(0, 55.06, 99));
+    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.88, 1));
+    wassert(actual(cb->top).statsEqual(0, 0.01, 15));
 
     cb->calcolo_vpr->classifica_rain();
 
     /*
     ArrayStats<unsigned char> stratiform_stats;
     stratiform_stats.fill(cb->calcolo_vpr->stratiform);
-    wassert(actual((unsigned)stratiform_stats.first).isfalse());
+    wassert(actual((unsigned)stratiform_stats.all_missing).isfalse());
     wassert(actual((unsigned)stratiform_stats.min) == 0);
     wassert(actual((unsigned)stratiform_stats.max) == 1);
     wassert(actual((unsigned)(stratiform_stats.avg * 100)) == 0);
@@ -205,34 +188,14 @@ void to::test<3>()
     // out qual
     // out flag_vpr
     // out top
-    ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill(*cb->qual);
-    wassert(actual((unsigned)stats_qual.first).isfalse());
-    //wassert(actual((unsigned)stats_qual.count_zeros) == 1886400);
-    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 141695);
-    wassert(actual((unsigned)stats_qual.min) == 1);
-    wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 33042);
-    ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
-    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143635);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1041965);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 527);
-    ArrayStats<unsigned char> stats_top;
-    stats_top.fill(cb->top);
-    wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 204765);
-    wassert(actual((unsigned)stats_top.count_ones) == 0);
-    wassert(actual((unsigned)stats_top.min) == 0);
-    wassert(actual((unsigned)stats_top.max) == 15);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 0);
+    wassert(actual(*cb->qual).statsEqual(0, 55.07, 99));
+    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.88, 1));
+    //wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 143635, 0, 5.27, 10));
+    wassert(actual(cb->top).statsEqual(0, 0.01, 15));
+    //wassert(actual(cb->top).statsEqual(0, 204765, 1, 0, 15));
 
     cb->creo_cart();
-    wassert(actual((unsigned)cb->cart.minCoeff()) == 0);
-    wassert(actual(avg(cb->cart)) == 1);
-    wassert(actual((unsigned)cb->cart.maxCoeff()) == 227);
+    wassert(actual(cb->cart).statsEqual(0, 0, 1, 1, 227));
     wassert(actual(cb->cartm.minCoeff()) == 0);
     wassert(actual(cb->cartm.maxCoeff()) == 0);
     wassert(actual((unsigned)cb->topxy.minCoeff()) == 0);
@@ -320,28 +283,9 @@ LOG_INFO ("Chiamo elabora_dato");
 LOG_INFO("Chiamo caratterizzo volumi");
 
     cb->caratterizzo_volume();
-    ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill(*cb->qual);
-    wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 141553);
-    wassert(actual((unsigned)stats_qual.min) == 1);
-    wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 33051);
-    ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
-    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143320);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1042280);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 527);
-    ArrayStats<unsigned char> stats_top;
-    stats_top.fill(cb->top);
-    wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 203211);
-    wassert(actual((unsigned)stats_top.count_ones) == 4);
-    wassert(actual((unsigned)stats_top.min) == 0);
-    wassert(actual((unsigned)stats_top.max) == 36);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 10);
+    wassert(actual(*cb->qual).statsEqual(0, 0, 1, 330.51, 99));
+    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 143320, 1, 5.27, 10));
+    wassert(actual(cb->top).statsEqual(/*203211, 4,*/ 0, 0.1, 36));
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
@@ -450,28 +394,9 @@ unlink("LAST_VPR");
     cb->elabora_dato();
 
     cb->caratterizzo_volume();
-    ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill(*cb->qual);
-    wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 141553);
-    wassert(actual((unsigned)stats_qual.min) == 1);
-    wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 33052);
-    ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
-    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 143320);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1042280);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 527);
-    ArrayStats<unsigned char> stats_top;
-    stats_top.fill(cb->top);
-    wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 204764);
-    wassert(actual((unsigned)stats_top.count_ones) == 0);
-    wassert(actual((unsigned)stats_top.min) == 0);
-    wassert(actual((unsigned)stats_top.max) == 15);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 0);
+    wassert(actual(*cb->qual).statsEqual(0, 0, 1, 330.52, 99));
+    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 143320, 1, 5.27, 10));
+    wassert(actual(cb->top).statsEqual(0, 204764, 2, 0, 15));
 
     cb->calcolo_vpr->classifica_rain();
 
@@ -633,48 +558,42 @@ void to::test<6>()
     wassert(actual(stats.sum_others[3]) == 10553141);
     wassert(actual(stats.sum_others[4]) ==  9141377);
 
-    ArrayStats<unsigned char> beam_blocking_stats;
-    beam_blocking_stats.fill(cb->beam_blocking);
-//    beam_blocking_stats.print();
-    wassert(actual((unsigned)beam_blocking_stats.first).isfalse());
-    wassert(actual((unsigned)beam_blocking_stats.min) == 0);
-    wassert(actual((unsigned)beam_blocking_stats.max) == 51);
-    wassert(actual((unsigned)(beam_blocking_stats.avg * 100)) == 1349);
+    wassert(actual(cb->beam_blocking).statsEqual(0, 13.49, 51));
 
     unsigned stats_size = cb->grid_stats.size_az * cb->grid_stats.size_beam;
 
     ArrayStats<unsigned> stat_anap_stats;
     stat_anap_stats.fill(cb->grid_stats.stat_anap, stats_size);
 //    stat_anap_stats.print();
-    wassert(actual((unsigned)stat_anap_stats.first).isfalse());
+    wassert(actual((unsigned)stat_anap_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
     wassert(actual((unsigned)stat_anap_stats.max) == 75);
 
     ArrayStats<unsigned> stat_anap_tot_stats;
     stat_anap_tot_stats.fill(cb->grid_stats.stat_tot, stats_size);
 //    stat_anap_tot_stats.print();
-    wassert(actual((unsigned)stat_anap_tot_stats.first).isfalse());
+    wassert(actual((unsigned)stat_anap_tot_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_tot_stats.min) ==  0);
     wassert(actual((unsigned)stat_anap_tot_stats.max) == 1000);
 
     ArrayStats<unsigned> stat_bloc_stats;
     stat_bloc_stats.fill(cb->grid_stats.stat_bloc, stats_size);
 //    stat_bloc_stats.print();
-    wassert(actual((unsigned)stat_bloc_stats.first).isfalse());
+    wassert(actual((unsigned)stat_bloc_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_bloc_stats.min) == 0);
     wassert(actual((unsigned)stat_bloc_stats.max) == 0);
 
     ArrayStats<unsigned> stat_elev_stats;
     stat_elev_stats.fill(cb->grid_stats.stat_elev, stats_size);
 //    stat_elev_stats.print();
-    wassert(actual((unsigned)stat_elev_stats.first).isfalse());
+    wassert(actual((unsigned)stat_elev_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
     wassert(actual((unsigned)stat_elev_stats.max) == 75);
 
     ArrayStats<unsigned char> dato_corrotto_stats;
     dato_corrotto_stats.fill(cb->dato_corrotto);
 //    dato_corrotto_stats.print();
-    wassert(actual((unsigned)dato_corrotto_stats.first).isfalse());
+    wassert(actual((unsigned)dato_corrotto_stats.all_missing).isfalse());
     wassert(actual((unsigned)dato_corrotto_stats.min) == 0);
     wassert(actual((unsigned)dato_corrotto_stats.max) == 1);
 
@@ -682,33 +601,17 @@ void to::test<6>()
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
-    ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill(*cb->qual);
-//    stats_qual.print();
-    wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 162599);
-    wassert(actual((unsigned)stats_qual.min) == 1);
-    wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 68792);
+    wassert(actual(*cb->qual).statsEqual(1, 687.92, 99));
+    //wassert(actual((unsigned)stats_qual.count_zeros) == 0);
+    //wassert(actual((unsigned)stats_qual.count_ones) == 162599);
 
-    ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
-//    stats_flag_vpr.print();
-    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 167079);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1650521);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 1018);
+    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 10.18, 42.0));
+    //wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 167079);
+    //wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1650521);
 
-    ArrayStats<unsigned char> stats_top;
-    stats_top.fill(cb->top);
-//    stats_top.print();
-    wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 112778);
-    wassert(actual((unsigned)stats_top.count_ones) == 159);
-    wassert(actual((unsigned)stats_top.min) == 0);
-    wassert(actual((unsigned)stats_top.max) == 76);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 554);
+    wassert(actual(cb->top).statsEqual(0, 55.4, 76));
+    //wassert(actual((unsigned)stats_top.count_zeros) == 112778);
+    //wassert(actual((unsigned)stats_top.count_ones) == 159);
 
     cb->creo_cart();
 
@@ -1161,7 +1064,7 @@ void to::test<10>()
     ArrayStats<unsigned char> beam_blocking_stats;
     beam_blocking_stats.fill(cb->beam_blocking);
 //    beam_blocking_stats.print();
-    wassert(actual((unsigned)beam_blocking_stats.first).isfalse());
+    wassert(actual((unsigned)beam_blocking_stats.all_missing).isfalse());
     wassert(actual((unsigned)beam_blocking_stats.min) == 0);
     wassert(actual((unsigned)beam_blocking_stats.max) == 51);
     wassert(actual((unsigned)(beam_blocking_stats.avg * 100)) == 1349);
@@ -1171,38 +1074,32 @@ void to::test<10>()
     ArrayStats<unsigned> stat_anap_stats;
     stat_anap_stats.fill(cb->grid_stats.stat_anap, stats_size);
 //    stat_anap_stats.print();
-    wassert(actual((unsigned)stat_anap_stats.first).isfalse());
+    wassert(actual((unsigned)stat_anap_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
     wassert(actual((unsigned)stat_anap_stats.max) == 75);
 
     ArrayStats<unsigned> stat_anap_tot_stats;
     stat_anap_tot_stats.fill(cb->grid_stats.stat_tot, stats_size);
 //    stat_anap_tot_stats.print();
-    wassert(actual((unsigned)stat_anap_tot_stats.first).isfalse());
+    wassert(actual((unsigned)stat_anap_tot_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_tot_stats.min) ==  0);
     wassert(actual((unsigned)stat_anap_tot_stats.max) == 1000);
 
     ArrayStats<unsigned> stat_bloc_stats;
     stat_bloc_stats.fill(cb->grid_stats.stat_bloc, stats_size);
 //    stat_bloc_stats.print();
-    wassert(actual((unsigned)stat_bloc_stats.first).isfalse());
+    wassert(actual((unsigned)stat_bloc_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_bloc_stats.min) == 0);
     wassert(actual((unsigned)stat_bloc_stats.max) == 0);
 
     ArrayStats<unsigned> stat_elev_stats;
     stat_elev_stats.fill(cb->grid_stats.stat_elev, stats_size);
 //    stat_elev_stats.print();
-    wassert(actual((unsigned)stat_elev_stats.first).isfalse());
+    wassert(actual((unsigned)stat_elev_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
     wassert(actual((unsigned)stat_elev_stats.max) == 75);
 
-    ArrayStats<unsigned char> dato_corrotto_stats;
-    dato_corrotto_stats.fill(cb->dato_corrotto);
-//    dato_corrotto_stats.print();
-    wassert(actual((unsigned)dato_corrotto_stats.first).isfalse());
-    wassert(actual((unsigned)dato_corrotto_stats.min) == 0);
-    wassert(actual((unsigned)dato_corrotto_stats.max) == 1);
-
+    wassert(actual(cb->dato_corrotto).statsEqual(0, 0, 1));
 
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -1210,9 +1107,9 @@ void to::test<10>()
     ArrayStats<unsigned char> stats_qual;
     stats_qual.fill(*cb->qual);
 //    stats_qual.print();
-    wassert(actual((unsigned)stats_qual.first).isfalse());
-    wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    wassert(actual((unsigned)stats_qual.count_ones) == 162599);
+    wassert(actual((unsigned)stats_qual.all_missing).isfalse());
+    //wassert(actual((unsigned)stats_qual.count_zeros) == 0);
+    //wassert(actual((unsigned)stats_qual.count_ones) == 162599);
     wassert(actual((unsigned)stats_qual.min) == 1);
     wassert(actual((unsigned)stats_qual.max) == 99);
     wassert(actual((unsigned)(stats_qual.avg * 100)) == 68792);
@@ -1220,20 +1117,14 @@ void to::test<10>()
     ArrayStats<unsigned char> stats_flag_vpr;
     stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
 //    stats_flag_vpr.print();
-    wassert(actual((unsigned)stats_flag_vpr.first).isfalse());
-    wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 167079);
-    wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1650521);
+    wassert(actual((unsigned)stats_flag_vpr.all_missing).isfalse());
+    //wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 167079);
+    //wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1650521);
     wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 1018);
 
-    ArrayStats<unsigned char> stats_top;
-    stats_top.fill(cb->top);
-//    stats_top.print();
-    wassert(actual((unsigned)stats_top.first).isfalse());
-    wassert(actual((unsigned)stats_top.count_zeros) == 112778);
-    wassert(actual((unsigned)stats_top.count_ones) == 159);
-    wassert(actual((unsigned)stats_top.min) == 0);
-    wassert(actual((unsigned)stats_top.max) == 76);
-    wassert(actual((unsigned)(stats_top.avg * 100)) == 554);
+    wassert(actual(cb->top).statsEqual(0, 55.4, 76));
+    //wassert(actual((unsigned)stats_top.count_zeros) == 112778);
+    //wassert(actual((unsigned)stats_top.count_ones) == 159);
 
     cb->creo_cart();
 
