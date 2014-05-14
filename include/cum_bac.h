@@ -107,6 +107,8 @@ struct GridStats
 };
 
 struct CalcoloVPR;
+struct Cart;
+struct CartLowris;
 
 class CUM_BAC
 {
@@ -144,9 +146,6 @@ public:
       Variabili globali
       ------------------------------------------------------------*/
 
-    // vol_pol riportato in cartesiano
-    Image<unsigned char> cart;
-    Image<double> cartm;  /* Z media dei bins adiacenti al punto */
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
     Image<unsigned char> z_out;
 
@@ -169,40 +168,30 @@ public:
     PolarScan <float> dem; /*dem in coordinate azimut range*/
 
     Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
-    Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
     Image<unsigned char> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
     //beam blocking cartesiano max resol e 1x1
-    Image<unsigned char> beam_blocking_xy; //beamblocking cartesiano max resol
     Image<unsigned char> beam_blocking_1x1;//beam blocking cartesiano 1x1
     //uscite anaprop
     Matrix2D<unsigned char> dato_corrotto; /*uscita controllo anaprop in coordinate azimut range */
-    Image<unsigned char> dato_corr_xy; //uscite anap  cartesiano max resol
     Image<unsigned char> dato_corr_1x1; //uscite anap cartesiano  1x1
-    Image<unsigned char> elev_fin_xy;
     Image<unsigned char> elev_fin_1x1;
     // metrici qualita' come sopra
     Volume<unsigned char>* qual; // qualita volume polare
-    Image<unsigned char> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
     Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra
     Matrix2D<unsigned char> top;
-    Image<unsigned char> topxy;
     Image<unsigned char> top_1x1;
 
     // uscite  vpr: correzione VPR , come sopra
-    Image<unsigned char> corr_cart;
     Image<unsigned char> corr_1x1;
     // uscite vpr: neve, come sopra
-    Image<unsigned char> neve_cart;/* neve formato 1024*1024, risoluzione minima */
     Image<unsigned char> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
 
     //matrici per classificazione: cappi
     PolarScan <unsigned char> cappi;
     // uscite: matrici class max resol e 1x1
-    Image<unsigned char> conv_cart;
     Image<unsigned char> conv_1x1;
     //uscite:matrici cappi max resol e 1x1
-    Image<unsigned char> cappi_cart;
     Image<unsigned char> cappi_1x1;
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
@@ -278,14 +267,6 @@ public:
      *  @return non ritorna nulla
      */
     void leggo_first_level();
-    /**
-     *  conversione da polare a cartesiano alta risoluzione
-     *
-     *  @brief funzione che crea l'output cartesiano dal polare
-     *  @details cicla sui quadranti e su i e j, usando il range e l'azimut ottenuti tramite la funzione creo_matrice_conv()
-     *  @return 
-     */
-    void creo_cart();
 
     /**
      *  funzioni di conversione cartesiana:associa a pixel matrice alta ris
@@ -302,7 +283,7 @@ public:
      *  @details prende il massimo tra i punti considerati, il passo di ricerca è ZLR_N_ELEMENTARY_PIXEL, cioè il rapporto tra dimensioni ad alta risoluzione e le dimensioni bassa risoluzione.
      *  @return
      */
-    void creo_cart_z_lowris();
+    void creo_cart_z_lowris(const Cart& c);
 
     /**
      * funzione di scrittura matrici output binario
@@ -477,6 +458,36 @@ struct CalcoloVPR
     int stampa_vpr();
 
     void esegui_tutto();
+};
+
+struct Cart
+{
+    const unsigned max_bin;
+
+    // vol_pol riportato in cartesiano
+    Image<unsigned char> cart;
+    Image<unsigned char> beam_blocking_xy; //beamblocking cartesiano max resol
+    Image<unsigned char> dato_corr_xy; //uscite anap  cartesiano max resol
+    Image<unsigned char> elev_fin_xy;
+    Image<unsigned char> topxy;
+    Image<unsigned char> qual_Z_cart; /* qualita della Z in formato 1024*1024, risoluzione minima */
+    Image<unsigned char> corr_cart;
+    Image<unsigned char> neve_cart;/* neve formato 1024*1024, risoluzione minima */
+    Image<unsigned char> conv_cart;
+    Image<unsigned char> cappi_cart;
+    Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
+    Image<double> cartm;  /* Z media dei bins adiacenti al punto */
+
+    Cart(unsigned max_bin);
+
+    /**
+     *  conversione da polare a cartesiano alta risoluzione
+     *
+     *  @brief funzione che crea l'output cartesiano dal polare
+     *  @details cicla sui quadranti e su i e j, usando il range e l'azimut ottenuti tramite la funzione creo_matrice_conv()
+     *  @return 
+     */
+    void creo_cart(const CUM_BAC& cb);
 };
 
 // Utility functions
