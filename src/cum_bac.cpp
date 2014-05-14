@@ -153,7 +153,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
       elev_fin(volume, load_info),
       calcolo_vpr(0), cart(MyMAX_BIN*2), cartm(MyMAX_BIN*2), z_out(CART_DIM_ZLR),
       first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
-      bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN), // att_cart(MyMAX_BIN),
+      bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN),
       quota_cart(MyMAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MyMAX_BIN*2),
       beam_blocking_1x1(CART_DIM_ZLR),
       dato_corr_xy(MyMAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
@@ -702,7 +702,6 @@ void CUM_BAC::elabora_dato()
                 const float elevaz = elev_fin.elevation_rad_at_elev_preci(i, k);
                 // elev_fin[i][k]=first_level_static(i, k);//da togliere
                 quota(i, k)=(unsigned short)(quota_f(elevaz,k));
-                //quota_rel(i, k)=(unsigned short)(hray[k][elev_fin[i][k]]-dem(i, k));/*quota sul suolo in m con elev nominale e prop da radiosondaggio (v. programma bloc_grad.f90)*/
             }
         }
     }
@@ -950,7 +949,6 @@ void CUM_BAC::caratterizzo_volume()
 
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                //if (l == elev_fin[i][k]) att_cart(i, k)=DBtoBYTE(PIA);
                 PIA=attenuation(DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
@@ -2453,7 +2451,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
         {
             H5::H5File outfile = assets.get_devel_data_output();
             //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-            //scrivo_out_file_bin(".pia","file PIA",getenv("DIR_QUALITY"),sizeof(att_cart),att_cart);
             //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
             //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
             //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);

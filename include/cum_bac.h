@@ -168,10 +168,6 @@ public:
     //variabili legate a propagazione e beam blocking, da prog_bb
     PolarScan <float> dem; /*dem in coordinate azimut range*/
 
-    // attenuazione in formato cartesiano max risoluzione
-    //PolarScan <unsigned char> att_cart; /* matrice azimut-range di attenuazione */
-    //quota centro fascio polare, cartesiana max risoluzione e cartesiana 1x1
-    //PolarScan <unsigned short> quota_rel; /*quota fascio relativa al suolo in prop da rsd e elevazioni nominali, in coordinate azimut range*/
     Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
     Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
     Image<unsigned char> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
