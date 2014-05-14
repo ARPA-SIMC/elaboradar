@@ -20,7 +20,7 @@ CC=cc
 CXX=g++ 
 
 # CFLAGS for all current code
-CFLAGS=-g --std=c++11 -I../include -Wall -O2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags) $(shell pkg-config eigen3 --cflags)
+CFLAGS=-g --std=c++11 -I../include -Wall -O0 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) $(shell log4c-config --cflags) $(shell pkg-config --cflags radarlib) -DHAVE_INLINE $(shell gsl-config --cflags) $(shell pkg-config eigen3 --cflags)
 # Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
 # CFLAGS += -DGSL_RANGE_CHECK_OFF
 # Scommentare per disabilitare il range checking di Eigen e guadagnare un po' in velocità

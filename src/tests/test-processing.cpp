@@ -848,35 +848,9 @@ void to::test<10>()
 
     VolumeStats stats;
     cb->volume.compute_stats(stats);
-    //stats.print(stdout);
-    wassert(actual(stats.count_zeros[0]) == 0);
-    wassert(actual(stats.count_zeros[1]) == 0);
-    wassert(actual(stats.count_zeros[2]) == 0);
-    wassert(actual(stats.count_zeros[3]) == 0);
-    wassert(actual(stats.count_zeros[4]) == 0);
-    wassert(actual(stats.count_ones[0]) ==  66946);
-    wassert(actual(stats.count_ones[1]) ==  79821);
-    wassert(actual(stats.count_ones[2]) == 104195);
-    wassert(actual(stats.count_ones[3]) == 110179);
-    wassert(actual(stats.count_ones[4]) == 119120);
-    wassert(actual(stats.count_others[0]) == 137854);
-    wassert(actual(stats.count_others[1]) == 124979);
-    wassert(actual(stats.count_others[2]) == 100605);
-    wassert(actual(stats.count_others[3]) ==  87421);
-    wassert(actual(stats.count_others[4]) ==  78480);
-    wassert(actual(stats.sum_others[0]) == 18301988);
-    wassert(actual(stats.sum_others[1]) == 16033156);
-    wassert(actual(stats.sum_others[2]) == 12558154);
-    wassert(actual(stats.sum_others[3]) == 10553141);
-    wassert(actual(stats.sum_others[4]) ==  9141377);
+    wassert(actual(cb->volume).statsEqual(MISSING_DB, 0, -19.6863, -16.88, 65.01));
 
-    ArrayStats<unsigned char> beam_blocking_stats;
-    beam_blocking_stats.fill(cb->beam_blocking);
-//    beam_blocking_stats.print();
-    wassert(actual((unsigned)beam_blocking_stats.all_missing).isfalse());
-    wassert(actual((unsigned)beam_blocking_stats.min) == 0);
-    wassert(actual((unsigned)beam_blocking_stats.max) == 51);
-    wassert(actual((unsigned)(beam_blocking_stats.avg * 100)) == 1349);
+    wassert(actual(cb->beam_blocking).statsEqual(0, 21.36, 51));
 
     unsigned stats_size = cb->grid_stats.size_az * cb->grid_stats.size_beam;
 
@@ -885,7 +859,7 @@ void to::test<10>()
 //    stat_anap_stats.print();
     wassert(actual((unsigned)stat_anap_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
-    wassert(actual((unsigned)stat_anap_stats.max) == 75);
+    wassert(actual((unsigned)stat_anap_stats.max) == 476);
 
     ArrayStats<unsigned> stat_anap_tot_stats;
     stat_anap_tot_stats.fill(cb->grid_stats.stat_tot, stats_size);
@@ -906,78 +880,47 @@ void to::test<10>()
 //    stat_elev_stats.print();
     wassert(actual((unsigned)stat_elev_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
-    wassert(actual((unsigned)stat_elev_stats.max) == 75);
+    wassert(actual((unsigned)stat_elev_stats.max) == 476);
 
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 0, 1));
+    wassert(actual(cb->dato_corrotto).statsEqual(0, 0.04, 1));
 
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
-    ArrayStats<unsigned char> stats_qual;
-    stats_qual.fill(*cb->qual);
-//    stats_qual.print();
-    wassert(actual((unsigned)stats_qual.all_missing).isfalse());
-    //wassert(actual((unsigned)stats_qual.count_zeros) == 0);
-    //wassert(actual((unsigned)stats_qual.count_ones) == 162599);
-    wassert(actual((unsigned)stats_qual.min) == 1);
-    wassert(actual((unsigned)stats_qual.max) == 99);
-    wassert(actual((unsigned)(stats_qual.avg * 100)) == 68792);
-
-    ArrayStats<unsigned char> stats_flag_vpr;
-    stats_flag_vpr.fill(*cb->calcolo_vpr->flag_vpr);
-//    stats_flag_vpr.print();
-    wassert(actual((unsigned)stats_flag_vpr.all_missing).isfalse());
-    //wassert(actual((unsigned)stats_flag_vpr.count_zeros) == 167079);
-    //wassert(actual((unsigned)stats_flag_vpr.count_ones) == 1650521);
-    wassert(actual((unsigned)(stats_flag_vpr.avg * 100)) == 1018);
-
-    wassert(actual(cb->top).statsEqual(0, 55.4, 76));
-    //wassert(actual((unsigned)stats_top.count_zeros) == 112778);
-    //wassert(actual((unsigned)stats_top.count_ones) == 159);
+    
+    //print_stats("cb", *cb, cerr);
+    wassert(actual(*cb->qual).statsEqual(0, 50.16, 99));
+    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.87, 1));
+    wassert(actual(cb->top).statsEqual(0, 0.54, 108));
 
     Cart cart(cb->volume.max_beam_size());
     cart.creo_cart(*cb);
     //print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 55.0, 255));
-    wassert(actual(cart.cartm).statsEqual(0, 0, 0));
-    wassert(actual(cart.topxy).statsEqual(0, 3, 76));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 26, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 42.0, 5825));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 42.0, 1));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 14, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 0, 3));
-    wassert(actual(cart.neve_cart).statsEqual(0, 0, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 0, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 0, 0));
+    wassert(actual(cart.cart).statsEqual(0, 3.14, 255));
+    wassert(actual(cart.cartm).statsEqual(0, 0.00, 0));
+    wassert(actual(cart.topxy).statsEqual(0, 0.40, 108));
+    wassert(actual(cart.qual_Z_cart).statsEqual(0, 9.35, 98));
+    wassert(actual(cart.quota_cart).statsEqual(0, 2076.55, 7749));
+    wassert(actual(cart.dato_corr_xy).statsEqual(0, 0.02, 1));
+    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 21.42, 51));
+    wassert(actual(cart.elev_fin_xy).statsEqual(0, 0.10, 4));
+    wassert(actual(cart.neve_cart).statsEqual(0, 0.00, 0));
+    wassert(actual(cart.corr_cart).statsEqual(0, 185.63, 237));
+    wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
     CartLowris clow(cb->do_medium ? 512: 256);
     clow.creo_cart_z_lowris(*cb, cart);
     //print_stats("clow", clow, cerr);
-    wassert(actual((unsigned)clow.z_out.minCoeff()) == 0);
-    wassert(actual(avg(clow.z_out)) == 66);
-    wassert(actual((unsigned)clow.z_out.maxCoeff()) == 255);
-    wassert(actual((unsigned)clow.qual_Z_1x1.minCoeff()) == 0);
-    wassert(actual(avg(clow.qual_Z_1x1)) == 25);
-    wassert(actual((unsigned)clow.qual_Z_1x1.maxCoeff()) == 97);
-    wassert(actual((unsigned)clow.quota_1x1.minCoeff()) == 128);
-    wassert(actual((unsigned)clow.quota_1x1.maxCoeff()) == 186);
-    wassert(actual((unsigned)clow.dato_corr_1x1.minCoeff()) == 0);
-    wassert(actual((unsigned)clow.dato_corr_1x1.maxCoeff()) == 1);
-    wassert(actual((unsigned)clow.elev_fin_1x1.minCoeff()) == 0);
-    wassert(actual(avg(clow.elev_fin_1x1)) == 0);
-    wassert(actual((unsigned)clow.elev_fin_1x1.maxCoeff()) == 3);
-    wassert(actual((unsigned)clow.beam_blocking_1x1.minCoeff()) == 0);
-    wassert(actual(avg(clow.beam_blocking_1x1)) == 15);
-    wassert(actual((unsigned)clow.beam_blocking_1x1.maxCoeff()) == 51);
-    wassert(actual((unsigned)clow.top_1x1.minCoeff()) == 0);
-    wassert(actual(avg(clow.top_1x1)) == 3);
-    wassert(actual((unsigned)clow.top_1x1.maxCoeff()) == 42);
-    wassert(actual((unsigned)clow.neve_1x1.minCoeff()) == 0);
-    wassert(actual((unsigned)clow.neve_1x1.maxCoeff()) == 1);
-    wassert(actual((unsigned)clow.corr_1x1.minCoeff()) == 0);
-    wassert(actual((unsigned)clow.corr_1x1.maxCoeff()) == 0);
-    wassert(actual((unsigned)clow.conv_1x1.minCoeff()) == 0);
-    wassert(actual((unsigned)clow.conv_1x1.maxCoeff()) == 0);
+    wassert(actual(clow.z_out).statsEqual(0, 6.00, 243));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 10.29, 97));
+    wassert(actual(clow.quota_1x1).statsEqual(0, 147.17, 185));
+    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.01, 1));
+    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.13, 4));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 33.53, 51));
+    wassert(actual(clow.top_1x1).statsEqual(0, 0.23, 49));
+    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
+    wassert(actual(clow.corr_1x1).statsEqual(0, 201.60, 237));
+    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
 
     // TODO: scrivo_out_file_bin
 
