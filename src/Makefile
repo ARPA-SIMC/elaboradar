@@ -75,7 +75,7 @@ install: elaboradar  cum_bac_SP20_m
 	 mv  cum_bac_SP20_m $(BINDIR)
 
 # Compile test suite
-cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) $(OBJ_COMMON)
+cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) $(OBJ_COMMON) test-utils.o
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
 check: cbtest $(addprefix testdata/,$(TESTFILES))

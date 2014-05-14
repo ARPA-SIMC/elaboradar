@@ -417,4 +417,47 @@ void Assets::load_ascii(const std::string& fname, const char* desc, Matrix2D<flo
     fclose(in);
 }
 
+void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc)
+{
+    const char* dir = getenv(dir_env_var);
+    if (!dir)
+    {
+        LOG_INFO("$%s not set", dir_env_var);
+        throw runtime_error("required env var is not set");
+    }
+
+    char basename[512];
+
+    /*
+    if( do_medium){
+    	tempo = gmtime(&load_info.acq_date);
+    	time = NormalizzoData(load_info.acq_date);
+    	tempo = gmtime(&time);
+    } else {
+    	time = NormalizzoData(load_info.acq_date);
+    	tempo = gmtime(&time);
+    }
+    */
+
+    struct tm *tempo = gmtime(&conf_acq_time);
+
+    snprintf(basename, 512, "%04d%02d%02d%02d%02d",
+            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
+            tempo->tm_hour, tempo->tm_min);
+
+    string fname = string(dir) + "/" + basename + ext;
+    FILE* out = fopen_checked(fname.c_str(), "wb", desc);
+
+    LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
+
+    if (fwrite(image.data(), image.size(), 1, out) != 1)
+    {
+        LOG_WARN("cannot write to %s: %s", fname.c_str(), strerror(errno));
+        fclose(out);
+        throw std::runtime_error("cannot write to image file");
+    }
+
+    fclose(out);
+}
+
 }

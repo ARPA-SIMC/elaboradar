@@ -113,6 +113,7 @@ class Volume : protected std::vector<PolarScan<T>*>
 {
 public:
     using std::vector<PolarScan<T>*>::size;
+    typedef T Scalar;
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
 

@@ -171,6 +171,14 @@ public:
      */
     H5::H5File get_devel_data_output() const;
 
+    /**
+     * Write an image in a raw file in ${dir_env_var}, with the acquisition
+     * date as file name and the given extension.
+     *
+     * desc is used to get better error messages.
+     */
+    void write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
+
 protected:
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
