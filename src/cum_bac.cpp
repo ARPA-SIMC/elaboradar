@@ -153,7 +153,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
       elev_fin(volume, load_info),
       calcolo_vpr(0), cart(MyMAX_BIN*2), cartm(MyMAX_BIN*2), z_out(CART_DIM_ZLR),
       first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
-      bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN), att_cart(MyMAX_BIN),
+      bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN), // att_cart(MyMAX_BIN),
       quota_cart(MyMAX_BIN*2), quota_1x1(CART_DIM_ZLR), beam_blocking_xy(MyMAX_BIN*2),
       beam_blocking_1x1(CART_DIM_ZLR),
       dato_corr_xy(MyMAX_BIN*2), dato_corr_1x1(CART_DIM_ZLR),
@@ -950,7 +950,7 @@ void CUM_BAC::caratterizzo_volume()
 
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                if (l == elev_fin[i][k]) att_cart(i, k)=DBtoBYTE(PIA);
+                //if (l == elev_fin[i][k]) att_cart(i, k)=DBtoBYTE(PIA);
                 PIA=attenuation(DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
