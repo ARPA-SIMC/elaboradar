@@ -212,15 +212,15 @@ void to::test<3>()
 
     CartLowris clow(cb->do_medium ? 512: 256);
     clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0.89, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.59, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(128, 138.7, 185));
+    // print_stats("clow", clow, cerr);
+    wassert(actual(clow.z_out).statsEqual(0, 1.27, 227));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 97));
+    wassert(actual(clow.quota_1x1).statsEqual(0, 138.81, 185));
     wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 1));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.24, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.28, 51));
+    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.23, 3));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.48, 51));
     wassert(actual(clow.top_1x1).statsEqual(0, 0.01, 15));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1));
+    wassert(actual(clow.neve_1x1).statsEqual(0, 0.73, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
 
@@ -293,17 +293,17 @@ LOG_INFO("Chiamo caratterizzo volumi");
 
     CartLowris clow(cb->do_medium ? 512: 256);
     clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 16, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.55, 98));
-    wassert(actual(clow.quota_1x1).statsEqual(128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.23, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.30, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.32, 36));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    // print_stats("clow", clow, cerr);
+    wassert(actual(clow.z_out).statsEqual(0, 16.08, 227));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.43, 97));
+    wassert(actual(clow.quota_1x1).statsEqual(0, 128, 128));
+    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.21, 3));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.57, 51));
+    wassert(actual(clow.top_1x1).statsEqual(0, 0.48, 36));
+    wassert(actual(clow.neve_1x1).statsEqual(0, 0.73, 1));
+    wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
 
     delete cb;
     LOG_INFO("End test 5");
@@ -380,17 +380,17 @@ unlink("LAST_VPR");
 
     CartLowris clow(cb->do_medium ? 512: 256);
     clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0.91, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.59, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.24, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.29, 51));
+    // print_stats("clow", clow, cerr);
+    wassert(actual(clow.z_out).statsEqual(0, 1.31, 227));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 97));
+    wassert(actual(clow.quota_1x1).statsEqual(0, 128, 128));
+    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.23, 3));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.49, 51));
     wassert(actual(clow.top_1x1).statsEqual(0, 0.01, 15));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    wassert(actual(clow.neve_1x1).statsEqual(0, 0.73, 1));
+    wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
 
     // TODO: scrivo_out_file_bin
 
@@ -577,7 +577,6 @@ void to::test<7>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    std::cout<<"INIZIO - "<<fname<<std::endl;
     cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione(fname);
 
@@ -767,7 +766,7 @@ LOG_INFO(" Valuto statistica");
 
     Cart cart(cb->volume.max_beam_size());
     cart.creo_cart(*cb);
-    //print_stats("cart", cart, cerr);
+    // print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 28.22, 255));
     wassert(actual(cart.cartm).statsEqual(0, 0.00, 0));
     wassert(actual(cart.topxy).statsEqual(0, 1.75, 76));
@@ -782,17 +781,17 @@ LOG_INFO(" Valuto statistica");
 
     CartLowris clow(cb->do_medium ? 512: 256);
     clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 24.45, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    // print_stats("clow", clow, cerr);
+    wassert(actual(clow.z_out).statsEqual(0, 24.37, 255));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.top_1x1).statsEqual(0, 1.62, 76));
+    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
+    wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
 
     // TODO: scrivo_out_file_bin
 
@@ -882,7 +881,7 @@ void to::test<10>()
 
     Cart cart(cb->volume.max_beam_size());
     cart.creo_cart(*cb);
-    //print_stats("cart", cart, cerr);
+    // print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 3.14, 255));
     wassert(actual(cart.cartm).statsEqual(0, 0.00, 0));
     wassert(actual(cart.topxy).statsEqual(0, 0.40, 108));
