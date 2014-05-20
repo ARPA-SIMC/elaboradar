@@ -2165,8 +2165,8 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
     //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
 
     LOG_INFO("Estrazione Precipitazione 1X1");
-    CartLowris cart_low(do_medium ? 512: 256);
-    cart_low.creo_cart_z_lowris(*this, cart_maker);
+    CartLowris cart_low(do_medium ? 512: 256, *this, cart_maker);
+    cart_low.creo_cart_z_lowris();
 
     unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
     MP_coeff[0]=(unsigned char)(aMP/10);
@@ -2443,8 +2443,13 @@ void Cart::creo_cart(const CUM_BAC& cb)
             }
 }
 
-CartLowris::CartLowris(unsigned cart_dim_zlr)
+CartLowris::CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c)
     : CART_DIM_ZLR(cart_dim_zlr),
+      ZLR_N_ELEMENTARY_PIXEL(cb.do_medium && c.max_bin < 260 ? 1 : 4),
+      // Center image in the middle of the source image
+      ZLR_OFFSET(c.max_bin - CART_DIM_ZLR / 2 * ZLR_N_ELEMENTARY_PIXEL),
+      cb(cb),
+      c(c),
       z_out(CART_DIM_ZLR),
       quota_1x1(CART_DIM_ZLR),
       beam_blocking_1x1(CART_DIM_ZLR),
@@ -2457,23 +2462,19 @@ CartLowris::CartLowris(unsigned cart_dim_zlr)
       conv_1x1(CART_DIM_ZLR),
       cappi_1x1(CART_DIM_ZLR)
 {
+    // const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
 }
 
-void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
+void CartLowris::creo_cart_z_lowris()
 {
-    // const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
-    // Center image in the middle of the source image
-    const unsigned ZLR_N_ELEMENTARY_PIXEL = cb.do_medium && c.max_bin < 260 ? 1 : 4;
-    const int ZLR_OFFSET = c.max_bin - CART_DIM_ZLR / 2 * ZLR_N_ELEMENTARY_PIXEL;
-    //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
     // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
     for(unsigned i=0; i<CART_DIM_ZLR; i++)
         for(unsigned j=0; j<CART_DIM_ZLR; j++)
         {
+            //reinizializzo tutte le variabili calcolate dentro la funzione .
             unsigned int cont=0;
             double zm = 0.;
             unsigned char z = 0;
-            //reinizializzo tutte le variabili calcolate dentro la funzione .
             unsigned char q = 0;
             unsigned char nv = 0;
             unsigned char dc1x1=0;

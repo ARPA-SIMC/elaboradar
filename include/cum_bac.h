@@ -443,6 +443,10 @@ struct CartLowris
 {
     // dimensione matrice a 1x1 km
     const unsigned CART_DIM_ZLR;
+    const unsigned ZLR_N_ELEMENTARY_PIXEL;
+    const int ZLR_OFFSET;
+    const CUM_BAC& cb;
+    const Cart& c;
 
     //se definita Z_LOWRIS, Z cartesiana al livello più basso
     Image<unsigned char> z_out;
@@ -462,7 +466,7 @@ struct CartLowris
     //uscite:matrici cappi max resol e 1x1
     Image<unsigned char> cappi_1x1;
 
-    CartLowris(unsigned cart_dim_zlr);
+    CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c);
 
     /**
      *
@@ -470,7 +474,7 @@ struct CartLowris
      *  @details prende il massimo tra i punti considerati, il passo di ricerca è ZLR_N_ELEMENTARY_PIXEL, cioè il rapporto tra dimensioni ad alta risoluzione e le dimensioni bassa risoluzione.
      *  @return
      */
-    void creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c);
+    void creo_cart_z_lowris();
 
     void write_out(const CUM_BAC& cb, Assets& assets);
 };

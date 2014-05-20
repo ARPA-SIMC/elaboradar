@@ -196,6 +196,7 @@ void to::test<3>()
     //wassert(actual(cb->top).statsEqual(0, 204765, 1, 0, 15));
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 494);
     cart.creo_cart(*cb);
     //print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 0.94, 227));
@@ -210,8 +211,11 @@ void to::test<3>()
     wassert(actual(cart.corr_cart).statsEqual(0, 0, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.CART_DIM_ZLR) == 256);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == -18);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 1.27, 227));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 97));
@@ -277,6 +281,7 @@ LOG_INFO("Chiamo caratterizzo volumi");
     // TODO: cb->stampa_vpr()
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 494);
     cart.creo_cart(*cb);
     //print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 10.68, 227));
@@ -291,8 +296,10 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(cart.corr_cart).statsEqual(0, 0.00, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == -18);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 16.08, 227));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.43, 97));
@@ -364,6 +371,7 @@ unlink("LAST_VPR");
     cb->conversione_convettiva();
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 494);
     cart.creo_cart(*cb);
     //print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 0.96, 227));
@@ -378,8 +386,10 @@ unlink("LAST_VPR");
     wassert(actual(cart.corr_cart).statsEqual(0, 0.00, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == -18);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 1.31, 227));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 97));
@@ -512,6 +522,7 @@ void to::test<6>()
     //wassert(actual((unsigned)stats_top.count_ones) == 159);
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 512);
     cart.creo_cart(*cb);
     //print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 54.82, 255));
@@ -526,8 +537,10 @@ void to::test<6>()
     wassert(actual(cart.corr_cart).statsEqual(0, 0.00, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == 0);
+    clow.creo_cart_z_lowris();
     //print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 65.91, 255));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 25.28, 97));
@@ -600,6 +613,7 @@ void to::test<7>()
     // TODO: cb->stampa_vpr()
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 512);
     cart.creo_cart(*cb);
     // print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 55.09, 255));
@@ -614,8 +628,10 @@ void to::test<7>()
     wassert(actual(cart.corr_cart).statsEqual(0, 0, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == 0);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 66.19, 255));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 25.26, 97));
@@ -686,6 +702,7 @@ void to::test<8>()
     cb->conversione_convettiva();
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 512);
     cart.creo_cart(*cb);
     // print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 55.09, 255));
@@ -700,8 +717,10 @@ void to::test<8>()
     wassert(actual(cart.corr_cart).statsEqual(0, 0, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0, 100));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == 0);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 66.18, 255));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 25.26, 97));
@@ -765,6 +784,7 @@ LOG_INFO(" Valuto statistica");
     wassert(actual(stats.sum_others[4]) ==  9178563);
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 849);
     cart.creo_cart(*cb);
     // print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 28.22, 255));
@@ -779,8 +799,10 @@ LOG_INFO(" Valuto statistica");
     wassert(actual(cart.corr_cart).statsEqual(0, 0.00, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == -175);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 24.37, 255));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 0));
@@ -880,6 +902,7 @@ void to::test<10>()
     wassert(actual(cb->top).statsEqual(0, 0.54, 108));
 
     Cart cart(cb->volume.max_beam_size());
+    wassert(actual(cart.max_bin) == 494);
     cart.creo_cart(*cb);
     // print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 3.14, 255));
@@ -894,8 +917,10 @@ void to::test<10>()
     wassert(actual(cart.corr_cart).statsEqual(0, 0.00, 0));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
+    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
+    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
+    wassert(actual(clow.ZLR_OFFSET) == 4);
+    clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 10.26, 255));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 9.95, 98));
