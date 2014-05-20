@@ -4,6 +4,7 @@
 #include "vpr_par.h"
 #include "matrix.h"
 #include "site.h"
+#include "image.h"
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
@@ -59,6 +60,7 @@ namespace cumbac {
 Assets::Assets()
     : logging_category(log4c_category_get("radar.assets")), outfile_devel_data(0)
 {
+    gdal_init_once();
 }
 
 Assets::~Assets()
@@ -417,16 +419,10 @@ void Assets::load_ascii(const std::string& fname, const char* desc, Matrix2D<flo
     fclose(in);
 }
 
-void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc)
+std::string Assets::fname_from_acq_time() const
 {
-    const char* dir = getenv(dir_env_var);
-    if (!dir)
-    {
-        LOG_INFO("$%s not set", dir_env_var);
-        throw runtime_error("required env var is not set");
-    }
-
-    char basename[512];
+    const unsigned buf_size = 16;
+    char buf[buf_size];
 
     /*
     if( do_medium){
@@ -441,11 +437,23 @@ void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const cha
 
     struct tm *tempo = gmtime(&conf_acq_time);
 
-    snprintf(basename, 512, "%04d%02d%02d%02d%02d",
+    snprintf(buf, buf_size, "%04d%02d%02d%02d%02d",
             tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
             tempo->tm_hour, tempo->tm_min);
 
-    string fname = string(dir) + "/" + basename + ext;
+    return buf;
+}
+
+void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc)
+{
+    const char* dir = getenv(dir_env_var);
+    if (!dir)
+    {
+        LOG_INFO("$%s not set", dir_env_var);
+        throw runtime_error("required env var is not set");
+    }
+
+    string fname = string(dir) + "/" + fname_from_acq_time() + ext;
     FILE* out = fopen_checked(fname.c_str(), "wb", desc);
 
     LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
@@ -459,5 +467,25 @@ void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const cha
 
     fclose(out);
 }
+
+template<typename T>
+void Assets::write_gdal_image(const cumbac::Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format)
+{
+    const char* dir = getenv(dir_env_var);
+    if (!dir)
+    {
+        LOG_INFO("$%s not set", dir_env_var);
+        throw runtime_error("required env var is not set");
+    }
+
+    string fname = string(dir) + "/" + fname_from_acq_time() + "-" + name + "." + gdal_extension_for_format(format);
+
+    cumbac::write_image(image, fname, format);
+}
+
+template void Assets::write_gdal_image(const cumbac::Matrix2D<unsigned char>&, const char*, const char*, const char*);
+template void Assets::write_gdal_image(const cumbac::Matrix2D<unsigned short>&, const char*, const char*, const char*);
+template void Assets::write_gdal_image(const cumbac::Matrix2D<double>&, const char*, const char*, const char*);
+
 
 }

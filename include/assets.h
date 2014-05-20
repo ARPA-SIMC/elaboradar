@@ -179,7 +179,14 @@ public:
      */
     void write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
 
+    template<typename T>
+    void write_gdal_image(const cumbac::Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
+
 protected:
+    /// Build a basename (without extension) for a file given the current
+    /// acquisition time
+    std::string fname_from_acq_time() const;
+
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
 

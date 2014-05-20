@@ -198,6 +198,9 @@ void to::test<3>()
     Cart cart(cb->volume.max_beam_size());
     wassert(actual(cart.max_bin) == 494);
     cart.creo_cart(*cb);
+    //setenv("DIR_DEBUG", "testdata/", 1);
+    //cart.write_out(*cb, cb->assets);
+
     //print_stats("cart", cart, cerr);
     wassert(actual(cart.cart).statsEqual(0, 0.94, 227));
     wassert(actual(cart.cartm).statsEqual(0, 0, 0));

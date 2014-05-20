@@ -437,6 +437,8 @@ struct Cart
      *  @return 
      */
     void creo_cart(const CUM_BAC& cb);
+
+    void write_out(const CUM_BAC& cb, Assets& assets);
 };
 
 struct CartLowris
