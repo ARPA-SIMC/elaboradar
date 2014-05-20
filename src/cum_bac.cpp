@@ -2461,7 +2461,9 @@ CartLowris::CartLowris(unsigned cart_dim_zlr)
 
 void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
 {
-    const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
+    // const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
+    // Center image in the middle of the source image
+    const unsigned ZLR_OFFSET = (c.max_bin - CART_DIM_ZLR) / 2;
     const unsigned ZLR_N_ELEMENTARY_PIXEL = cb.do_medium && c.max_bin < 260 ? 1 : 4;
 
     //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
