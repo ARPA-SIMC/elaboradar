@@ -2463,28 +2463,24 @@ void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
 {
     unsigned ZLR_OFFSET = cb.do_medium && cb.MyMAX_BIN != 1024 ? CART_DIM_ZLR/2 : 0;
     unsigned ZLR_N_ELEMENTARY_PIXEL = cb.do_medium && cb.MyMAX_BIN != 1024 ? 1 : 4;
-    int cont;
-    unsigned char z,q,nv,c1x1,traw,dc1x1,el1x1,bl1x1;
-    unsigned short q1x1;
-    float zm;
 
     //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
     // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
     for(unsigned i=0; i<CART_DIM_ZLR; i++)
         for(unsigned j=0; j<CART_DIM_ZLR; j++)
         {
+            unsigned int cont=0;
+            double zm = 0.;
+            unsigned char z = 0;
             //reinizializzo tutte le variabili calcolate dentro la funzione .
-            z = 0;
-            q = 0;
-            nv = 0;
-            zm = 0.;
-            dc1x1=0;
-            el1x1=0;
-            q1x1=0;
-            c1x1=0;
-            bl1x1=0;
-            cont=0;
-            traw=0;
+            unsigned char q = 0;
+            unsigned char nv = 0;
+            unsigned char dc1x1=0;
+            unsigned char el1x1=0;
+            unsigned short q1x1=0;
+            unsigned char c1x1=0;
+            unsigned char bl1x1=0;
+            unsigned char traw=0;
             for(unsigned x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
                 for(unsigned y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
                     //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
