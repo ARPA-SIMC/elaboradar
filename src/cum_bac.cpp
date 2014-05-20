@@ -2463,9 +2463,8 @@ void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
 {
     // const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
     // Center image in the middle of the source image
-    const unsigned ZLR_OFFSET = (c.max_bin - CART_DIM_ZLR) / 2;
     const unsigned ZLR_N_ELEMENTARY_PIXEL = cb.do_medium && c.max_bin < 260 ? 1 : 4;
-
+    const int ZLR_OFFSET = c.max_bin - CART_DIM_ZLR / 2 * ZLR_N_ELEMENTARY_PIXEL;
     //tolta qui inizializzazione di z_out che era duplicata (già fatta all'inizio del main)
     // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
     for(unsigned i=0; i<CART_DIM_ZLR; i++)
@@ -2489,7 +2488,7 @@ void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
                 {
                     unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
-                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && c.cart(src_x, src_y) != MISSING)
+                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && src_x >= 0 && src_y>=0 && c.cart(src_x, src_y) != MISSING)
                     {
                     //if (src_x >= cb.MyMAX_BIN*2) printf("X è fuori\n");
                     //if (src_y >= cb.MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
