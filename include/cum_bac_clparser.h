@@ -19,6 +19,7 @@ struct CUM_BAC_CLOPT {
    bool do_class;
    bool do_devel;
 
+   bool data_in_odim;
    bool do_readStaticMap;  
 }  ;
 

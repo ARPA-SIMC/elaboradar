@@ -67,6 +67,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	TCLAP::SwitchArg Stampe("s", "StampeExtra", "Stampe Extra per devel", false);
         cmd.add(Stampe);
 
+	TCLAP::SwitchArg OdimFormat("O", "Odim", "Data used in ODIM format", false);
+        cmd.add(OdimFormat);
 	TCLAP::SwitchArg StaticMap("m", "UseStaticMap", "Use Static Map", false);
         cmd.add(StaticMap);
 	
@@ -93,7 +95,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	opt->do_class=Class.getValue();
 	opt->do_devel=Stampe.getValue();
 	opt->do_readStaticMap=StaticMap.getValue();  
-
+	opt->data_in_odim=OdimFormat.getValue();
+	
   } catch ( TCLAP::ArgException& e )
   { std::cout << "ERROR: " << e.error() << " " << e.argId() << std::endl; }
 

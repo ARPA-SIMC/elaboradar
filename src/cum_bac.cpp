@@ -2075,15 +2075,17 @@ void CUM_BAC::conversione_convettiva()
     }
 }
 
-bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
+bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdim)
 {
-    // Legge e controlla il volume dal file SP20
-//    if (!read_sp20_volume(nome_file, file_type))
-//        return false;
+  if (isInputOdim){
     // Legge e controlla il volume dal file ODIM
     if (!read_odim_volume(nome_file, file_type))
         return false;
-
+  }else { 
+    // Legge e controlla il volume dal file SP20
+   if (!read_sp20_volume(nome_file, file_type))
+        return false;
+  }
     ///-------------------------ELABORAZIONE -------------------------
 
     //  ----- da buttare : eventuale scrittura del volume polare ad azimut e range fissi
