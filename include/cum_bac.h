@@ -125,6 +125,9 @@ public:
     bool do_devel = false;
     bool do_readStaticMap = false;
 
+    // dimensione matrice a 1x1 km
+    const unsigned CART_DIM_ZLR;
+
     volume::LoadInfo load_info;
     Volume<double> volume;
     volume::ElevFin<double> elev_fin;
@@ -134,6 +137,9 @@ public:
     /*-----------------------------------------------------------
       Variabili globali
       ------------------------------------------------------------*/
+
+    //se definita Z_LOWRIS, Z cartesiana al livello più basso
+    Image<unsigned char> z_out;
 
     // Data del volume che abbiamo letto
     char date[20];
@@ -154,15 +160,31 @@ public:
     PolarScan <float> dem; /*dem in coordinate azimut range*/
 
     Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
+    Image<unsigned char> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
+    //beam blocking cartesiano max resol e 1x1
+    Image<unsigned char> beam_blocking_1x1;//beam blocking cartesiano 1x1
     //uscite anaprop
     Matrix2D<unsigned char> dato_corrotto; /*uscita controllo anaprop in coordinate azimut range */
+    Image<unsigned char> dato_corr_1x1; //uscite anap cartesiano  1x1
+    Image<unsigned char> elev_fin_1x1;
     // metrici qualita' come sopra
     Volume<unsigned char>* qual; // qualita volume polare
+    Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
     // top, come sopra
     Matrix2D<unsigned char> top;
+    Image<unsigned char> top_1x1;
+
+    // uscite  vpr: correzione VPR , come sopra
+    Image<unsigned char> corr_1x1;
+    // uscite vpr: neve, come sopra
+    Image<unsigned char> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
 
     //matrici per classificazione: cappi
     PolarScan <unsigned char> cappi;
+    // uscite: matrici class max resol e 1x1
+    Image<unsigned char> conv_1x1;
+    //uscite:matrici cappi max resol e 1x1
+    Image<unsigned char> cappi_1x1;
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
@@ -246,6 +268,27 @@ public:
      *  @details
      */
     void creo_matrice_conv();
+
+    /**
+     *
+     *  @brief funzione che  trasforma il dato da cartesiano alta risoluzione a cartesiano bassa risoluzione
+     *  @details prende il massimo tra i punti considerati, il passo di ricerca è ZLR_N_ELEMENTARY_PIXEL, cioè il rapporto tra dimensioni ad alta risoluzione e le dimensioni bassa risoluzione.
+     *  @return
+     */
+    void creo_cart_z_lowris(const Cart& c);
+
+    /**
+     * funzione di scrittura matrici output binario
+     *
+     * @brief funzione che scrive in un file di output una matrice di byte di dimensione size
+     * @details il formato del nome e' $dir/aaammgghhmm_$ext 
+     * @param[in] ext estensione file output (aaammgghhmm_$ext)
+     * @param[in] content contenuto del file 
+     * @param[in] dir directory dove scrivere il file 
+     * @param[in] size dimensione della matrice
+     * @param[in] matrice matrice di dati da scrivere
+     */
+    void scrivo_out_file_bin(const char *ext, const char *content, const char *dir,size_t size, const void  *matrice);
 
     /**
      *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
@@ -437,42 +480,6 @@ struct Cart
      *  @return 
      */
     void creo_cart(const CUM_BAC& cb);
-};
-
-struct CartLowris
-{
-    // dimensione matrice a 1x1 km
-    const unsigned CART_DIM_ZLR;
-
-    //se definita Z_LOWRIS, Z cartesiana al livello più basso
-    Image<unsigned char> z_out;
-    Image<unsigned char> quota_1x1;/* quota in formato 256*256 in centinaia di metri, risoluzione ZLR */
-    //beam blocking cartesiano max resol e 1x1
-    Image<unsigned char> beam_blocking_1x1;//beam blocking cartesiano 1x1
-    Image<unsigned char> dato_corr_1x1; //uscite anap cartesiano  1x1
-    Image<unsigned char> elev_fin_1x1;
-    Image<unsigned char> qual_Z_1x1;/* qualita della Z in formato 256*256, risoluzione ZLR */
-    Image<unsigned char> top_1x1;
-    // uscite  vpr: correzione VPR , come sopra
-    Image<unsigned char> corr_1x1;
-    // uscite vpr: neve, come sopra
-    Image<unsigned char> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
-    // uscite: matrici class max resol e 1x1
-    Image<unsigned char> conv_1x1;
-    //uscite:matrici cappi max resol e 1x1
-    Image<unsigned char> cappi_1x1;
-
-    CartLowris(unsigned cart_dim_zlr);
-
-    /**
-     *
-     *  @brief funzione che  trasforma il dato da cartesiano alta risoluzione a cartesiano bassa risoluzione
-     *  @details prende il massimo tra i punti considerati, il passo di ricerca è ZLR_N_ELEMENTARY_PIXEL, cioè il rapporto tra dimensioni ad alta risoluzione e le dimensioni bassa risoluzione.
-     *  @return
-     */
-    void creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c);
-
-    void write_out(const CUM_BAC& cb, Assets& assets);
 };
 
 // Utility functions
