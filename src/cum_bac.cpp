@@ -2487,9 +2487,11 @@ void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
                 {
                     unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
-                    if (src_x >= cb.MyMAX_BIN*2) printf("X è fuori\n");
-                    if (src_y >= cb.MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
-                    if(c.cart(src_x, src_y) != MISSING)
+                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && c.cart(src_x, src_y) != MISSING)
+                    {
+                    //if (src_x >= cb.MyMAX_BIN*2) printf("X è fuori\n");
+                    //if (src_y >= cb.MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
+                    //if(c.cart(src_x, src_y) != MISSING)
                         if(c.cart(src_x, src_y) > z){
                             z= c.cart(src_x, src_y);
                             traw=c.topxy(src_x, src_y);
@@ -2521,6 +2523,7 @@ void CartLowris::creo_cart_z_lowris(const CUM_BAC& cb, const Cart& c)
                                 }
                             }
                         }
+                    }
                     z_out(i, j)=z;
                     if (cb.do_quality)
                     {
