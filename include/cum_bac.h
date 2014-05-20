@@ -265,7 +265,7 @@ public:
      */
     double quota_f(double elevaz, int k);
     void conversione_convettiva();
-    bool esegui_tutto(const char* nome_file, int file_type);
+    bool esegui_tutto(const char* nome_file, int file_type, bool isInputOdim = false);
 // added function to calculate beamblocking correction
 //
     double BeamBlockingCorrection(double val_db, unsigned char beamblocking);
