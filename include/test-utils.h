@@ -6,7 +6,6 @@
 
 namespace cumbac {
 struct Cart;
-struct CartLowris;
 struct CUM_BAC;
 }
 
@@ -249,7 +248,6 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
 
 void print_stats(const std::string& name, const cumbac::CUM_BAC& cb, std::ostream& out);
 void print_stats(const std::string& name, const cumbac::Cart& cart, std::ostream& out);
-void print_stats(const std::string& name, const cumbac::CartLowris& cart, std::ostream& out);
 
 }
 

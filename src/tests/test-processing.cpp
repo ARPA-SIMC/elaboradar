@@ -210,19 +210,32 @@ void to::test<3>()
     wassert(actual(cart.corr_cart).statsEqual(0, 185.25, 237));
     wassert(actual(cart.conv_cart).statsEqual(0, 0, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0.89, 214));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.59, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 138.7, 185));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 1));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.24, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.28, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.01, 15));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 172.46, 237));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
+    cb->creo_cart_z_lowris(cart);
+    wassert(actual((unsigned)cb->z_out.minCoeff()) == 0);
+    wassert(actual(avg(cb->z_out)) == 1);
+    wassert(actual((unsigned)cb->z_out.maxCoeff()) == 227);
+    wassert(actual((unsigned)cb->qual_Z_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->qual_Z_1x1)) == 30);
+    wassert(actual((unsigned)cb->qual_Z_1x1.maxCoeff()) == 98);
+    wassert(actual((unsigned)cb->quota_1x1.minCoeff()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.maxCoeff()) == 185);
+    wassert(actual((unsigned)cb->dato_corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.maxCoeff()) == 1);
+    wassert(actual((unsigned)cb->elev_fin_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->elev_fin_1x1)) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.maxCoeff()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->beam_blocking_1x1)) == 8);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.maxCoeff()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->top_1x1)) == 0);
+    wassert(actual((unsigned)cb->top_1x1.maxCoeff()) == 15);
+    wassert(actual((unsigned)cb->neve_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.maxCoeff()) == 1);
+    wassert(actual((unsigned)cb->corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.maxCoeff()) == 0);
 
     delete cb;
 }
@@ -291,19 +304,32 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(cart.corr_cart).statsEqual(0, 185.25, 237));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 9.97, 214));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.55, 98));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.23, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.30, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.32, 36));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 172.46, 237));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    wassert(actual((unsigned)cb->z_out.minCoeff()) == 0);
+    wassert(actual(avg(cb->z_out)) == 16);
+    wassert(actual((unsigned)cb->z_out.maxCoeff()) == 227);
+    wassert(actual((unsigned)cb->qual_Z_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->qual_Z_1x1)) == 29);
+    wassert(actual((unsigned)cb->qual_Z_1x1.maxCoeff()) == 98);
+    wassert(actual((unsigned)cb->quota_1x1.minCoeff()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.maxCoeff()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->elev_fin_1x1)) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.maxCoeff()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->beam_blocking_1x1)) == 9);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.maxCoeff()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.maxCoeff()) == 35);
+    wassert(actual(avg(cb->top_1x1)) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.maxCoeff()) == 1);
+    wassert(actual(avg(cb->neve_1x1)) == 1);
+    wassert(actual((unsigned)cb->corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.maxCoeff()) == 0);
 
     delete cb;
     LOG_INFO("End test 5");
@@ -378,19 +404,43 @@ unlink("LAST_VPR");
     wassert(actual(cart.corr_cart).statsEqual(0, 185.25, 237));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0.91, 214));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.59, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.24, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.29, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.01, 15));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 172.46, 237));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    cb->creo_cart_z_lowris(cart);
+LOG_INFO("z_out         min avg max :%d %d %d",(unsigned)cb->z_out.minCoeff(),avg(cb->z_out),(unsigned)cb->z_out.maxCoeff());
+LOG_INFO("qual_Z_1x1    min avg max :%d %d %d",(unsigned)cb->qual_Z_1x1.minCoeff(),avg(cb->qual_Z_1x1),(unsigned)cb->qual_Z_1x1.maxCoeff());
+LOG_INFO("quota_1x1     min avg max :%d %d %d",(unsigned)cb->quota_1x1.minCoeff(),avg(cb->quota_1x1),(unsigned)cb->quota_1x1.maxCoeff());
+LOG_INFO("dato_corr_1x1 min avg max :%d %d %d",(unsigned)cb->dato_corr_1x1.minCoeff(),avg(cb->dato_corr_1x1),(unsigned)cb->dato_corr_1x1.maxCoeff());
+LOG_INFO("elev_fin_1x1  min avg max :%d %d %d",(unsigned)cb->elev_fin_1x1.minCoeff(),avg(cb->elev_fin_1x1),(unsigned)cb->elev_fin_1x1.maxCoeff());
+LOG_INFO("beam_blocking_1x1 min avg max :%d %d %d",(unsigned)cb->beam_blocking_1x1.minCoeff(),avg(cb->beam_blocking_1x1),(unsigned)cb->beam_blocking_1x1.maxCoeff());
+LOG_INFO("top_1x1       min avg max :%d %d %d",(unsigned)cb->top_1x1.minCoeff(),avg(cb->top_1x1),(unsigned)cb->top_1x1.maxCoeff());
+LOG_INFO("neve_1x1      min avg max :%d %d %d",(unsigned)cb->neve_1x1.minCoeff(),avg(cb->neve_1x1),(unsigned)cb->neve_1x1.maxCoeff());
+LOG_INFO("corr_1x1      min avg max :%d %d %d",(unsigned)cb->corr_1x1.minCoeff(),avg(cb->corr_1x1),(unsigned)cb->corr_1x1.maxCoeff());
+LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.minCoeff(),avg(cb->conv_1x1),(unsigned)cb->conv_1x1.maxCoeff());
+    wassert(actual((unsigned)cb->z_out.minCoeff()) == 0);
+    wassert(actual(avg(cb->z_out)) == 1);
+    wassert(actual((unsigned)cb->z_out.maxCoeff()) == 227);
+    wassert(actual((unsigned)cb->qual_Z_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->qual_Z_1x1)) == 30);
+    wassert(actual((unsigned)cb->qual_Z_1x1.maxCoeff()) == 98);
+    wassert(actual((unsigned)cb->quota_1x1.minCoeff()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.maxCoeff()) == 128);
+    wassert(actual((unsigned)cb->dato_corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->elev_fin_1x1)) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.maxCoeff()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->beam_blocking_1x1)) == 8);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.maxCoeff()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->top_1x1)) == 0);
+    wassert(actual((unsigned)cb->top_1x1.maxCoeff()) == 15);
+    wassert(actual((unsigned)cb->neve_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.maxCoeff()) == 1);
+    wassert(actual(avg(cb->neve_1x1)) == 1);
+    wassert(actual((unsigned)cb->corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.maxCoeff()) == 0);
 
     // TODO: scrivo_out_file_bin
 
@@ -526,19 +576,42 @@ void to::test<6>()
     wassert(actual(cart.corr_cart).statsEqual(0, 185.31, 237));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 54.86, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 25.65, 98));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 139.64, 186));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 1));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.22, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 14.12, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 3.23, 76));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 185.29, 237));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    cb->creo_cart_z_lowris(cart);
+LOG_INFO("z_out         min avg max :%d %d %d",(unsigned)cb->z_out.minCoeff(),avg(cb->z_out),(unsigned)cb->z_out.maxCoeff());
+LOG_INFO("qual_Z_1x1    min avg max :%d %d %d",(unsigned)cb->qual_Z_1x1.minCoeff(),avg(cb->qual_Z_1x1),(unsigned)cb->qual_Z_1x1.maxCoeff());
+LOG_INFO("quota_1x1     min avg max :%d %d %d",(unsigned)cb->quota_1x1.minCoeff(),avg(cb->quota_1x1),(unsigned)cb->quota_1x1.maxCoeff());
+LOG_INFO("dato_corr_1x1 min avg max :%d %d %d",(unsigned)cb->dato_corr_1x1.minCoeff(),avg(cb->dato_corr_1x1),(unsigned)cb->dato_corr_1x1.maxCoeff());
+LOG_INFO("elev_fin_1x1  min avg max :%d %d %d",(unsigned)cb->elev_fin_1x1.minCoeff(),avg(cb->elev_fin_1x1),(unsigned)cb->elev_fin_1x1.maxCoeff());
+LOG_INFO("beam_blocking_1x1 min avg max :%d %d %d",(unsigned)cb->beam_blocking_1x1.minCoeff(),avg(cb->beam_blocking_1x1),(unsigned)cb->beam_blocking_1x1.maxCoeff());
+LOG_INFO("top_1x1       min avg max :%d %d %d",(unsigned)cb->top_1x1.minCoeff(),avg(cb->top_1x1),(unsigned)cb->top_1x1.maxCoeff());
+LOG_INFO("neve_1x1      min avg max :%d %d %d",(unsigned)cb->neve_1x1.minCoeff(),avg(cb->neve_1x1),(unsigned)cb->neve_1x1.maxCoeff());
+LOG_INFO("corr_1x1      min avg max :%d %d %d",(unsigned)cb->corr_1x1.minCoeff(),avg(cb->corr_1x1),(unsigned)cb->corr_1x1.maxCoeff());
+LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.minCoeff(),avg(cb->conv_1x1),(unsigned)cb->conv_1x1.maxCoeff());
+    wassert(actual((unsigned)cb->z_out.minCoeff()) == 0);
+    wassert(actual(avg(cb->z_out)) == 66);
+    wassert(actual((unsigned)cb->z_out.maxCoeff()) == 255);
+    wassert(actual((unsigned)cb->qual_Z_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->qual_Z_1x1)) == 25);
+    wassert(actual((unsigned)cb->qual_Z_1x1.maxCoeff()) == 97);
+    wassert(actual((unsigned)cb->quota_1x1.minCoeff()) == 128);
+    wassert(actual((unsigned)cb->quota_1x1.maxCoeff()) == 186);
+    wassert(actual((unsigned)cb->dato_corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.maxCoeff()) == 1);
+    wassert(actual((unsigned)cb->elev_fin_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->elev_fin_1x1)) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.maxCoeff()) == 3);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->beam_blocking_1x1)) == 15);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.maxCoeff()) == 51);
+    wassert(actual((unsigned)cb->top_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->top_1x1)) == 3);
+    wassert(actual((unsigned)cb->top_1x1.maxCoeff()) == 42);
+    wassert(actual((unsigned)cb->neve_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.maxCoeff()) == 1);
+    wassert(actual((unsigned)cb->corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.maxCoeff()) == 0);
 
     // TODO: scrivo_out_file_bin
 
@@ -602,10 +675,7 @@ void to::test<7>()
 
     Cart cart(cb->volume.max_beam_size());
     cart.creo_cart(*cb);
-    //print_stats("cart", cart, cerr);
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
+    cb->creo_cart_z_lowris(cart);
 
     // TODO: scrivo_out_file_bin
 
@@ -666,10 +736,7 @@ void to::test<8>()
 
     Cart cart(cb->volume.max_beam_size());
     cart.creo_cart(*cb);
-    //print_stats("cart", cart, cerr);
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
+    cb->creo_cart_z_lowris(cart);
 
     // TODO: scrivo_out_file_bin
 
@@ -737,19 +804,42 @@ LOG_INFO(" Valuto statistica");
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
 
 
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 19.45, 224));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.top_1x1).statsEqual(0, 1.21, 76));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
+    cb->creo_cart_z_lowris(cart);
+LOG_INFO("z_out         min avg max :%d %d %d",(unsigned)cb->z_out.minCoeff(),avg(cb->z_out),(unsigned)cb->z_out.maxCoeff());
+LOG_INFO("qual_Z_1x1    min avg max :%d %d %d",(unsigned)cb->qual_Z_1x1.minCoeff(),avg(cb->qual_Z_1x1),(unsigned)cb->qual_Z_1x1.maxCoeff());
+LOG_INFO("quota_1x1     min avg max :%d %d %d",(unsigned)cb->quota_1x1.minCoeff(),avg(cb->quota_1x1),(unsigned)cb->quota_1x1.maxCoeff());
+LOG_INFO("dato_corr_1x1 min avg max :%d %d %d",(unsigned)cb->dato_corr_1x1.minCoeff(),avg(cb->dato_corr_1x1),(unsigned)cb->dato_corr_1x1.maxCoeff());
+LOG_INFO("elev_fin_1x1  min avg max :%d %d %d",(unsigned)cb->elev_fin_1x1.minCoeff(),avg(cb->elev_fin_1x1),(unsigned)cb->elev_fin_1x1.maxCoeff());
+LOG_INFO("beam_blocking_1x1 min avg max :%d %d %d",(unsigned)cb->beam_blocking_1x1.minCoeff(),avg(cb->beam_blocking_1x1),(unsigned)cb->beam_blocking_1x1.maxCoeff());
+LOG_INFO("top_1x1       min avg max :%d %d %d",(unsigned)cb->top_1x1.minCoeff(),avg(cb->top_1x1),(unsigned)cb->top_1x1.maxCoeff());
+LOG_INFO("neve_1x1      min avg max :%d %d %d",(unsigned)cb->neve_1x1.minCoeff(),avg(cb->neve_1x1),(unsigned)cb->neve_1x1.maxCoeff());
+LOG_INFO("corr_1x1      min avg max :%d %d %d",(unsigned)cb->corr_1x1.minCoeff(),avg(cb->corr_1x1),(unsigned)cb->corr_1x1.maxCoeff());
+LOG_INFO("conv_1x1      min avg max :%d %d %d",(unsigned)cb->conv_1x1.minCoeff(),avg(cb->conv_1x1),(unsigned)cb->conv_1x1.maxCoeff());
+    wassert(actual((unsigned)cb->z_out.minCoeff()) == 0);
+    wassert(actual(avg(cb->z_out)) == 24);
+    wassert(actual((unsigned)cb->z_out.maxCoeff()) == 255);
+    wassert(actual((unsigned)cb->qual_Z_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->qual_Z_1x1)) == 0);
+    wassert(actual((unsigned)cb->qual_Z_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->quota_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->quota_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->dato_corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->elev_fin_1x1)) == 0);
+    wassert(actual((unsigned)cb->elev_fin_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->beam_blocking_1x1)) == 0);
+    wassert(actual((unsigned)cb->beam_blocking_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->top_1x1.minCoeff()) == 0);
+    wassert(actual(avg(cb->top_1x1)) == 0);
+    wassert(actual((unsigned)cb->top_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->neve_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->corr_1x1.maxCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.minCoeff()) == 0);
+    wassert(actual((unsigned)cb->conv_1x1.maxCoeff()) == 0);
 
     // TODO: scrivo_out_file_bin
 
@@ -907,20 +997,6 @@ void to::test<10>()
     wassert(actual(cart.neve_cart).statsEqual(0, 0.00, 0));
     wassert(actual(cart.corr_cart).statsEqual(0, 185.63, 237));
     wassert(actual(cart.conv_cart).statsEqual(0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256);
-    clow.creo_cart_z_lowris(*cb, cart);
-    //print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 6.00, 243));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 10.29, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 147.17, 185));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0.01, 1));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.13, 4));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 33.53, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.23, 49));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 201.60, 237));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 0.00, 0));
 
     // TODO: scrivo_out_file_bin
 
