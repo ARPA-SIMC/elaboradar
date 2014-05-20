@@ -46,7 +46,7 @@ CXXFLAGS=$(CFLAGS)
 
 OBJ_VOLUME=volume.o volume_cleaner.o volume_loader.o volume_sp20.o volume_odim.o
 
-OBJ_COMMON=$(OBJ_VOLUME) cylindrical.o steiner.o viz.o cum_bac.o interpola_vpr.o interpola_vpr_gsl.o interpola_vpr_nr.o  setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o
+OBJ_COMMON=$(OBJ_VOLUME) cylindrical.o steiner.o viz.o cum_bac.o interpola_vpr.o interpola_vpr_gsl.o interpola_vpr_nr.o  setwork.o func_Q3d.o Q_components.o utils.o site.o assets.o logging.o cum_bac_clparser.o image.o
 
 OBJ=cum_bac_SP20.o
 
@@ -58,7 +58,7 @@ all: install
 cum_bac_SP20_m: $(OBJ)
 	$(CXX) -o $@ $^ $(LDLIBS) 
 
-cum_bac_SP20.o:cum_bac_SP20.cpp $(INCLUDEDIR_SP20)/func_SP20read.h  
+cum_bac_SP20.o:cum_bac_SP20.cpp $(INCLUDEDIR_SP20)/func_SP20read.h
 	$(CXX) -c  $(CFLAGS_LEGACY) $< -o $@ 
 
 elaboradar: elaboradar.o $(OBJ_COMMON)

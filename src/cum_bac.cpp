@@ -2189,6 +2189,12 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type)
         elev_fin.write_info_to_debug_file(outfile);
     }
 
+    if (do_devel)
+    {
+        LOG_INFO("Scrittura riproiezioni cartesiane intermedie\n");
+        cart_maker.write_out(*this, assets);
+    }
+
     LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
     cart_low.write_out(*this, assets);
 
@@ -2441,6 +2447,37 @@ void Cart::creo_cart(const CUM_BAC& cb)
                  elev_fin_xy[MAX_BIN*2-y][x]=first_level((int)((float)(az)/.9), irange);
                  dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange); */
             }
+}
+
+void Cart::write_out(const CUM_BAC& cb, Assets& assets)
+{
+    if (getenv("DIR_DEBUG") == NULL) return;
+
+    assets.write_gdal_image(cart, "DIR_DEBUG", "cart", "PNG");
+
+    if (cb.do_quality)
+    {
+        assets.write_gdal_image(qual_Z_cart, "DIR_DEBUG", "qual_Z", "PNG");
+
+        if (cb.do_devel)
+        {
+            assets.write_gdal_image(beam_blocking_xy, "DIR_DEBUG", "beam_blocking", "PNG");
+            assets.write_gdal_image(dato_corr_xy, "DIR_DEBUG", "dato_corr", "PNG");
+            assets.write_gdal_image(quota_cart, "DIR_DEBUG", "quota", "PNG");
+            assets.write_gdal_image(elev_fin_xy, "DIR_DEBUG", "elev_fin", "PNG");
+            assets.write_gdal_image(topxy, "DIR_DEBUG", "top", "PNG");
+        }
+
+        if (cb.do_vpr)
+        {
+            assets.write_gdal_image(corr_cart, "DIR_DEBUG", "corr", "PNG");
+        }
+
+        if (cb.do_class)
+        {
+            assets.write_gdal_image(conv_cart, "DIR_DEBUG", "conv", "PNG");
+        }
+    }
 }
 
 CartLowris::CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c)
