@@ -49,14 +49,14 @@ void SP20Loader::load(const std::string& pathname)
 
     // Replicato qui la read_dbp_SP20, per poi metterci mano e condividere codice con la lettura di ODIM
 
-    FILE* sp20_in = fopen_checked(pathname.c_str(), "rb", "input sp20 file");
+    File sp20_in(logging_category);
+    sp20_in.open(pathname, "rb", "input sp20 file");
+    if (!sp20_in)
+        throw std::runtime_error("failed to open sp20 input file");
 
     // Read and decode file header
-    if (fread(&hd_char, sizeof(hd_char), 1, sp20_in) != 1)
-    {
-      fclose(sp20_in);
-      throw std::runtime_error("errore lettura header SP20");
-    }
+    sp20_in.fread(&hd_char, sizeof(hd_char));
+
     HD_DBP_SP20_DECOD hd_file;
     decode_header_DBP_SP20(&hd_char, &hd_file);
 
@@ -89,7 +89,6 @@ void SP20Loader::load(const std::string& pathname)
           errmsg += pathname;
           errmsg += ": ";
           errmsg += strerror(errno);
-          fclose(sp20_in);
           throw runtime_error(errmsg);
         }
       }
@@ -105,11 +104,10 @@ void SP20Loader::load(const std::string& pathname)
       if (max_bin)
           max_range = min(max_range, max_bin);
 
-      // TODO: controllare il valore di ritorno delle fread
-      if (beam_info.flag_quantities[0]) fread(b->data_z, 1, beam_info.cell_num, sp20_in);
-      if (beam_info.flag_quantities[1]) fread(b->data_d, 1, beam_info.cell_num, sp20_in);
-      if (beam_info.flag_quantities[2]) fread(b->data_v, 1, beam_info.cell_num, sp20_in);
-      if (beam_info.flag_quantities[3]) fread(b->data_w, 1, beam_info.cell_num, sp20_in);
+      if (beam_info.flag_quantities[0]) sp20_in.fread(b->data_z, beam_info.cell_num);
+      if (beam_info.flag_quantities[1]) sp20_in.fread(b->data_d, beam_info.cell_num);
+      if (beam_info.flag_quantities[2]) sp20_in.fread(b->data_v, beam_info.cell_num);
+      if (beam_info.flag_quantities[3]) sp20_in.fread(b->data_w, beam_info.cell_num);
 
       vector<bool> cleaned(max_range, false);
       if (clean)
@@ -207,8 +205,6 @@ void SP20Loader::load(const std::string& pathname)
 #endif
       }
     }
-
-    fclose(sp20_in);
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
