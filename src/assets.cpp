@@ -128,18 +128,53 @@ void Assets::load_first_level_bb_bloc(Matrix2D<unsigned char>& matrix)
     load_raw(fname_out_pp_bloc("mat_bloc.bin"), "elev BB", matrix);
 }
 
-FILE* Assets::open_file_hray()
+namespace {
+
+double parse_hray(File& fd, std::function<void (unsigned el, unsigned bin, double value)> on_sample)
 {
-    string fname = fname_out_pp_bloc("h_ray.txt");
-    LOG_INFO("Opening hray %s", fname.c_str());
-    return fopen_checked(fname.c_str(), "rb", "hray");
+    size_t line_no = 0;
+    double dtrs;
+    fd.read_lines([&](char* line, size_t len) {
+        if (line_no == 0)
+        {
+            // Read dtrs in the first line
+            dtrs = strtod(line, NULL);
+        } else {
+            char* s = line;
+            int el = 0;
+            while (true)
+            {
+                char* next;
+                double val = strtod(s, &next);
+                if (next == s) break;
+                on_sample(el, line_no - 1, val);
+                s = next;
+                ++el;
+            }
+        }
+        ++line_no;
+    });
+    if (line_no == 0)
+        throw std::runtime_error("hray/hray_inf file is empty");
+    return dtrs;
 }
 
-FILE* Assets::open_file_hray_inf()
+}
+
+double Assets::read_file_hray(std::function<void (unsigned el, unsigned bin, double value)> on_sample)
 {
-    string fname = fname_out_pp_bloc("h_rayinf.txt");
-    LOG_INFO("Opening hray inf %s", fname.c_str());
-    return fopen_checked(fname.c_str(), "rb", "hray inf");
+    File fd(logging_category);
+    if (!fd.open(fname_out_pp_bloc("h_ray.txt"), "rb", "hray"))
+        throw std::runtime_error("cannot open hray file");
+    return parse_hray(fd, on_sample);
+}
+
+double Assets::read_file_hray_inf(std::function<void (unsigned el, unsigned bin, double value)> on_sample)
+{
+    File fd(logging_category);
+    if (!fd.open(fname_out_pp_bloc("h_rayinf.txt"), "rb", "hray inf"))
+        throw std::runtime_error("cannot open hray inf file");
+    return parse_hray(fd, on_sample);
 }
 
 std::string Assets::fname_out_pp_bloc(const char* suffix) const
