@@ -11,7 +11,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <unistd.h>
 #include "setwork.h"
@@ -78,22 +78,26 @@ struct HRay : public Matrix2D<double>
     // distanza temporale radiosondaggio
     double dtrs;
 
-    HRay() : Matrix2D<double>(Matrix2D<double>::Zero(NSCAN, MAX_BIN)) {}
+    template<typename T>
+    HRay(const Volume<T>& vol) : Matrix2D<double>(vol.size(), vol.max_beam_size())
+    {
+        const double radius = 6378137.0;
+        const double kea = 4. / 3. * radius;
+        //const double size_cell = cum_bac.load_info.size_cell;
+#warning use it from the volume
+        const double size_cell = 250;
 
+        for (unsigned iel = 0; iel < vol.size(); ++iel)
+        {
+            double elev = vol.scan(iel).elevation;
 
-#if 0
-    radius = 6378137.0
-    #define KeA(a)     4./3.* a
-
-    float RadarBeamCoord_util::elev_br_2_beamHeight(float elev, float  beam_range){
-        float h;
-        float kea;
-        kea=KeA(EarthRadius);
-        if (beam_range <0) throw 20;
-        h=sqrt(pow(beam_range,2.)+pow(kea,2.)+2*kea*beam_range*sin(DEG2RAD(elev)))-kea;
-        return h;
-}
-#endif
+            for (unsigned ibin = 0; ibin < cols(); ++ibin)
+            {
+                double range = (ibin + 0.5) * size_cell;
+                (*this)(iel, ibin) = ::sqrt(::pow(range, 2.) + ::pow(kea, 2.) + 2 * kea * range * ::sin(DTOR * elev)) - kea;
+            }
+        }
+    }
 
     void load_hray(Assets& assets)
     {
@@ -887,7 +891,7 @@ void CUM_BAC::caratterizzo_volume()
 {
     LOG_DEBUG("start caratterizzo_volume");
 
-    HRay hray_inf; /*quota limite inferiore fascio in funzione della distanza e elevazione*/
+    HRay hray_inf(volume); /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     hray_inf.load_hray_inf(assets);
 
     qual = new Volume<unsigned char>(volume, 0);
