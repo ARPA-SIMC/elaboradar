@@ -5,6 +5,7 @@
 #include <ctime>
 #include <cstdio>
 #include <logging.h>
+#include <functional>
 #include <vector>
 #include <H5Cpp.h>
 
@@ -100,20 +101,18 @@ public:
     void load_first_level_bb_bloc(Matrix2D<unsigned char>& matrix);
 
     /**
-     * Open the hray file.
+     * Read the hray file, calling a callback on each parsed value.
      *
-     * The result is always a valid file: it throws an exception if something
-     * goes wrong.
+     * Returns the value of dtrs.
      */
-    FILE* open_file_hray();
+    double read_file_hray(std::function<void (unsigned el, unsigned bin, double value)> on_sample);
 
     /**
-     * Open the hray inf file.
+     * Read the hray file, calling a callback on each parsed value.
      *
-     * The result is always a valid file: it throws an exception if something
-     * goes wrong.
+     * Returns the value of dtrs.
      */
-    FILE* open_file_hray_inf();
+    double read_file_hray_inf(std::function<void (unsigned el, unsigned bin, double value)> on_sample);
 
     /**
      *  fornisce temperatura al suolo, da lettura file esterno

@@ -1,6 +1,7 @@
 #ifndef ARCHIVIATORE_UTILS_H
 #define ARCHIVIATORE_UTILS_H
 
+#include <functional>
 #include <cstdio>
 #include <string>
 #include "logging.h"
@@ -32,8 +33,17 @@ public:
 
     /**
      * Opens a file taking its name from the environment variable envname.
+     *
+     * Returns false if anything fails.
      */
     bool open_from_env(const char* varname, const char* mode, const char* desc=nullptr);
+
+    /**
+     * Opens a file by its pathname.
+     *
+     * Returns false if anything fails.
+     */
+    bool open(const std::string& fname, const char* mode, const char* desc=nullptr);
 
     const char* name() const { return fname.c_str(); }
     const char* desc() const { return fdesc.c_str(); }
@@ -47,7 +57,16 @@ public:
      */
     operator bool() const { return fd; }
 
+    /**
+     * Read the file line by line, calling line_cb on each line read
+     */
+    void read_lines(std::function<void (char*, size_t)> line_cb);
 };
+
+/**
+ * Split a string in tokens, skipping the given separator characters
+ */
+void str_split(char* str, const char* sep, std::function<void (const char* tok)> val_cb);
 
 /**
  * A wrapper of getenv, that returns 'default_value' if the given environment
@@ -64,5 +83,7 @@ const char* getenv_default(const char* envname, const char* default_value);
  * It always return a valid, open FILE pointer.
  */
 FILE* fopen_checked(const char* fname, const char* mode, const char* description=0);
+
+}
 
 #endif

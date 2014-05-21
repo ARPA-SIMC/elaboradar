@@ -76,38 +76,40 @@ struct HRay : public Matrix2D<double>
     static const int NSCAN = 6;
 
     // distanza temporale radiosondaggio
-    float dtrs;
+    double dtrs;
 
     HRay() : Matrix2D<double>(Matrix2D<double>::Zero(NSCAN, MAX_BIN)) {}
+
+
+#if 0
+    radius = 6378137.0
+    #define KeA(a)     4./3.* a
+
+    float RadarBeamCoord_util::elev_br_2_beamHeight(float elev, float  beam_range){
+        float h;
+        float kea;
+        kea=KeA(EarthRadius);
+        if (beam_range <0) throw 20;
+        h=sqrt(pow(beam_range,2.)+pow(kea,2.)+2*kea*beam_range*sin(DEG2RAD(elev)))-kea;
+        return h;
+}
+#endif
 
     void load_hray(Assets& assets)
     {
         // quota centro fascio in funzione della distanza e elevazione
-        load_file(assets.open_file_hray());
+        dtrs = assets.read_file_hray([this](unsigned el, unsigned bin, double value) {
+            if (el >= rows() || bin >= cols()) return;
+            (*this)(el, bin) = value;
+        });
     }
     void load_hray_inf(Assets& assets)
     {
         // quota limite inferiore fascio in funzione della distanza e elevazione
-        load_file(assets.open_file_hray_inf());
-    }
-
-
-private:
-    void load_file(FILE* file)
-    {
-        /*--------------------------
-          Leggo quota centro fascio
-          --------------------------*/
-        fscanf(file,"%f ",&dtrs);
-        for(int i=0; i<MAX_BIN; i++){
-            for(int j=0; j<NSCAN;j++)
-            {
-                float f;
-                fscanf(file,"%f ", &f);
-                (*this)(j, i) = f;
-            }
-        }
-        fclose(file);
+        dtrs = assets.read_file_hray_inf([this](unsigned el, unsigned bin, double value) {
+            if (el >= rows() || bin >= cols()) return;
+            (*this)(el, bin) = value;
+        });
     }
 };
 }

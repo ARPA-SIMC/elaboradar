@@ -36,6 +36,18 @@ File::~File()
 
 bool File::open_from_env(const char* varname, const char* mode, const char* desc)
 {
+    const char* envfname = getenv(varname);
+    if (!envfname)
+    {
+        LOG_ERROR("$%s is not set", varname);
+        return false;
+    }
+
+    return open(envfname, mode, desc);
+}
+
+bool File::open(const std::string& pathname, const char* mode, const char* desc)
+{
     if (fd)
     {
         fclose(fd);
@@ -44,24 +56,54 @@ bool File::open_from_env(const char* varname, const char* mode, const char* desc
         fdesc.clear();
     }
 
-    const char* envfname = getenv(varname);
-    if (!envfname)
-    {
-        LOG_ERROR("$%s is not set", varname);
-        return false;
-    }
-
-    fd = fopen(envfname, mode);
+    fd = fopen(pathname.c_str(), mode);
     if (!fd)
     {
-        LOG_ERROR("Cannot open $%s=%s: %s", varname, envfname, strerror(errno));
+        if (desc)
+            LOG_ERROR("Cannot open %s (%s): %s", pathname.c_str(), desc, strerror(errno));
+        else
+            LOG_ERROR("Cannot open %s: %s", pathname.c_str(), strerror(errno));
         return false;
     }
 
-    fname = envfname;
+    fname = pathname;
     if (desc) fdesc = desc;
 
     return true;
+}
+
+void File::read_lines(std::function<void (char*, size_t)> line_cb)
+{
+    char *line = NULL;
+    size_t len = 0;
+
+    while (true)
+    {
+        errno = 0;
+        ssize_t read = getline(&line, &len, fd);
+        if (read == -1)
+        {
+            if (errno == 0)
+            {
+                break;
+            } else {
+                string errmsg("cannot read ");
+                errmsg += fname;
+                errmsg += ": ";
+                errmsg += strerror(errno);
+                if (line) free(line);
+                throw runtime_error(errmsg);
+            }
+        }
+        try {
+            line_cb(line, read);
+        } catch (...) {
+            if (line) free(line);
+            throw;
+        }
+    }
+
+    if (line) free(line);
 }
 
 const char* getenv_default(const char* envname, const char* default_value)
@@ -90,4 +132,18 @@ FILE* fopen_checked(const char* fname, const char* mode, const char* description
         throw runtime_error(errmsg);
     }
     return res;
+}
+
+void str_split(char* str, const char* sep, std::function<void (const char* tok)> val_cb)
+{
+    char* saveptr;
+    while (true)
+    {
+        char* tok = strtok_r(str, sep, &saveptr);
+        if (tok == NULL) break;
+        val_cb(tok);
+        str = NULL;
+    }
+}
+
 }
