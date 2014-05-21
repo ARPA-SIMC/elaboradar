@@ -37,7 +37,7 @@ struct CylindricalVolume
         return (*slices[slice])(row, col);
     }
 
-    void resample(const Volume<double>& volume, unsigned max_bin, double size_cell);
+    void resample(const Volume<double>& volume, unsigned max_bin);
 };
 
 }

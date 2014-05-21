@@ -289,9 +289,9 @@ bool CUM_BAC::test_file(int file_type)
     }
 
     //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
-    if (load_info.size_cell != expected_size_cell)
+    if (volume.scan(0).cell_size != expected_size_cell)
     {
-        LOG_ERROR("File Risoluzione/size_cell Sbagliata %f", (double)load_info.size_cell);
+        LOG_ERROR("File Risoluzione/size_cell Sbagliata %f", volume.scan(0).cell_size);
         return false;
     }
     //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
@@ -788,7 +788,8 @@ void CUM_BAC::leggo_first_level()
 //--------quota=f(distinkm, rstinkm, elevazinrad) in metri
 double CUM_BAC::quota_f(double elevaz, int k) // quota funzione di elev(radianti) e range
 {
-    double dist = k * load_info.size_cell + load_info.size_cell / 2.;
+#warning make quota_f a scan-specific method
+    double dist = k * volume.scan(0).cell_size + volume.scan(0).cell_size / 2.;
     // quota in prop. standard da elevazione reale
     return (sqrt(pow(dist / 1000., 2) + (rst * rst) + 2.0 * dist / 1000. * rst * sin(elevaz)) - rst) * 1000.;
 }
@@ -936,7 +937,7 @@ void CUM_BAC::caratterizzo_volume()
                 double sample = volume.scan(l).get(i, k);
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)
-                dist= k*load_info.size_cell+load_info.size_cell/2.;/*distanza radar */
+                dist = k * volume.scan(l).cell_size + volume.scan(l).cell_size / 2.;/*distanza radar */
 
                 //-----distanza dal radiosondaggio (per GAT si finge che sia colocato ..), perchè? (verificare che serva )
                 drrs=dist;
@@ -1021,7 +1022,8 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
         Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
         R=pow((Zhh/aMP),(1.0/bMP));
         att_rate=0.0018*pow(R,1.05);
-        att_tot=att_tot+2.*att_rate*0.001*load_info.size_cell;
+#warning FIXME: to compute scan by scan?
+        att_tot=att_tot+2.*att_rate*0.001 * volume.scan(0).cell_size;
         if (att_tot>BYTEtoDB(254)) att_tot=BYTEtoDB(254);
     }
     return att_tot;
@@ -1077,7 +1079,8 @@ void CalcoloVPR::classifica_rain()
 
     // TODO: remove duplication with CylindricalVolume::resample
     const Volume<double>& volume = cum_bac.volume;
-    const double size_cell = cum_bac.load_info.size_cell;
+#warning FIXME: to compute scan by scan?
+    const double size_cell = volume.scan(0).cell_size;
     double range_min=0.5 * size_cell/1000.;
     double range_max=(MyMAX_BIN-0.5) * size_cell/1000.;
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
@@ -1093,7 +1096,7 @@ void CalcoloVPR::classifica_rain()
 
     // ricampionamento del volume in coordinate cilindriche
     CylindricalVolume cil(NUM_AZ_X_PPI, x_size, z_size, 0);
-    cil.resample(cum_bac.volume, MyMAX_BIN, cum_bac.load_info.size_cell);
+    cil.resample(cum_bac.volume, MyMAX_BIN);
 
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
@@ -1103,7 +1106,7 @@ void CalcoloVPR::classifica_rain()
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
-    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, cum_bac.MyMAX_BIN, cum_bac.load_info.size_cell);
+    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, cum_bac.MyMAX_BIN);
     steiner.calcolo_background();
     steiner.classifico_STEINER();
     //  }
@@ -1880,7 +1883,8 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
         for (unsigned k=0; k < scan.beam_size; k++)/*ciclo range*/
         {
             //-------------calcolo distanza-----------
-            dist=k*(long int)(cum_bac.load_info.size_cell)+(int)(cum_bac.load_info.size_cell)/2.;
+            // TODO: why the casts to int?
+            dist=k*(long int)(scan.cell_size)+(int)(scan.cell_size)/2.;
 
             //-----ciclo settore azimut???
             for (iA=iaz_min; iA<iaz_max; iA++)//ciclo sulle unità di azimut  (0,9°)    ---------
@@ -1923,7 +1927,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 }
 
                 // ------per calcolare l'area del pixel lo considero un rettangolo dim bin x ampiezzamediafascio x flag vpr/1000 per evitare problemi di memoria?
-                area=cum_bac.load_info.size_cell*dist_plain*AMPLITUDE*DTOR*flag_vpr->scan(l).get(i, k)/1000.; // divido per  mille per evitare nr troppo esagerato
+                area = scan.cell_size * dist_plain * AMPLITUDE * DTOR * flag_vpr->scan(l).get(i, k)/1000.; // divido per  mille per evitare nr troppo esagerato
 
                 // ------incremento il volume totale di area
 

@@ -28,13 +28,13 @@ int elev_array[15];
 namespace cumbac {
 namespace volume {
 
-void SP20Loader::make_scan(unsigned idx, unsigned beam_size)
+void SP20Loader::make_scan(unsigned idx, unsigned beam_size, double cell_size)
 {
     Loader::make_scan(idx, beam_size);
-    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx]);
-    if (vol_d) vol_d->make_scan(idx, beam_size, elev_array[idx]);
-    if (vol_v) vol_v->make_scan(idx, beam_size, elev_array[idx]);
-    if (vol_w) vol_w->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx], cell_size);
+    if (vol_d) vol_d->make_scan(idx, beam_size, elev_array[idx], cell_size);
+    if (vol_v) vol_v->make_scan(idx, beam_size, elev_array[idx], cell_size);
+    if (vol_w) vol_w->make_scan(idx, beam_size, elev_array[idx], cell_size);
 }
 
 void SP20Loader::load(const std::string& pathname)
@@ -66,8 +66,8 @@ void SP20Loader::load(const std::string& pathname)
     struct tm data_nome;
     time_t acq_date = get_date_from_name(0, &data_nome, pathname.c_str());
     if (load_info) load_info->acq_date = acq_date;
-    if (load_info) load_info->size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
     if (load_info) load_info->declutter_rsp = (bool)hd_file.filtro_clutter;
+    double size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
 
     BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
 //    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
@@ -117,7 +117,7 @@ void SP20Loader::load(const std::string& pathname)
 
       int el_num = elevation_index(beam_info.elevation);
       if (el_num < 0) continue;
-      make_scan(el_num, max_range);
+      make_scan(el_num, max_range, size_cell);
 
       if (vol_z) // Riflettività Z
       {

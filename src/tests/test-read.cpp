@@ -50,7 +50,7 @@ void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, con
 
     // Check other header fields
     wassert(actual(li.acq_date) == 1389108600);
-    wassert(actual(li.size_cell) == 250);
+    wassert(actual(v.scan(0).cell_size) == 250);
 
     // Arbitrary stats on volume contents so we can check that we read data
     // that looks correct
@@ -114,7 +114,7 @@ void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, con
 
     // Check other header fields
     wassert(actual(li.acq_date) == 1389108600);
-    wassert(actual(li.size_cell) == 250);
+    wassert(actual(v.scan(0).cell_size) == 250);
 
     // Arbitrary stats on volume contents so we can check that we read data
     // that looks correct

@@ -65,10 +65,10 @@ unsigned char eldes_counter_to_db(unsigned short val)
 namespace cumbac {
 namespace volume {
 
-void ODIMLoader::make_scan(unsigned idx, unsigned beam_size)
+void ODIMLoader::make_scan(unsigned idx, unsigned beam_size, double size_cell)
 {
     Loader::make_scan(idx, beam_size);
-    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx]);
+    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx], size_cell);
 }
 
 void ODIMLoader::load(const std::string& pathname)
@@ -218,7 +218,7 @@ void ODIMLoader::load(const std::string& pathname)
         int el_num = elevation_index(elevation);
         if (el_num < 0) continue;
 std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
-        make_scan(el_num, beam_size);
+        make_scan(el_num, beam_size, range_scale);
         PolarScan<double>& vol_pol_scan = vol_z->scan(el_num);
 
         //vol_pol_scan.elevation = elevation;
@@ -259,8 +259,6 @@ std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
         }
 
     }
-std::cout<<"Ciclo scan finito"<<std::endl;
-    if (load_info) load_info->size_cell = range_scale;
 }
 
 

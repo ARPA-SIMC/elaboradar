@@ -22,7 +22,7 @@ struct SP20Loader : public Loader
     void load(const std::string& pathname);
 
     // Create or reuse a scan at position idx, with the given beam size
-    void make_scan(unsigned idx, unsigned beam_size);
+    void make_scan(unsigned idx, unsigned beam_size, double cell_size);
 };
 
 }
