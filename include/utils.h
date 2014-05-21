@@ -3,28 +3,40 @@
 
 #include <cstdio>
 #include <string>
+#include "logging.h"
 #include "matrix.h"
+
+namespace cumbac {
 
 /**
  * Open a file taking its name from a given env variable.
  *
  * If the variable is not set, assume a 'false' value.
  */
-class FILEFromEnv
+class File
 {
 protected:
+    log4c_category_t* logging_category;
     std::string fname;
-    FILE* fd;
+    std::string fdesc;
+    FILE* fd = nullptr;
 
 public:
-    FILEFromEnv();
-    FILEFromEnv(const char* envname, const char* mode="a");
-    ~FILEFromEnv();
+    File();
+    File(log4c_category_t* logging_category);
+    File(const File&) = delete;
+    File(File&&);
+    ~File();
+
+    File& operator=(const File*) = delete;
 
     /**
      * Opens a file taking its name from the environment variable envname.
      */
-    bool open_from_env(const char* envname, const char* mode="a");
+    bool open_from_env(const char* varname, const char* mode, const char* desc=nullptr);
+
+    const char* name() const { return fname.c_str(); }
+    const char* desc() const { return fdesc.c_str(); }
 
     /// Allows FILEFromEnv objects to be used as FILE pointers
     operator FILE*() { return fd; }
@@ -33,17 +45,8 @@ public:
      * Allows FILEFromEnv to be used in an if (...) to check if the file is
      * open
      */
-    operator bool() const { return fd != 0; }
+    operator bool() const { return fd; }
 
-    /**
-     * Returns the file name, if a file is open
-     */
-    const char* name() const { return fname.c_str(); }
-
-private:
-    // Disallow copy of FILEFromEnv objects
-    FILEFromEnv(const FILEFromEnv&);
-    FILEFromEnv& operator=(const FILEFromEnv*);
 };
 
 /**

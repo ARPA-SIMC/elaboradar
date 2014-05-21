@@ -815,7 +815,7 @@ void CUM_BAC::ScrivoStatistica()
                 statistica_el[az][ran] = grid_stats.perc_elev(az, ran);
             }
 
-    FILEFromEnv f_stat;
+    File f_stat;
 
     if (f_stat.open_from_env("ANAP_STAT_FILE", "a"))
     {
