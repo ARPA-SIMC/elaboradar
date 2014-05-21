@@ -71,19 +71,14 @@ namespace {
  *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
  *  @return 
  */
-struct HRay
+struct HRay : public Matrix2D<double>
 {
     static const int NSCAN = 6;
 
-    float* hray;
     // distanza temporale radiosondaggio
     float dtrs;
 
-    HRay() : hray(0) { }
-    ~HRay() { if (hray) delete[] hray; }
-
-    float* operator[](unsigned idx) { return hray + idx * NSCAN; }
-    const float* operator[](unsigned idx) const { return hray + idx * NSCAN; }
+    HRay() : Matrix2D<double>(Matrix2D<double>::Zero(NSCAN, MAX_BIN)) {}
 
     void load_hray(Assets& assets)
     {
@@ -100,20 +95,17 @@ struct HRay
 private:
     void load_file(FILE* file)
     {
-        if (hray)
-        {
-            delete[] hray;
-            hray = 0;
-        }
-        hray = new float[MAX_BIN * NSCAN];
-
         /*--------------------------
           Leggo quota centro fascio
           --------------------------*/
         fscanf(file,"%f ",&dtrs);
         for(int i=0; i<MAX_BIN; i++){
             for(int j=0; j<NSCAN;j++)
-                fscanf(file,"%f ", hray + i * NSCAN + j);
+            {
+                float f;
+                fscanf(file,"%f ", &f);
+                (*this)(j, i) = f;
+            }
         }
         fclose(file);
     }
@@ -413,17 +405,13 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 void CUM_BAC::elabora_dato()
 {
     const float fondo_scala = BYTEtoDB(1); // -19.7 dBZ
-    HRay hray;
 
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
     leggo_first_level();
 
-    //-------------se definita qualita' leggo dem e altezza fascio (funzioni legg_dem e leggo_hray)(mi servono per calcolare qualità)
+    //-------------se definita qualita' leggo dem e altezza fascio (mi servono per calcolare qualità)
     if (do_quality)
-    {
         assets.load_dem(dem);
-        hray.load_hray(assets);
-    }
 
     //------------se definito DECLUTTER , non rimuovo anap e riscrivo  volume polare facedndo declutter solo con mappa statica.... ancora valido?
 
@@ -964,12 +952,12 @@ void CUM_BAC::caratterizzo_volume()
                 //----qui si fa un po' di mischione: finchè ho il dato dal programma di beam blocking uso il dh con propagazione da radiosondaggio, alle elevazioni superiori assegno dh=dhst  e calcolo quota come se fosse prop. standard, però uso le elevazioni nominali
 
                 if (l<hray_inf.NSCAN-1   ) {
-                    dh=hray_inf[k][l+1]-hray_inf[k][l]; /* differenza tra limite sup e inf lobo centrale secondo appoccio geo-ott*/
+                    // differenza tra limite sup e inf lobo centrale secondo appoccio geo-ott
+                    dh = hray_inf(l + 1, k) - hray_inf(l, k);
                 }
                 else {
-                    dh=dhst; /* non ho le altezze oltre nscan-1 pero' suppongo che a tali elevazioni la prop. si possa considerare standard*/
-                    // Enrico: commentato: non viene piú letto
-                    // hray[k][l]=quota_f(elevaz,k);//non lo assegno
+                    // non ho le altezze oltre nscan-1 pero' suppongo che a tali elevazioni la prop. si possa considerare standard
+                    dh = dhst;
                 }
 
                 if (l < elev_fin[i][k]) {

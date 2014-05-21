@@ -248,13 +248,6 @@ public:
     void creo_matrice_conv();
 
     /**
-     *  @brief funzione che legge la quota del centro fascio e del limite inferiore del fascio da file
-     *  @details legge la quota del centro fascio e del limite inferiore del fascio da file e li memorizza nei vettori hray_inf e hray
-     *  @return 
-     */
-    void leggo_hray();
-
-    /**
      * ingresso: elevazione e k di range bin
      *
      * @brief funzione  che calcola la quota in metri del centro del fascio
