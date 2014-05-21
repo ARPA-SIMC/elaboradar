@@ -54,7 +54,7 @@ struct SiteGAT : public Site
     {
         if (medium)
         {
-            static const int elev_data[]={6,16,26,37,47};
+            static const int elev_data[]={6,16,26,37,47,57,80,109,148,205,284, 300, 305, 310, 315 };
             return make_elev_array(elev_data, sizeof(elev_data) / sizeof(int));
         } else {
             static const int elev_data[]={6,16,26,37,47,57,80,109,148,205,284, 300, 305, 310, 315 };
@@ -100,7 +100,7 @@ struct SiteSPC : public Site
     {
         if (medium)
         {
-            static const int elev_data[]={6,16,26,36,47};//ANNA 30-03-2011
+            static const int elev_data[]={6,16,26,36,47,57,80,108,148,205,284,300,305,310,315};
             return make_elev_array(elev_data, sizeof(elev_data) / sizeof(int));
         } else {
             static const int elev_data[]={6,16,26,36,47,57,80,108,148,205,284,300,305,310,315};
