@@ -59,9 +59,12 @@ public:
 
     /**
      * Performs a fread on the file, throwing an exception if anything goes
-     * wrong
+     * wrong.
+     *
+     * If the read failed because the end of file was reached, it returns
+     * false.
      */
-    void fread(void* buf, size_t size);
+    bool fread(void* buf, size_t size);
 
     /**
      * Read the file line by line, calling line_cb on each line read

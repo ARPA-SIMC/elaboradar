@@ -28,6 +28,42 @@ int elev_array[15];
 namespace cumbac {
 namespace volume {
 
+namespace {
+
+struct SP20Beam
+{
+    BEAM_HD_SP20_INFO beam_info;
+    Beams<unsigned char> beams;
+
+    // Read the next beam in the file. Returns false on end of file.
+    bool read(File& in)
+    {
+        char beam_header[40];
+        if (!in.fread(beam_header, sizeof(beam_header)))
+            return false;
+
+        decode_header_sp20_date_from_name(beam_header, &beam_info, (char*)in.name());
+
+        // Salta beam non validi
+        if (!beam_info.valid_data)
+            return true;
+
+        if (has_z()) in.fread(beams.data_z, beam_info.cell_num);
+        if (has_d()) in.fread(beams.data_d, beam_info.cell_num);
+        if (has_v()) in.fread(beams.data_v, beam_info.cell_num);
+        if (has_w()) in.fread(beams.data_w, beam_info.cell_num);
+
+        return true;
+    }
+
+    bool has_z() const { return beam_info.flag_quantities[0]; }
+    bool has_d() const { return beam_info.flag_quantities[1]; }
+    bool has_v() const { return beam_info.flag_quantities[2]; }
+    bool has_w() const { return beam_info.flag_quantities[3]; }
+};
+
+}
+
 void SP20Loader::make_scan(unsigned idx, unsigned beam_size, double cell_size)
 {
     Loader::make_scan(idx, beam_size);
@@ -72,138 +108,114 @@ void SP20Loader::load(const std::string& pathname)
     BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
 //    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
 
-    unique_ptr<Beams<unsigned char>> b(new Beams<unsigned char>);
-
     /* Ciclo su tutti i raggi del volume */
     while (true)
     {
-      char beam_header[40];
-      size_t res = fread(beam_header, sizeof(beam_header), 1, sp20_in);
-      if (res != 1)
-      {
-        if (feof(sp20_in))
-          break;
-        else
+        unique_ptr<SP20Beam> beam(new SP20Beam);
+
+        if (!beam->read(sp20_in))
+            break;
+
+        // Calcola la nuova dimensione dei raggi
+        unsigned max_range = beam->beam_info.cell_num;;
+        if (max_bin)
+            max_range = min(max_range, max_bin);
+
+        vector<bool> cleaned(max_range, false);
+        if (clean)
+            cleaner.clean_beams(beam->beams, max_range, cleaned);
+
+        int el_num = elevation_index(beam->beam_info.elevation);
+        if (el_num < 0) continue;
+        make_scan(el_num, max_range, size_cell);
+
+        if (vol_z && beam->has_z()) // Riflettività Z
         {
-          string errmsg("Error reading ");
-          errmsg += pathname;
-          errmsg += ": ";
-          errmsg += strerror(errno);
-          throw runtime_error(errmsg);
+            // Convert to DB
+            double* dbs = new double[max_range];
+            for (unsigned i = 0; i < max_range; ++i)
+                dbs[i] = BYTEtoDB(beam->beams.data_z[i]);
+            //f_ray[p]=data->beam[p]*RANGE_Z/255. + min_zeta;
+
+            PolarScan<double>& scan = vol_z->scan(el_num);
+#ifdef IMPRECISE_AZIMUT
+            fill_beam(scan, el_num, beam->beam_info.elevation, (int)(beam->beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
+#else
+            fill_beam(scan, el_num, beam->beam_info.elevation, beam->beam_info.azimuth, max_range, dbs);
+#endif
+            delete[] dbs;
         }
-      }
 
-      BEAM_HD_SP20_INFO beam_info;
-      decode_header_sp20_date_from_name(beam_header, &beam_info, (char*)pathname.c_str());
+        if (vol_d && beam->has_d()) // Riflettività differenziale ZDR
+        {
+            // range variabilita ZDR
+            const double range_zdr = 16.;
+            const double min_zdr = -6.;
 
-      // Salta beam non validi
-      if (!beam_info.valid_data) continue;
+            // Convert to DB 
+            double* dbs = new double[max_range];
+            for (unsigned i = 0; i < max_range; ++i)
+                dbs[i] = beam->beams.data_d[i] * range_zdr / 255. + min_zdr;
 
-      // Calcola la nuova dimensione dei raggi
-      unsigned max_range = beam_info.cell_num;;
-      if (max_bin)
-          max_range = min(max_range, max_bin);
-
-      if (beam_info.flag_quantities[0]) sp20_in.fread(b->data_z, beam_info.cell_num);
-      if (beam_info.flag_quantities[1]) sp20_in.fread(b->data_d, beam_info.cell_num);
-      if (beam_info.flag_quantities[2]) sp20_in.fread(b->data_v, beam_info.cell_num);
-      if (beam_info.flag_quantities[3]) sp20_in.fread(b->data_w, beam_info.cell_num);
-
-      vector<bool> cleaned(max_range, false);
-      if (clean)
-          cleaner.clean_beams(*b, max_range, cleaned);
-
-      int el_num = elevation_index(beam_info.elevation);
-      if (el_num < 0) continue;
-      make_scan(el_num, max_range, size_cell);
-
-      if (vol_z) // Riflettività Z
-      {
-          // Convert to DB
-          double* dbs = new double[max_range];
-          for (unsigned i = 0; i < max_range; ++i)
-              dbs[i] = BYTEtoDB(b->data_z[i]);
-              //f_ray[p]=data->beam[p]*RANGE_Z/255. + min_zeta;
-
-          PolarScan<double>& scan = vol_z->scan(el_num);
+            PolarScan<double>& scan = vol_d->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
+            fill_beam(scan, el_num, beam->beam_info.elevation, (int)(beam->beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, dbs);
+            fill_beam(scan, el_num, beam->beam_info.elevation, beam->beam_info.azimuth, max_range, dbs);
 #endif
-          delete[] dbs;
-      }
+        }
 
-      if (vol_d) // Riflettività differenziale ZDR
-      {
-          // range variabilita ZDR
-          const double range_zdr = 16.;
-          const double min_zdr = -6.;
-
-          // Convert to DB 
-          double* dbs = new double[max_range];
-          for (unsigned i = 0; i < max_range; ++i)
-              dbs[i] = b->data_d[i] * range_zdr / 255. + min_zdr;
-
-          PolarScan<double>& scan = vol_d->scan(el_num);
+        if (vol_v && beam->has_v()) // Velocità V
+        {
+            // Convert to m/s 
+            double* ms = new double[max_range];
+            if (beam->beam_info.PRF == 'S')
+            {
+                // range variabilita V - velocità radiale
+                const double range_v = 33.;
+                for (unsigned i = 0; i < max_range; ++i)
+                    if (beam->beams.data_v[i] == -128)
+                        ms[i] = -range_v / 2;
+                    else
+                        ms[i] = beam->beams.data_v[i] * range_v / 254.;
+            } else {
+                // range variabilita V - velocità radiale
+                const double range_v = 99.;
+                for (unsigned i = 0; i < max_range; ++i)
+                    if (beam->beams.data_v[i] == -128)
+                        ms[i] = -range_v / 2;
+                    else
+                        ms[i] = beam->beams.data_v[i] * range_v / 254.;
+            }
+            // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
+            // if ( beam_info->PRF == 'S')
+            //   f_ray[p] = data->beam_w[p] * RANGE_V / 127.*.5;
+            // else
+            //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
+            PolarScan<double>& scan = vol_v->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
+            fill_beam(scan, el_num, beam->beam_info.elevation, (int)(beam->beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, dbs);
+            fill_beam(scan, el_num, beam->beam_info.elevation, beam->beam_info.azimuth, max_range, ms);
 #endif
-      }
+        }
 
-      if (vol_v) // Velocità V
-      {
-          // Convert to m/s 
-          double* ms = new double[max_range];
-          if (beam_info.PRF == 'S')
-          {
-              // range variabilita V - velocità radiale
-              const double range_v = 33.;
-              for (unsigned i = 0; i < max_range; ++i)
-                  if (b->data_v[i] == -128)
-                      ms[i] = -range_v / 2;
-                  else
-                      ms[i] = b->data_v[i] * range_v / 254.;
-          } else {
-              // range variabilita V - velocità radiale
-              const double range_v = 99.;
-              for (unsigned i = 0; i < max_range; ++i)
-                  if (b->data_v[i] == -128)
-                      ms[i] = -range_v / 2;
-                  else
-                      ms[i] = b->data_v[i] * range_v / 254.;
-          }
-              // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
-              // if ( beam_info->PRF == 'S')
-              //   f_ray[p] = data->beam_w[p] * RANGE_V / 127.*.5;
-              // else
-              //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
-          PolarScan<double>& scan = vol_v->scan(el_num);
+        if (vol_w && beam->has_w()) // Spread - Sigma V
+        {
+            // range variabilita Sigma V - Spread velocità
+            const double range_sig_v = 10.;
+            // Convert to m/s 
+            double* ms = new double[max_range];
+            for (unsigned i = 0; i < max_range; ++i)
+                ms[i] = beam->beams.data_w[i] * range_sig_v / 255.0;
+
+            PolarScan<double>& scan = vol_w->scan(el_num);
 #ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
+            fill_beam(scan, el_num, beam->beam_info.elevation, (int)(beam->beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, ms);
+            fill_beam(scan, el_num, beam->beam_info.elevation, beam->beam_info.azimuth, max_range, ms);
 #endif
-      }
-
-      if (vol_w) // Spread - Sigma V
-      {
-          // range variabilita Sigma V - Spread velocità
-          const double range_sig_v = 10.;
-          // Convert to m/s 
-          double* ms = new double[max_range];
-          for (unsigned i = 0; i < max_range; ++i)
-              ms[i] = b->data_w[i] * range_sig_v / 255.0;
-
-          PolarScan<double>& scan = vol_w->scan(el_num);
-#ifdef IMPRECISE_AZIMUT
-          fill_beam(scan, el_num, beam_info.elevation, (int)(beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
-#else
-          fill_beam(scan, el_num, beam_info.elevation, beam_info.azimuth, max_range, ms);
-#endif
-      }
+        }
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());

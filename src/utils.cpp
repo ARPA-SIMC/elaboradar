@@ -106,16 +106,20 @@ void File::read_lines(std::function<void (char*, size_t)> line_cb)
     if (line) free(line);
 }
 
-void File::fread(void* buf, size_t size)
+bool File::fread(void* buf, size_t size)
 {
     if (::fread(buf, size, 1, fd) != 1)
     {
+        if (feof(fd))
+            return false;
+
         string errmsg("read failed on ");
         errmsg += fname;
         errmsg += ": ";
         errmsg += strerror(errno);
         throw runtime_error(errmsg);
     }
+    return true;
 }
 
 const char* getenv_default(const char* envname, const char* default_value)
