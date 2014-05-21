@@ -28,7 +28,7 @@ struct SP20Loader : public Loader
     // Create or reuse a scan at position idx, with the given beam size
     void make_scan(unsigned idx, unsigned beam_size, double cell_size);
 
-    void beam_to_volumes(const sp20::Beam& beam, unsigned el_num);
+    void beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, unsigned el_num);
 };
 
 }
