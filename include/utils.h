@@ -58,6 +58,12 @@ public:
     operator bool() const { return fd; }
 
     /**
+     * Performs a fread on the file, throwing an exception if anything goes
+     * wrong
+     */
+    void fread(void* buf, size_t size);
+
+    /**
      * Read the file line by line, calling line_cb on each line read
      */
     void read_lines(std::function<void (char*, size_t)> line_cb);
