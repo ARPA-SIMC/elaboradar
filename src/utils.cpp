@@ -8,50 +8,60 @@
 
 using namespace std;
 
-FILEFromEnv::FILEFromEnv()
-    : fd(0)
+namespace cumbac {
+
+File::File()
+    : logging_category(log4c_category_get("radar.utils"))
 {
 }
 
-FILEFromEnv::FILEFromEnv(const char* envname, const char* mode)
-    : fd(0)
+File::File(File&& f)
+    : logging_category(f.logging_category),
+      fname(std::move(f.fname)),
+      fdesc(std::move(f.fdesc)),
+      fd(f.fd)
 {
-    open_from_env(envname, mode);
+    f.fd = 0;
 }
 
-bool FILEFromEnv::open_from_env(const char* envname, const char* mode)
+File::File(log4c_category_t* logging_category)
+    : logging_category(logging_category)
 {
-    LOG_CATEGORY("radar.utils");
+}
 
+File::~File()
+{
+    if (fd) fclose(fd);
+}
+
+bool File::open_from_env(const char* varname, const char* mode, const char* desc)
+{
     if (fd)
     {
         fclose(fd);
-        fd = 0;
+        fd = nullptr;
         fname.clear();
+        fdesc.clear();
     }
 
-    if (const char* val = getenv(envname))
+    const char* envfname = getenv(varname);
+    if (!envfname)
     {
-        fd = fopen(val, mode);
-        if (!fd)
-        {
-            LOG_ERROR("Cannot open $%s (%s): %s", envname, val, strerror(errno));
-        } else {
-            fname = val;
-        }
-    } else {
-        LOG_INFO("Cannot open $%s is not set: skipping file.", envname);
+        LOG_ERROR("$%s is not set", varname);
+        return false;
     }
 
-    return fd != 0;
-}
-
-FILEFromEnv::~FILEFromEnv()
-{
-    if (fd)
+    fd = fopen(envfname, mode);
+    if (!fd)
     {
-        fclose(fd);
+        LOG_ERROR("Cannot open $%s=%s: %s", varname, envfname, strerror(errno));
+        return false;
     }
+
+    fname = envfname;
+    if (desc) fdesc = desc;
+
+    return true;
 }
 
 const char* getenv_default(const char* envname, const char* default_value)

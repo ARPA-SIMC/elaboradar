@@ -14,47 +14,6 @@
 
 using namespace std;
 
-namespace {
-
-struct InputFile
-{
-    log4c_category_t* logging_category;
-    const char* varname;
-    const char* desc;
-    const char* fname;
-    FILE* file;
-
-    InputFile(log4c_category_t* logging_category, const char* varname, const char* desc=0)
-        : logging_category(logging_category), varname(varname), desc(desc ? desc : varname), fname(0), file(0)
-    {
-    }
-    ~InputFile()
-    {
-        if (file) fclose(file);
-    }
-
-    bool open(const char* mode)
-    {
-        fname = getenv(varname);
-        if (!fname)
-        {
-            LOG_ERROR("$%s is not set", varname);
-            return false;
-        }
-
-        file = fopen(fname, mode);
-        if (!file)
-        {
-            LOG_ERROR("Cannot open $%s=%s: %s", varname, fname, strerror(errno));
-            return false;
-        }
-        return true;
-    }
-};
-
-}
-
-
 namespace cumbac {
 
 Assets::Assets()
@@ -198,8 +157,8 @@ std::string Assets::fname_out_pp_bloc(const char* suffix) const
 float Assets::read_t_ground() const
 {
     LOG_CATEGORY("radar.vpr");
-    InputFile in(logging_category, "FILE_T");
-    if (!in.open("rt"))
+    File in(logging_category);
+    if (!in.open_from_env("FILE_T", "rt"))
         return NODATAVPR;
 
     float media_t = 0;
@@ -207,7 +166,7 @@ float Assets::read_t_ground() const
     float lon, lat, t;
 
     while (1) {
-        if(fscanf(in.file, "%f %f %f \n",&lon,&lat,&t) == EOF) break;
+        if(fscanf(in, "%f %f %f \n",&lon,&lat,&t) == EOF) break;
         if (fabs(conf_site->radar_lat-lat)<=maxdlat && fabs(conf_site->radar_lon-lon)<=maxdlon) {
             ++icount;
             media_t += t - 273.15;
@@ -216,7 +175,7 @@ float Assets::read_t_ground() const
 
     if (icount == 0)
     {
-        LOG_ERROR("Temperature data not found in $FILE_T=%s", in.fname);
+        LOG_ERROR("Temperature data not found in $FILE_T=%s", in.name());
         return NODATAVPR;
     }
 
@@ -228,15 +187,15 @@ float Assets::read_t_ground() const
 long int Assets::read_profile_gap() const
 {
     LOG_CATEGORY("radar.vpr");
-    InputFile in(logging_category, "LAST_VPR");
-    if (!in.open("rb"))
+    File in(logging_category);
+    if (!in.open_from_env("LAST_VPR", "rb"))
         return 100;
 
     // FIXME: time_t può essere 64 bit, qui viene sempre troncato.
     // FIXME: l'ideale sarebbe, in questo caso, usare fprintf/fscanf invece di
     // FIXME: fread/fwrite
     uint32_t last_time;
-    fread(&last_time, 4, 1, in.file);
+    fread(&last_time, 4, 1, in);
 
     long int gap1 = abs(conf_acq_time - last_time)/900;
     LOG_INFO("old_data_header.norm.maq.acq_date last_time gap %ld %u %ld", conf_acq_time, last_time, gap1);
@@ -247,14 +206,14 @@ long int Assets::read_profile_gap() const
 int Assets::read_vpr_heating() const
 {
     LOG_CATEGORY("radar.vpr");
-    InputFile in(logging_category, "VPR_HEATING");
-    if (!in.open("rt"))
+    File in(logging_category);
+    if (!in.open_from_env("VPR_HEATING", "rt"))
         return 0;
 
     int heating;
-    if (fscanf(in.file, "%i ", &heating) != 1)
+    if (fscanf(in, "%i ", &heating) != 1)
     {
-        LOG_ERROR("Cannot read $VPR_HEATING=%s: %s", in.fname, strerror(errno));
+        LOG_ERROR("Cannot read $VPR_HEATING=%s: %s", in.name(), strerror(errno));
         return 0;
     }
 
@@ -264,24 +223,24 @@ int Assets::read_vpr_heating() const
 void Assets::write_vpr_heating(int value) const
 {
     LOG_CATEGORY("radar.vpr");
-    InputFile out(logging_category, "VPR_HEATING");
-    if (!out.open("wt"))
+    File out(logging_category);
+    if (!out.open_from_env("VPR_HEATING", "wt"))
         return;
 
-    if (fprintf(out.file, " %i \n", value) < 0);
-        LOG_ERROR("Cannot write $VPR_HEATING=%s: %s", out.fname, strerror(errno));
+    if (fprintf(out, " %i \n", value) < 0);
+        LOG_ERROR("Cannot write $VPR_HEATING=%s: %s", out.name(), strerror(errno));
 }
 
 bool Assets::read_0term(float& zeroterm)
 {
     LOG_CATEGORY("radar.class");
-    InputFile in(logging_category, "FILE_ZERO_TERMICO");
-    if (!in.open("rt"))
+    File in(logging_category);
+    if (!in.open_from_env("FILE_ZERO_TERMICO", "rt"))
         return false;
 
-    if (fscanf(in.file, "%f", &zeroterm) != 1)
+    if (fscanf(in, "%f", &zeroterm) != 1)
     {
-        LOG_ERROR("$FILE_ZERO_TERMICO=%s cannot be read: %s", in.fname, strerror(errno));
+        LOG_ERROR("$FILE_ZERO_TERMICO=%s cannot be read: %s", in.name(), strerror(errno));
         return false;
     }
 
@@ -301,14 +260,14 @@ void Assets::write_last_vpr()
 
 int Assets::read_vpr_hmax()
 {
-    InputFile in(logging_category, "VPR_HMAX");
-    if (!in.open("rt"))
+    File in(logging_category);
+    if (!in.open_from_env("VPR_HMAX", "rt"))
         return -9999;
 
     int value;
-    if (fscanf(in.file, "%i", &value) != 1)
+    if (fscanf(in, "%i", &value) != 1)
     {
-        LOG_ERROR("$VPR_HMAX=%s cannot be read: %s", in.fname, strerror(errno));
+        LOG_ERROR("$VPR_HMAX=%s cannot be read: %s", in.name(), strerror(errno));
         return -9999;
     }
 
@@ -327,14 +286,14 @@ void Assets::write_vpr_hmax(int hvprmax)
 
 bool Assets::read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area)
 {
-    InputFile in(logging_category, "VPR0_FILE");
-    if (!in.open("rt")) return false;
+    File in(logging_category);
+    if (!in.open_from_env("VPR0_FILE", "rt")) return false;
 
     for (unsigned i = 0; i < vpr0.size(); ++i)
         //-----leggo vpr e area per ogni strato----
-        if (fscanf(in.file, "%f %li\n", &vpr0[i], &area[i]) != 2)
+        if (fscanf(in, "%f %li\n", &vpr0[i], &area[i]) != 2)
         {
-            LOG_ERROR("$VPR0_FILE=%s cannot be read: %s", in.fname, strerror(errno));
+            LOG_ERROR("$VPR0_FILE=%s cannot be read: %s", in.name(), strerror(errno));
             throw std::runtime_error("cannot read $VPR0_FILE");
         }
 
