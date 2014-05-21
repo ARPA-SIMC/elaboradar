@@ -19,7 +19,7 @@ TESTGRP(read);
 
 namespace {
 
-void test_0120141530gat(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
+void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
 {
     // Ensure that nbeam_elev has been filled with the right values
     wassert(actual(li.scan(0).count_rays_filled()) == 400);
@@ -56,6 +56,7 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Vo
     // that looks correct
     VolumeStats stats;
     v.compute_stats(stats);
+   // stats.print(stdout);
     wassert(actual(stats.count_zeros[0]) == 0);
     wassert(actual(stats.count_zeros[1]) == 0);
     wassert(actual(stats.count_zeros[2]) == 0);
@@ -80,6 +81,70 @@ void test_0120141530gat(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Vo
     wassert(actual(stats.sum_others[3]) ==   46002);
     wassert(actual(stats.sum_others[4]) ==   78321);
     wassert(actual(stats.sum_others[5]) ==   88237);
+}
+
+void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
+{
+    // Ensure that nbeam_elev has been filled with the right values
+    wassert(actual(li.scan(0).count_rays_filled()) == 400);
+    wassert(actual(li.scan(1).count_rays_filled()) == 400);
+    wassert(actual(li.scan(2).count_rays_filled()) == 400);
+    wassert(actual(li.scan(3).count_rays_filled()) == 400);
+    wassert(actual(li.scan(4).count_rays_filled()) == 400);
+    wassert(actual(li.scan(5).count_rays_filled()) == 400);
+
+    // Ensure that the beam sizes are what we expect
+    wassert(actual(v.scan(0).beam_size) == 494);
+    wassert(actual(v.scan(1).beam_size) == 494);
+    wassert(actual(v.scan(2).beam_size) == 494);
+    wassert(actual(v.scan(3).beam_size) == 494);
+    wassert(actual(v.scan(4).beam_size) == 494);
+    wassert(actual(v.scan(5).beam_size) == 494);
+
+    // Ensure that the beam azimuth are what we expect
+    /*
+    wassert(actual(v.scan(0)[0].alfa) == 0);
+    wassert(actual(v.scan(0)[1].alfa) == 10);
+    wassert(actual(v.scan(1)[1].alfa) == 10);
+    wassert(actual(v.scan(2)[1].alfa) == 10);
+    wassert(actual(v.scan(3)[1].alfa) == 10);
+    wassert(actual(v.scan(4)[1].alfa) == 10);
+    wassert(actual(v.scan(5)[1].alfa) == 10);
+    */
+
+    // Check other header fields
+    wassert(actual(li.acq_date) == 1389108600);
+    wassert(actual(li.size_cell) == 250);
+
+    // Arbitrary stats on volume contents so we can check that we read data
+    // that looks correct
+    VolumeStats stats;
+    v.compute_stats(stats);
+    //stats.print(stdout);
+    wassert(actual(stats.count_zeros[0]) == 0);
+    wassert(actual(stats.count_zeros[1]) == 0);
+    wassert(actual(stats.count_zeros[2]) == 0);
+    wassert(actual(stats.count_zeros[3]) == 0);
+    wassert(actual(stats.count_zeros[4]) == 0);
+    wassert(actual(stats.count_zeros[5]) == 0);
+    wassert(actual(stats.count_ones[0]) == 146705);
+    wassert(actual(stats.count_ones[1]) == 184609);
+    wassert(actual(stats.count_ones[2]) == 193796);
+    wassert(actual(stats.count_ones[3]) == 196291);
+    wassert(actual(stats.count_ones[4]) == 196160);
+    wassert(actual(stats.count_ones[5]) == 196161);
+    wassert(actual(stats.count_others[0]) == 50895);
+    wassert(actual(stats.count_others[1]) == 12991);
+    wassert(actual(stats.count_others[2]) ==  3804);
+    wassert(actual(stats.count_others[3]) ==  1309);
+    wassert(actual(stats.count_others[4]) ==  1440);
+    wassert(actual(stats.count_others[5]) ==  1439);
+    wassert(actual(stats.sum_others[0]) == 4610221);
+    wassert(actual(stats.sum_others[1]) ==  887303);
+    wassert(actual(stats.sum_others[2]) ==  217591);
+    wassert(actual(stats.sum_others[3]) ==   45899);
+    wassert(actual(stats.sum_others[4]) ==   78125);
+    wassert(actual(stats.sum_others[5]) ==   87972);
 }
 
 namespace {
@@ -182,7 +247,7 @@ void to::test<1>()
     loader.load_info = &load_info;
     loader.load("testdata/DBP2_070120141530_GATTATICO");
     // Check the contents of what we read
-    wruntest(test_0120141530gat, load_info, vsp20);
+    wruntest(test_0120141530gat_SP20, load_info, vsp20);
 }
 
 template<> template<>
@@ -195,7 +260,7 @@ void to::test<2>()
     // Ensure that reading was successful
     wassert(actual(res).istrue());
     // Check the contents of what we read
-    wruntest(test_0120141530gat, cb->load_info, cb->volume);
+    wruntest(test_0120141530gat_ODIM, cb->load_info, cb->volume);
     delete cb;
 }
 

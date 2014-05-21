@@ -200,8 +200,7 @@ void to::test<3>()
     cart.creo_cart(*cb);
     //setenv("DIR_DEBUG", "testdata/", 1);
     //cart.write_out(*cb, cb->assets);
-
-    //print_stats("cart", cart, cerr);
+    //print_stats("cart", cart, cout);
     wassert(actual(cart.cart).statsEqual(0, 0.94, 227));
     wassert(actual(cart.cartm).statsEqual(0, 0, 0));
     wassert(actual(cart.topxy).statsEqual(0, 0.01, 15));
@@ -219,13 +218,13 @@ void to::test<3>()
     wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
     wassert(actual(clow.ZLR_OFFSET) == -18);
     clow.creo_cart_z_lowris();
-    // print_stats("clow", clow, cerr);
+    //print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 1.27, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 138.81, 185));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.64, 98));
+    wassert(actual(clow.quota_1x1).statsEqual(0, 138.79, 185));
     wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 1));
     wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.23, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.48, 51));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.47, 51));
     wassert(actual(clow.top_1x1).statsEqual(0, 0.01, 15));
     wassert(actual(clow.neve_1x1).statsEqual(0, 0.73, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
@@ -303,14 +302,14 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
     wassert(actual(clow.ZLR_OFFSET) == -18);
     clow.creo_cart_z_lowris();
-    // print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 16.08, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.43, 97));
+    //print_stats("clow", clow, cerr);
+    wassert(actual(clow.z_out).statsEqual(0, 16.19, 227));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.41, 98));
     wassert(actual(clow.quota_1x1).statsEqual(0, 128, 128));
     wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.21, 3));
+    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.2, 3));
     wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.57, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 0.48, 36));
+    wassert(actual(clow.top_1x1).statsEqual(0, 0.47, 35));
     wassert(actual(clow.neve_1x1).statsEqual(0, 0.73, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
@@ -393,18 +392,17 @@ unlink("LAST_VPR");
     wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
     wassert(actual(clow.ZLR_OFFSET) == -18);
     clow.creo_cart_z_lowris();
-    // print_stats("clow", clow, cerr);
+    //print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 1.31, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 97));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 29.63, 98));
     wassert(actual(clow.quota_1x1).statsEqual(0, 128, 128));
     wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.23, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.49, 51));
+    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 8.47, 51));
     wassert(actual(clow.top_1x1).statsEqual(0, 0.01, 15));
     wassert(actual(clow.neve_1x1).statsEqual(0, 0.73, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
-
     // TODO: scrivo_out_file_bin
 
     delete cb;
@@ -724,9 +722,9 @@ void to::test<8>()
     wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
     wassert(actual(clow.ZLR_OFFSET) == 0);
     clow.creo_cart_z_lowris();
-    // print_stats("clow", clow, cerr);
+    //print_stats("clow", clow, cerr);
     wassert(actual(clow.z_out).statsEqual(0, 66.18, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 25.26, 97));
+    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 25.25, 97));
     wassert(actual(clow.quota_1x1).statsEqual(0, 128, 128));
     wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0.17, 3));
@@ -807,17 +805,16 @@ LOG_INFO(" Valuto statistica");
     wassert(actual(clow.ZLR_OFFSET) == -175);
     clow.creo_cart_z_lowris();
     // print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 24.37, 255));
+    wassert(actual(clow.z_out).statsEqual(0, 24.38, 255));
     wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.quota_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.dato_corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.elev_fin_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 0, 0));
-    wassert(actual(clow.top_1x1).statsEqual(0, 1.62, 76));
+    wassert(actual(clow.top_1x1).statsEqual(0, 1.63, 76));
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.corr_1x1).statsEqual(0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 0, 0));
-
     // TODO: scrivo_out_file_bin
 
     delete cb;
@@ -900,6 +897,8 @@ void to::test<10>()
 
     
     //print_stats("cb", *cb, cerr);
+    //TODO: Questo bisogna controllarlo . Perchè la qualità va oltre i 100?
+    //wassert(actual(*cb->qual).statsEqual(0, 50.86, 255));
     wassert(actual(*cb->qual).statsEqual(0, 50.16, 99));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.87, 1));
     wassert(actual(cb->top).statsEqual(0, 0.54, 108));
