@@ -151,7 +151,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
       calcolo_vpr(0),
       first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
       bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN),
-      qual(0), cappi(MyMAX_BIN)
+      qual(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
 }
@@ -2310,7 +2310,6 @@ Cart::Cart(unsigned max_bin)
       corr_cart(max_bin*2),
       neve_cart(max_bin*2),
       conv_cart(max_bin*2),
-      cappi_cart(max_bin*2),
       quota_cart(max_bin*2),
       cartm(max_bin*2)
 {
@@ -2496,8 +2495,7 @@ CartLowris::CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c)
       top_1x1(CART_DIM_ZLR),
       corr_1x1(CART_DIM_ZLR),
       neve_1x1(CART_DIM_ZLR),
-      conv_1x1(CART_DIM_ZLR),
-      cappi_1x1(CART_DIM_ZLR)
+      conv_1x1(CART_DIM_ZLR)
 {
     // const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
 }
