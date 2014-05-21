@@ -49,6 +49,8 @@ public:
      * effective elevation of each single beam
      */
     double elevation;
+    /// Size of a beam cell in meters
+    double cell_size;
 
     PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : Matrix2D<T>(PolarScan::Constant(NUM_AZ_X_PPI, beam_size, default_value)),
@@ -216,7 +218,7 @@ public:
     }
 
     // Create or reuse a scan at position idx, with the given beam size
-    PolarScan<T>& make_scan(unsigned idx, unsigned beam_size, double elevation)
+    PolarScan<T>& make_scan(unsigned idx, unsigned beam_size, double elevation, double cell_size)
     {
         if (idx < this->size())
         {
@@ -239,6 +241,7 @@ public:
             // Add the new polar scan
             this->push_back(new PolarScan<T>(beam_size));
             this->back()->elevation = elevation;
+            this->back()->cell_size = cell_size;
         }
 
         // Return it

@@ -43,7 +43,7 @@ struct CalcoloSteiner
     // Pixel precipitanti
     std::vector<steiner::Point> lista_bckg;
 
-    CalcoloSteiner(const Volume<double>& volume, const volume::ElevFin<double>& elev_fin, unsigned max_bin, const double size_cell);
+    CalcoloSteiner(const Volume<double>& volume, const volume::ElevFin<double>& elev_fin, unsigned max_bin);
 
     /**
      *  calcola valore di background per individuare pixel convettivo

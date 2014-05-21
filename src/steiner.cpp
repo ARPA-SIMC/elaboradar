@@ -57,8 +57,9 @@ void Point::finalize()
 CalcoloSteiner::CalcoloSteiner(
         const Volume<double>& volume,
         const volume::ElevFin<double>& elev_fin,
-        unsigned max_bin, const double size_cell)
-    : volume(volume), elev_fin(elev_fin), max_bin(max_bin), size_cell(size_cell),
+        unsigned max_bin)
+    // TODO: evaluate cell_size scan by scan?
+    : volume(volume), elev_fin(elev_fin), max_bin(max_bin), size_cell(volume.scan(0).cell_size),
       conv_STEINER(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, max_bin, MISSING))
 {
     using namespace steiner;

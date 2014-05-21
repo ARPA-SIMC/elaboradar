@@ -101,8 +101,6 @@ struct LoadInfo
     std::string filename;
     // Acquisition date
     time_t acq_date;
-    // Length of a beam cell in meters
-    double size_cell;
     bool declutter_rsp; // ?
 
     LoadInfo()

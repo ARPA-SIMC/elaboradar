@@ -9,7 +9,7 @@ using namespace std;
 
 namespace cumbac {
 
-void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin, double size_cell)
+void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
 {
     /* ---------------------------------- */
     /*           FASE 1 */
@@ -21,7 +21,9 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     /*  Metodo 1 - -Calcolo le coordinate di ogni punto del RHI mediante utilizzo di cicli */
 
     // estremi x e z (si procede per rhi)
-    double range_min=0.5 * size_cell/1000.;
+#warning to compute scan by scan?
+    double cell_size = volume.scan(0).cell_size;
+    double range_min=0.5 * cell_size / 1000.;
     //double range_max=(max_bin-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
@@ -53,7 +55,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin,
     Matrix2D<unsigned> jx(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
 
     for (unsigned i = 0; i < max_bin; i++){
-        double range = (i + 0.5) * size_cell/1000.;
+        double range = (i + 0.5) * cell_size/1000.;
 
         for (unsigned k=0; k < volume.size(); k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
