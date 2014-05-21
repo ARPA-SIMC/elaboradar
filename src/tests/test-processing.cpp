@@ -192,7 +192,7 @@ void to::test<3>()
     wassert(actual(*cb->qual).statsEqual(0, 55.07, 99));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.88, 1));
     //wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 143635, 0, 5.27, 10));
-    wassert(actual(cb->top).statsEqual(0, 0.01, 15));
+    wassert(actual(cb->top).statsEqual(0, 42, 0, 0.01, 15));
     //wassert(actual(cb->top).statsEqual(0, 204765, 1, 0, 15));
 
     Cart cart(cb->volume.max_beam_size());

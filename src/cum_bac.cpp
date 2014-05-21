@@ -83,17 +83,15 @@ struct HRay : public Matrix2D<double>
     {
         const double radius = 6378137.0;
         const double kea = 4. / 3. * radius;
-        //const double size_cell = cum_bac.load_info.size_cell;
-#warning use it from the volume
-        const double size_cell = 250;
 
         for (unsigned iel = 0; iel < vol.size(); ++iel)
         {
-            double elev = vol.scan(iel).elevation;
+            const double elev = vol.scan(iel).elevation;
+            const double cell_size = vol.scan(iel).cell_size;
 
             for (unsigned ibin = 0; ibin < cols(); ++ibin)
             {
-                double range = (ibin + 0.5) * size_cell;
+                double range = (ibin + 0.5) * cell_size;
                 (*this)(iel, ibin) = ::sqrt(::pow(range, 2.) + ::pow(kea, 2.) + 2 * kea * range * ::sin(DTOR * elev)) - kea;
             }
         }
@@ -788,7 +786,7 @@ void CUM_BAC::leggo_first_level()
 //--------quota=f(distinkm, rstinkm, elevazinrad) in metri
 double CUM_BAC::quota_f(double elevaz, int k) // quota funzione di elev(radianti) e range
 {
-#warning make quota_f a scan-specific method
+    // TODO: make quota_f a scan-specific method
     double dist = k * volume.scan(0).cell_size + volume.scan(0).cell_size / 2.;
     // quota in prop. standard da elevazione reale
     return (sqrt(pow(dist / 1000., 2) + (rst * rst) + 2.0 * dist / 1000. * rst * sin(elevaz)) - rst) * 1000.;
@@ -1022,7 +1020,7 @@ double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic
         Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
         R=pow((Zhh/aMP),(1.0/bMP));
         att_rate=0.0018*pow(R,1.05);
-#warning FIXME: to compute scan by scan?
+        // TODO: to compute scan by scan?
         att_tot=att_tot+2.*att_rate*0.001 * volume.scan(0).cell_size;
         if (att_tot>BYTEtoDB(254)) att_tot=BYTEtoDB(254);
     }
@@ -1079,7 +1077,7 @@ void CalcoloVPR::classifica_rain()
 
     // TODO: remove duplication with CylindricalVolume::resample
     const Volume<double>& volume = cum_bac.volume;
-#warning FIXME: to compute scan by scan?
+    // TODO: to compute scan by scan?
     const double size_cell = volume.scan(0).cell_size;
     double range_min=0.5 * size_cell/1000.;
     double range_max=(MyMAX_BIN-0.5) * size_cell/1000.;
