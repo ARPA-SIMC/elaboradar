@@ -76,6 +76,47 @@ void SP20Loader::make_scan(unsigned idx, unsigned beam_size, double cell_size)
     if (vol_w) vol_w->make_scan(idx, beam_size, elev_array[idx], cell_size);
 }
 
+namespace {
+
+struct Beams : public std::vector<sp20::Beam*>
+{
+    // Elevation number
+    unsigned el_num;
+
+    Beams(unsigned el_num) : el_num(el_num) {}
+    Beams(const Beams&) = delete;
+    Beams(const Beams&&) = delete;
+    ~Beams()
+    {
+        for (auto i: *this)
+            delete i;
+    }
+    Beams& operator=(const Beams&) = delete;
+
+    // Compute the minimum beam size
+    unsigned min_beam_size() const
+    {
+        if (empty()) return 0;
+        unsigned res = (*this)[0]->beam_size;
+        for (auto i: *this)
+            res = min(res, i->beam_size);
+        return res;
+    }
+
+    // Set the beam size on each beam
+    void set_beam_size(unsigned val)
+    {
+        for (auto i: *this)
+            i->beam_size = val;
+    }
+};
+
+struct Elevations : public std::vector<unique_ptr<Beams>>
+{
+};
+
+}
+
 void SP20Loader::load(const std::string& pathname)
 {
     LOG_CATEGORY("Volume");
@@ -111,7 +152,9 @@ void SP20Loader::load(const std::string& pathname)
     BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
 //    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
 
-    /* Ciclo su tutti i raggi del volume */
+    // Read all beams from the file
+    Elevations elevations;
+
     while (true)
     {
         unique_ptr<sp20::Beam> beam(new sp20::Beam);
@@ -130,9 +173,25 @@ void SP20Loader::load(const std::string& pathname)
         if (clean)
             cleaner.clean_beams(beam->beams, beam->beam_size, cleaned);
 
-        make_scan(el_num, beam->beam_size, size_cell);
+        while ((unsigned)el_num >= elevations.size())
+        {
+            elevations.push_back(unique_ptr<Beams>(new Beams(elevations.size())));
+        }
 
-        beam_to_volumes(*beam, el_num);
+        elevations[el_num]->push_back(beam.release());
+    }
+
+    for (auto& beams: elevations)
+    {
+        // Set the beam size on each elevation to the minimum beam size
+        unsigned beam_size = beams->min_beam_size();
+        beams->set_beam_size(beam_size);
+
+        // TODO: check if an elevation has been skipped
+        make_scan(beams->el_num, beam_size, size_cell);
+
+        for (auto& beam: *beams)
+            beam_to_volumes(*beam, beams->el_num);
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
