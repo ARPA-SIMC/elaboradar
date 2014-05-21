@@ -161,9 +161,6 @@ public:
     // top, come sopra
     Matrix2D<unsigned char> top;
 
-    //matrici per classificazione: cappi
-    PolarScan <unsigned char> cappi;
-
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
        T_time, T_data, T_ora..*/
@@ -416,7 +413,6 @@ struct Cart
     Image<unsigned char> corr_cart;
     Image<unsigned char> neve_cart;/* neve formato 1024*1024, risoluzione minima */
     Image<unsigned char> conv_cart;
-    Image<unsigned char> cappi_cart;
     Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
     Image<double> cartm;  /* Z media dei bins adiacenti al punto */
 
@@ -458,8 +454,6 @@ struct CartLowris
     Image<unsigned char> neve_1x1;/* neve in formato 256*256, risoluzione ZLR */
     // uscite: matrici class max resol e 1x1
     Image<unsigned char> conv_1x1;
-    //uscite:matrici cappi max resol e 1x1
-    Image<unsigned char> cappi_1x1;
 
     CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c);
 
