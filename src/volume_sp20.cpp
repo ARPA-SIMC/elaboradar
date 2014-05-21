@@ -82,6 +82,8 @@ struct Beams : public std::vector<sp20::Beam*>
 {
     // Elevation number
     unsigned el_num;
+    // Beam size for the polar scan
+    unsigned beam_size = 0;
 
     Beams(unsigned el_num) : el_num(el_num) {}
     Beams(const Beams&) = delete;
@@ -101,13 +103,6 @@ struct Beams : public std::vector<sp20::Beam*>
         for (auto i: *this)
             res = min(res, i->beam_size);
         return res;
-    }
-
-    // Set the beam size on each beam
-    void set_beam_size(unsigned val)
-    {
-        for (auto i: *this)
-            i->beam_size = val;
     }
 };
 
@@ -181,17 +176,34 @@ void SP20Loader::load(const std::string& pathname)
         elevations[el_num]->push_back(beam.release());
     }
 
+    if (elevations.empty())
+        throw std::runtime_error("sp20 file has no beams");
+
+    // Set the beam size on each elevation to the minimum beam size
     for (auto& beams: elevations)
     {
-        // Set the beam size on each elevation to the minimum beam size
         unsigned beam_size = beams->min_beam_size();
-        beams->set_beam_size(beam_size);
+        beams->beam_size = beam_size;
+    }
 
-        // TODO: check if an elevation has been skipped
-        make_scan(beams->el_num, beam_size, size_cell);
+    if (elevations.back()->beam_size == 0)
+        throw std::runtime_error("last elevation beam size is 0");
+
+    // For elevations that have beam_size = 0, use the beam size from the
+    // elevation above
+    for (int i = elevations.size() - 2; i >= 0; --i)
+    {
+        if (elevations[i]->beam_size == 0)
+            elevations[i]->beam_size = elevations[i + 1]->beam_size;
+    }
+
+    // Create the polarscans and fill them with data
+    for (auto& beams: elevations)
+    {
+        make_scan(beams->el_num, beams->beam_size, size_cell);
 
         for (auto& beam: *beams)
-            beam_to_volumes(*beam, beams->el_num);
+            beam_to_volumes(*beam, beams->beam_size, beams->el_num);
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
@@ -202,9 +214,9 @@ void SP20Loader::load(const std::string& pathname)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 }
 
-void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned el_num)
+void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, unsigned el_num)
 {
-    const unsigned max_range = beam.beam_size;
+    const unsigned max_range = min(beam_size, beam.beam_size);
 
     if (vol_z && beam.has_z()) // Riflettività Z
     {
