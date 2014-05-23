@@ -15,15 +15,18 @@ namespace testradar {
 template<typename T>
 struct ArrayStats
 {
-    bool all_missing = false;
+    bool all_missing = true;
     T min = 0;
     T max = 0;
-    double avg = 0;
+    double sum = 0;
     unsigned count_missing = 0;
+    unsigned count_values = 0;
 
     ArrayStats() {}
 
-    void count_sample(const T& sample, unsigned item_count)
+    double avg() const { return count_values ? sum / count_values : min; }
+
+    void count_sample(const T& sample)
     {
         if (all_missing)
         {
@@ -38,22 +41,23 @@ struct ArrayStats
             if (sample > max)
                 max = sample;
         }
-        avg += (double)sample / item_count;
+        sum += (double)sample;
+        ++count_values;
     }
 
-    void count_sample(const T& missing, const T& sample, unsigned item_count)
+    void count_sample(const T& missing, const T& sample)
     {
         if (sample == missing)
             ++count_missing;
         else
-            count_sample(sample, item_count);
+            count_sample(sample);
     }
 
 
     void fill(const T* arr, unsigned size)
     {
         for (unsigned i = 0; i < size; ++i)
-            this->count_sample(arr[i], size);
+            this->count_sample(arr[i]);
     }
 
     void fill(const cumbac::Matrix2D<T>& arr)
@@ -63,20 +67,15 @@ struct ArrayStats
 
     void fill(const cumbac::Volume<T>& vol)
     {
-        unsigned nsamples = 0;
         for (unsigned i = 0; i < vol.size(); ++i)
-            nsamples += vol.scan(i).size();
-
-        for (unsigned i = 0; i < vol.size(); ++i)
-            for (size_t j = 0; j < vol.scan(i).size(); ++j)
-                this->count_sample(vol.scan(i).data()[j], nsamples);
+            this->fill(vol.scan(i));
     }
 
 
     void fill(const T& missing, const T* arr, unsigned size)
     {
         for (unsigned i = 0; i < size; ++i)
-            this->count_sample(missing, arr[i], size);
+            this->count_sample(missing, arr[i]);
     }
 
     void fill(const T& missing, const cumbac::Matrix2D<T>& arr)
@@ -86,33 +85,18 @@ struct ArrayStats
 
     void fill(const T& missing, const cumbac::Volume<T>& vol)
     {
-        unsigned nsamples = 0;
         for (unsigned i = 0; i < vol.size(); ++i)
-            nsamples += vol.scan(i).size();
-
-        for (unsigned i = 0; i < vol.size(); ++i)
-            for (size_t j = 0; j < vol.scan(i).size(); ++j)
-                this->count_sample(missing, vol.scan(i).data()[j], nsamples);
+            this->fill(missing, vol.scan(i));
     }
 
 
     void print()
     {
         fprintf(stderr, "min %f max %f avg %f, zeros: %u, ones: %u\n",
-                (double)this->min, (double)this->max, this->avg,
+                (double)this->min, (double)this->max, this->avg(),
                 this->count_zeros, this->count_ones);
     }
 };
-
-template<typename T>
-int avg(const cumbac::Matrix2D<T>& m)
-{
-    const unsigned size = m.rows() * m.cols();
-    double mean = 0;
-    for (unsigned i = 0; i < size; ++i)
-        mean += (double)m.data()[i] / size;
-    return round(mean);
-}
 
 template<typename T> inline T to_num(const T& val) { return val; }
 inline double to_num(const double& val) { return round(val * 100.0) / 100.0; }
@@ -161,7 +145,7 @@ struct TestStatsEqual
             stats.fill(matrix);
         if (!approx_equals(stats.min, min)) failed = true;
         if (!approx_equals(stats.max, max)) failed = true;
-        if (!approx_equals(stats.avg, avg)) failed = true;
+        if (!approx_equals(stats.avg(), avg)) failed = true;
 
         if (failed)
         {
@@ -170,7 +154,7 @@ struct TestStatsEqual
             if (has_missing)
                 ss << "missing: " << stats.count_missing << " ";
             ss << "min: " << to_num(stats.min)
-               << " avg: " << to_num(stats.avg)
+               << " avg: " << to_num(stats.avg())
                << " max: " << to_num(stats.max)
                << ") differ from expected (";
             if (has_missing)
@@ -220,16 +204,17 @@ inline ActualMatrix2D<T> actual(const cumbac::Image<T>& actual) { return ActualM
 template<typename T>
 inline ActualVolume<T> actual(const cumbac::Volume<T>& actual) { return ActualVolume<T>(actual); }
 
-template<typename DATA, typename T>
-void print_stats(const std::string& name, const DATA& data, const T& missing, std::ostream& out)
+template<typename DATA>
+void print_stats(const std::string& name, const DATA& data, const typename DATA::Scalar& missing, std::ostream& out)
 {
     using namespace std;
-    ArrayStats<T> stats;
+    ArrayStats<typename DATA::Scalar> stats;
     stats.fill(missing, data);
     out << "wassert(actual(" << name << ").statsEqual"
-        << "(" << stats.count_missing
+        << "(" << to_num(missing)
+        << ", " << stats.count_missing
         << ", " << to_num(stats.min)
-        << ", " << to_num(stats.avg)
+        << ", " << to_num(stats.avg())
         << ", " << to_num(stats.max)
         << "));" << endl;
 }
@@ -242,7 +227,7 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
     stats.fill(data);
     out << "wassert(actual(" << name << ").statsEqual"
         << "(" << to_num(stats.min)
-        << ", " << to_num(stats.avg)
+        << ", " << to_num(stats.avg())
         << ", " << to_num(stats.max)
         << "));" << endl;
 }
