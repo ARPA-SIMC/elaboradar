@@ -94,6 +94,7 @@ public:
 
     void resize_beams_and_propagate_last_bin(unsigned new_beam_size)
     {
+        if (new_beam_size <= beam_size) return;
         this->conservativeResize(Eigen::NoChange, new_beam_size);
         this->rightCols(new_beam_size - this->beam_size).colwise() = this->col(this->beam_size - 1);
         this->beam_size = new_beam_size;
