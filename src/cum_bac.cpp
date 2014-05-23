@@ -415,7 +415,10 @@ void CUM_BAC::elabora_dato()
 
     //-------------se definita qualita' leggo dem e altezza fascio (mi servono per calcolare qualità)
     if (do_quality)
+    {
         assets.load_dem(dem);
+        dem.resize_beams_and_propagate_last_bin(volume.max_beam_size());
+    }
 
     //------------se definito DECLUTTER , non rimuovo anap e riscrivo  volume polare facedndo declutter solo con mappa statica.... ancora valido?
 
