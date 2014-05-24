@@ -286,7 +286,7 @@ struct CalcoloVPR
     long int gap; /* distanza temporale dall'ultimo file vpr */
     float t_ground;
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
-    unsigned char *conv[NUM_AZ_X_PPI];
+    PolarScan<unsigned char> conv;
     std::vector<long int> area_vpr; /*area degli strati*/
     std::vector<float> vpr;/* vpr */
     int hvprmax; /* quota picco vpr */

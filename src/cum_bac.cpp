@@ -1117,19 +1117,10 @@ void CalcoloVPR::classifica_rain()
 
 void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& viz)
 {
-    //inizializzazione vettori e matrici
-    for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
-        conv[i]=(unsigned char *) malloc(x_size*sizeof(unsigned char )) ;
-
-        for (unsigned j=0; j<x_size; j++){ // cambiato da x_size
-            conv[i][j]=MISSING;
-        }
-    }
-
     for (unsigned j=0; j<NUM_AZ_X_PPI; j++)
         for (unsigned k=0; k<x_size; k++)
             if (steiner.conv_STEINER(j, k) == viz.conv_VIZ(j, k) && steiner.conv_STEINER(j, k) > 0 && viz.stratiform(j, k) < 1)
-                conv[j][k] = viz.conv_VIZ(j, k);
+                conv(j,k) = viz.conv_VIZ(j, k);
 }
 
 //----------ALGORITMO
@@ -1464,12 +1455,11 @@ int CalcoloVPR::corr_vpr()
             strat=1;
             if (cum_bac.do_class)
             {
-                if (conv[i][k] >= CONV_VAL){
+                if (conv(i,k) >= CONV_VAL){
                     strat=0;
                 }
             }
             //--- impongo una soglia per la correzione pari a 0 dBZ
-
             if (cum_bac.volume.scan(0).get(i, k) > THR_CORR && hbin > hliq  && strat){
 
                 //---trovo lo strato del pixel, se maggiore o uguale a NMAXLAYER lo retrocedo di 2, se minore di livmn lo pongo uguale a livmin
@@ -1922,7 +1912,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
 
                 //AGGIUNTA PER CLASS
                 if(cum_bac.do_class){
-                    if(conv[i][k]>= CONV_VAL){
+                    if(conv(i,k)>= CONV_VAL){
                         flag_vpr->scan(l).set(i, k, 0);
                     }
                 }
@@ -2059,7 +2049,7 @@ void CUM_BAC::conversione_convettiva()
 {
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
         for (unsigned k=0; k<volume.scan(0).beam_size; k++){
-            if (calcolo_vpr->conv[i][k] > 0){
+            if (calcolo_vpr->conv(i,k) > 0){
                 volume.scan(0).set(i, k,
                         ::RtoDBZ(
                             BYTE_to_mp_func(
@@ -2205,6 +2195,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac),
+      conv(cum_bac.volume.max_beam_size(),0),
       area_vpr(NMAXLAYER, 0),
       vpr(NMAXLAYER, NODATAVPR),
       corr_polar(cum_bac.volume.max_beam_size()),
@@ -2421,7 +2412,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                         if (cb.do_class)
                         {
                             if (irange<cb.calcolo_vpr->x_size)
-                                conv_cart(x, y)=cb.calcolo_vpr->conv[iaz%NUM_AZ_X_PPI][irange];
+                                conv_cart(x, y)=cb.calcolo_vpr->conv(iaz%NUM_AZ_X_PPI,irange);
                         }
                     }
                     if (cb.do_zlr_media)
