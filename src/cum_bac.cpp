@@ -148,7 +148,7 @@ CUM_BAC::CUM_BAC(const char* site_name, bool medium, unsigned max_bin)
       elev_fin(volume, load_info),
       calcolo_vpr(0),
       first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
-      bb_first_level(MyMAX_BIN), beam_blocking(MyMAX_BIN),dem(MyMAX_BIN),
+      bb_first_level(1024), beam_blocking(1024),dem(1024),
       qual(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
