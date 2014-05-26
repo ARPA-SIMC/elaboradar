@@ -106,6 +106,7 @@ inline int to_num(const char& val) { return val; }
 
 template<typename T> inline bool approx_equals(const T& v1, const T& v2) { return v1 == v2; }
 inline bool approx_equals(const double& v1, const double& v2) { return round(v1 * 100) == round(v2 * 100); }
+inline bool approx_equals(const float& v1, const float& v2) { return roundf(v1 * 100) == roundf(v2 * 100); }
 
 template<typename DATA>
 struct TestStatsEqual
