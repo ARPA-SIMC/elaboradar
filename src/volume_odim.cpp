@@ -217,7 +217,7 @@ void ODIMLoader::load(const std::string& pathname)
 
         int el_num = elevation_index(elevation);
         if (el_num < 0) continue;
-std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
+//std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
         make_scan(el_num, beam_size, range_scale);
         PolarScan<double>& vol_pol_scan = vol_z->scan(el_num);
 
