@@ -262,7 +262,7 @@ void Assets::write_vpr_heating(int value) const
     if (!out.open_from_env("VPR_HEATING", "wt"))
         return;
 
-    if (fprintf(out, " %i \n", value) < 0);
+    if (fprintf(out, " %i \n", value) < 0)
         LOG_ERROR("Cannot write $VPR_HEATING=%s: %s", out.name(), strerror(errno));
 }
 
