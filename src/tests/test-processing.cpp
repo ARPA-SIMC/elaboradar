@@ -724,12 +724,10 @@ void to::test<8>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
+
     cb->setup_elaborazione(fname);
-
     cb->elabora_dato();
-
     cb->caratterizzo_volume();
-
     cb->calcolo_vpr->classifica_rain();
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
@@ -1005,5 +1003,48 @@ void to::test<10>()
     delete cb;
 }
 
+template<> template<>
+void to::test<11>()
+{
+	LOG_CATEGORY("Test");
+	LOG_INFO ("Start test 6");
+
+    // versione BB che corrisponde al parametro algo_corto
+    static const char* fname = "esplosione/2014-03-01-09-15-00.itgat.PVOL.0.h5";
+    unsetwork();
+    setenv("DIR_OUT_PP_BLOC", "esplosione", 1);
+    setenv("VPR0_FILE"		, "esplosione/vpr_GAT", 1);
+    setenv("LAST_VPR"    	, "esplosione/last_vpr_GAT", 1);
+    setenv("VPR_HMAX"    	, "esplosione/vpr_hmax_GAT",1); 
+    setenv("VPR_HEATING" 	, "esplosione/vpr_heat_GAT",1);
+    setenv("LOG_VPR"		, "esplosione/log_VPR_${SITO}",1);
+    setenv("TEST_VPR"		, "esplosione/test_vpr",1);
+    setenv("FILE_T"		, "esplosione/temperature.txt",1);
+    setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_PRI-EST_2011", 1);
+    setenv("FILE_ZERO_TERMICO"	, "esplosione/0termico.prev", 1);
+	printwork();
+
+    CUM_BAC* cb = new CUM_BAC("GAT",false, 512);
+    cb->do_readStaticMap=true;
+    cb->do_clean= true;
+    cb->do_devel=true;
+    cb->do_beamblocking = true;
+    cb->do_quality = true;
+    cb->do_bloccorr = true;
+    cb->do_class = true;
+    cb->do_vpr = true;
+    cb->read_odim_volume(fname, 0);
+
+    cb->setup_elaborazione(fname);
+    cb->elabora_dato();
+    cb->caratterizzo_volume();
+    wassert(actual(cb->calcolo_vpr) != (void*)0);
+    cb->calcolo_vpr->classifica_rain();
+    cb->calcolo_vpr->esegui_tutto();
+    VolumeStats stats;
+    cb->volume.compute_stats(stats);
+
+    delete cb;
+}
 
 }
