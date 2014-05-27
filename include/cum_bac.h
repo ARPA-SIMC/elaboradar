@@ -294,7 +294,8 @@ struct CalcoloVPR
     //int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
     // array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
     float resol[2];
-    int heating,livmin; /* variabile di riscaldamento e quota livello minimo calcolato*/
+    int heating;
+    int livmin = 0; /* variabile di riscaldamento e quota livello minimo calcolato*/
     unsigned x_size,z_size;
     double htbb, hbbb;
     PolarScan<unsigned char> corr_polar;/*correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra*/
