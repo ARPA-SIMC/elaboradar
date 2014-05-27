@@ -1265,6 +1265,17 @@ int CalcoloVPR::combina_profili()
 
         //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
 
+    //------------- trovo livello minimo -------
+
+    livmin=0;
+    foundlivmin=0;
+    for (ilay=0; ilay<NMAXLAYER; ilay++){
+        if (vpr[ilay]> NODATAVPR && !foundlivmin) {
+            livmin=ilay*TCK_VPR+TCK_VPR/2;
+            foundlivmin=1;
+        }
+    }
+    LOG_INFO(" livmin %i", livmin);
         if (!ier_vpr && combinante) {
             // calcolo la diff media
             diff=0;
