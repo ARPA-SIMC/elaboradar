@@ -17,6 +17,7 @@ struct ODIMLoader : public volume::Loader
     }
 
     void load(const std::string& pathname);
+    bool load(const std::string& pathname,const std::string& quantity);
 
     // Create or reuse a scan at position idx, with the given beam size
     void make_scan(unsigned idx, unsigned beam_size, double size_cell);

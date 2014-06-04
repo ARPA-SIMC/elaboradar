@@ -111,6 +111,13 @@ struct VolumeStats
     void print(FILE* out);
 };
 
+class Variable 
+{
+public:
+   std::string name;
+};
+
+
 template<typename T>
 class Volume : protected std::vector<PolarScan<T>*>
 {
@@ -119,6 +126,7 @@ public:
     typedef T Scalar;
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
+    Variable quantity;
 
     // Access a polar scan
     PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
