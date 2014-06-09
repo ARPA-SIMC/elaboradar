@@ -321,8 +321,8 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
         {
             data.reset(scan->getQuantityData(quantity));
 	    vol_z->quantity.name=quantity;
-            vol_z->nodata=scan->getNoData() * scan->getGain()+scan->getOffset();
-            vol_z->undetec=scan->getUndetect() * scan->getGain()+scan->getOffset();
+            vol_z->quantity.nodata=data->getNodata() * data->getGain()+scan->getOffset();
+            vol_z->quantity.undetect=data->getUndetect() * data->getGain()+scan->getOffset();
 	}
         else
         {
