@@ -352,6 +352,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     volume::ODIMLoader loader(site, do_medium, do_clean, MyMAX_BIN);
     loader.load_info = &load_info;
     loader.vol_z = &volume;
+    loader.coherent_loader=do_coherent_loader;
     loader.load(nome_file);
 
     elev_fin.init();

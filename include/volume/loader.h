@@ -128,6 +128,8 @@ struct Loader
     bool clean;
     std::vector<double> elev_array;
 
+    bool coherent_loader;
+
     /**
      * If this is greather than zero, truncate each beam to this number of
      * samples
@@ -159,29 +161,64 @@ struct Loader
 
         int az_num = azimut_index_MDB(alfa);
 
-        /*
+/*        
         if (az_num == 0)
         {
             printf("fbeam ϑ%f→%d α%f→%d %u", theta, el_num, alpha, az_num, size);
-            for (unsigned i = 0; i < 20; ++i)
-                printf(" %d", (int)data[i]);
+            for (unsigned i = 0; i < 8; ++i)
+                printf(" %f\t", data[i]);
             printf("\n");
         }
-        */
+*/        
+// if informations on beam azimuths has been recorded 
+// check if the current beam is closer to the nominal beam azimtuh
+// if no informations on beam azimuths has been recorded 
+// always update to ensure homogeneous beam data against different radar quantities (volumes)
 
-        merge_beam(scan, el_num, az_num, theta, alpha, size, data);
-        if(az_num*0.9 - alpha < 0.)
-        {
-            int new_az_num = (az_num + 1) % 400;
-            if (new_az_num != az_num)
-                merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
-        }
-        else if(az_num*0.9 - alpha > 0.)
-        {
-            int new_az_num = (az_num -1+400) %400;
-            if (new_az_num != az_num)
-                merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
-        }
+	if(coherent_loader)
+	{
+	 	unsigned overlap = std::min(scan.beam_size, size);
+		if(load_info) 
+		{
+			PolarScanLoadInfo* li = 0;
+	        	li = &(load_info->scans[el_num]);
+			if(li->beam_info[az_num].load_log.size())
+			{
+				double delta_alpha;
+				double delta_alpha_old=361.;
+				for(unsigned i=0;i<li->beam_info[az_num].load_log.size();i++)
+				{
+					delta_alpha=std::fabs(az_num*0.9-li->beam_info[az_num].load_log[0].alpha);
+					if(delta_alpha<delta_alpha_old) delta_alpha_old=delta_alpha;
+				}
+				delta_alpha=std::fabs(az_num*0.9-alpha);
+				if(delta_alpha<delta_alpha_old)
+				{
+					for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
+				}			
+			}
+			else for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
+			li->beam_info[az_num].load_log.log(theta,alpha);
+		}
+		else for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
+	}
+	else  // Old code  										
+	{
+        	merge_beam(scan, el_num, az_num, theta, alpha, size, data);
+	        if(az_num*0.9 - alpha < 0.)
+	        {
+        	    int new_az_num = (az_num + 1) % 400;
+	            if (new_az_num != az_num)
+        	        merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
+	        }
+	        else if(az_num*0.9 - alpha > 0.)
+        	{
+	            int new_az_num = (az_num -1+400) %400;
+        	    if (new_az_num != az_num)
+                	merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
+	        }
+	}
+	
     }
 
     template<typename T>
