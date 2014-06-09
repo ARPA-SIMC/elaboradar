@@ -52,6 +52,7 @@ OBJ=cum_bac_SP20.o
 
 TESTFILES = DBP2_070120141530_GATTATICO DBP2_060220140140_GATTATICO 201401231530_temp.Ngrad 201401071530mat_el.bin 201401071530mat_bloc.bin 201401071530h_ray.txt 201401071530h_rayinf.txt temperature.txt 201402060140h_ray.txt 201402060140h_rayinf.txt 201402060140mat_bloc.bin 201402060140mat_el.bin DBP2_060220140140_GATTATICO_mod DBP2_020520141110_BOLOGNA 201405091240mat_bloc.bin 201405091240mat_el.bin 201405091240h_rayinf.txt 2014-05-09-12-40-00.itgat.PVOL.0.h5 201405091240h_ray.txt
 
+TESTFILES_ESPLOSIONE = 0termico.prev 201403010915h_ray.txt 201403010915_temp.Ngrad stat_bloc test_vpr vpr_hmax_GAT 2014-03-01-09-15-00.itgat.PVOL.0.h5 201403010915mat_bloc.bin  last_vpr_GAT stat_elevchange vpr_GAT 201403010915h_rayinf.txt 201403010915mat_el.bin stat_anap temperature.txt  vpr_heat_GAT
 
 all: install
 
@@ -80,6 +81,7 @@ cum_bac_clparser.o:cum_bac_clparser.cpp ../include/cum_bac_clparser.h
 clean: 
 	$(RM) $(OBJ_COMMON) *.o $(BINDIR)/* tests/*.o cbtest
 	cd testdata && $(RM) $(TESTFILES)
+	cd esplosione && $(RM) $(TESTFILES_ESPLOSIONE)
 
 install: elaboradar  cum_bac_SP20_m
 	[ -d $(BINDIR) ] || mkdir -p $(BINDIR)
@@ -90,7 +92,7 @@ install: elaboradar  cum_bac_SP20_m
 cbtest: $(patsubst %.cpp,%.o,$(wildcard tests/*.cpp)) $(OBJ_COMMON) test-utils.o
 	$(CXX) -o $@ $^ $(LDLIBS) `pkg-config --libs libwibble`
  
-check: cbtest $(addprefix testdata/,$(TESTFILES))
+check: cbtest $(addprefix testdata/,$(TESTFILES)) $(addprefix esplosione/,$(TESTFILES_ESPLOSIONE))
 	if [ -z "$(VERBOSE)" ]; then \
 		$(DEBUGGER) ./cbtest $(TEST_ARGS) ; \
 	else \
