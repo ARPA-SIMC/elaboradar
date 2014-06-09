@@ -115,6 +115,9 @@ class Variable
 {
 public:
    std::string name;
+//   bool coherency_guaranteed;
+
+//   Variable(){coherency_guaranteed=false;};
 };
 
 
