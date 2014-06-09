@@ -115,9 +115,13 @@ class Variable
 {
 public:
    std::string name;
+   double nodata;
+   double undetect;
+   std::string units;
 //   bool coherency_guaranteed;
 
 //   Variable(){coherency_guaranteed=false;};
+//
 };
 
 
