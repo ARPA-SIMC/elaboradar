@@ -17,7 +17,6 @@ void VolumeStats::print(FILE* out)
     }
 }
 
-
 template class Volume<double>;
 
 }
