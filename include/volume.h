@@ -50,7 +50,7 @@ public:
      */
     double elevation;
     /// Size of a beam cell in meters
-    double cell_size;
+    T cell_size;
 
     PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : Matrix2D<T>(PolarScan::Constant(NUM_AZ_X_PPI, beam_size, default_value)),
@@ -120,6 +120,62 @@ public:
    std::string units;
 };
 
+template<typename T>
+struct LinearFit
+{
+   T slope;
+   T intercept;
+
+   T sum_x;
+   T sum_y;
+   T sum_xy;
+   T sum_x2;
+   unsigned N;
+
+   LinearFit():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0){}
+
+   void feed(T x, T y)
+   {
+	sum_x+=x;
+	sum_y+=y;
+	sum_xy+=x*y;
+	sum_x2+=x*x;
+	N++;
+   }
+   
+   T compute_slope()
+   {
+	if(N)
+	{
+		slope = (N*sum_xy-sum_x*sum_y)/(N*sum_x2-sum_x*sum_x);
+		return slope;
+	}
+	else return slope/(slope-slope); // orribile modo di far ritornare NaN
+
+   }
+
+   T compute_intercept()
+   {
+	if(N)
+	{
+		intercept = (sum_y*sum_x2-sum_x*sum_xy)/(N*sum_x2-sum_x*sum_x);
+		return intercept;
+	}
+	else return slope/(slope-slope);
+   }
+   
+   T get_slope() {return slope;}
+   T get_intercept() {return intercept;}
+
+   void clear()
+   {
+	sum_x=0;
+	sum_y=0;
+	sum_xy=0;
+	sum_x2=0;
+	N=0;
+   }
+};
 
 template<typename T>
 class Volume : protected std::vector<PolarScan<T>*>
@@ -268,25 +324,10 @@ public:
 	for(unsigned i=0;i<raw.size();i++)
 	{
 		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		this->filter_scan_range(raw.scan(i),window_size);
+		this->make_filter_scan_range(raw.scan(i),window_size);
 	}
     }
-/*
-    void filter(Volume<T>& raw, unsigned win_size) // TODO: ambiguous due to implicit cast int2double
-    {
-	if(win_size%2-1)
-	{
-		printf("Filter WARNING!: Window size adjusted to be odd %u=>%u\n",win_size,win_size+1);
-		win_size++;
-	}
 
-	// First erase all fil content and set quantity
-	this->quantity=raw.quantity;
-	this->clear();
-	// than make scans
-	for(unsigned i=0;i<raw.size();i++) this->filter_scan_range(raw.scan(i),win_size);	
-    }
-*/
     void textureSD(Volume<T>& raw, double filter_range)
     {
 	Volume<T> filtered;
@@ -297,13 +338,25 @@ public:
 	for(unsigned i=0;i<raw.size();i++)
 	{
 		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		this->rms_scan_range(raw.scan(i),filtered.scan(i),window_size);
+		this->make_rms_scan_range(raw.scan(i),filtered.scan(i),window_size);
 	}
     }
 
-    double moving_average_slope()
+    void moving_average_slope(Volume<T>& raw,double slope_range) // least-squares
     {
-
+	unsigned window_size;
+	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
+							// intervenire con un metodo che 
+							// determina la quantity della slope 
+							// in funzione della quantity di raw.
+							// Per adesso si suppone che la quantity
+							// del volume di slope sia settata a priori 
+	this->clear();
+	for(unsigned i=0;i<raw.size();i++)
+	{
+		window_size=1+2*std::floor(0.5*slope_range/raw.scan(i).cell_size);
+		this->make_slope_scan_range(raw.scan(i),window_size);
+	}
     }
 
 protected:
@@ -313,7 +366,7 @@ private:
     Volume(const Volume&);
     Volume& operator=(const Volume&);
 
-    void filter_scan_range(PolarScan<T>& raw, unsigned win)
+    void make_filter_scan_range(PolarScan<T>& raw, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
 	this->push_back(new PolarScan<T>(raw.beam_size,0.));
@@ -355,7 +408,7 @@ private:
 	}
     }
 
-    void rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
+    void make_rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
 	this->push_back(new PolarScan<T>(raw.beam_size,0.));
@@ -393,6 +446,64 @@ private:
 		{
 			if(counter(i,j)) this->back()->set(i,j,std::sqrt(this->back()->get(i,j)/counter(i,j)));
 			else this->back()->set(i,j,this->quantity.undetect);
+		}
+	}
+    }
+
+    void make_slope_scan_range(PolarScan<T>& raw, unsigned win)
+    {
+	unsigned half_win=0.5*(win-1);
+	this->push_back(new PolarScan<T>(raw.beam_size,0.));
+	this->back()->elevation = raw.elevation;
+	this->back()->cell_size = raw.cell_size;
+	LinearFit<T> fit;
+	for(unsigned i=0;i<raw.rows();i++)
+	{
+		for(unsigned j=0;j<half_win;j++)
+		{
+			for(unsigned k=0;k<(half_win+j+1);k++)
+			{
+				if((raw(i,k)!=this->quantity.undetect)&&(raw(i,k)!=this->quantity.nodata))
+				{
+					fit.feed(k*raw.cell_size,raw.get(i,k));
+				}
+			}
+			if(fit.N)
+			{
+				this->back()->set(i,j,fit.compute_slope());
+			}
+			else this->back()->set(i,j,this->quantity.nodata);
+			fit.clear();
+
+			for(unsigned k=0;k<(win-j-1);k++)
+			{
+				if((raw(i,raw.beam_size-win+1+j+k)!=this->quantity.undetect)&&(raw(i,raw.beam_size-win+1+j+k)!=this->quantity.nodata))
+				{
+					fit.feed(k*raw.cell_size,raw.get(i,raw.beam_size-win+1+j+k));
+				}
+			}
+			if(fit.N)
+			{
+				this->back()->set(i,raw.beam_size-half_win+j,fit.compute_slope());
+			}
+			else this->back()->set(i,raw.beam_size-half_win+j,this->quantity.nodata);
+			fit.clear();
+		}
+		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
+		{
+			for(unsigned k=0;k<win;k++)
+			{
+				if((raw(i,j-half_win+k)!=this->quantity.undetect)&&(raw(i,j-half_win+k)!=this->quantity.nodata))
+				{
+					fit.feed(k*raw.cell_size,raw.get(i,j-half_win+k));
+				}
+			}
+			if(fit.N)
+			{
+				this->back()->set(i,j,fit.compute_slope());
+			}
+			else this->back()->set(i,j,this->quantity.nodata);
+			fit.clear();
 		}
 	}
     }
