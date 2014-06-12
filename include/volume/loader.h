@@ -169,12 +169,12 @@ struct Loader
                 printf(" %f\t", data[i]);
             printf("\n");
         }
-*/        
+*/
+
 // if informations on beam azimuths has been recorded 
 // check if the current beam is closer to the nominal beam azimtuh
 // if no informations on beam azimuths has been recorded 
 // always update to ensure homogeneous beam data against different radar quantities (volumes)
-
 	if(coherent_loader)
 	{
 	 	unsigned overlap = std::min(scan.beam_size, size);
@@ -188,10 +188,10 @@ struct Loader
 				double delta_alpha_old=361.;
 				for(unsigned i=0;i<li->beam_info[az_num].load_log.size();i++)
 				{
-					delta_alpha=std::fabs(az_num*0.9-li->beam_info[az_num].load_log[0].alpha);
+					delta_alpha=std::fmod(std::fabs(az_num*0.9-li->beam_info[az_num].load_log[0].alpha),360.);
 					if(delta_alpha<delta_alpha_old) delta_alpha_old=delta_alpha;
 				}
-				delta_alpha=std::fabs(az_num*0.9-alpha);
+				delta_alpha=std::fmod(std::fabs(az_num*0.9-alpha),360.);
 				if(delta_alpha<delta_alpha_old)
 				{
 					for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
