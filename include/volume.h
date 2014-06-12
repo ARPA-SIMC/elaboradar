@@ -115,13 +115,9 @@ class Variable
 {
 public:
    std::string name;
-   double nodata;
-   double undetect;
+   double nodata;	// TODO : better to be template.
+   double undetect;	// may conflict with other parts of the code
    std::string units;
-//   bool coherency_guaranteed;
-
-//   Variable(){coherency_guaranteed=false;};
-//
 };
 
 
@@ -264,12 +260,142 @@ public:
         return *(*this)[idx];
     }
 
+    void filter(Volume<T>& raw, double filter_range)
+    {
+	unsigned window_size;
+	this->quantity=raw.quantity;
+	this->clear();
+	for(unsigned i=0;i<raw.size();i++)
+	{
+		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
+		this->filter_scan_range(raw.scan(i),window_size);
+	}
+    }
+/*
+    void filter(Volume<T>& raw, unsigned win_size) // TODO: ambiguous due to implicit cast int2double
+    {
+	if(win_size%2-1)
+	{
+		printf("Filter WARNING!: Window size adjusted to be odd %u=>%u\n",win_size,win_size+1);
+		win_size++;
+	}
+
+	// First erase all fil content and set quantity
+	this->quantity=raw.quantity;
+	this->clear();
+	// than make scans
+	for(unsigned i=0;i<raw.size();i++) this->filter_scan_range(raw.scan(i),win_size);	
+    }
+*/
+    void textureSD(Volume<T>& raw, double filter_range)
+    {
+	Volume<T> filtered;
+	filtered.filter(raw,filter_range);
+	unsigned window_size;
+	this->quantity=raw.quantity;
+	this->clear();
+	for(unsigned i=0;i<raw.size();i++)
+	{
+		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
+		this->rms_scan_range(raw.scan(i),filtered.scan(i),window_size);
+	}
+    }
+
+    double moving_average_slope()
+    {
+
+    }
+
 protected:
     void resize_elev_fin();
 
 private:
     Volume(const Volume&);
     Volume& operator=(const Volume&);
+
+    void filter_scan_range(PolarScan<T>& raw, unsigned win)
+    {
+	unsigned half_win=0.5*(win-1);
+	this->push_back(new PolarScan<T>(raw.beam_size,0.));
+	this->back()->elevation = raw.elevation;
+	this->back()->cell_size = raw.cell_size;
+	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(NUM_AZ_X_PPI,raw.beam_size,0));
+	T value;
+	for(unsigned i=0;i<raw.rows();i++)
+	{
+		for(unsigned j=0;j<half_win;j++)
+		{
+			value=raw(i,j);
+			if((value!=this->quantity.undetect)&&(value!=this->quantity.nodata))
+			{
+				this->back()->block(i,0,1,half_win+1+j).array()+=value;
+				counter.block(i,0,1,half_win+1+j).array()+=1;
+			}
+			value=raw(i,raw.beam_size-half_win+j);
+			if((value!=this->quantity.undetect)&&(value!=this->quantity.nodata))
+			{
+				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
+				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
+			}
+		}
+		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
+		{
+			value=raw(i,j);
+			if((value!=this->quantity.undetect)&&(value!=this->quantity.nodata))
+			{
+				this->back()->block(i,j-half_win,1,win).array()+=value;
+				counter.block(i,j-half_win,1,win).array()+=1;
+			}
+		}
+		for(unsigned j=0;j<raw.beam_size;j++)
+		{
+			if(counter(i,j)) this->back()->set(i,j,(this->back()->get(i,j))/counter(i,j));
+			else this->back()->set(i,j,this->quantity.undetect);
+		}
+	}
+    }
+
+    void rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
+    {
+	unsigned half_win=0.5*(win-1);
+	this->push_back(new PolarScan<T>(raw.beam_size,0.));
+	this->back()->elevation = raw.elevation;
+	this->back()->cell_size = raw.cell_size;
+	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(NUM_AZ_X_PPI,raw.beam_size,0));
+	T value;
+	for(unsigned i=0;i<raw.rows();i++)
+	{
+		for(unsigned j=0;j<half_win;j++)
+		{
+			value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
+			if((raw(i,j)!=this->quantity.undetect)&&(raw(i,j)!=this->quantity.nodata))
+			{
+				this->back()->block(i,0,1,half_win+1+j).array()+=value;
+				counter.block(i,0,1,half_win+1+j).array()+=1;
+			}
+			value=(raw(i,raw.beam_size-half_win+j)-filtered(i,raw.beam_size-half_win+j));
+			if((raw(i,raw.beam_size-half_win+j)!=this->quantity.undetect)&&(raw(i,raw.beam_size-half_win+j)!=this->quantity.nodata))
+			{
+				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
+				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
+			}
+		}
+		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
+		{
+			value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
+			if((raw(i,j)!=this->quantity.undetect)&&(raw(i,j)!=this->quantity.nodata))
+			{
+				this->back()->block(i,j-half_win,1,win).array()+=value;
+				counter.block(i,j-half_win,1,win).array()+=1;
+			}
+		}
+		for(unsigned j=0;j<raw.beam_size;j++)
+		{
+			if(counter(i,j)) this->back()->set(i,j,std::sqrt(this->back()->get(i,j)/counter(i,j)));
+			else this->back()->set(i,j,this->quantity.undetect);
+		}
+	}
+    }
 };
 
 
