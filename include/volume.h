@@ -359,6 +359,35 @@ public:
 	}
     }
 
+    void lin2dB(Volume<T>& lin)
+    {
+	// this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
+	this->clear();
+	for(unsigned i=0;i<lin.size();i++)
+	{
+		this->push_back(new PolarScan<T>(lin.scan(i).beam_size,0.));
+		this->back()->elevation = lin.scan(i).elevation;
+		this->back()->cell_size = lin.scan(i).cell_size;
+		this->back()->block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=(lin.scan(i).array()*0.1);
+
+		//TODO: estrarre il logaritmo
+	}
+    }
+
+    void dB2lin(Volume<T>& DB)
+    {
+	// this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
+	this->clear();
+	for(unsigned i=0;i<DB.size();i++)
+	{
+		this->push_back(new PolarScan<T>(DB.scan(i).beam_size,0.));
+		this->back()->elevation = DB.scan(i).elevation;
+		this->back()->cell_size = DB.scan(i).cell_size;
+		// create here an array v= 10.^A
+		//this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=v*10.;
+	}
+    }
+
 protected:
     void resize_elev_fin();
 
@@ -420,24 +449,24 @@ private:
 	{
 		for(unsigned j=0;j<half_win;j++)
 		{
-			value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
 			if((raw(i,j)!=this->quantity.undetect)&&(raw(i,j)!=this->quantity.nodata))
 			{
+				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
 				this->back()->block(i,0,1,half_win+1+j).array()+=value;
 				counter.block(i,0,1,half_win+1+j).array()+=1;
 			}
-			value=(raw(i,raw.beam_size-half_win+j)-filtered(i,raw.beam_size-half_win+j));
 			if((raw(i,raw.beam_size-half_win+j)!=this->quantity.undetect)&&(raw(i,raw.beam_size-half_win+j)!=this->quantity.nodata))
 			{
+				value=(raw(i,raw.beam_size-half_win+j)-filtered(i,raw.beam_size-half_win+j));
 				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
 				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
 			}
 		}
 		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
 		{
-			value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
 			if((raw(i,j)!=this->quantity.undetect)&&(raw(i,j)!=this->quantity.nodata))
 			{
+				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
 				this->back()->block(i,j-half_win,1,win).array()+=value;
 				counter.block(i,j-half_win,1,win).array()+=1;
 			}
