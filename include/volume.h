@@ -116,7 +116,7 @@ class Variable
 public:
    std::string name;
    double nodata;	// TODO : better to be template.
-   double undetect;	// may conflict with other parts of the code
+   double undetect;	// but may conflict with other parts of the code
    std::string units;
 };
 
@@ -368,9 +368,8 @@ public:
 		this->push_back(new PolarScan<T>(lin.scan(i).beam_size,0.));
 		this->back()->elevation = lin.scan(i).elevation;
 		this->back()->cell_size = lin.scan(i).cell_size;
-		this->back()->block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=(lin.scan(i).array()*0.1);
-
-		//TODO: estrarre il logaritmo
+		this->back()->block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
+		this->back()->array()*=10.;
 	}
     }
 
@@ -383,8 +382,8 @@ public:
 		this->push_back(new PolarScan<T>(DB.scan(i).beam_size,0.));
 		this->back()->elevation = DB.scan(i).elevation;
 		this->back()->cell_size = DB.scan(i).cell_size;
-		// create here an array v= 10.^A
-		//this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=v*10.;
+		this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=DB.scan(i).array()*0.1;
+		this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=this->back()->exp10();
 	}
     }
 
