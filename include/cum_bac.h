@@ -108,6 +108,7 @@ public:
     log4c_category_t* logging_category;
 
     unsigned MyMAX_BIN;
+    const Config& cfg;
     const Site& site;
     Assets assets;
 
@@ -167,7 +168,7 @@ public:
        T_time, T_data, T_ora..*/
 
 
-    CUM_BAC(const char* site_name, bool medium=false, unsigned max_bin=512);
+    CUM_BAC(const Config& cfg, const char* site_name, bool medium=false, unsigned max_bin=512);
     ~CUM_BAC();
 
     bool read_sp20_volume(const char* nome_file, int file_type);

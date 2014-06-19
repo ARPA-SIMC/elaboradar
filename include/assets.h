@@ -11,6 +11,7 @@
 
 namespace cumbac {
 
+struct Config;
 template<typename T> struct Matrix2D;
 
 struct Site;
@@ -27,6 +28,7 @@ class Assets
 
 protected:
     log4c_category_t* logging_category;
+    const Config& cfg;
     const Site* conf_site;
     time_t conf_acq_time;
     int conf_year;
@@ -37,7 +39,7 @@ protected:
     mutable H5::H5File* outfile_devel_data;
 
 public:
-    Assets();
+    Assets(const Config& cfg);
     ~Assets();
 
     /**
