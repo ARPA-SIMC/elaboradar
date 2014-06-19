@@ -3,7 +3,7 @@
 
 #include "volume.h"
 #include <functional>
-#include <vector>
+#include <cmath>
 
 namespace cumbac {
 
@@ -17,7 +17,7 @@ namespace cumbac {
  */
 template<typename T>
 void volume_resample(const Volume<T>& src, Volume<T>& dst,
-        std::function<void(const PolarScan<T>&, PolarScan<T>&, std::vector<unsigned>)> merger);
+        std::function<void(const PolarScan<T>&, double, PolarScan<T>&, unsigned)> merger);
 
 }
 
