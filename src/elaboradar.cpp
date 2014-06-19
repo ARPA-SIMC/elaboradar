@@ -141,6 +141,7 @@ int main (int argc, char **argv)
 
     cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium,MyMAX_BIN);
 
+
     // Set feature flags
     cb->do_clean 	= CL_opt.do_clean;
     cb->do_quality 	= CL_opt.do_quality;
@@ -153,9 +154,15 @@ int main (int argc, char **argv)
     cb->do_readStaticMap= CL_opt.do_readStaticMap;
     cb->do_zlr_media	= true;
     try {
-//       cb->StampoFlag(); 
-       if (cb->esegui_tutto(nome_file, file_type,  CL_opt.data_in_odim))
+   //    cb->StampoFlag(); 
+       if (cb->esegui_tutto(nome_file, file_type,  CL_opt.data_in_odim)){
             ier_main = 0;
+//	    unsigned irange=60000/cb->volume.scan(0).cell_size;
+//            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
+//            for (unsigned beam=130; beam <=170; beam ++) 
+//               LOG_WARN(" Raggio %3d bin %4d -- db@60Km %3f",beam,irange,cb->volume.scan(0)(beam,irange)); 
+//           
+        }
         else
             ier_main = 1;
     } catch (std::exception& e) {
