@@ -111,13 +111,15 @@ struct VolumeStats
     void print(FILE* out);
 };
 
-class Variable 
+/// Information about the quantity stored in a volume
+template<typename T>
+class Variable
 {
 public:
    std::string name;
-   double nodata;	// TODO : better to be template.
-   double undetect;	// but may conflict with other parts of the code
    std::string units;
+   T nodata;    // Value used as 'no data' value
+   T undetect;  // Minimum amount that can be measured
 };
 
 template<typename T>
@@ -185,8 +187,8 @@ public:
     typedef T Scalar;
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
-    Variable quantity;
     const unsigned beam_count;
+    Variable<T> quantity;
 
     // Access a polar scan
     PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
