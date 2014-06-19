@@ -1,4 +1,5 @@
 #include "assets.h"
+#include "config.h"
 #include "utils.h"
 #include "geo_par.h"
 #include "vpr_par.h"
@@ -16,8 +17,8 @@ using namespace std;
 
 namespace cumbac {
 
-Assets::Assets()
-    : logging_category(log4c_category_get("radar.assets")), outfile_devel_data(0)
+Assets::Assets(const Config& cfg)
+    : logging_category(log4c_category_get("radar.assets")), cfg(cfg), outfile_devel_data(0)
 {
     gdal_init_once();
 }

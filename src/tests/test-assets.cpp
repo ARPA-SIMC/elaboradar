@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include "assets.h"
+#include "config.h"
 #include "utils.h"
 #include "logging.h"
 
@@ -34,7 +35,8 @@ float fscanf_float_and_close(FILE* in)
 template<> template<>
 void to::test<1>()
 {
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<float> dem(400, 512);
     assets.load_dem(dem);
@@ -49,7 +51,8 @@ template<> template<>
 void to::test<2>()
 {
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 512);
     assets.load_first_level(m);
@@ -59,7 +62,8 @@ template<> template<>
 void to::test<3>()
 {
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 1024);
     assets.load_first_level_bb_el(m);
@@ -69,7 +73,8 @@ template<> template<>
 void to::test<4>()
 {
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 1024);
     assets.load_first_level_bb_bloc(m);
@@ -78,7 +83,8 @@ void to::test<4>()
 template<> template<>
 void to::test<5>()
 {
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     //wassert(actual((int)(fscanf_float_and_close(assets.open_file_hray()) * 100)) == 54406);
 }
@@ -86,7 +92,8 @@ void to::test<5>()
 template<> template<>
 void to::test<6>()
 {
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     //wassert(actual((int)(fscanf_float_and_close(assets.open_file_hray_inf()) * 100)) == 54406);
 }
@@ -95,7 +102,8 @@ template<> template<>
 void to::test<7>()
 {
     setenv("FILE_T", "testdata/temperature.txt", 1);
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     wassert(actual((int)(assets.read_t_ground() * 100)) == 1010);
 }
@@ -104,7 +112,8 @@ template<> template<>
 void to::test<8>()
 {
     setenv("LAST_VPR", "testdata/last_vpr.tmp", 1);
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     assets.write_last_vpr();
     wassert(actual(assets.read_profile_gap()) == 0);
@@ -114,7 +123,8 @@ template<> template<>
 void to::test<9>()
 {
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_PRI-EST_2011", 1);
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 1024);
     assets.load_first_level(m);
@@ -124,7 +134,8 @@ template<> template<>
 void to::test<10>()
 {
     static const char* fname = "testdata/test_last_file";
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
 
     // True because $LAST_FILE is not set
@@ -149,7 +160,8 @@ void to::test<10>()
 template<> template<>
 void to::test<11>()
 {
-    Assets assets;
+    Config cfg;
+    Assets assets(cfg);
     assets.configure("GAT", 1389108600);
 
     // Result is 0 when the env var is not set

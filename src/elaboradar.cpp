@@ -5,6 +5,7 @@
 
 #include "cum_bac.h"
 #include "logging.h"
+#include "config.h"
 #include "cum_bac_clparser.h"
 
 // libreria c
@@ -133,13 +134,15 @@ int main (int argc, char **argv)
     sito		= (char *)CL_opt.sito.c_str();
 
     if(CL_opt.do_medium && CL_opt.filetype == 3) MyMAX_BIN = 512;   // questo dovrebbe essere il caso del medio vecchio 
-   
+
+    cumbac::Config cfg;
+
     setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
     startup_banner(&CL_opt);
 
 
-    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(sito, CL_opt.do_medium,MyMAX_BIN);
+    cumbac::CUM_BAC *cb = new cumbac::CUM_BAC(cfg, sito, CL_opt.do_medium,MyMAX_BIN);
 
 
     // Set feature flags

@@ -1,4 +1,5 @@
 #include <wibble/tests.h>
+#include "config.h"
 #include "cum_bac.h"
 #include "logging.h"
 
@@ -16,7 +17,8 @@ template<> template<>
 void to::test<1>()
 {
     // Test NormalizzoData
-    CUM_BAC* cb = new CUM_BAC("SPC");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "SPC");
     wassert(actual(cb->NormalizzoData(0)) == 0); // TODO: check value
     wassert(actual(cb->NormalizzoData(1)) == 0); // TODO: check value
 }
@@ -25,7 +27,8 @@ template<> template<>
 void to::test<2>()
 {
     // Test BeamBlockingCorrection
-    CUM_BAC* cb = new CUM_BAC("SPC");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "SPC");
     wassert(actual((unsigned)DBtoBYTE(cb->BeamBlockingCorrection(BYTEtoDB(128),50))) == 138);
 }
 }

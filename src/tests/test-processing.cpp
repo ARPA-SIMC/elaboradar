@@ -1,5 +1,6 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
+#include "config.h"
 #include "logging.h"
 #include <cstdio>
 #include <cstdlib>
@@ -33,7 +34,8 @@ void to::test<1>()
     setenv("LAST_VPR","testdata/last_vpr",1);
     setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -122,7 +124,8 @@ void to::test<2>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -180,7 +183,8 @@ void to::test<3>()
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter =false ;
@@ -263,7 +267,8 @@ void to::test<4>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
     setenv("LAST_VPR","testdata/last_vpr",1);
     printwork();
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -359,7 +364,8 @@ void to::test<5>()
 unlink("LAST_VPR");
     setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
     printwork();
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -460,7 +466,8 @@ void to::test<6>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
 	printwork();
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -615,7 +622,8 @@ void to::test<7>()
     setenv("TEST_VPR", "testdata/test_vpr", 1);
 	printwork();
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -714,7 +722,8 @@ void to::test<8>()
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -808,7 +817,8 @@ void to::test<9>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_INV_2011", 1);
     printwork();
 
-    CUM_BAC* cb = new CUM_BAC("GAT",true,1024);
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT",true,1024);
     cb->do_medium= true;
     cb->do_readStaticMap=true;
 //    cb->do_zlr_media=true; 
@@ -897,7 +907,8 @@ void to::test<10>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
 	printwork();
 
-    CUM_BAC* cb = new CUM_BAC("GAT");
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -1025,7 +1036,8 @@ void to::test<11>()
     setenv("FILE_ZERO_TERMICO"	, "esplosione/0termico.prev", 1);
 	printwork();
 
-    CUM_BAC* cb = new CUM_BAC("GAT",false, 512);
+    Config cfg;
+    CUM_BAC* cb = new CUM_BAC(cfg, "GAT",false, 512);
     cb->do_readStaticMap=true;
     cb->do_clean= true;
     cb->do_devel=true;
