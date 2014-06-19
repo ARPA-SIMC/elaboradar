@@ -113,5 +113,51 @@ void Config::read_file(const std::string& fname)
     }
 }
 
+bool Config::has(const std::string& key) const
+{
+    return values.find(key) != values.end();
+}
+
+std::string Config::get(const std::string& key) const
+{
+    auto res = values.find(key);
+    if (res == values.end()) throw std::runtime_error("configuration key " + key + " not found");
+    return res->second;
+}
+
+std::string Config::get(const std::string& key, const std::string& deflt) const
+{
+    auto res = values.find(key);
+    if (res == values.end()) return deflt;
+    return res->second;
+}
+
+int Config::get_int(const std::string& key) const
+{
+    auto res = values.find(key);
+    if (res == values.end()) throw std::runtime_error("configuration key " + key + " not found");
+    return stoi(res->second);
+}
+
+int Config::get_int(const std::string& key, int deflt) const
+{
+    auto res = values.find(key);
+    if (res == values.end()) return deflt;
+    return stoi(res->second);
+}
+
+double Config::get_double(const std::string& key) const
+{
+    auto res = values.find(key);
+    if (res == values.end()) throw std::runtime_error("configuration key " + key + " not found");
+    return stod(res->second);
+}
+
+double Config::get_double(const std::string& key, double deflt) const
+{
+    auto res = values.find(key);
+    if (res == values.end()) return deflt;
+    return stod(res->second);
+}
 
 }
