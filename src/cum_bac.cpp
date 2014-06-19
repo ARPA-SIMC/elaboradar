@@ -46,7 +46,7 @@ extern "C" {
 #define MIN_VALUE_OR -10         /* a seconda che sia alla prima o success.*/
 #define MAX_DIF_NEXT_OR 15       /*/ elevazione                             */
 #define MIN_VALUE_NEXT_OR 0
-#define THR_CONT_ANAP 1 /* limite in numero occorrenze anaprop sul raggio dopo i 30 km per non togliere =*/
+#define THR_CONT_ANAP 20 /* limite in numero occorrenze anaprop sul raggio dopo i 30 km per non togliere =*/
 #define OVERBLOCKING 51 /* minimo BB non accettato*/
 #define SOGLIA_TOP 20 // soglia per trovare top
 #define THRES_ATT 0 /* minimo valore di Z in dBZ per calcolare att rate */
@@ -413,6 +413,14 @@ void CUM_BAC::elabora_dato()
 
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
     leggo_first_level();
+// TODO: test code 
+//   {
+//      unsigned irange=60000/volume.scan(0).cell_size;
+//      LOG_WARN("DOPO FIRST LEVEL ---------------------------------------------------------------------------");
+//      for (unsigned beam=130; beam <=170; beam ++){
+//               LOG_WARN(" Raggio %3d bin %4d -- db@60Km %6.2f db_up@60Km %6.2f FL@60km %2d ",beam,irange,volume.scan(0)(beam,irange),volume.scan(1)(beam,irange),first_level(beam,irange)); 
+//      }
+//   }
 
     //-------------se definita qualita' leggo dem e altezza fascio (mi servono per calcolare qualità)
     if (do_quality)
@@ -466,8 +474,18 @@ void CUM_BAC::elabora_dato()
        corrente e la Z corrente è <10 dbZ allora
        rendo inefficaci i limiti di riconoscimento anaprop. */
 
+    //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
+            /* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
+
+    int MAX_DIF=MAX_DIF_OR;
+    int MAX_DIF_NEXT=MAX_DIF_NEXT_OR;
+    int MIN_VALUE=MIN_VALUE_OR;
+    int MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR;
+
+    int MIN_VALUE_USED, MAX_DIF_USED;
     //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala----------------
 
+    //for(unsigned i=151; i<157; i++)
     for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
     {
         bool flag_anap = false;
@@ -511,17 +529,11 @@ void CUM_BAC::elabora_dato()
                 ? volume.scan(el_inf-1).get(i, k)
                 : fondo_scala+1;
 
-            //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
-            /* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
-
-            int MAX_DIF=MAX_DIF_OR;
-            int MAX_DIF_NEXT=MAX_DIF_NEXT_OR;
-            int MIN_VALUE=MIN_VALUE_OR;
-            int MIN_VALUE_NEXT=MIN_VALUE_NEXT_OR;
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) //-----------ANNULLO EFFETTO TEST ANAP
             {
                 // FIXME: perché BYTEtoDB se assegnamo a degli interi? [Enrico]
+                // Perchè inizialemnte si lavorava sul byte e quetse sono rimaste int [PPA]
                 MAX_DIF_NEXT=BYTEtoDB(255);
                 MAX_DIF=BYTEtoDB(255);
                 MIN_VALUE=BYTEtoDB(0);
@@ -534,7 +546,7 @@ void CUM_BAC::elabora_dato()
                 test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
             else
                 test_an=(bin_low > fondo_scala && bin_high > fondo_scala );
-
+  //	LOG_WARN("beam@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f - cont %1d %1d %3d %3d %3d %3d %3d",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT);
             //------------------ se ho qualcosa sia al livello base che sopra allora effettuo il confronto-----------------
             //if(bin_low > fondo_scala && bin_high >= fondo_scala ) // tolto = per bin_high
             if(test_an )
@@ -542,117 +554,59 @@ void CUM_BAC::elabora_dato()
                 //------------------ se ho trovato anap prima nel raggio cambio le soglie le abbasso)-----------------
                 if(flag_anap)
                 {
-                    //-----------caso di propagazione anomala ---------
-                    if(bin_low-bin_high >= MAX_DIF_NEXT || bin_high <= MIN_VALUE_NEXT )
-                    {
-
-                        //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop  e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
-                        flag_anap = true;
-                        cont_anap=cont_anap+1;
-
-                        //--------ricopio valore a el_up su tutte elev inferiori--------------
-                        for(unsigned l=0; l<el_up; l++) {
-                            volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
-                        } //
-
-                        //--------azzero beam_blocking ( ho cambiato elevazione, non ho disponible il bbeam blocking all' elev superiore)--------------
-                        if (do_beamblocking)
-                            beam_blocking(i, k)=0;/* beam blocking azzerato */
-
-                        //--------------------incremento la statitica anaprop e di cambio elevazione-------------
-                        grid_stats.incr_anap(i, k);
-                        if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
-
-                        //-------------------memorizzo dati di qualita '-------------
-                        if (do_quality)
-                        {
-                            dato_corrotto(i, k)=ANAP_YES;/*  risultato test: propagazione anomala*/
-                            elev_fin[i][k]=el_up;
-                        }
-                    }
-                    else
-                        //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking e incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto e assegno a 0 indicatore anap nel raggio-----------
-                    {
-                        flag_anap = false;
-                        if (do_beamblocking && do_bloccorr)
-                        {
-                            // FIXME: cosa dovrebbe essere l qui? Non siamo
-                            // dentro a un ciclo for che itera su l [Enrico]
-                            // Nella get, abbiamo messo el_inf
-                            volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(el_inf).get(i, k), beam_blocking(i, k)));
-                            //volume.scan(el_inf).get_raw(i, k)=DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking[i][k]/100.));
-                            //    volume.scan(l).get_raw(i, k)=volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking[i][k]/100.)-0.5); //correggo beam blocking
-                            grid_stats.incr_bloc(i, k, beam_blocking(i, k)); // incremento statistica beam blocking
-                        }
-// 20140128 - errore nel limite superiore ciclo
-// for(l=0; l<=el_up; l++){
-                        for(unsigned l=0; l<el_inf; l++){
-                            volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k)); // assegno a tutti i bin sotto el_inf il valore a el_inf (preci/Z a el_inf nella ZLR finale)
-
-                        }
-                        if (do_quality)
-                        {
-                            dato_corrotto(i, k)=ANAP_OK;/* matrice risultato test: no propagazione anomala*/
-                            elev_fin[i][k]=el_inf;
-                        }
-                        if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k); //incremento la statistica cambio elevazione
-
-                    }
-                }
-                //------------------se invece flag_anap == 0 cioè non ho ancora trovato anaprop nel raggio ripeto le operazioni ma con i limiti più restrittivi (controlla elev_fin)------------------
-
-                else
+                    //-----------caso di propagazione anomala presente nella cella precedente ---------
+                    MAX_DIF_USED   = MAX_DIF_NEXT;
+		    MIN_VALUE_USED = MIN_VALUE_NEXT;
+		}
+		else
                 {
-                    if(bin_low-bin_high >= MAX_DIF || bin_high <= MIN_VALUE  )
+                    //-----------caso di propagazione anomala non presente nella cella precedente ---------
+                    MAX_DIF_USED   = MAX_DIF;
+		    MIN_VALUE_USED = MIN_VALUE;
+		}
 
-                    {
-                        //--------ricopio valore a el_up su tutte elev inferiori--------------
-                        for(unsigned l=0; l<el_up; l++){
+                //if((bin_low-bin_high >0 ) && (bin_low-bin_high >= MAX_DIF_USED || (bin_high <= MIN_VALUE_USED && bin_low > MIN_VALUE + 5 )))
+                if(bin_low-bin_high >= MAX_DIF_USED || (bin_high <= MIN_VALUE_USED && bin_low > MIN_VALUE + 5 ))
+                {
+                  //--------ricopio valore a el_up su tutte elev inferiori--------------
+                  for(unsigned l=0; l<el_up; l++){
            //                 volume.scan(l).set_raw(i, k, 1);
                             volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));  //ALTERN
-                        }
-                        //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
-                        flag_anap = true;
-                        cont_anap=cont_anap+1;
-                        grid_stats.incr_anap(i, k);
-                        if (do_quality)
-                        {
-                            dato_corrotto(i, k)=ANAP_YES;/*matrice risultato test: propagazione anomala*/
-                            elev_fin[i][k]=el_up;
-                        }
-                        if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
-                        if (do_beamblocking)
-                            beam_blocking(i, k)=0;
-                    }
+                   }
+                  //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
+                  flag_anap = true;
+                  cont_anap=cont_anap+1;
+                  grid_stats.incr_anap(i, k);
+                  if (do_quality)
+                  {
+                      dato_corrotto(i, k)=ANAP_YES;/*matrice risultato test: propagazione anomala*/
+                      elev_fin[i][k]=el_up;
+                  }
+                  if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
+                  if (do_beamblocking)
+                      beam_blocking(i, k)=0;
+                }
 
-                    //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
-                    else
-                    {
-                        for(unsigned l=0; l<=el_inf; l++)
-                        {
-                            volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
-                            if (do_beamblocking && do_bloccorr)
-                            {
-                                volume.scan(l).set(i, k, BeamBlockingCorrection(volume.scan(l).get(i, k), beam_blocking(i, k)));
-                                //volume.scan(l).set_raw(i, k, DBtoBYTE(BYTEtoDB(volume.scan(l).get_raw(i, k))-10*log10(1.-(float)beam_blocking(i, k)/100.)));
-                                //volume.scan(l).set_raw(i, k, volume.scan(l).get_raw(i, k)+ceil(-3.1875*10.*log10(1.-(float)beam_blocking(i, k)/100.)-0.5));
-                                grid_stats.incr_bloc(i, k, beam_blocking(i, k));
-                            }
-                        }
+              //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
+                else
+                {
+                  if (do_beamblocking && do_bloccorr)
+                  {
+                    volume.scan(el_inf).set(i, k, BeamBlockingCorrection(volume.scan(el_inf).get(i, k), beam_blocking(i, k)));
+                    grid_stats.incr_bloc(i, k, beam_blocking(i, k));
+                  }
+                  for(unsigned l=0; l<el_inf; l++)
+                      volume.scan(l).set(i, k, volume.scan(el_inf).get(i, k));
 
-                        if (do_quality)
-                        {
-                            dato_corrotto(i, k)=ANAP_OK;
-                            elev_fin[i][k]=el_inf;
-                        }
-
-                        if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
-                        flag_anap = false;
-
-                    } /*endif test anaprop*/
-                }/*endif flaganap*/
-            }/*endif bin_low > fondo_scala && bin_high >= fondo_scala*/
-
+                  if (do_quality)
+                  {
+                      dato_corrotto(i, k)=ANAP_OK;
+                      elev_fin[i][k]=el_inf;
+                  }
+                  if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
+                  flag_anap = false;
+                }
+            }/* test_anap */
             //----------------se al livello base non ho dato riempio con i valori di el_up tutte le elevazioni sotto (ricostruisco il volume) e assegno beam_blocking 0
             else if (bin_low < fondo_scala)
             {
@@ -2087,6 +2041,14 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
    if (!read_sp20_volume(nome_file, file_type))
         return false;
   }
+/* 
+  {
+      unsigned irange=60000/volume.scan(0).cell_size;
+      for (unsigned beam=130; beam <=170; beam ++){
+               LOG_WARN(" Raggio %3d bin %4d -- db@60Km %f",beam,irange,volume.scan(0)(beam,irange)); 
+      }
+   }
+*/
     ///-------------------------ELABORAZIONE -------------------------
 
     //  ----- da buttare : eventuale scrittura del volume polare ad azimut e range fissi
@@ -2455,7 +2417,6 @@ void Cart::creo_cart(const CUM_BAC& cb)
 void Cart::write_out(const CUM_BAC& cb, Assets& assets)
 {
     if (getenv("DIR_DEBUG") == NULL) return;
-
     assets.write_gdal_image(cart, "DIR_DEBUG", "cart", "PNG");
 
     if (cb.do_quality)
