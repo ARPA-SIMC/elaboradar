@@ -52,9 +52,9 @@ public:
     /// Size of a beam cell in meters
     T cell_size;
 
-    PolarScan(unsigned beam_size, const T& default_value = BYTEtoDB(1))
-        : Matrix2D<T>(PolarScan::Constant(NUM_AZ_X_PPI, beam_size, default_value)),
-          beam_count(NUM_AZ_X_PPI), beam_size(beam_size), elevation(0)
+    PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
+        : Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value)),
+          beam_count(beam_count), beam_size(beam_size), elevation(0)
     {
     }
 
@@ -201,7 +201,7 @@ public:
         this->resize(v.size(), 0);
         for (unsigned i = 0; i < v.size(); ++i)
         {
-            (*this)[i] = new PolarScan<T>(v.scan(i).beam_size, default_value);
+            (*this)[i] = new PolarScan<T>(NUM_AZ_X_PPI, v.scan(i).beam_size, default_value);
             (*this)[i]->elevation = v.scan(i).elevation;
         }
     }
@@ -259,7 +259,7 @@ public:
         stats.count_others.resize(this->size());
         stats.sum_others.resize(this->size());
 
-        for (int iel = 0; iel < this->size(); ++iel)
+        for (unsigned iel = 0; iel < this->size(); ++iel)
         {
             stats.count_zeros[iel] = 0;
             stats.count_ones[iel] = 0;
@@ -301,13 +301,13 @@ public:
             if (idx > this->size())
             {
                 if (this->empty())
-                    this->push_back(new PolarScan<T>(beam_size));
+                    this->push_back(new PolarScan<T>(NUM_AZ_X_PPI, beam_size));
                 while (this->size() < idx)
-                    this->push_back(new PolarScan<T>(this->back()->beam_size));
+                    this->push_back(new PolarScan<T>(NUM_AZ_X_PPI, this->back()->beam_size));
             }
 
             // Add the new polar scan
-            this->push_back(new PolarScan<T>(beam_size));
+            this->push_back(new PolarScan<T>(NUM_AZ_X_PPI, beam_size));
             this->back()->elevation = elevation;
             this->back()->cell_size = cell_size;
         }

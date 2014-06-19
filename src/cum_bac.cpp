@@ -147,8 +147,8 @@ CUM_BAC::CUM_BAC(const Config& cfg, const char* site_name, bool medium, unsigned
       do_medium(medium),
       elev_fin(volume, load_info),
       calcolo_vpr(0),
-      first_level(MyMAX_BIN), first_level_static(MyMAX_BIN),
-      bb_first_level(1024), beam_blocking(1024),dem(1024),
+      first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
+      bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024), dem(NUM_AZ_X_PPI, 1024),
       qual(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
@@ -2169,11 +2169,11 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac),
-      conv(cum_bac.volume.max_beam_size(),0),
+      conv(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size(),0),
       area_vpr(NMAXLAYER, 0),
       vpr(NMAXLAYER, NODATAVPR),
-      corr_polar(cum_bac.volume.max_beam_size()),
-      neve(cum_bac.volume.max_beam_size()),
+      corr_polar(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size()),
+      neve(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size()),
       flag_vpr(0)
 {
     logging_category = log4c_category_get("radar.vpr");
