@@ -4,6 +4,7 @@
 #include "site.h"
 #include "volume/sp20.h"
 #include "volume/odim.h"
+#include "volume/resample.h"
 #include "cylindrical.h"
 #include "steiner.h"
 #include "viz.h"
@@ -323,8 +324,34 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 
     volume::SP20Loader loader(site, do_medium, do_clean, MyMAX_BIN);
     loader.load_info = &load_info;
-    loader.vol_z = &volume;
+
+    Volume<double> full_volume(450);
+    loader.vol_z = &full_volume;
     loader.load(nome_file);
+
+    auto merger = [](const PolarScan<double>& src, double src_idx, PolarScan<double>& dst, unsigned dst_idx) -> void {
+        double rounded_idx = round(src_idx);
+
+        // Copy the closest beam
+        unsigned idx = (unsigned)rounded_idx % src.beam_count;
+        dst.row(dst_idx) = src.row(idx);
+
+        // Copy the previous or next beam in case they overlap
+        if (rounded_idx < src_idx)
+        {
+            unsigned idx = ((unsigned)rounded_idx + 1) % src.beam_count;
+            for (unsigned i = 0; i < dst.beam_size; ++i)
+                if (dst(dst_idx, i) < src(idx, i))
+                    dst(dst_idx, i) = src(idx, i);
+        } else {
+            unsigned idx = ((unsigned)rounded_idx - 1) % src.beam_count;
+            for (unsigned i = 0; i < dst.beam_size; ++i)
+                if (dst(dst_idx, i) < src(idx, i))
+                    dst(dst_idx, i) = src(idx, i);
+        }
+    };
+
+    volume_resample<double>(full_volume, volume, merger);
 
     elev_fin.init();
 
