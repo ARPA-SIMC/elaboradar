@@ -17,13 +17,13 @@ namespace volume {
 static const double FATT_MOLT_AZ = (double) 360./(double)4096.;
 
 // Indice per un beam dato il suo azimut
-static inline int azimut_index_MDB(short az)
+static inline int azimut_index_MDB(short az, unsigned beam_count)
 {
-  float azimut = az * FATT_MOLT_AZ / .9;
+  float azimut = az * FATT_MOLT_AZ / (360. / beam_count);
   if (azimut - (int)azimut <= .5)
-    return (int)azimut % 400;
+    return (int)azimut % beam_count;
   else
-    return ((int)azimut + 1) % 400;
+    return ((int)azimut + 1) % beam_count;
 }
 
 
@@ -150,7 +150,10 @@ struct Loader
     // Create or reuse a scan at position idx, with the given beam size
     void make_scan(unsigned idx, unsigned beam_size)
     {
-        if (load_info) load_info->make_scan(idx, 400);
+        // FIXME: hardcoding 450 to have enough space to test new SP20 loading.
+        // Long term plan: get rid of this, and let volume_resample mergers do
+        // accounting if they feel like it.
+        if (load_info) load_info->make_scan(idx, 450);
     }
 
     template<typename T>
@@ -159,7 +162,7 @@ struct Loader
         int alfa = alpha / FATT_MOLT_AZ;
         if (alfa >= 4096) return;
 
-        int az_num = azimut_index_MDB(alfa);
+        int az_num = azimut_index_MDB(alfa, scan.beam_count);
 
 /*        
         if (az_num == 0)
