@@ -186,22 +186,25 @@ public:
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
     Variable quantity;
+    const unsigned beam_count;
 
     // Access a polar scan
     PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
     const PolarScan<T>& scan(unsigned idx) const { return *(*this)[idx]; }
 
-    Volume()
+    Volume(unsigned beam_count=NUM_AZ_X_PPI)
+        : beam_count(beam_count)
     {
     }
 
     template<typename OT>
     Volume(const Volume<OT>& v, const T& default_value)
+        : beam_count(v.beam_count)
     {
         this->resize(v.size(), 0);
         for (unsigned i = 0; i < v.size(); ++i)
         {
-            (*this)[i] = new PolarScan<T>(NUM_AZ_X_PPI, v.scan(i).beam_size, default_value);
+            (*this)[i] = new PolarScan<T>(beam_count, v.scan(i).beam_size, default_value);
             (*this)[i]->elevation = v.scan(i).elevation;
         }
     }
@@ -210,15 +213,6 @@ public:
     {
         for (auto i: *this)
             if (i) delete i;
-    }
-
-    /// Return the maximum beam count in all PolarScans
-    const unsigned max_beam_count() const
-    {
-        unsigned res = 0;
-        for (size_t i = 0; i < size(); ++i)
-            res = std::max(res, (*this)[i]->beam_count);
-        return res;
     }
 
     /// Return the maximum beam size in all PolarScans
@@ -301,13 +295,13 @@ public:
             if (idx > this->size())
             {
                 if (this->empty())
-                    this->push_back(new PolarScan<T>(NUM_AZ_X_PPI, beam_size));
+                    this->push_back(new PolarScan<T>(beam_count, beam_size));
                 while (this->size() < idx)
-                    this->push_back(new PolarScan<T>(NUM_AZ_X_PPI, this->back()->beam_size));
+                    this->push_back(new PolarScan<T>(beam_count, this->back()->beam_size));
             }
 
             // Add the new polar scan
-            this->push_back(new PolarScan<T>(NUM_AZ_X_PPI, beam_size));
+            this->push_back(new PolarScan<T>(beam_count, beam_size));
             this->back()->elevation = elevation;
             this->back()->cell_size = cell_size;
         }
@@ -400,7 +394,7 @@ private:
 	this->push_back(new PolarScan<T>(raw.beam_size,0.));
 	this->back()->elevation = raw.elevation;
 	this->back()->cell_size = raw.cell_size;
-	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(NUM_AZ_X_PPI,raw.beam_size,0));
+	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(beam_count,raw.beam_size,0));
 	T value;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
@@ -442,7 +436,7 @@ private:
 	this->push_back(new PolarScan<T>(raw.beam_size,0.));
 	this->back()->elevation = raw.elevation;
 	this->back()->cell_size = raw.cell_size;
-	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(NUM_AZ_X_PPI,raw.beam_size,0));
+	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(beam_count,raw.beam_size,0));
 	T value;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
