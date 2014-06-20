@@ -46,8 +46,15 @@ struct Beam
         decode_header_sp20_date_from_name(beam_header, &beam_info, (char*)in.name());
 
         // Salta beam non validi
-        if (!beam_info.valid_data)
+        if (!beam_info.valid_data){
+            unsigned to_be_skipped=0;
+            if (has_z()) to_be_skipped=to_be_skipped+beam_info.cell_num;
+            if (has_d()) to_be_skipped=to_be_skipped+beam_info.cell_num;
+            if (has_v()) to_be_skipped=to_be_skipped+beam_info.cell_num;
+            if (has_w()) to_be_skipped=to_be_skipped+beam_info.cell_num;
+	    in.fseek(to_be_skipped,SEEK_CUR);
             return true;
+        }
 
         beam_size = beam_info.cell_num;
 
@@ -185,6 +192,7 @@ void SP20Loader::load(const std::string& pathname)
         unsigned beam_size = beams->min_beam_size();
         beams->beam_size = beam_size;
     }
+//for (unsigned i=0; i<elevations.size(); ++i)  std::cout<<elevations[i]->size()<<std::endl;
 
     if (elevations.back()->beam_size == 0)
         throw std::runtime_error("last elevation beam size is 0");
@@ -232,6 +240,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
 #else
         fill_beam(scan, el_num, beam.beam_info.elevation, beam.beam_info.azimuth, max_range, dbs);
 #endif
+
         delete[] dbs;
     }
 
