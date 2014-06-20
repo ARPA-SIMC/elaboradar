@@ -161,11 +161,12 @@ struct Loader
     {
         int alfa = alpha / FATT_MOLT_AZ;
         if (alfa >= 4096) return;
+	double beam_width=360./scan.beam_count;
 
         int az_num = azimut_index_MDB(alfa, scan.beam_count);
 
-/*        
-        if (az_num == 0)
+/*         
+        if (az_num <= 20)
         {
             printf("fbeam ϑ%f→%d α%f→%d %u", theta, el_num, alpha, az_num, size);
             for (unsigned i = 0; i < 8; ++i)
@@ -191,10 +192,10 @@ struct Loader
 				double delta_alpha_old=361.;
 				for(unsigned i=0;i<li->beam_info[az_num].load_log.size();i++)
 				{
-					delta_alpha=std::fmod(std::fabs(az_num*0.9-li->beam_info[az_num].load_log[0].alpha),360.);
+					delta_alpha=std::fmod(std::fabs(az_num*beam_width-li->beam_info[az_num].load_log[0].alpha),360.);
 					if(delta_alpha<delta_alpha_old) delta_alpha_old=delta_alpha;
 				}
-				delta_alpha=std::fmod(std::fabs(az_num*0.9-alpha),360.);
+				delta_alpha=std::fmod(std::fabs(az_num*beam_width-alpha),360.);
 				if(delta_alpha<delta_alpha_old)
 				{
 					for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
@@ -208,15 +209,15 @@ struct Loader
 	else  // Old code  										
 	{
         	merge_beam(scan, el_num, az_num, theta, alpha, size, data);
-	        if(az_num*0.9 - alpha < 0.)
+	        if(az_num*beam_width - alpha < 0.)
 	        {
-        	    int new_az_num = (az_num + 1) % 400;
+        	    int new_az_num = (az_num + 1) % scan.beam_count;
 	            if (new_az_num != az_num)
         	        merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
 	        }
-	        else if(az_num*0.9 - alpha > 0.)
+	        else if(az_num*beam_width - alpha > 0.)
         	{
-	            int new_az_num = (az_num -1+400) %400;
+	            int new_az_num = (az_num -1+scan.beam_count) %scan.beam_count;
         	    if (new_az_num != az_num)
                 	merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
 	        }
