@@ -122,6 +122,12 @@ bool File::fread(void* buf, size_t size)
     return true;
 }
 
+bool File::fseek(size_t seek_par, int origin)
+{
+	if (::fseek(fd,seek_par,origin))  return true;
+	return false;
+}
+
 const char* getenv_default(const char* envname, const char* default_value)
 {
     const char* res = getenv(envname);
