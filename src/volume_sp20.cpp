@@ -74,13 +74,13 @@ struct Beam
 
 }
 
-void SP20Loader::make_scan(unsigned idx, unsigned beam_size, double cell_size)
+void SP20Loader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double cell_size)
 {
     Loader::make_scan(idx, beam_size);
-    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx], cell_size);
-    if (vol_d) vol_d->make_scan(idx, beam_size, elev_array[idx], cell_size);
-    if (vol_v) vol_v->make_scan(idx, beam_size, elev_array[idx], cell_size);
-    if (vol_w) vol_w->make_scan(idx, beam_size, elev_array[idx], cell_size);
+    if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
+    if (vol_d) vol_d->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
+    if (vol_v) vol_v->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
+    if (vol_w) vol_w->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
 }
 
 namespace {
@@ -208,7 +208,7 @@ void SP20Loader::load(const std::string& pathname)
     // Create the polarscans and fill them with data
     for (auto& beams: elevations)
     {
-        make_scan(beams->el_num, beams->beam_size, size_cell);
+        make_scan(beams->el_num, beams->size(), beams->beam_size, size_cell);
 
         for (auto& beam: *beams)
             beam_to_volumes(*beam, beams->beam_size, beams->el_num);
@@ -216,7 +216,7 @@ void SP20Loader::load(const std::string& pathname)
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
-        LOG_DEBUG (" Scan %2zd - dimensione beam %5d", i, vol_z->scan(i).beam_size);
+        LOG_DEBUG (" Scan %2zd - dimensione beam %5d", i, vol_z->at(i).beam_size);
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
@@ -234,7 +234,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
             dbs[i] = BYTEtoDB(beam.beams.data_z[i]);
         //f_ray[p]=data->beam[p]*RANGE_Z/255. + min_zeta;
 
-        PolarScan<double>& scan = vol_z->scan(el_num);
+        PolarScan<double>& scan = vol_z->at(el_num);
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
@@ -255,7 +255,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
         for (unsigned i = 0; i < max_range; ++i)
             dbs[i] = beam.beams.data_d[i] * range_zdr / 255. + min_zdr;
 
-        PolarScan<double>& scan = vol_d->scan(el_num);
+        PolarScan<double>& scan = vol_d->at(el_num);
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
@@ -290,7 +290,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
         //   f_ray[p] = data->beam_w[p] * RANGE_V / 127.*.5;
         // else
         //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
-        PolarScan<double>& scan = vol_v->scan(el_num);
+        PolarScan<double>& scan = vol_v->at(el_num);
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
@@ -307,7 +307,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
         for (unsigned i = 0; i < max_range; ++i)
             ms[i] = beam.beams.data_w[i] * range_sig_v / 255.0;
 
-        PolarScan<double>& scan = vol_w->scan(el_num);
+        PolarScan<double>& scan = vol_w->at(el_num);
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
