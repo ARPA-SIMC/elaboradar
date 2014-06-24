@@ -66,7 +66,8 @@ public:
      */
     bool fread(void* buf, size_t size);
 
-    bool fseek(size_t seek_par, int origin);
+    void fseek(size_t seek_par, int origin);
+
     /**
      * Read the file line by line, calling line_cb on each line read
      */

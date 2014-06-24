@@ -52,7 +52,7 @@ struct Beam
             if (has_d()) to_be_skipped=to_be_skipped+beam_info.cell_num;
             if (has_v()) to_be_skipped=to_be_skipped+beam_info.cell_num;
             if (has_w()) to_be_skipped=to_be_skipped+beam_info.cell_num;
-	    in.fseek(to_be_skipped,SEEK_CUR);
+            in.fseek(to_be_skipped, SEEK_CUR);
             return true;
         }
 
