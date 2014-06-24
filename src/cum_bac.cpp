@@ -320,15 +320,16 @@ bool CUM_BAC::test_file(int file_type)
 
 bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 {
+    using namespace cumbac::volume;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume::SP20Loader loader(site, do_medium, do_clean, MyMAX_BIN);
+    SP20Loader loader(site, do_medium, do_clean, MyMAX_BIN);
     loader.load_info = &load_info;
 
-    volume::Scans<double> full_volume;
+    Scans<double> full_volume;
     loader.vol_z = &full_volume;
     loader.load(nome_file);
-    volume_resample<double>(full_volume, volume, merger_max_of_closest<double>);
+    volume_resample<double>(full_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
 
     elev_fin.init();
 
@@ -616,6 +617,7 @@ void CUM_BAC::elabora_dato()
             {
                 for(unsigned l=0; l<el_up; l++)
                 {
+#warning Here the .get(i, k) on level el_up may find a smaller beam size than the one k can reach, causing a read out of bound
                     if (volume.scan(l).beam_size > k)
                         volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
                 }

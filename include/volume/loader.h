@@ -203,7 +203,7 @@ struct Loader
     {
         int alfa = alpha / FATT_MOLT_AZ;
         if (alfa >= 4096) return;
-	double beam_width=360./scan.beam_count;
+        double beam_width=360./scan.beam_count;
 
         int az_num = azimut_index_MDB(alfa, scan.beam_count);
 

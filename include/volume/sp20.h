@@ -3,6 +3,7 @@
 
 #include "volume.h"
 #include "volume/loader.h"
+#include "volume/azimuthmap.h"
 
 namespace cumbac {
 namespace volume {
@@ -13,7 +14,7 @@ struct Beam;
 
 struct SP20Loader : public Loader
 {
-    std::vector<AzimutMap> azimut_maps;
+    std::vector<NonuniformAzimuthMap> azimuth_maps;
     Scans<double>* vol_z;
     Scans<double>* vol_d;
     Scans<double>* vol_v;
@@ -29,7 +30,7 @@ struct SP20Loader : public Loader
     // Create or reuse a scan at position idx, with the given beam size
     void make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double cell_size);
 
-    void beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, unsigned el_num);
+    void beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsigned beam_size, unsigned el_num);
 };
 
 }

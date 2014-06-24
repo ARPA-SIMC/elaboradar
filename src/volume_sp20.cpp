@@ -77,6 +77,7 @@ struct Beam
 void SP20Loader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double cell_size)
 {
     Loader::make_scan(idx, beam_size);
+    if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
     if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
     if (vol_d) vol_d->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
     if (vol_v) vol_v->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
@@ -209,9 +210,8 @@ void SP20Loader::load(const std::string& pathname)
     for (auto& beams: elevations)
     {
         make_scan(beams->el_num, beams->size(), beams->beam_size, size_cell);
-
-        for (auto& beam: *beams)
-            beam_to_volumes(*beam, beams->beam_size, beams->el_num);
+        for (unsigned i = 0; i < beams->size(); ++i)
+            beam_to_volumes(*beams->at(i), i, beams->beam_size, beams->el_num);
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
@@ -222,26 +222,29 @@ void SP20Loader::load(const std::string& pathname)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 }
 
-void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, unsigned el_num)
+void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsigned beam_size, unsigned el_num)
 {
     const unsigned max_range = min(beam_size, beam.beam_size);
+
+    azimuth_maps[el_num].add(beam.beam_info.azimuth, az_idx);
 
     if (vol_z && beam.has_z()) // Riflettività Z
     {
         // Convert to DB
-        double* dbs = new double[max_range];
+        Eigen::VectorXd dbs(max_range);
         for (unsigned i = 0; i < max_range; ++i)
-            dbs[i] = BYTEtoDB(beam.beams.data_z[i]);
+            dbs(i) = BYTEtoDB(beam.beams.data_z[i]);
         //f_ray[p]=data->beam[p]*RANGE_Z/255. + min_zeta;
 
         PolarScan<double>& scan = vol_z->at(el_num);
+        scan.row(az_idx) = dbs;
+        /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
         fill_beam(scan, el_num, beam.beam_info.elevation, beam.beam_info.azimuth, max_range, dbs);
 #endif
-
-        delete[] dbs;
+        */
     }
 
     if (vol_d && beam.has_d()) // Riflettività differenziale ZDR
@@ -251,39 +254,42 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
         const double min_zdr = -6.;
 
         // Convert to DB 
-        double* dbs = new double[max_range];
+        Eigen::VectorXd dbs(max_range);
         for (unsigned i = 0; i < max_range; ++i)
-            dbs[i] = beam.beams.data_d[i] * range_zdr / 255. + min_zdr;
+            dbs(i) = beam.beams.data_d[i] * range_zdr / 255. + min_zdr;
 
         PolarScan<double>& scan = vol_d->at(el_num);
+        scan.row(az_idx) = dbs;
+        /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
 #else
         fill_beam(scan, el_num, beam.beam_info.elevation, beam.beam_info.azimuth, max_range, dbs);
 #endif
+*/
     }
 
     if (vol_v && beam.has_v()) // Velocità V
     {
         // Convert to m/s 
-        double* ms = new double[max_range];
+        Eigen::VectorXd ms(max_range);
         if (beam.beam_info.PRF == 'S')
         {
             // range variabilita V - velocità radiale
             const double range_v = 33.;
             for (unsigned i = 0; i < max_range; ++i)
                 if (beam.beams.data_v[i] == -128)
-                    ms[i] = -range_v / 2;
+                    ms(i) = -range_v / 2;
                 else
-                    ms[i] = beam.beams.data_v[i] * range_v / 254.;
+                    ms(i) = beam.beams.data_v[i] * range_v / 254.;
         } else {
             // range variabilita V - velocità radiale
             const double range_v = 99.;
             for (unsigned i = 0; i < max_range; ++i)
                 if (beam.beams.data_v[i] == -128)
-                    ms[i] = -range_v / 2;
+                    ms(i) = -range_v / 2;
                 else
-                    ms[i] = beam.beams.data_v[i] * range_v / 254.;
+                    ms(i) = beam.beams.data_v[i] * range_v / 254.;
         }
         // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
         // if ( beam_info->PRF == 'S')
@@ -291,11 +297,14 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
         // else
         //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
         PolarScan<double>& scan = vol_v->at(el_num);
+        scan.row(az_idx) = ms;
+        /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
         fill_beam(scan, el_num, beam.beam_info.elevation, beam.beam_info.azimuth, max_range, ms);
 #endif
+*/
     }
 
     if (vol_w && beam.has_w()) // Spread - Sigma V
@@ -303,16 +312,19 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned beam_size, uns
         // range variabilita Sigma V - Spread velocità
         const double range_sig_v = 10.;
         // Convert to m/s 
-        double* ms = new double[max_range];
+        Eigen::VectorXd ms(max_range);
         for (unsigned i = 0; i < max_range; ++i)
             ms[i] = beam.beams.data_w[i] * range_sig_v / 255.0;
 
         PolarScan<double>& scan = vol_w->at(el_num);
+        scan.row(az_idx) = ms;
+        /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
 #else
         fill_beam(scan, el_num, beam.beam_info.elevation, beam.beam_info.azimuth, max_range, ms);
 #endif
+*/
     }
 }
 
