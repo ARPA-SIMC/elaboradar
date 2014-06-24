@@ -122,10 +122,16 @@ bool File::fread(void* buf, size_t size)
     return true;
 }
 
-bool File::fseek(size_t seek_par, int origin)
+void File::fseek(size_t seek_par, int origin)
 {
-	if (::fseek(fd,seek_par,origin))  return true;
-	return false;
+    if (::fseek(fd,seek_par,origin) == -1)
+    {
+        string errmsg("fseek failed on ");
+        errmsg += fname;
+        errmsg += ": ";
+        errmsg += strerror(errno);
+        throw runtime_error(errmsg);
+    }
 }
 
 const char* getenv_default(const char* envname, const char* default_value)
