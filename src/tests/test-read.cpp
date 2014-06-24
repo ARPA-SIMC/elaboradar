@@ -3,6 +3,7 @@
 #include "config.h"
 #include "volume/sp20.h"
 #include "volume/odim.h"
+#include "volume/resample.h"
 #include "site.h"
 #include "logging.h"
 #include <stdio.h>
@@ -240,13 +241,15 @@ template<> template<>
 void to::test<1>()
 {
     // Test loading of a radar volume via SP20
-    Volume<double> vsp20;
     volume::LoadInfo load_info;
     const Site& gat = Site::get("GAT");
     volume::SP20Loader loader(gat, false, false);
-    loader.vol_z = &vsp20;
+    volume::Scans<double> ssp20;
+    loader.vol_z = &ssp20;
     loader.load_info = &load_info;
     loader.load("testdata/DBP2_070120141530_GATTATICO");
+    Volume<double> vsp20;
+    volume_resample<double>(ssp20, vsp20, merger_max_of_closest<double>);
     // Check the contents of what we read
     wruntest(test_0120141530gat_SP20, load_info, vsp20);
 }
@@ -270,8 +273,10 @@ template<> template<>
 void to::test<3>()
 {
     using namespace std;
+    volume::Scans<double> ssp20;
     Volume<double> vsp20;
     volume::LoadInfo liSP20;
+    volume::Scans<double> sodim;
     Volume<double> vodim;
     volume::LoadInfo liODIM;
 
@@ -280,13 +285,16 @@ void to::test<3>()
 
     volume::SP20Loader sp20(gat, false, false);
     sp20.load_info = &liSP20;
-    sp20.vol_z = &vsp20;
+    sp20.vol_z = &ssp20;
     sp20.load("testdata/DBP2_070120141530_GATTATICO");
 
     volume::ODIMLoader odim(gat, false, false);
     odim.load_info = &liODIM;
     odim.vol_z = &vodim;
     odim.load("testdata/MSG1400715300U.101.h5");
+
+    volume_resample<double>(ssp20, vsp20, merger_max_of_closest<double>);
+    //volume_resample<double>(sodim, vodim, merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, vodim);
     wruntest(test_loadinfo_equal, liSP20, liODIM);
@@ -311,8 +319,10 @@ template<> template<>
 void to::test<5>()
 {
     using namespace std;
+    volume::Scans<double> ssp20;
     Volume<double> vsp20;
     volume::LoadInfo liSP20;
+    volume::Scans<double> s_mod;
     Volume<double> v_mod;
     volume::LoadInfo li_mod;
 
@@ -320,13 +330,16 @@ void to::test<5>()
 
     volume::SP20Loader sp20(gat, false, true, 494);
     sp20.load_info = &liSP20;
-    sp20.vol_z = &vsp20;
+    sp20.vol_z = &ssp20;
     sp20.load("testdata/DBP2_060220140140_GATTATICO");
 
     volume::SP20Loader _mod(gat, false, false);
     _mod.load_info = &li_mod;
-    _mod.vol_z = &v_mod;
+    _mod.vol_z = &s_mod;
     _mod.load("testdata/DBP2_060220140140_GATTATICO_mod");
+
+    volume_resample<double>(ssp20, vsp20, merger_max_of_closest<double>);
+    volume_resample<double>(s_mod, v_mod, merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, v_mod);
     wruntest(test_loadinfo_equal, liSP20, li_mod);

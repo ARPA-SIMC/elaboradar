@@ -26,6 +26,48 @@ static inline int azimut_index_MDB(short az, unsigned beam_count)
     return ((int)azimut + 1) % beam_count;
 }
 
+template<typename T>
+struct Scans : public std::vector<PolarScan<T>>
+{
+    Variable<T> quantity;
+
+    // Create or reuse a scan at position idx, with the given beam size
+    PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
+    {
+        if (idx < this->size())
+        {
+            if (beam_count != (*this)[idx].beam_count)
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_count=%u", idx, beam_count, beam_size, (*this)[idx].beam_count);
+                throw std::runtime_error("beam_size mismatch");
+            }
+            if (beam_size != (*this)[idx].beam_size)
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_count, beam_size, (*this)[idx].beam_size);
+                throw std::runtime_error("beam_size mismatch");
+            }
+        } else {
+            // If some elevation has been skipped, fill in the gap
+            if (idx > this->size())
+            {
+                if (this->empty())
+                    this->push_back(PolarScan<T>(beam_count, beam_size));
+                while (this->size() < idx)
+                    this->push_back(PolarScan<T>(beam_count, this->back().beam_size));
+            }
+
+            // Add the new polar scan
+            this->push_back(PolarScan<T>(beam_count, beam_size));
+            this->back().elevation = elevation;
+            this->back().cell_size = cell_size;
+        }
+
+        // Return it
+        return (*this)[idx];
+    }
+};
 
 struct LoadLogEntry
 {
@@ -153,7 +195,7 @@ struct Loader
         // FIXME: hardcoding 450 to have enough space to test new SP20 loading.
         // Long term plan: get rid of this, and let volume_resample mergers do
         // accounting if they feel like it.
-        if (load_info) load_info->make_scan(idx, 450);
+        if (load_info) load_info->make_scan(idx, 460);
     }
 
     template<typename T>

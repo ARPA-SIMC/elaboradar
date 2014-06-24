@@ -101,6 +101,16 @@ public:
     }
 };
 
+/**
+ * Map azimut angles to PolarScan indices, and vice-versa
+ */
+struct AzimutMap : std::vector<std::pair<double, unsigned>>
+{
+    unsigned index_by_azimut(double azimut) const;
+    double azimut_by_index(unsigned index) const;
+    std::vector<unsigned> indices_by_azimut(double azimut) const;
+};
+
 struct VolumeStats
 {
     std::vector<unsigned> count_zeros;
@@ -286,10 +296,16 @@ public:
     {
         if (idx < this->size())
         {
+            if (beam_count != (*this)[idx]->beam_count)
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_count=%u", idx, beam_count, beam_size, (*this)[idx]->beam_count);
+                throw std::runtime_error("beam_size mismatch");
+            }
             if (beam_size != (*this)[idx]->beam_size)
             {
                 LOG_CATEGORY("radar.io");
-                LOG_ERROR("make_scan(idx=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_size, (*this)[idx]->beam_size);
+                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_count, beam_size, (*this)[idx]->beam_size);
                 throw std::runtime_error("beam_size mismatch");
             }
         } else {
