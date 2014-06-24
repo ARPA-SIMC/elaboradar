@@ -35,7 +35,6 @@ inline unsigned char DBtoBYTE(double dB)
         return 255;
 }
 
-
 template<typename T>
 class PolarScan : public Matrix2D<T>
 {
@@ -99,16 +98,6 @@ public:
         this->rightCols(new_beam_size - this->beam_size).colwise() = this->col(this->beam_size - 1);
         this->beam_size = new_beam_size;
     }
-};
-
-/**
- * Map azimut angles to PolarScan indices, and vice-versa
- */
-struct AzimutMap : std::vector<std::pair<double, unsigned>>
-{
-    unsigned index_by_azimut(double azimut) const;
-    double azimut_by_index(unsigned index) const;
-    std::vector<unsigned> indices_by_azimut(double azimut) const;
 };
 
 struct VolumeStats
