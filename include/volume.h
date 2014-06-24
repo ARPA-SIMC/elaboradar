@@ -361,7 +361,7 @@ public:
 	this->clear();
 	for(unsigned i=0;i<lin.size();i++)
 	{
-		this->push_back(new PolarScan<T>(lin.scan(i).beam_size,0.));
+		this->push_back(new PolarScan<T>(lin.scan(i).beam_count,lin.scan(i).beam_size,0.));
 		this->back()->elevation = lin.scan(i).elevation;
 		this->back()->cell_size = lin.scan(i).cell_size;
 		this->back()->block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
@@ -375,7 +375,7 @@ public:
 	this->clear();
 	for(unsigned i=0;i<DB.size();i++)
 	{
-		this->push_back(new PolarScan<T>(DB.scan(i).beam_size,0.));
+		this->push_back(new PolarScan<T>(DB.scan(i).beam_count,DB.scan(i).beam_size,0.));
 		this->back()->elevation = DB.scan(i).elevation;
 		this->back()->cell_size = DB.scan(i).cell_size;
 		this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=DB.scan(i).array()*0.1;
@@ -393,10 +393,10 @@ private:
     void make_filter_scan_range(PolarScan<T>& raw, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
-	this->push_back(new PolarScan<T>(raw.beam_size,0.));
+	this->push_back(new PolarScan<T>(raw.beam_count,raw.beam_size,0.));
 	this->back()->elevation = raw.elevation;
 	this->back()->cell_size = raw.cell_size;
-	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(beam_count,raw.beam_size,0));
+	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(raw.beam_count,raw.beam_size,0));
 	T value;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
@@ -435,7 +435,7 @@ private:
     void make_rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
-	this->push_back(new PolarScan<T>(raw.beam_size,0.));
+	this->push_back(new PolarScan<T>(raw.beam_count,raw.beam_size,0.));
 	this->back()->elevation = raw.elevation;
 	this->back()->cell_size = raw.cell_size;
 	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(beam_count,raw.beam_size,0));
@@ -477,7 +477,7 @@ private:
     void make_slope_scan_range(PolarScan<T>& raw, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
-	this->push_back(new PolarScan<T>(raw.beam_size,0.));
+	this->push_back(new PolarScan<T>(raw.beam_count,raw.beam_size,0.));
 	this->back()->elevation = raw.elevation;
 	this->back()->cell_size = raw.cell_size;
 	LinearFit<T> fit;
