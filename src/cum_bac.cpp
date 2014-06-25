@@ -506,7 +506,7 @@ void CUM_BAC::elabora_dato()
                 LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume.scan(loc_el_inf).beam_size,loc_el_inf-1);
                 loc_el_inf--;
             }
-            if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
+           if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
             //const int el_inf = first_level(i, k);
             const unsigned el_inf = loc_el_inf;
 
@@ -618,8 +618,11 @@ void CUM_BAC::elabora_dato()
                 for(unsigned l=0; l<el_up; l++)
                 {
 #warning Here the .get(i, k) on level el_up may find a smaller beam size than the one k can reach, causing a read out of bound
-                    if (volume.scan(l).beam_size > k)
+                    if (volume.scan(l).beam_size > k && volume.scan(el_up).beam_size > k)
                         volume.scan(l).set(i, k, volume.scan(el_up).get(i, k));
+                    else if (volume.scan(l).beam_size > k )
+                        volume.scan(l).set(i, k, fondo_scala);
+		
                 }
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto(i, k))
                 if (do_quality)
@@ -2077,6 +2080,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
     LOG_INFO("inizio rimozione anaprop e beam blocking");
+            for(unsigned k=0; k<volume.size(); k++) LOG_INFO(" SCAN # %2d - BeamSIZE %4d",k,volume.scan(k).beam_size);
     elabora_dato();
 
     //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
