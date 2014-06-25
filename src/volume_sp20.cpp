@@ -169,8 +169,8 @@ void SP20Loader::load(const std::string& pathname)
         if (el_num < 0) continue;
 
         // Calcola la nuova dimensione dei raggi
-        if (max_bin)
-            beam->beam_size = min(beam->beam_size, max_bin);
+//        if (max_bin)
+//            beam->beam_size = min(beam->beam_size, max_bin);
 
         vector<bool> cleaned(beam->beam_size, false);
         if (clean)
@@ -216,7 +216,7 @@ void SP20Loader::load(const std::string& pathname)
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
-        LOG_DEBUG (" Scan %2zd - dimensione beam %5d", i, vol_z->at(i).beam_size);
+        LOG_DEBUG (" Scan %2zd - dimensione beam %5d -  numero raggi %3d - %d", i, vol_z->at(i).beam_size, vol_z->at(i).beam_count, load_info->scans[i].beam_info.size());
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
@@ -238,6 +238,11 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
 
         PolarScan<double>& scan = vol_z->at(el_num);
         scan.row(az_idx) = dbs;
+
+        PolarScanLoadInfo* li = 0;
+        if (load_info) li = &(load_info->scans[el_num]);
+        if (li) li->beam_info[az_idx].load_log.log(beam.beam_info.elevation,beam.beam_info.azimuth);
+
         /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
