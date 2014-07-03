@@ -388,6 +388,15 @@ public:
 	}
     }
 
+    Volume& operator*=(const T coefficient)
+    {
+	for(unsigned el=0;el<this->size();el++)
+	{
+		this->scan(el)*=coefficient;
+	}
+	return *this;
+    }
+
 protected:
     void resize_elev_fin();
 
