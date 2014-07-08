@@ -95,10 +95,10 @@ unsigned counter = 0;
 	counter = counter + (unsigned)(segment_length);
 /* Cerco dati validi in Z prima del segmento */
         for (ib = ibin - 12; ib < ibin ; ib ++) 
-          if (ib >= 0 && b.data_z[ib] >= 2 ) before = true;
+          if (ib >= 0 && b.data_z[ib] > Z_missing) before = true;
 /* Cerco dati validi in Z dopo il segmento */
         for (ia = ibin+1; ia <= ibin+12 ; ia ++) 
-          if (ia < beam_size  && b.data_z[ia] >= 2 ) after = true;
+          if (ia < beam_size  && b.data_z[ia] >= Z_missing) after = true;
 
         if ((segment_length >= min_segment_length && !before && !after) || 
              segment_length >= max_segment_length) {
