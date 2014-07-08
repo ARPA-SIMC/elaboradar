@@ -23,14 +23,6 @@ namespace {
 
 void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
 {
-    // Ensure that nbeam_elev has been filled with the right values
-    wassert(actual(li.scan(0).count_rays_filled()) == 400);
-    wassert(actual(li.scan(1).count_rays_filled()) == 400);
-    wassert(actual(li.scan(2).count_rays_filled()) == 400);
-    wassert(actual(li.scan(3).count_rays_filled()) == 400);
-    wassert(actual(li.scan(4).count_rays_filled()) == 400);
-    wassert(actual(li.scan(5).count_rays_filled()) == 400);
-
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
     wassert(actual(v.scan(1).beam_size) == 494);
@@ -87,14 +79,6 @@ void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, con
 
 void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
 {
-    // Ensure that nbeam_elev has been filled with the right values
-    wassert(actual(li.scan(0).count_rays_filled()) == 400);
-    wassert(actual(li.scan(1).count_rays_filled()) == 400);
-    wassert(actual(li.scan(2).count_rays_filled()) == 400);
-    wassert(actual(li.scan(3).count_rays_filled()) == 400);
-    wassert(actual(li.scan(4).count_rays_filled()) == 400);
-    wassert(actual(li.scan(5).count_rays_filled()) == 400);
-
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
     wassert(actual(v.scan(1).beam_size) == 494);
@@ -171,8 +155,6 @@ void test_loadinfo_equal(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& vsp20, cons
         WIBBLE_TEST_INFO(testinfo);
         testinfo() << "elevation " << ie;
 
-        wassert(actual(vsp20.scan(ie).count_rays_filled()) == vodim.scan(ie).count_rays_filled());
-        if (vsp20.scan(ie).count_rays_filled() == 0) continue;
         wassert(actual(vsp20.scans[ie].beam_info.size()) == vodim.scans[ie].beam_info.size());
     }
 }
@@ -292,11 +274,11 @@ void to::test<3>()
 
     ODIMLoader odim(gat, false, false);
     odim.load_info = &liODIM;
-    odim.vol_z = &vodim;
+    odim.vol_z = &sodim;
     odim.load("testdata/MSG1400715300U.101.h5");
 
     volume_resample<double>(ssp20, sp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
-    //volume_resample<double>(sodim, vodim, merger_max_of_closest<double>);
+    volume_resample<double>(sodim, odim.azimuth_maps, vodim, merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, vodim);
     wruntest(test_loadinfo_equal, liSP20, liODIM);
