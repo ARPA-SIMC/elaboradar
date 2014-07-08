@@ -46,6 +46,7 @@ double eldes_converter_azimut(double start, double stop)
     return res;
 }
 
+#if 0
 unsigned char eldes_counter_to_db(unsigned short val)
 {
     const int minScale = -20;
@@ -58,6 +59,7 @@ unsigned char eldes_counter_to_db(unsigned short val)
     else
         return (unsigned char)(ret + 0.5f);
 }
+#endif
 
 }
 
@@ -65,10 +67,11 @@ unsigned char eldes_counter_to_db(unsigned short val)
 namespace cumbac {
 namespace volume {
 
-void ODIMLoader::make_scan(unsigned idx, unsigned beam_size, double size_cell)
+void ODIMLoader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell)
 {
     Loader::make_scan(idx, beam_size);
-    if (vol_z) vol_z->make_scan(idx, beam_size, elev_array[idx], size_cell);
+    if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
+    if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], size_cell);
 }
 
 void ODIMLoader::load(const std::string& pathname)
@@ -142,12 +145,12 @@ void ODIMLoader::load(const std::string& pathname)
 
         // Get and validate the azimuth angles for this scan
         std::vector<odim::AZAngles> azangles = scan->getAzimuthAngles();
-        //int rpm_sign = scan->getDirection();
+        int rpm_sign = scan->getDirection();
 
-        unsigned nrays = int_to_unsigned(data->getNumRays(), "number of rays");
-        if (azangles.size() != nrays)
+        unsigned beam_count = int_to_unsigned(data->getNumRays(), "number of rays");
+        if (azangles.size() != beam_count)
         {
-            LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), nrays);
+            LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), beam_count);
             throw runtime_error("mismatch between number of azumuth angles and number of rays");
         }
 
@@ -188,7 +191,7 @@ void ODIMLoader::load(const std::string& pathname)
         // Read all scan beam data
         // RayMatrix<float> matrix;
         odim::RayMatrix<double> matrix;
-        matrix.resize(nrays, beam_size);
+        matrix.resize(beam_count, beam_size);
         data->readTranslatedData(matrix); // 1)
       //  data->readData(const_cast<unsigned short*>(matrix.get()));
         // define containe for VRAD adnd WRAD
@@ -203,7 +206,7 @@ void ODIMLoader::load(const std::string& pathname)
         if (clean) {
            if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){                                      // 2)
              VRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_VRAD));
-             VRAD_matrix.resize(nrays, beam_size);
+             VRAD_matrix.resize(beam_count, beam_size);
              VRAD->readTranslatedData(VRAD_matrix);                                             // 3)
              //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();  // 5)
              bin_wind_magic_number = 0;
@@ -211,7 +214,7 @@ void ODIMLoader::load(const std::string& pathname)
            } else clean = false;
            if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){                                      // 2)
              WRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_WRAD));
-             WRAD_matrix.resize(nrays, beam_size);
+             WRAD_matrix.resize(beam_count, beam_size);
              WRAD->readTranslatedData(VRAD_matrix);                                             // 4)
              W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();               // 8)
            } else clean = false;
@@ -222,49 +225,54 @@ void ODIMLoader::load(const std::string& pathname)
         int el_num = elevation_index(elevation);
         if (el_num < 0) continue;
 //std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
-        make_scan(el_num, beam_size, range_scale);
-        PolarScan<double>& vol_pol_scan = vol_z->scan(el_num);
+        make_scan(el_num, beam_count, beam_size, range_scale);
+        PolarScan<double>& vol_pol_scan = vol_z->at(el_num);
 
         //vol_pol_scan.elevation = elevation;
         std::vector<bool> angles_seen(400, false);
-        for (unsigned src_az = 0; src_az < nrays; ++src_az)
+        for (unsigned src_az = 0; src_az < beam_count; ++src_az)
         {
             // FIXME: reproduce a bad truncation from the eldes sp20 converte
             //double azimut = azangles[src_az].averagedAngle(rpm_sign);
             double azimut = eldes_converter_azimut(azangles[src_az].start, azangles[src_az].stop);
-            double* beam = new double[beam_size];
 
-           if (clean) {
+            azimuth_maps[el_num].add(azangles[src_az].averagedAngle(rpm_sign), src_az);
+
+            Eigen::VectorXd beam(beam_size);
+
+            if (clean) {
 //std::cout<<"PASSO PER IL CLEANER - Raggio "<<src_az<<std::endl;
-             BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
-             unique_ptr<Beams<double>> b(new Beams<double>);
-             for (unsigned i = 0; i < beam_size; ++i){
-                        b->data_z[i]=matrix.elem(src_az,i);         
-                        b->data_v[i]=VRAD_matrix.elem(src_az,i);         
-                        b->data_w[i]=WRAD_matrix.elem(src_az,i);         
-              }
-              vector <bool> cleaned(beam_size,false);
-              cleaner.clean_beams(*b,beam_size,cleaned);
-              for (unsigned i = 0; i < beam_size; ++i)
-                beam[i] = b->data_z[i];
-           } else {     
-            // Convert back to bytes, to fit into vol_pol as it is now
+              BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
+              unique_ptr<Beams<double>> b(new Beams<double>);
               for (unsigned i = 0; i < beam_size; ++i){
-                // FIXME: QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
-                // DEVE ESSERE RIMOSSO A FINE LAVORO E RIATTIVATA QUESTA LINEA DI CODICE ORA COMMENTATA
-                // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
-                beam[i] = matrix.elem(src_az, i);
-                //beam[i] = BYTEtoDB(eldes_counter_to_db(matrix.elem(src_az, i)));
-             }
-           }
+                         b->data_z[i]=matrix.elem(src_az,i);         
+                         b->data_v[i]=VRAD_matrix.elem(src_az,i);         
+                         b->data_w[i]=WRAD_matrix.elem(src_az,i);         
+               }
+               vector <bool> cleaned(beam_size,false);
+               cleaner.clean_beams(*b,beam_size,cleaned);
+               for (unsigned i = 0; i < beam_size; ++i)
+                 beam(i) = b->data_z[i];
+            } else {
+             // Convert back to bytes, to fit into vol_pol as it is now
+               for (unsigned i = 0; i < beam_size; ++i){
+                 // FIXME: QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
+                 // DEVE ESSERE RIMOSSO A FINE LAVORO E RIATTIVATA QUESTA LINEA DI CODICE ORA COMMENTATA
+                 // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
+                 beam(i) = matrix.elem(src_az, i);
+                 //beam[i] = BYTEtoDB(eldes_counter_to_db(matrix.elem(src_az, i)));
+              }
+            }
+
+            vol_pol_scan.row(src_az) = beam;
             //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
-            fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
-            delete[] beam;
+            //fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
         }
 
     }
 }
 
+#if 0
 bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 {
     LOG_CATEGORY("radar.io");
@@ -334,10 +342,10 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
         std::vector<odim::AZAngles> azangles = scan->getAzimuthAngles();
         //int rpm_sign = scan->getDirection();
 
-        unsigned nrays = int_to_unsigned(data->getNumRays(), "number of rays");
-        if (azangles.size() != nrays)
+        unsigned beam_count = int_to_unsigned(data->getNumRays(), "number of rays");
+        if (azangles.size() != beam_count)
         {
-            LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), nrays);
+            LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), beam_count);
             throw runtime_error("mismatch between number of azumuth angles and number of rays");
         }
 
@@ -347,7 +355,7 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 
         // Read all scan beam data
         odim::RayMatrix<double> matrix;
-        matrix.resize(nrays, beam_size);
+        matrix.resize(beam_count, beam_size);
         data->readTranslatedData(matrix); // 1)
 
         int el_num = elevation_index(elevation);
@@ -356,7 +364,7 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
         PolarScan<double>& vol_pol_scan = vol_z->scan(el_num);
 
         std::vector<bool> angles_seen(400, false);
-        for (unsigned src_az = 0; src_az < nrays; ++src_az)
+        for (unsigned src_az = 0; src_az < beam_count; ++src_az)
         {
             // FIXME: reproduce a bad truncation from the eldes sp20 converte
             //double azimut = azangles[src_az].averagedAngle(rpm_sign);
@@ -377,6 +385,7 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
     }
     return true;
 }
+#endif
 
 }
 }

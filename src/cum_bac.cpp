@@ -352,13 +352,17 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 
 bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 {
+    using namespace cumbac::volume;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     volume::ODIMLoader loader(site, do_medium, do_clean, MyMAX_BIN);
     loader.load_info = &load_info;
-    loader.vol_z = &volume;
-    loader.coherent_loader=do_coherent_loader;
+
+    Scans<double> full_volume;
+    loader.vol_z = &full_volume;
+    //loader.coherent_loader=do_coherent_loader;
     loader.load(nome_file);
+    volume_resample<double>(full_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
 
     elev_fin.init();
 
