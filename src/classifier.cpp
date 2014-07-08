@@ -23,16 +23,105 @@ using namespace cumbac;
 using namespace volume;
 using namespace std;
 
-PROB::PROB(double z,double zdr,double rhohv, double phidp, double sdz, double sdphidp)
+PROB::PROB(double z,double zdr,double rhohv, double lkdp, double sdz, double sdphidp)
 {
-	printf("cicci\n");
+	this->resize(10,6);
+	this->row(0)=prob_class(GC_AP,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(1)=prob_class(BS,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(2)=prob_class(DS,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(3)=prob_class(WS,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(4)=prob_class(CR,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(5)=prob_class(GR,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(6)=prob_class(BD,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(7)=prob_class(RA,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(8)=prob_class(HR,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(9)=prob_class(RH,z,zdr,rhohv,lkdp,sdz,sdphidp);
+}
+
+Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp)
+{
+	Matrix2D<double> probability(1,6);
+	probability=Matrix2D::Constant(1,6,0.);
+	double f1=f_1(z);
+	double f2=f_2(z);
+	double f3=f_3(z);
+	double g1=g_1(z);
+	double g2=g_2(z);
+	switch(classe)
+	{
+		case GC_AP:
+			probability<<trap(15.,20.,70.,80.,z),trap(-4.,-2.,1.,2.,zdr),trap(0.5,0.6,0.9,0.95,rhohv),
+			trap(-30.,-25.,10.,20.,lkdp),trap(2.,4.,10.,15.,sdz),trap(30.,40.,50.,60.,sdphidp);
+			return probability;
+		case BS:
+			probability<<trap(5.,10.,20.,30.,z),trap(0.,2.,10.,12.,zdr),trap(0.3,0.5,0.8,0.83,rhohv),
+			trap(-30.,-25.,10.,10.,lkdp),trap(1.,2.,4.,7.,sdz),trap(8.,10.,40.,60.,sdphidp);
+			return probability;
+		case DS:
+			probability<<trap(5.,10.,35.,40.,z),trap(-0.3,0.,0.3,0.6,zdr),trap(0.95,0.98,1.,1.01,rhohv),
+			trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case WS:
+			probability<<trap(25.,30.,40.,50.,z),trap(0.5,1.,2.,3.0,zdr),trap(0.88,0.92,0.95,0.985,rhohv),
+			trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case CR:
+			probability<<trap(0.,5.,20.,25.,z),trap(0.1,0.4,3.,3.3,zdr),trap(0.95,0.98,1.,1.01,rhohv),
+			trap(-5.,0.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case GR:
+			probability<<trap(25.,35.,50.,55.,z),trap(-0.3,0,f1,f1+0.3,zdr),trap(0.9,0.97,1.,1.01,rhohv),
+			trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case BD:
+			probability<<trap(20.,25.,45.,50.,z),trap(f2-0.3,f2,f3,f3+1.,zdr),trap(0.92,0.95,1.,1.01,rhohv),
+			trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case RA:
+			probability<<trap(5.,10.,45.,50.,z),trap(f1-0.3,f1,f2,f2+0.5,zdr),trap(0.95,0.97,1.,1.01,rhohv),
+			trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case HR:
+			probability<<trap(40.,45.,55.,60.,z),trap(f1-0.3,f1,f2,f2+0.5,zdr),trap(0.92,0.95,1.,1.01,rhohv),
+			trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		case RH:
+			probability<<trap(45.,50.,75.,80.,z),trap(-0.3,0.,f1,f1+0.5,zdr),trap(0.85,0.9,1.,1.01,rhohv),
+			trap(-10.,-4.,g1,g1+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			return probability;
+		default:
+			cout<<"ERROR!!!   unknown echo type "<<classe<<endl;
+			return probability;	// without it produces compile warnings and runtime error if reached
+	}
+}
+
+double PROB::trap(double x1, double x2, double x3, double x4, double val)
+{
+	if(val<=x3&&val>=x2) return 1.;
+	else if(val<x2&&val>x1) return val/(x2-x1)-x1/(x2-x1);
+	else if (val<x4&&val>x3) return val/(x3-x4)-x4/(x3-x4);
+	else return 0.; // (val<=x1||val>=x4)
 }
 
 HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP)
 	: z(Z),zdr(ZDR),rhohv(RHOHV),lkdp(LKDP),sdz(SDZ),sdphidp(SDPHIDP)
 {
 	PROB Pij(z,zdr,rhohv,lkdp,sdz,sdphidp);
-//	CONF Qi;
+	CONF Qi;	// TODO: confidence vector calculation not implemented,
+			// currently it uses a vector of ones.
+	Matrix2D<double> Wij(10,6);
+	Wij <<	0.2,0.4,1.0,0.0,0.6,0.8,
+		0.4,0.6,1.0,0.0,0.8,0.8,
+		1.0,0.8,0.6,0.0,0.2,0.2,
+		0.6,0.8,1.0,0.0,0.2,0.2,
+		1.0,0.6,0.4,0.5,0.2,0.2,
+		0.8,1.0,0.4,0.0,0.2,0.2,
+		0.8,1.0,0.6,0.0,0.2,0.2,
+		1.0,0.8,0.6,0.0,0.2,0.2,
+		1.0,0.8,0.6,1.0,0.2,0.2,
+		1.0,0.8,0.6,1.0,0.2,0.2;
+	Ai.resize(10,1);
+	Ai=((Wij.array()*Pij.array()).matrix()*Qi).array()/(Wij*Qi).array();
 }
 
 classifier::classifier(const string& file, const Site& site):pathname(file)
@@ -164,8 +253,24 @@ void classifier::compute_derived_volumes()
 void classifier::HCA_Park_2009()
 {
 	printf("inizio HCA\n");
+	double Z,Zdr,rhohv,lkdp,sdz,sdphidp;
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
-		//HCA_Park hca(1.,2.,3.,4.,5.,6.);
+		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
+		{
+			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
+			{
+				Z=vol_z_1km.scan(el).get(az,rg);
+				Zdr=vol_zdr_2km.scan(el).get(az,rg);
+				rhohv=vol_rhohv_2km.scan(el).get(az,rg);
+
+				lkdp=Z>40?vol_lkdp_2km.scan(el).get(az,rg):vol_lkdp_6km.scan(el).get(az,rg);
+
+				sdz=vol_sdz.scan(el).get(az,rg);
+				sdphidp=vol_sdphidp.scan(el).get(az,rg);
+
+				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp);
+			}
+		}
 	}
 }
