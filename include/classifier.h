@@ -94,38 +94,39 @@ class PROB : public Matrix2D<double>
 {
 public:
 /*!
- * Default constructor
- */
-//	PROB()
-/*!
  * Constructor
  */
 	PROB(double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp);
+	
 private:
 /*!
  * f1 function
  */
-	double f1(double Z) {return -0.05+2.5e-3*Z+7.5e-4*Z*Z;}
+	double f_1(double Z) {return -0.05+2.5e-3*Z+7.5e-4*Z*Z;}
 /*!
  * f2 function
  */
-	double f2(double Z) {return 0.68-4.81e-2*Z+2.92e-3*Z*Z;}
+	double f_2(double Z) {return 0.68-4.81e-2*Z+2.92e-3*Z*Z;}
 /*!
  * f3 function
  */
-	double f3(double Z) {return 1.42+6.67e-2*Z+4.85e-4*Z*Z;}
+	double f_3(double Z) {return 1.42+6.67e-2*Z+4.85e-4*Z*Z;}
 /*!
  * g1 function
  */
-	double g1(double Z) {return -44.0+0.8*Z;}
+	double g_1(double Z) {return -44.0+0.8*Z;}
 /*!
  * g2 function
  */
-	double g2(double Z) {return -22.0+0.5*Z;}
+	double g_2(double Z) {return -22.0+0.5*Z;}
 /*!
  * trapezoidal probability function
  */
 	double trap(double x1, double x2, double x3, double x4, double val);
+/*!
+ * vector of trapezoidal probability for a specific class of echo
+ */
+	Matrix2D<double> prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp);
 };
 
 /*
@@ -140,7 +141,11 @@ private:
 class CONF : public Matrix2D<double>
 {
 public:
-	CONF() {printf("cici\n");}
+	CONF() 
+	{
+		this->resize(6,1);
+		*this<<1.,1.,1.,1.,1.,1.;
+	}
 };
 
 /*
@@ -160,11 +165,10 @@ public:
  * Passed input variables
  */
 	double z,zdr,rhohv,lkdp,sdz,sdphidp;
-
-//	PROB Pij;
+/*!
+ * Vector of aggregation classes
+ */
 	Matrix2D<double> Ai;
-	Matrix2D<double> Wij;
-//	CONF Qi;
 
 	/*================== METHODS ====================*/
 /*!

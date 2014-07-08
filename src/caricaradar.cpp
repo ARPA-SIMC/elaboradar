@@ -46,5 +46,8 @@ int main(int argc,char* argv[])
 	}
 	cout<<endl;
 
+	classificatore.HCA_Park_2009();
+
+	cout<<endl<<"Fine"<<endl;
 
 }
