@@ -337,9 +337,9 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 		}
 		// Get and validate the azimuth angles for this scan
 		std::vector<odim::AZAngles> azangles = scan->getAzimuthAngles();
-		int rpm_sign = scan->getDirection();	///! USELESS??
-
+		int rpm_sign = scan->getDirection();	///! USELESS??		
 		unsigned beam_count = int_to_unsigned(data->getNumRays(), "number of rays");
+		
 		if (azangles.size() != beam_count)
 		{
 			LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), beam_count);
@@ -353,36 +353,7 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 		odim::RayMatrix<double> matrix;
 		matrix.resize(beam_count, beam_size);
 		data->readTranslatedData(matrix); // 1)
-/*
-      //  data->readData(const_cast<unsigned short*>(matrix.get()));
-        // define containe for VRAD adnd WRAD
-        unique_ptr<odim::PolarScanData> VRAD;
-        unique_ptr<odim::PolarScanData> WRAD;
-        odim::RayMatrix<double> VRAD_matrix;
-        odim::RayMatrix<double> WRAD_matrix;
-        double bin_wind_magic_number= 0;
-        double Z_missing    = -40.;
-        double W_threshold  = 0.;
-        double V_missing    = -100.;
-        if (clean) {
-           if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){                                      // 2)
-             VRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_VRAD));
-             VRAD_matrix.resize(beam_count, beam_size);
-             VRAD->readTranslatedData(VRAD_matrix);                                             // 3)
-             //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();  // 5)
-             bin_wind_magic_number = 0;
-             V_missing=VRAD->getNodata() * VRAD->getGain()+VRAD->getOffset();                   // 7)
-           } else clean = false;
-           if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){                                      // 2)
-             WRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_WRAD));
-             WRAD_matrix.resize(beam_count, beam_size);
-             WRAD->readTranslatedData(VRAD_matrix);                                             // 4)
-             W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();               // 8)
-           } else clean = false;
-// TODO: al momento setto il dato al valore minimo, ma biosognerà aggiornarlo a NoData e gestire attraverso una flag di qualità.
-           Z_missing=data->getUndetect() * data->getGain()+data->getOffset();                   // 6)
-        }
-*/	
+
 		int el_num = elevation_index(elevation);
 		if (el_num < 0) continue;
 		make_scan(el_num, beam_count, beam_size, range_scale);

@@ -28,7 +28,29 @@ int main(int argc,char* argv[])
 	if(loader.load(argv[1],argv[2])) std::cout<<"tutto bene"<<std::endl;
 	else std::cout<<"tutto male"<<std::endl;
 
-	volume::volume_resample<double>(full_volume, loader.azimuth_maps, volume, volume::merger_max_of_closest<double>);
+	volume::volume_resample<double>(full_volume, loader.azimuth_maps, volume, volume::merger_closest<double>);
+	
+	cout<<"elevations "<<volume.size()<<endl;
+	for(unsigned el=0;el<volume.size();el++)
+	{
+		cout<<"el "<<el<<" elev "<<volume.scan(el).elevation
+		<<" beams "<<volume.scan(el).beam_count<<" "<<volume.scan(el).rows()
+		<<" size "<<volume.scan(el).beam_size<<" "<<volume.scan(el).cols()<<endl; 
+	}
+	for(unsigned el=0;el<full_volume.size();el++)
+	{
+		cout<<"el "<<el<<" elev "<<full_volume[el].elevation
+		<<" beams "<<full_volume[el].beam_count<<" "<<full_volume[el].rows()
+		<<" size "<<full_volume[el].beam_size<<" "<<full_volume[el].cols()<<endl; 
+	}
+
+
+
+	for(unsigned az=0;az<10;az++)
+	{
+		for(unsigned rg=0;rg<10;rg++) cout<<volume.scan(2).get(az,rg)<<"\t";
+		cout<<endl;
+	}
 
 	volume::classifier classificatore(argv[1],sito);
 	classificatore.compute_derived_volumes();

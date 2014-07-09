@@ -206,7 +206,7 @@ struct Loader
         double beam_width=360./scan.beam_count;
 
         int az_num = azimut_index_MDB(alfa, scan.beam_count);
-
+	//std::cout<<"entro in fill_beam"<<std::endl;
 /*         
         if (az_num <= 20)
         {
