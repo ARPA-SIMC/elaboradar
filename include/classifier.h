@@ -8,6 +8,7 @@
 #include"volume/loader.h"
 #include "volume/resample.h"
 #include"site.h"
+#include"melting_layer.h"
 
 #include<string>
 #include<iostream>
@@ -26,7 +27,7 @@ namespace volume{
  * 	Classes defined in Park et al. (2009)
  * 	Overload << operator to print class names
  *
- * 	TODO: Maybe there are already defined odim echo classes...
+ * 	TODO: manage how to print odim volume of classes
  * 	TODO: This declarations deserve their own file
  */
 

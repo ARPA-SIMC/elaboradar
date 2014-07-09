@@ -28,6 +28,9 @@ int main(int argc,char* argv[])
 	if(loader.load(argv[1],argv[2])) std::cout<<"tutto bene"<<std::endl;
 	else std::cout<<"tutto male"<<std::endl;
 
+
+	cout<<volume.beam_count<<" "<<full_volume[0].beam_count<<endl;
+
 	volume::volume_resample<double>(full_volume, loader.azimuth_maps, volume, volume::merger_closest<double>);
 	
 	cout<<"elevations "<<volume.size()<<endl;
