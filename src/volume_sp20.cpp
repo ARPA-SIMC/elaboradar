@@ -152,7 +152,7 @@ void SP20Loader::load(const std::string& pathname)
     if (load_info) load_info->declutter_rsp = (bool)hd_file.filtro_clutter;
     double size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
 
-    BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 1,0);
+    BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
 //    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
 
     // Read all beams from the file
@@ -231,21 +231,11 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
     if (vol_z && beam.has_z()) // Riflettività Z
     {
         // Convert to DB
-// FIXME This code section convert byte data to DBZ and modify the mds from BYTEtoDB(0) to BYTEtoDB(1)
-// This is done because the ZLR map use -20 as missing data value. To be fixed in future
-
-        PolarScan<double>& scan = vol_z->at(el_num);
-        for (unsigned i = 0; i < max_range; ++i)
-	      if(beam.beams.data_z[i] > 0)scan.set(az_idx,i,BYTEtoDB(beam.beams.data_z[i]));
-/* ----------------------------
- Questo codice è eventualmente da riattivare quando viene risolto il problema di cui sopra.
-
  	Eigen::VectorXd dbs(max_range);
- 	    for (unsigned i = 0; i < max_range; ++i)
+ 	for (unsigned i = 0; i < max_range; ++i)
             dbs(i) = BYTEtoDB(beam.beams.data_z[i]);
         PolarScan<double>& scan = vol_z->at(el_num);
         scan.row(az_idx) = dbs;
------------------------------------*/
 
         PolarScanLoadInfo* li = 0;
         if (load_info) li = &(load_info->scans[el_num]);
