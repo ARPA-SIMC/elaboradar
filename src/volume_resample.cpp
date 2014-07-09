@@ -1,5 +1,6 @@
 #include "volume/resample.h"
 #include <cmath>
+#include<iostream>
 
 using namespace std;
 using namespace cumbac::volume::azimuthmap;
@@ -11,6 +12,7 @@ template<typename T>
 void polarscan_resample(const PolarScan<T>& src, const AzimuthMap& azmap, PolarScan<T>& dst,
         std::function<void(const PolarScan<T>&, const AzimuthMap&, PolarScan<T>&, unsigned)> merger)
 {
+	cout<<src.beam_count<<" "<<dst.beam_count<<endl<<endl;
     if (src.beam_count < dst.beam_count)
         throw std::runtime_error("polarscan_resample currently only work for resampling to smaller volumes");
 
