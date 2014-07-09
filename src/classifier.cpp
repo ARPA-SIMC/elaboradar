@@ -158,22 +158,27 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	loader_z.load_info = &load_info_z;
 	loader_z.vol_z = &full_volume_z;
 	file_ok = file_ok && loader_z.load(pathname,"DBZH");
+	volume::volume_resample<double>(full_volume_z, loader_z.azimuth_maps, vol_z, volume::merger_closest<double>);
 
 	loader_zdr.load_info = &load_info_zdr;
 	loader_zdr.vol_z = &full_volume_zdr;
 	file_ok = file_ok && loader_zdr.load(pathname,"ZDR");
+	volume::volume_resample<double>(full_volume_zdr, loader_zdr.azimuth_maps, vol_zdr, volume::merger_closest<double>);
 
 	loader_rhohv.load_info = &load_info_rhohv;
 	loader_rhohv.vol_z = &full_volume_rhohv;
 	file_ok = file_ok && loader_rhohv.load(pathname,"RHOHV");
+	volume::volume_resample<double>(full_volume_rhohv, loader_rhohv.azimuth_maps, vol_rhohv, volume::merger_closest<double>);
 	
 	loader_phidp.load_info = &load_info_phidp;
 	loader_phidp.vol_z = &full_volume_phidp;
 	file_ok = file_ok && loader_phidp.load(pathname,"PHIDP");
+	volume::volume_resample<double>(full_volume_phidp, loader_phidp.azimuth_maps, vol_phidp, volume::merger_closest<double>);
 
 	loader_vrad.load_info = &load_info_vrad;
 	loader_vrad.vol_z = &full_volume_vrad;
 	file_ok = file_ok && loader_vrad.load(pathname,"VRAD");
+	volume::volume_resample<double>(full_volume_vrad, loader_vrad.azimuth_maps, vol_vrad, volume::merger_closest<double>);
 
 	if(file_ok) printf("Everything is fine\n");
 	else printf("Something went wrong during loading %s\n",pathname.c_str());

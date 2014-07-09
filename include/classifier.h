@@ -6,6 +6,7 @@
 #include"volume.h"
 #include"volume/odim.h"
 #include"volume/loader.h"
+#include "volume/resample.h"
 #include"site.h"
 
 #include<string>
