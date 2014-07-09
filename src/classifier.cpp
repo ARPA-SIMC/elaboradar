@@ -149,24 +149,30 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	volume::LoadInfo load_info_phidp;
 	volume::LoadInfo load_info_vrad;
 
+	volume::Scans<double> full_volume_z;
+	volume::Scans<double> full_volume_zdr;
+	volume::Scans<double> full_volume_rhohv;
+	volume::Scans<double> full_volume_phidp;
+	volume::Scans<double> full_volume_vrad;
+
 	loader_z.load_info = &load_info_z;
-	loader_z.vol_z = &vol_z;
+	loader_z.vol_z = &full_volume_z;
 	file_ok = file_ok && loader_z.load(pathname,"DBZH");
 
 	loader_zdr.load_info = &load_info_zdr;
-	loader_zdr.vol_z = &vol_zdr;
+	loader_zdr.vol_z = &full_volume_zdr;
 	file_ok = file_ok && loader_zdr.load(pathname,"ZDR");
 
 	loader_rhohv.load_info = &load_info_rhohv;
-	loader_rhohv.vol_z = &vol_rhohv;
+	loader_rhohv.vol_z = &full_volume_rhohv;
 	file_ok = file_ok && loader_rhohv.load(pathname,"RHOHV");
 	
 	loader_phidp.load_info = &load_info_phidp;
-	loader_phidp.vol_z = &vol_phidp;
+	loader_phidp.vol_z = &full_volume_phidp;
 	file_ok = file_ok && loader_phidp.load(pathname,"PHIDP");
 
 	loader_vrad.load_info = &load_info_vrad;
-	loader_vrad.vol_z = &vol_vrad;
+	loader_vrad.vol_z = &full_volume_vrad;
 	file_ok = file_ok && loader_vrad.load(pathname,"VRAD");
 
 	if(file_ok) printf("Everything is fine\n");
