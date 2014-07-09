@@ -2375,7 +2375,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                     // Enrico: cerca di non leggere fuori dal volume effettivo
                     unsigned char sample = 0;
                     if (irange < cb.volume.scan(0).beam_size)
-                        sample = max(DBtoBYTE(cb.volume.scan(0).get(iaz%NUM_AZ_X_PPI, irange)), (unsigned char)1);
+                        sample = max(DBtoBYTE(cb.volume.scan(0).get(iaz%NUM_AZ_X_PPI, irange)), (unsigned char)1);   // il max serve perchè il valore di MISSING è 0
 
                     if(cart(x, y) <= sample){
                         cart(x, y) = sample;
