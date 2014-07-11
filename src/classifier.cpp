@@ -27,15 +27,15 @@ PROB::PROB(double z,double zdr,double rhohv, double lkdp, double sdz, double sdp
 {
 	this->resize(10,6);
 	this->row(0)=prob_class(GC_AP,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(1)=prob_class(BS,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(2)=prob_class(DS,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(3)=prob_class(WS,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(4)=prob_class(CR,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(5)=prob_class(GR,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(6)=prob_class(BD,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(7)=prob_class(RA,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(8)=prob_class(HR,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(9)=prob_class(RH,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(1)=prob_class(   BS,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(2)=prob_class(   DS,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(3)=prob_class(   WS,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(4)=prob_class(   CR,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(5)=prob_class(   GR,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(6)=prob_class(   BD,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(7)=prob_class(   RA,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(8)=prob_class(   HR,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(9)=prob_class(   RH,z,zdr,rhohv,lkdp,sdz,sdphidp);
 }
 
 Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp)
@@ -110,17 +110,19 @@ HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, 
 	CONF Qi;	// TODO: confidence vector calculation not implemented,
 			// currently it uses a vector of ones.
 	Matrix2D<double> Wij(10,6);
-	Wij <<	0.2,0.4,1.0,0.0,0.6,0.8,
-		0.4,0.6,1.0,0.0,0.8,0.8,
-		1.0,0.8,0.6,0.0,0.2,0.2,
-		0.6,0.8,1.0,0.0,0.2,0.2,
-		1.0,0.6,0.4,0.5,0.2,0.2,
-		0.8,1.0,0.4,0.0,0.2,0.2,
-		0.8,1.0,0.6,0.0,0.2,0.2,
-		1.0,0.8,0.6,0.0,0.2,0.2,
-		1.0,0.8,0.6,1.0,0.2,0.2,
-		1.0,0.8,0.6,1.0,0.2,0.2;
-	Ai.resize(10,1);
+
+//		Z	Zdr	rhohv	lkdp	SDZ	SDphidp
+	Wij <<	0.2,	0.4,	1.0,	0.0,	0.6,	0.8,	// GC_AP
+		0.4,	0.6,	1.0,	0.0,	0.8,	0.8,	// BS
+		1.0,	0.8,	0.6,	0.0,	0.2,	0.2,	// DS
+		0.6,	0.8,	1.0,	0.0,	0.2,	0.2,	// WS
+		1.0,	0.6,	0.4,	0.5,	0.2,	0.2,	// CR
+		0.8,	1.0,	0.4,	0.0,	0.2,	0.2,	// GR
+		0.8,	1.0,	0.6,	0.0,	0.2,	0.2,	// BD
+		1.0,	0.8,	0.6,	0.0,	0.2,	0.2,	// RA
+		1.0,	0.8,	0.6,	1.0,	0.2,	0.2,	// HR
+		1.0,	0.8,	0.6,	1.0,	0.2,	0.2;	// RH
+	Ai.resize(10);
 	Ai=((Wij.array()*Pij.array()).matrix()*Qi).array()/(Wij*Qi).array();
 }
 
@@ -128,8 +130,8 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
-	// TODO: I think that only 1 loader is needed and could be reused to load all variables
-	// Just reset load_info for every variable to ensure coherent loading (same beams)
+	// TODO: I (davide) think that only 1 loader is needed and could be reused to load all variables
+	// Just reset load_info for every variable to ensure coherent loading (same beams) (update coherent_load is deprecated since resampling)
 	volume::ODIMLoader loader_z(site, false, false, 1024);
 	volume::ODIMLoader loader_zdr(site, false, false, 1024);
 	volume::ODIMLoader loader_rhohv(site, false, false, 1024);
@@ -263,12 +265,18 @@ void classifier::compute_derived_volumes()
 
 void classifier::HCA_Park_2009()
 {
+	vector< vector< HCA_Park > > SCAN;
+	vector< HCA_Park > BEAM;
 	printf("inizio HCA\n");
+	vol_Ai.resize(vol_z.size());
 	double Z,Zdr,rhohv,lkdp,sdz,sdphidp;
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
+		cout<<"\tHCA el "<<el<<endl;
+		SCAN.resize(vol_z.scan(el).beam_count);
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
+			BEAM.resize(vol_z.scan(el).beam_size);
 			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
 			{
 				Z=vol_z_1km.scan(el).get(az,rg);
@@ -281,7 +289,13 @@ void classifier::HCA_Park_2009()
 				sdphidp=vol_sdphidp.scan(el).get(az,rg);
 
 				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp);
+				BEAM[rg]=hca;
 			}
+			SCAN[az]=BEAM;
 		}
+		vol_Ai[el]=SCAN;
 	}
+	// Dopo aver calcolato i valori di aggregazione cerco il melting layer
+	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
+	cout<<"uscito da ML"<<endl;
 }
