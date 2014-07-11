@@ -8,7 +8,7 @@
 #include"volume/loader.h"
 #include "volume/resample.h"
 #include"site.h"
-#include"melting_layer.h"
+//#include"melting_layer.h"
 
 #include<string>
 #include<iostream>
@@ -170,13 +170,37 @@ public:
 /*!
  * Vector of aggregation classes
  */
-	Matrix2D<double> Ai;
+	Eigen::VectorXd Ai;
 
 	/*================== METHODS ====================*/
+/*!
+ * Default constructor do nothing
+ */
+	HCA_Park(){}
 /*!
  * Constructor
  */
 	HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP);
+/*!
+ * Search for non meteorological echoes
+ */
+	inline bool non_meteo_echo()
+	{
+		unsigned idx;
+		Ai.maxCoeff(&idx);
+		if(idx==0||idx==1) return true;
+		else return false;
+	}
+/*!
+ * Search for meteo echoes
+ */
+	inline bool meteo_echo()
+	{
+		unsigned idx;
+		Ai.maxCoeff(&idx);
+		if(idx==0||idx==1) return false;
+		else return true;
+	}
 };
 
 
@@ -203,6 +227,10 @@ public:
  * Polar volume of class of hydrometeors
  */
 	Volume<EchoClass> vol_hca;
+/*!
+ * Volume of aggregation vectors (I can't make volumes of vectors, only scalars are allowed)
+ */
+	std::vector< std::vector< std::vector<HCA_Park> > > vol_Ai;
 /*!
  * Pathname of the loaded file (if provided)
  */
@@ -298,6 +326,80 @@ public:
  */
 	void HCA_Park_2009();
 };
+
+/*
+ * ==================================================================
+ *	      Class: MLpoints
+ *	Description: store ML points in a azimuth height matrix
+ * ==================================================================
+ */
+/*!
+ * 	\brief MLpoints
+ * 	Melting Layer Points matrix AzH
+ */
+class MLpoints : public Matrix2D<unsigned>
+{
+public:
+	double Hmin,Hmax;	// km
+	unsigned count;
+	MLpoints(double minHeight,double maxHeight,unsigned az_count,unsigned height_count) 
+	     : 	Matrix2D<unsigned>(Matrix2D::Constant(height_count,az_count,0)),
+		Hmin(minHeight),Hmax(maxHeight),count(0) {}
+
+	double azimuth_deg(unsigned az_idx){return (double)az_idx*360./(double)this->cols();}
+	double azimuth_rad(unsigned az_idx){return (double)az_idx*2.*M_PI/(double)this->cols();}
+	unsigned rad2idx(double rad){return (unsigned)(rad*(double)this->cols()/(2.*M_PI));}
+	unsigned deg2idx(double deg)
+	{
+		//std::cout<<"converto gradi "<<deg<<std::endl;
+		return (unsigned)(deg*(double)this->cols()/360.);
+	}
+	double height(unsigned h_idx){return Hmin+(double)h_idx*(Hmax-Hmin)/(double)this->rows();}
+	unsigned h_idx(double height)
+	{
+		//std::cout<<"converto altezze "<<height<<std::endl;
+		return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));
+	}
+
+	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
+};
+
+
+/*
+ * ==================================================================
+ *	      Class: MeltingLayer
+ *	Description: compute melting layer boundaries from polarimetry
+ * ==================================================================
+ */
+/*!
+ * 	\brief MeltingLayer
+ * 	Melting Layer Detection Algorithm MLDA
+ * 	Giangrande et al. 2008
+ */
+class MeltingLayer
+{
+public:
+	std::vector<double> ML_top;
+	std::vector<double> ML_bot;
+
+	Volume<double> vol_z_0_5km;
+	Volume<double> vol_zdr_1km;
+	Volume<double> vol_rhohv_1km;
+
+	MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 } // namespace volume
 } // namespace cumbac

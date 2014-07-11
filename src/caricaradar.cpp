@@ -28,12 +28,12 @@ int main(int argc,char* argv[])
 	if(loader.load(argv[1],argv[2])) std::cout<<"tutto bene"<<std::endl;
 	else std::cout<<"tutto male"<<std::endl;
 
-
-	cout<<volume.beam_count<<" "<<full_volume[0].beam_count<<endl;
+//	cout<<volume.beam_count<<" "<<full_volume[0].beam_count<<endl;
 
 	volume::volume_resample<double>(full_volume, loader.azimuth_maps, volume, volume::merger_closest<double>);
-	
+	cout<<"a me si"<<volume.scan(volume.size()-1).beam_size<<endl;
 	cout<<"elevations "<<volume.size()<<endl;
+/*
 	for(unsigned el=0;el<volume.size();el++)
 	{
 		cout<<"el "<<el<<" elev "<<volume.scan(el).elevation
@@ -47,17 +47,15 @@ int main(int argc,char* argv[])
 		<<" size "<<full_volume[el].beam_size<<" "<<full_volume[el].cols()<<endl; 
 	}
 
-
-
 	for(unsigned az=0;az<10;az++)
 	{
 		for(unsigned rg=0;rg<10;rg++) cout<<volume.scan(2).get(az,rg)<<"\t";
 		cout<<endl;
 	}
-
+*/
 	volume::classifier classificatore(argv[1],sito);
 	classificatore.compute_derived_volumes();
-
+/*
 	for(unsigned az=0;az<10;az++)
 	{
 		for(unsigned rg=0;rg<10;rg++)
@@ -76,7 +74,7 @@ int main(int argc,char* argv[])
 		cout<<endl;
 	}
 	cout<<endl;
-
+*/
 	classificatore.HCA_Park_2009();
 
 	cout<<endl<<"Fine"<<endl;
