@@ -21,7 +21,8 @@ LDLIBS=$(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm \
 	   -lhdf5_cpp -lhdf5 \
 	   $(shell gsl-config --libs) \
 	   $(shell pkg-config eigen3 --libs) \
-	   $(shell gdal-config --libs)
+	   $(shell gdal-config --libs) \
+		-lfftw3
 
 CC=cc 
 CXX=g++ 
@@ -33,7 +34,8 @@ CFLAGS=-g --std=c++11 -I../include -Wall -O2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR
 	   $(shell pkg-config --cflags radarlib) \
 	   $(shell gsl-config --cflags) \
 	   $(shell pkg-config eigen3 --cflags) \
-	   $(shell gdal-config --cflags)
+	   $(shell gdal-config --cflags) \
+		-lfftw3
 # Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
 # CFLAGS += -DGSL_RANGE_CHECK_OFF
 # Scommentare per disabilitare il range checking di Eigen e guadagnare un po' in velocità
