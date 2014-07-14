@@ -229,7 +229,8 @@ void CUM_BAC::compute_top()
         const auto& scan_info = load_info.scan(l);
         for (int i=0; i<NUM_AZ_X_PPI; i++)
         {
-            const double elevaz = scan_info.get_elevation_rad(i); //--- elev reale
+            //const double elevaz = scan_info.get_elevation_rad(i); //--- elev reale
+            const double elevaz = scan.elevation * M_PI / 180.; //--- elev reale
             for (unsigned k = 0; k < scan.beam_size; ++k)
                 if (scan.get(i, k) > SOGLIA_TOP)
                     top(i, k) = (unsigned char)((quota_f(elevaz, k))/100.); //top in ettometri
@@ -676,6 +677,7 @@ void CUM_BAC::elabora_dato()
                 const float elevaz = elev_fin.elevation_rad_at_elev_preci(i, k);
                 // elev_fin[i][k]=first_level_static(i, k);//da togliere
                 quota(i, k)=(unsigned short)(quota_f(elevaz,k));
+// if (i == 0) LOG_DEBUG(" i,k %3d,%4d elevaz %8.6f %6.2f quota %d",i,k,elevaz,elevaz*180./M_PI, quota(i,k));
             }
         }
     }
@@ -896,17 +898,18 @@ void CUM_BAC::caratterizzo_volume()
             // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
             //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
             //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
-            const double elevaz = scan_info.get_elevation_rad(i);//--- elev reale
+            //const double elevaz = scan_info.get_elevation_rad(i);//--- elev reale
+            const double elevaz = scan.elevation * M_PI / 180.;//--- elev reale
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
 
             for (unsigned k=0; k<scan.beam_size; k++)/*ciclo range*/
             {
-                double sample = volume.scan(l).get(i, k);
+                double sample = scan.get(i, k);
 
                 //---------distanza in m dal radar (250*k+125 x il corto..)
-                dist = k * volume.scan(l).cell_size + volume.scan(l).cell_size / 2.;/*distanza radar */
+                dist = k * scan.cell_size + scan.cell_size / 2.;/*distanza radar */
 
                 //-----distanza dal radiosondaggio (per GAT si finge che sia colocato ..), perchè? (verificare che serva )
                 drrs=dist;
@@ -1051,22 +1054,24 @@ void CalcoloVPR::classifica_rain()
     // TODO: to compute scan by scan?
     const double size_cell = volume.scan(0).cell_size;
     double range_min=0.5 * size_cell/1000.;
-    double range_max=(MyMAX_BIN-0.5) * size_cell/1000.;
+    double range_maxUpperRay=(volume.scan(volume.size()-1).beam_size-0.5) * size_cell/1000.;
+    double range_maxLowestRay=(volume.scan(0).beam_size-0.5) * size_cell/1000.;
+
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
     double zmin=pow(pow(range_min,2.)+pow(4./3*REARTH,2.)+2.*range_min*4./3.*REARTH*sin(volume.elevation_min() * DTOR),.5) -4./3.*REARTH+h_radar; // quota  minima in prop standard
-    double xmax=floor(range_max*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
-    double zmax=pow(pow(range_max,2.)+pow(4./3*REARTH,2.)+2.*range_max*4./3.*REARTH*sin(volume.elevation_max() * DTOR),.5) -4./3.*REARTH+h_radar;//quota massima
-
+    double xmax=floor(range_maxLowestRay*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
+    double zmax=pow(pow(range_maxUpperRay,2.)+pow(4./3*REARTH,2.)+2.*range_maxUpperRay*4./3.*REARTH*sin(volume.elevation_max() * DTOR),.5) -4./3.*REARTH+h_radar;//quota massima
+    LOG_DEBUG(" Range min maxL maxU  %7.3f %7.3f %7.3f  --  xmin %7.3f xmax %7.3f zmin %7.3f zmax %7.3f", range_min, range_maxLowestRay, range_maxUpperRay, xmin,xmax,zmin,zmax);
 
     x_size=(xmax-xmin)/RES_HOR_CIL; //dimensione orizzontale
     // FIXME: usiamo volume.max_beam_size invece di MyMAX_BIN?
-    if (x_size > MyMAX_BIN) x_size=MyMAX_BIN;
+    if (x_size > volume.max_beam_size()) x_size=volume.max_beam_size();
     z_size=(zmax-zmin)/RES_VERT_CIL; //dimensione verticale
 
     // ricampionamento del volume in coordinate cilindriche
     CylindricalVolume cil(NUM_AZ_X_PPI, x_size, z_size, 0);
-    cil.resample(cum_bac.volume, MyMAX_BIN);
-
+    cil.resample(cum_bac.volume, x_size);
+    LOG_DEBUG ("Matrice cilindrica Naz %3d Nrange %4d Nheight %4d", cil.slices.size(), cil.x_size, cil.z_size);
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
     CalcoloVIZ viz(cil, htbb, hbbb, t_ground);
@@ -1075,7 +1080,7 @@ void CalcoloVPR::classifica_rain()
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
-    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, cum_bac.MyMAX_BIN);
+    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, x_size);
     steiner.calcolo_background();
     steiner.classifico_STEINER();
     //  }
@@ -1140,9 +1145,10 @@ int CalcoloVPR::combina_profili()
     ier_vpr=func_vpr(&cv,&ct,vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %d", ier_vpr);
 
+	for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
 
     /*modalità VPR combinato*/
-
+LOG_DEBUG (" modalita %d",mode);
     if(mode == 0) {
 
         /*----calcolo il peso c0 per la combinazione dei profili*/
@@ -1165,6 +1171,7 @@ int CalcoloVPR::combina_profili()
             //----se file non esiste assegno gap=100----
             gap=100;
         }
+	for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0[i]);
 
         //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
         //--------qui dentro c'è la funzione controllo_apertura, per la quale rimandiamo a dopo qualsiasi commento--------
@@ -1314,6 +1321,7 @@ int CalcoloVPR::combina_profili()
 
     //-----scrivo il profilo e la sua area-----
     cum_bac.assets.write_vpr0(vpr, area_vpr);
+	for (unsigned i=0; i<vpr.size(); i++) LOG_DEBUG (" Profilo nuovo - livello %2d valore %6.2f",i,vpr[i]);
 
     return(0);
 }
@@ -1420,6 +1428,7 @@ int CalcoloVPR::corr_vpr()
     LOG_INFO("altezza bright band %i",hvprmax);
     LOG_INFO("CORREGGO VPR");
 
+	unsigned iaz_test=350;
 
     //correzione vpr
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
@@ -1447,8 +1456,8 @@ int CalcoloVPR::corr_vpr()
 
                 //---trovo ilay2 strato con cui mediare per calcolare il vpr a una quota intermedia tra 2 livelli, se l'altezza del bin è sopra metà strato prendo quello sopra altrimenti quello sotto
                 if ((int)hbin%TCK_VPR > TCK_VPR/2) ilay2=ilray+1;
-                else ilay2=(int)(fabs(ilray-1));
-                if (ilay2< livmin) ilay2=livmin;
+                else ilay2=ilray-1;
+                if (ilay2< floor(livmin/TCK_VPR)) ilay2=floor(livmin/TCK_VPR);
 
                 //trovo ilref: livello di riferimento per ricostruire il valore vpr al suolo nel caso di neve.
                 // in caso di profilo di pioggia mi riporto sempre al valore del livello liquido e questo può essere un punto critico.. vedere come modificarlo.
@@ -1484,18 +1493,15 @@ int CalcoloVPR::corr_vpr()
                         corr=cum_bac.RtoDBZ(vpr[ilref])-cum_bac.RtoDBZ(vpr_hray);
 
                         cum_bac.volume.scan(0).set(i, k, RtoDBZ(
-                                    BYTE_to_mp_func(
-                                        DBtoBYTE(cum_bac.volume.scan(0).get(i, k)),
-                                        aMP_SNOW,
-                                        bMP_SNOW),
-                                    aMP_class,
-                                    bMP_class));
+                                        DBZtoR(cum_bac.volume.scan(0).get(i, k),aMP_SNOW,bMP_SNOW),
+                                        aMP_class,
+                                        bMP_class));
 
                     }
-                    else
+                    else{
                         // -- altrimenti correggo comunque a livello liquido :
                         corr=RtoDBZ(vpr_liq,aMP_class,bMP_class)-RtoDBZ(vpr_hray,aMP_class,bMP_class);/*riporto comunque al valore liquido anche se sono sopra la bright band*/
-
+	            }
                     // --  controllo qualità su valore correzione
                     if (corr>MAX_CORR) corr=MAX_CORR; /*soglia sulla massima correzione*/
                     if (hbin<hvprmax && corr>0.) corr=0; /*evito effetti incrementi non giustificati*/
@@ -1510,7 +1516,6 @@ int CalcoloVPR::corr_vpr()
                         cum_bac.volume.scan(0).set(i, k, corrected);  // correggo
 
                     corr_polar(i, k)=(unsigned char)(corr)+128;
-
 
                     //inserisco un ponghino per rifare la neve con aMP e bMP modificati // DA SCOMMENTARE SE DECIDO DI FARLO
 
@@ -1555,6 +1560,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     soglia=DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
+        LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr[istart] , vpr[istart+4], soglia, peak, imax); 
     if (vpr[istart] >soglia && vpr[istart+4] > soglia){
         peak=10*log10(vpr[istart]/vpr[istart+4]);//inizializzo il picco
         LOG_DEBUG("peak1 = %f",peak);
@@ -1574,7 +1580,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
             imax=i;
             // Enrico vprmax=vpr[imax];
         }
-
+        LOG_DEBUG(" low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", vpr[i] , vpr[i+4], soglia, peak, imax); 
     }
 
     if ( imax  > INODATA ){
@@ -1844,11 +1850,12 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
     //------------riconoscimento sito per definizione limiti azimut---------
     iaz_min=cum_bac.site.vpr_iaz_min;
     iaz_max=cum_bac.site.vpr_iaz_max;
+    LOG_DEBUG(" Iaz_min %d   iaz_max %d",iaz_min,iaz_max);
 
     for (unsigned l=0; l<cum_bac.volume.size(); l++)//ciclo elevazioni
     {
         const PolarScan<double>& scan = cum_bac.volume.scan(l);
-        const volume::PolarScanLoadInfo& scan_info = cum_bac.load_info.scan(l);
+//        const volume::PolarScanLoadInfo& scan_info = cum_bac.load_info.scan(l);
 
         for (unsigned k=0; k < scan.beam_size; k++)/*ciclo range*/
         {
@@ -1866,7 +1873,8 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].teta_true)*CONV_RAD;
                 //elevaz=(float)(cum_bac.volume.scan(l)[i].elevation*DTOR);
-                const float elevaz = scan_info.get_elevation_rad(i);
+                //const float elevaz = scan_info.get_elevation_rad(i);
+                const float elevaz = scan.elevation*M_PI/180.;
                 quota_true_st=cum_bac.quota_f(elevaz,k);
 
                 //--------trovo ilay---------
@@ -1886,6 +1894,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 dist_plain=(long int)(dist*cos(elevaz));
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
                     flag_vpr->scan(l).set(i, k, 0);
+//	if (iA == iaz_min) LOG_DEBUG(" k %3d dist %6d  dist_plain %6d quota_true_st %8.2f ilay %3d elevaz %5.2f %f", k, dist, dist_plain,quota_true_st, ilay,scan.elevation,elevaz);
 
                 if (cum_bac.qual->scan(l).get(i, k) < QMIN_VPR) flag_vpr->scan(l).set(i, k, 0);
 
@@ -2228,8 +2237,8 @@ void CalcoloVPR::esegui_tutto()
 
     //  ier_comb=combina_profili(sito,argv[4]);
     ier_comb=combina_profili();
-    printf ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i \n",ier_vpr) ; // debug
-    printf ("exit status combinaprofili: (1--fallito 0--ok) %i \n",ier_comb) ; // debug
+    LOG_INFO ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i ",ier_vpr) ; // debug
+    LOG_INFO("exit status combinaprofili: (1--fallito 0--ok) %i ",ier_comb) ; // debug
 
 
     //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
@@ -2239,10 +2248,11 @@ void CalcoloVPR::esegui_tutto()
     LOG_INFO("ier_vpr %i ier_comb %i",ier_vpr,ier_comb);
 
     //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
+
     if (!ier_comb && heating >= WARM){
 
         int ier=corr_vpr();
-        printf ("exit status correggo vpr: (1--fallito 0--ok) %i \n",ier) ; // debug
+        LOG_INFO("exit status correggo vpr: (1--fallito 0--ok) %i",ier) ; // debug
 
 
         //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
@@ -2387,6 +2397,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                             else
                                 qual_Z_cart(x, y) = 0;
                             quota_cart(x, y)=cb.quota(iaz%NUM_AZ_X_PPI, irange);
+// if (iaz == 0) LOG_DEBUG(" x,y %4d,%4d - irange %4d quota %d",x,y,irange,cb.quota(iaz%NUM_AZ_X_PPI, irange));
                             dato_corr_xy(x, y)=cb.dato_corrotto(iaz%NUM_AZ_X_PPI, irange);
                             beam_blocking_xy(x, y)=cb.beam_blocking(iaz%NUM_AZ_X_PPI, irange);
                             elev_fin_xy(x, y)=cb.elev_fin[iaz%NUM_AZ_X_PPI][irange];
@@ -2433,17 +2444,16 @@ void Cart::write_out(const CUM_BAC& cb, Assets& assets)
     if (getenv("DIR_DEBUG") == NULL) return;
     assets.write_gdal_image(cart, "DIR_DEBUG", "cart", "PNG");
 
-    if (cb.do_quality)
+    if (cb.do_devel)
     {
-        assets.write_gdal_image(qual_Z_cart, "DIR_DEBUG", "qual_Z", "PNG");
-
-        if (cb.do_devel)
+        assets.write_gdal_image(beam_blocking_xy, "DIR_DEBUG", "beam_blocking", "PNG");
+        assets.write_gdal_image(dato_corr_xy, "DIR_DEBUG", "dato_corr", "PNG");
+        assets.write_gdal_image(quota_cart, "DIR_DEBUG", "quota", "PNG");
+        assets.write_gdal_image(elev_fin_xy, "DIR_DEBUG", "elev_fin", "PNG");
+        assets.write_gdal_image(topxy, "DIR_DEBUG", "top", "PNG");
+        if (cb.do_quality)
         {
-            assets.write_gdal_image(beam_blocking_xy, "DIR_DEBUG", "beam_blocking", "PNG");
-            assets.write_gdal_image(dato_corr_xy, "DIR_DEBUG", "dato_corr", "PNG");
-            assets.write_gdal_image(quota_cart, "DIR_DEBUG", "quota", "PNG");
-            assets.write_gdal_image(elev_fin_xy, "DIR_DEBUG", "elev_fin", "PNG");
-            assets.write_gdal_image(topxy, "DIR_DEBUG", "top", "PNG");
+            assets.write_gdal_image(qual_Z_cart, "DIR_DEBUG", "qual_Z", "PNG");
         }
 
         if (cb.do_vpr)
@@ -2580,6 +2590,7 @@ void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
         //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
         // temporanee
         // in archivio
+
         assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
 
         //------------------ stampe extra per studio
@@ -2608,6 +2619,24 @@ void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
             assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
         }
     }
+        if (cb.do_devel && false)
+        {
+            assets.write_gdal_image(beam_blocking_1x1, "DIR_DEBUG", "beam_blocking_1x1", "PNG");
+            assets.write_gdal_image(dato_corr_1x1, "DIR_DEBUG", "dato_corr_1x1", "PNG");
+            assets.write_gdal_image(quota_1x1, "DIR_DEBUG", "quota_1x1", "PNG");
+            assets.write_gdal_image(elev_fin_1x1, "DIR_DEBUG", "elev_fin_1x1", "PNG");
+            assets.write_gdal_image(top_1x1, "DIR_DEBUG", "top_1x1", "PNG");
+    	    assets.write_gdal_image(z_out, "DIR_DEBUG", "z_out", "PNG");
+            if (cb.do_vpr)
+            {
+                assets.write_gdal_image(corr_1x1, "DIR_DEBUG", "corr_1x1", "PNG");
+            }
+
+            if (cb.do_class)
+            {
+                assets.write_gdal_image(conv_1x1, "DIR_DEBUG", "conv_1x1", "PNG");
+            }
+        }
 }
 
 
