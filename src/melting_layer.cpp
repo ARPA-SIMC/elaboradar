@@ -20,14 +20,16 @@
 //#include "melting_layer.h"
 #include "classifier.h"
 
+#define kea 8494666.666667	// c'è qualcosa in geo_par.h
+
 using namespace cumbac;
 using namespace volume;
 using namespace std;
 
 double height(PolarScan<double>& scan, unsigned rg)
 {
-	double FATT=1.; //TODO curvatura terrestre e densità decrescente verso l'alto
-	double h=FATT*(double)rg*scan.cell_size*sin(scan.elevation*M_PI/180.);	//meters
+	double range=(double)rg*scan.cell_size;
+	double h=sqrt(range*range+kea*kea+2.*kea*range*sin(scan.elevation*M_PI/180.))-kea;	//meters
 	return h/1000.;	//km
 }
 
@@ -50,7 +52,6 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 	if(top_th<bot_th) cout<<"ERROR top_th must be > than bot_th"<<endl;
 	unsigned width=1+2*std::floor(0.5*box_width_deg*this->cols()/360.);
 	unsigned half=0.5*(width-1);
-	//cout<<width<<"   "<<half<<endl;
 	unsigned box_count=0;
 	double bottom_lim;
 	double top_lim;
@@ -70,7 +71,6 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 		}
 		bottom_lim=bot_th*box_count;
 		top_lim=top_th*box_count;
-		//cout<<bottom_lim<<" "<<top_lim<<endl;
 		if(box_count!=0)
 		{
 			box_count=0;
@@ -87,7 +87,6 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 				if(ML_b[az]<0 && box_count>bottom_lim)ML_b[az]=this->Hmin+h*(this->Hmax-this->Hmin)/this->rows();
 				if(ML_t[az]<0 && box_count>top_lim)   ML_t[az]=this->Hmin+h*(this->Hmax-this->Hmin)/this->rows();
 			}
-			//cout<<"b_max  "<<box_count<<endl;
 		}
 	}
 }
@@ -102,7 +101,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	//TODO: correzione attenuazione con phidp
 	//TODO: altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
-	MLpoints melting_points(0.,10.,vol_z.beam_count,100);
+	MLpoints melting_points(0.,10.,vol_z.beam_count,200);
 	ML_top.resize(vol_z.beam_count);
 	ML_bot.resize(vol_z.beam_count);
 	unsigned curr_rg=0;
@@ -110,7 +109,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	
 	for(unsigned el=0;el<vol_rhohv_1km.size();el++)
 	{
-		cout<<"\t\t ML el "<<el;
+		cout<<"\t\t ML el "<<el<<endl;
 		PolarScan<double>& rho=vol_rhohv.scan(el);
 		if(rho.elevation>4.&&rho.elevation<10.)
 		{
@@ -132,9 +131,6 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 						}
 						if(confirmed)
 						{
-							//cout<<"X("<<az<<","<<rg<<")";
-							//cout<<"\t"<<melting_points.rows();
-							//cout<<"\t"<<melting_points.cols()<<endl;
 							increment(melting_points,z,az,rg);
 							melting_points.count++;
 							confirmed=false;
@@ -142,21 +138,11 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 					}
 				}
 		}
-		cout<<endl;
 	}
 
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
-/*
-	for(unsigned i=0;i<melting_points.rows();i++)
-	{
-		for(unsigned j=0;j<melting_points.cols();j++)
-		{
-			cout<<melting_points(i,j)<<" ";
-		}
-		cout<<endl;
-	}
-*/	// Dopo aver accumulato i punti di ML mando avanti la boxcar
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
 	cout<<"Altezza ML"<<endl;
 	for(unsigned i=0;i<ML_bot.size();i++)	cout<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+	//TODO: fill empty azimuths
 }
