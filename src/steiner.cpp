@@ -91,7 +91,7 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
     // Definisco ampiezza semi-finestra range corrispondente al raggio di
     // steiner (11km), in unità matrice polare.
     unsigned delta_nr = round(STEINER_RADIUS * 1000. / size_cell);
-    LOG_DEBUG("delta_n range per analisi Steiner = %u", delta_nr);
+    LOG_DEBUG("delta_n range per analisi Steiner = %u  --- dimensione lista_bckg %d", delta_nr,lista_bckg.size());
 
     for (vector<Point>::iterator i = lista_bckg.begin(); i != lista_bckg.end(); ++i)
     {
@@ -156,7 +156,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
 
         }
 
-        if (jmax>NUM_AZ_X_PPI) {
+        if (jmax>=NUM_AZ_X_PPI) {
             jmax=jmax%NUM_AZ_X_PPI;
             for (unsigned j=0; j<jmax ; j++) {
                 for (unsigned k=kmin; k<kmax  ; k++) {
@@ -168,7 +168,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
         }
         for (unsigned j=jmin; j<jmax ; j++) {
             for (unsigned k=kmin; k<kmax  ; k++) {
-                conv_STEINER(j, k)=CONV_VAL;
+                conv_STEINER(j%NUM_AZ_X_PPI, k)=CONV_VAL;
             }
         }
     }
@@ -183,7 +183,7 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
                 conv_STEINER(j, k)=CONV_VAL;
             }
     }
-
+    LOG_DEBUG ("Finita ingrasso nuclei");
     return;
 }
 
