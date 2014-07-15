@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include <fftw3.h>
+//#include "FIR_filter.h"
 #include "classifier.h"
 
 using namespace cumbac;
@@ -233,51 +233,39 @@ void classifier::correct_phidp()
 	printf("filtro phidp 2 km\n");
 	vol_phidp_2km.filter(vol_phidp,2000.);
 	printf("filtro phidp 6 km\n");
-	vol_phidp_6km.filter(vol_phidp,6000.);
+	//vol_phidp_6km.filter(vol_phidp,6000.);
 
 	for(unsigned el=0; el<vol_phidp.size();el++)
 	{
-		double *in,*re_in,*re_in2;
-		fftw_complex *out;
-		fftw_plan plan_forw,plan_back,plan_back2;
-		in = (double*) fftw_malloc(sizeof(double)*vol_phidp.scan(el).beam_size);
-		out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*(1+floor(0.5*vol_phidp.scan(el).beam_size)));
-		re_in = (double*) fftw_malloc(sizeof(double)*vol_phidp.scan(el).beam_size);
-		re_in2 = (double*) fftw_malloc(sizeof(double)*vol_phidp.scan(el).beam_size);
-
-		plan_forw = fftw_plan_dft_r2c_1d(vol_phidp.scan(el).beam_size, in, out, FFTW_MEASURE); // sign is not need for real trasforms
-		plan_back = fftw_plan_dft_c2r_1d(vol_phidp.scan(el).beam_size, out, re_in, FFTW_MEASURE);
-		plan_back2 = fftw_plan_dft_c2r_1d(vol_phidp.scan(el).beam_size, out, re_in2, FFTW_MEASURE);
-		
+		cout<<"el= "<<el<<endl;
+		double* re_in = new double[vol_phidp.scan(el).beam_size];
+		FIR_filter fil(vol_phidp.scan(el).beam_size,re_in);
 		for(unsigned az=0;az<vol_phidp.scan(el).beam_count;az++)
 		{
-			for(unsigned rg=0;rg<vol_phidp.scan(el).beam_size;rg++)
+			vol_phidp.scan(el).set(az,0,vol_phidp.scan(el).row(az).mean());
+			for(unsigned rg=1;rg<vol_phidp.scan(el).beam_size;rg++)
 			{
-				in[rg]=vol_phidp.scan(el).get(az,rg);	
+				if(vol_phidp.scan(el).get(az,rg)<-179.) vol_phidp.scan(el).set(az,rg,vol_phidp.scan(el).get(az,rg-1));
 			}
-			fftw_execute(plan_forw);
-			fftw_execute(plan_back);
-			for(unsigned rg=50;rg<1+floor(0.5*vol_phidp.scan(el).beam_size);rg++)
+			fil.feed(vol_phidp.scan(el).row_ptr(az));
+			fil.perform();
+
+			if(el==5&&az==65)
 			{
-				out[rg][0]=0.;
-				out[rg][1]=0.;
-			}
-			fftw_execute(plan_back2);
-			if(el==0&&az==70)
-			{
-				cout.precision(8);
-				for(unsigned rg=0; rg<100;rg++)
+				//for(unsigned rg=0;rg<vol_phidp.scan(el).beam_size;rg++) vol_phidp.scan(el).set(az,rg,rg==0?1:0);
+				//fil.feed(vol_phidp.scan(el).row_ptr(az));
+				//fil.perform();
+				//fil.dump();
+				cout<<endl<<endl;
+				for(unsigned i=0;i<400;i++)
 				{
-					cout<<fixed<<"\t"<<in[rg]<<"\t"<<re_in[rg]/vol_phidp.scan(el).beam_size<<"\t"
-					<<out[rg][0]<<"\t"<<out[rg][1]<<"\t"<<re_in2[rg]/vol_phidp.scan(el).beam_size<<endl;
+					cout<<fixed<<vol_phidp.scan(el).get(az,i)<<"\t"<<re_in[i]/vol_phidp.scan(el).beam_size<<endl;
 				}
-			}			
+				cout<<endl<<endl;
+			}
 		}
-		fftw_destroy_plan(plan_forw);
-		fftw_destroy_plan(plan_back);
-		fftw_free(in);
-		fftw_free(out);
-		fftw_free(re_in);
+		cout<<"fine el= "<<el<<endl;
+		delete re_in;
 	}
 }
 
