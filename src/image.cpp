@@ -52,6 +52,7 @@ public:
         nBlockXSize = image.cols();
         nBlockYSize = image.rows();
         // SetDescription(name.c_str());
+printf("MatrixRasterBand  %d %d \n", nBlockXSize, nBlockYSize);
 
         eDataType = get_gdal_datatype<T>();
     }
@@ -80,6 +81,8 @@ template<typename T>
 MatrixDataset<T>::MatrixDataset(const Matrix2D<T>& image)
     : image(image)
 {
+    nRasterXSize = image.cols();
+    nRasterYSize = image.rows();
     SetBand(1, new MatrixRasterBand<T>(*this));
 }
 
@@ -87,7 +90,6 @@ template<typename T>
 void write_image(const Matrix2D<T>& image, const std::string& fname, const std::string& format)
 {
     unique_ptr<MatrixDataset<T>> src(new MatrixDataset<T>(image));
-
     GDALDriver *driver = GetGDALDriverManager()->GetDriverByName(format.c_str());
     if (driver == NULL)
         throw std::runtime_error("driver not found for " + format);
