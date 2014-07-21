@@ -2353,31 +2353,31 @@ void Cart::creo_cart(const CUM_BAC& cb)
                     if (irange < cb.volume.scan(0).beam_size)
                         sample = max(DBtoBYTE(cb.volume.scan(0).get(iaz%NUM_AZ_X_PPI, irange)), (unsigned char)1);   // il max serve perchè il valore di MISSING è 0
 
-                    if(cart(x, y) <= sample){
-                        cart(x, y) = sample;
-                        topxy(x, y)=cb.top(iaz%NUM_AZ_X_PPI, irange);
+                    if(cart(y, x) <= sample){
+                        cart(y, x) = sample;
+                        topxy(y, x)=cb.top(iaz%NUM_AZ_X_PPI, irange);
                         if (cb.do_quality)
                         {
                             if (irange < cb.volume.scan(cb.elev_fin[iaz%NUM_AZ_X_PPI][irange]).beam_size)
-                                qual_Z_cart(x, y) = cb.qual->scan(cb.elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
+                                qual_Z_cart(y, x) = cb.qual->scan(cb.elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
                             else
-                                qual_Z_cart(x, y) = 0;
-                            quota_cart(x, y)=cb.quota(iaz%NUM_AZ_X_PPI, irange);
+                                qual_Z_cart(y, x) = 0;
+                            quota_cart(y, x)=cb.quota(iaz%NUM_AZ_X_PPI, irange);
 // if (iaz == 0) LOG_DEBUG(" x,y %4d,%4d - irange %4d quota %d",x,y,irange,cb.quota(iaz%NUM_AZ_X_PPI, irange));
-                            dato_corr_xy(x, y)=cb.dato_corrotto(iaz%NUM_AZ_X_PPI, irange);
-                            beam_blocking_xy(x, y)=cb.beam_blocking(iaz%NUM_AZ_X_PPI, irange);
-                            elev_fin_xy(x, y)=cb.elev_fin[iaz%NUM_AZ_X_PPI][irange];
-                            /*neve_cart(x, y)=qual_Z_cart(x, y);*/
+                            dato_corr_xy(y, x)=cb.dato_corrotto(iaz%NUM_AZ_X_PPI, irange);
+                            beam_blocking_xy(y, x)=cb.beam_blocking(iaz%NUM_AZ_X_PPI, irange);
+                            elev_fin_xy(y, x)=cb.elev_fin[iaz%NUM_AZ_X_PPI][irange];
+                            /*neve_cart(y, x)=qual_Z_cart(y, x);*/
                             if (cb.do_vpr)
                             {
-                                neve_cart(x, y)=(cb.calcolo_vpr->neve(iaz%NUM_AZ_X_PPI, irange))?0:1;
-                                corr_cart(x, y)=cb.calcolo_vpr->corr_polar(iaz%NUM_AZ_X_PPI, irange);
+                                neve_cart(y, x)=(cb.calcolo_vpr->neve(iaz%NUM_AZ_X_PPI, irange))?0:1;
+                                corr_cart(y, x)=cb.calcolo_vpr->corr_polar(iaz%NUM_AZ_X_PPI, irange);
                             }
                         }
                         if (cb.do_class)
                         {
                             if (irange<cb.calcolo_vpr->x_size)
-                                conv_cart(x, y)=cb.calcolo_vpr->conv(iaz%NUM_AZ_X_PPI,irange);
+                                conv_cart(y, x)=cb.calcolo_vpr->conv(iaz%NUM_AZ_X_PPI,irange);
                         }
                     }
                     if (cb.do_zlr_media)
@@ -2385,7 +2385,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                         //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
                         if (sample > 0)
                     {
-                            cartm(x, y)=cartm(x, y)+BYTEtoZ(sample);
+                            cartm(y, x)=cartm(y, x)+BYTEtoZ(sample);
                             cont=cont+1;
                         }
                     }
@@ -2393,7 +2393,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
 
                 if (cb.do_zlr_media)
                 {
-                    if (cont > 0) cartm(x, y)=cartm(x, y)/(float)(cont);
+                    if (cont > 0) cartm(y, x)=cartm(y, x)/(float)(cont);
                 }
                 /*
                  *****  per scrivere in griglia cartesiana************
@@ -2479,66 +2479,66 @@ void CartLowris::creo_cart_z_lowris()
                 {
                     unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
-                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && src_x >= 0 && src_y>=0 && c.cart(src_x, src_y) != MISSING)
+                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && src_x >= 0 && src_y>=0 && c.cart(src_y, src_x) != MISSING)
                     {
                     //if (src_x >= cb.MyMAX_BIN*2) printf("X è fuori\n");
                     //if (src_y >= cb.MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
-                    //if(c.cart(src_x, src_y) != MISSING)
-                        if(c.cart(src_x, src_y) > z){
-                            z= c.cart(src_x, src_y);
-                            traw=c.topxy(src_x, src_y);
+                    //if(c.cart(src_y, src_x) != MISSING)
+                        if(c.cart(src_y, src_x) > z){
+                            z= c.cart(src_y, src_x);
+                            traw=c.topxy(src_y, src_x);
                             if (cb.do_quality)
                             {
-                                q=c.qual_Z_cart(src_x, src_y);
-                                q1x1=c.quota_cart(src_x, src_y);
-                                dc1x1=c.dato_corr_xy(src_x, src_y);
-                                el1x1=c.elev_fin_xy(src_x, src_y);
-                                bl1x1=c.beam_blocking_xy(src_x, src_y);
+                                q=c.qual_Z_cart(src_y, src_x);
+                                q1x1=c.quota_cart(src_y, src_x);
+                                dc1x1=c.dato_corr_xy(src_y, src_x);
+                                el1x1=c.elev_fin_xy(src_y, src_x);
+                                bl1x1=c.beam_blocking_xy(src_y, src_x);
 
                                 if (cb.do_vpr)
                                 {
-                                    c1x1=c.corr_cart(src_x, src_y);
-                                    nv= c.neve_cart(src_x, src_y);
+                                    c1x1=c.corr_cart(src_y, src_x);
+                                    nv= c.neve_cart(src_y, src_x);
                                 }
                             }
 
                             if (cb.do_class)
                             {
-                                conv_1x1(i, j)=c.conv_cart(src_x, src_y);
+                                conv_1x1(j, i)=c.conv_cart(src_y, src_x);
                             }
 
                             if (cb.do_zlr_media)
                             {
-                                if (c.cartm(src_x, src_y) > 0) {
-                                    zm = zm + c.cartm(src_x, src_y);
+                                if (c.cartm(src_y, src_x) > 0) {
+                                    zm = zm + c.cartm(src_y, src_x);
                                     cont=cont+1;
                                 }
                             }
                         }
                     }
-                    z_out(i, j)=z;
+                    z_out(j, i)=z;
                     if (cb.do_quality)
                     {
-                        qual_Z_1x1(i, j)=q;
-                        quota_1x1(i, j)=128+(unsigned char)(q1x1/100);
-                        dato_corr_1x1(i, j)=dc1x1;
-                        elev_fin_1x1(i, j)=el1x1;
-                        beam_blocking_1x1(i, j)=bl1x1;
+                        qual_Z_1x1(j, i)=q;
+                        quota_1x1(j, i)=128+(unsigned char)(q1x1/100);
+                        dato_corr_1x1(j, i)=dc1x1;
+                        elev_fin_1x1(j, i)=el1x1;
+                        beam_blocking_1x1(j, i)=bl1x1;
                     }
-                    top_1x1(i, j)=traw;
+                    top_1x1(j, i)=traw;
 
                     if (cb.do_vpr)
                     {
-                        neve_1x1(i, j)=nv;
-                        corr_1x1(i, j)=c1x1;
+                        neve_1x1(j, i)=nv;
+                        corr_1x1(j, i)=c1x1;
                     }
 
                     if (cb.do_zlr_media)
                     {
                         if (cont >0 ) {
-                            z_out(i, j)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
+                            z_out(j, i)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
                         }
-                        if (cont == 0 ) z_out(i, j)=MISSING;
+                        if (cont == 0 ) z_out(j, i)=MISSING;
                     }
                 }
         }
