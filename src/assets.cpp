@@ -444,7 +444,10 @@ void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const cha
 
     LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
 
-    if (fwrite(image.data(), image.size(), 1, out) != 1)
+    // Convert to col-major
+    Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> colmajor(image);
+
+    if (fwrite(colmajor.data(), colmajor.size(), 1, out) != 1)
     {
         LOG_WARN("cannot write to %s: %s", fname.c_str(), strerror(errno));
         fclose(out);
