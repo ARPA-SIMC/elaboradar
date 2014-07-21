@@ -24,7 +24,7 @@ using namespace std;
 
 std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v) const
 {
-    const unsigned beam_size = beam_z.cols();
+    const unsigned beam_size = beam_z.rows();
     vector<bool> res(beam_size, false);
     bool in_a_segment = false;
     unsigned start, end;
@@ -59,7 +59,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
                 counter = counter + (unsigned)(segment_length);
 
                 /* Cerco dati validi in Z prima del segmento */
-                for (int ib = ibin - 12; ib < 0 || (unsigned)ib < ibin; ++ib)
+                for (int ib = ibin - 12; ib < (signed)ibin; ++ib)
                     if (ib >= 0 && beam_z(ib) > Z_missing)
                         before = true;
 
