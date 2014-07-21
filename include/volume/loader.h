@@ -17,16 +17,6 @@ namespace volume {
 
 static const double FATT_MOLT_AZ = (double) 360./(double)4096.;
 
-// Indice per un beam dato il suo azimut
-static inline int azimut_index_MDB(short az, unsigned beam_count)
-{
-  float azimut = az * FATT_MOLT_AZ / (360. / beam_count);
-  if (azimut - (int)azimut <= .5)
-    return (int)azimut % beam_count;
-  else
-    return ((int)azimut + 1) % beam_count;
-}
-
 template<typename T>
 struct Scans : public std::vector<PolarScan<T>>
 {
