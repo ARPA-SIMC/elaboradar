@@ -128,7 +128,7 @@ void ODIMLoader::load(const std::string& pathname)
                 continue;
             }
 
-            unique_ptr<odim::PolarScanData> data(scan->getQuantityData(odim::PRODUCT_QUANTITY_DBZH));
+            unique_ptr<odim::PolarScanData> data(scan->getQuantityData(name));
 
             // Fill variable metadata
             target.quantity.name = name;
