@@ -66,7 +66,7 @@ public:
      *  true, if acq_time is newer, if $LAST_FILE does not exist or if
      *  $LAST_FILE is not set.
      */
-    bool save_acq_time(time_t acq_time);
+    bool save_acq_time(time_t acq_time=0);
 
     /**
      * Open the dem file.

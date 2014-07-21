@@ -126,7 +126,6 @@ public:
     bool do_devel = false;
     bool do_readStaticMap = false;
 
-    volume::LoadInfo load_info;
     Volume<double> volume;
     volume::ElevFin<double> elev_fin;
 

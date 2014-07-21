@@ -12,13 +12,11 @@ template<typename T>
 struct ElevFin
 {
     const Volume<T>& volume;
-    const volume::LoadInfo& load_info;
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
-    ElevFin(const Volume<T>& volume, const volume::LoadInfo& load_info)
-        : volume(volume), load_info(load_info) {}
+    ElevFin(const Volume<T>& volume) : volume(volume) {}
 
     std::vector<unsigned char>& operator[](unsigned idx) { return elev_fin[idx]; }
     const std::vector<unsigned char>& operator[](unsigned idx) const { return elev_fin[idx]; }

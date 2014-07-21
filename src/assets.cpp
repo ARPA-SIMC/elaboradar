@@ -48,6 +48,8 @@ void Assets::configure(const Site& site, time_t acq_time)
 
 bool Assets::save_acq_time(time_t acq_time)
 {
+    if (acq_time == 0) acq_time = conf_acq_time;
+
     // If LAST_FILE is not set, return true
     const char* last_file = getenv("LAST_FILE");
     if (last_file == NULL)

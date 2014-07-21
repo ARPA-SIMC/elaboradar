@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <memory>
 #include <cmath>
 
 #undef FATT_MOLT_AZ
@@ -30,6 +31,7 @@ template<typename T>
 struct Scans : public std::vector<PolarScan<T>>
 {
     Variable<T> quantity;
+    std::shared_ptr<LoadInfo> load_info;
 
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
@@ -69,19 +71,6 @@ struct Scans : public std::vector<PolarScan<T>>
     }
 };
 
-struct LoadInfo
-{
-    std::string filename;
-    // Acquisition date
-    time_t acq_date;
-    bool declutter_rsp; // ?
-
-    LoadInfo()
-        : declutter_rsp(false)
-    {
-    }
-};
-
 // Base class for volume loaders
 struct Loader
 {
@@ -95,9 +84,6 @@ struct Loader
      * samples
      */
     unsigned max_bin;
-
-    /// If set to non-zero, it will be filled with volume load information
-    LoadInfo* load_info;
 
     Loader(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0);
 

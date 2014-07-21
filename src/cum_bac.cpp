@@ -146,7 +146,7 @@ void GridStats::init(const Volume<double>& volume)
 CUM_BAC::CUM_BAC(const Config& cfg, const char* site_name, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), cfg(cfg), site(Site::get(site_name)), assets(cfg),
       do_medium(medium),
-      elev_fin(volume, load_info),
+      elev_fin(volume),
       calcolo_vpr(0),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024), dem(NUM_AZ_X_PPI, 1024),
@@ -182,13 +182,13 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
       ------------------------------------------*/
     LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
 
-    assets.configure(site, load_info.acq_date);
+    assets.configure(site, volume.load_info->acq_date);
 
     grid_stats.init(volume);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
-    time_t Time = NormalizzoData(load_info.acq_date);
+    time_t Time = NormalizzoData(volume.load_info->acq_date);
     struct tm* tempo = gmtime(&Time);
     int month=tempo->tm_mon+1;
 
@@ -246,7 +246,7 @@ bool CUM_BAC::test_file(int file_type)
     switch (file_type)
     {
         case SHORT_DEC:
-            if (!load_info.declutter_rsp)
+            if (!volume.load_info->declutter_rsp)
             {
                 LOG_WARN("File Senza Declutter Dinamico--cos' è???");
                 return false;
@@ -256,7 +256,7 @@ bool CUM_BAC::test_file(int file_type)
             break;
             //------------se tipo =1 esco
         case SHORT_FULL_VOLUME://-----??? DUBBIO
-            if (load_info.declutter_rsp)
+            if (volume.load_info->declutter_rsp)
             {
                 LOG_WARN("File con Declutter Dinamico");
                 return false;
@@ -275,7 +275,7 @@ bool CUM_BAC::test_file(int file_type)
             LOG_INFO("CASO MEDIO OLD");
             break;
         case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
-            if (!load_info.declutter_rsp)
+            if (!volume.load_info->declutter_rsp)
             {
                 LOG_WARN("File senza Declutter Dinamico");
                 return false;
@@ -314,7 +314,7 @@ bool CUM_BAC::test_file(int file_type)
     }                                                             /*end for*/
 
     //--------verifico la presenza del file contenente l'ultima data processata-------
-    bool is_new = assets.save_acq_time(load_info.acq_date);
+    bool is_new = assets.save_acq_time();
     if (!is_new)
         LOG_WARN("File Vecchio");
 
@@ -328,7 +328,6 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     SP20Loader loader(site, do_medium, do_clean, MyMAX_BIN);
-    loader.load_info = &load_info;
 
     Scans<double> full_volume;
     loader.vol_z = &full_volume;
@@ -360,7 +359,6 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     volume::ODIMLoader loader(site, do_medium, do_clean, MyMAX_BIN);
-    loader.load_info = &load_info;
 
     Scans<double> full_volume;
     loader.vol_z = &full_volume;
@@ -1133,7 +1131,7 @@ int CalcoloVPR::combina_profili()
 
 
     /* questo per fare ciclo sul vpr vecchio*/
-    Time = cum_bac.NormalizzoData(cum_bac.load_info.acq_date);
+    Time = cum_bac.NormalizzoData(cum_bac.volume.load_info->acq_date);
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
@@ -1423,8 +1421,6 @@ int CalcoloVPR::corr_vpr()
 
     LOG_INFO("altezza bright band %i",hvprmax);
     LOG_INFO("CORREGGO VPR");
-
-	unsigned iaz_test=350;
 
     //correzione vpr
     for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
@@ -1761,7 +1757,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     /* nome data */
     //definisco stringa data in modo predefinito
-    Time = cum_bac.NormalizzoData(cum_bac.load_info.acq_date);
+    Time = cum_bac.NormalizzoData(cum_bac.volume.load_info->acq_date);
     tempo = gmtime(&Time);
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
@@ -2076,7 +2072,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
     /* #endif */
 
     //  ----- test su normalizzazione data ( no minuti strani)
-    if (NormalizzoData(load_info.acq_date) == -1)
+    if (NormalizzoData(volume.load_info->acq_date) == -1)
         return true;
 
     setup_elaborazione(nome_file);
@@ -2217,7 +2213,7 @@ void CalcoloVPR::esegui_tutto()
 {
     test_vpr=fopen(getenv("TEST_VPR"),"a+");
 
-    LOG_INFO("processo file dati: %s", cum_bac.load_info.filename.c_str());
+    LOG_INFO("processo file dati: %s", cum_bac.volume.load_info->filename.c_str());
     printf ("calcolo VPR \n") ;
 
     //VPR  // ------------inizializzo hvprmax ---------------
