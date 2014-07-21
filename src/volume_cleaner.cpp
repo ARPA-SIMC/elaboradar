@@ -15,11 +15,102 @@
  *
  * =====================================================================================
  */
-#include "volume_cleaner.h"
+#include "volume/cleaner.h"
 
 namespace cumbac {
+namespace volume {
 
 using namespace std;
 
+std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v) const
+{
+    const unsigned beam_size = beam_z.cols();
+    vector<bool> res(beam_size, false);
+    bool in_a_segment = false;
+    unsigned start, end;
+    unsigned segment_length;
+    bool before, after;
+    unsigned counter = 0;
 
+    for (unsigned ibin = 0; ibin < beam_size; ++ibin)
+    {
+        if (!in_a_segment)
+        {
+            /* cerco la prima cella segmento da pulire*/
+            //if (b.data_w[ibin] == 0 && b.data_v_w[ibin] == -125 )
+            //    std::cout<<ibin<<" "<<b.data_w[ibin]<<" "<< b.data_v[ibin]<<std::endl;
+            if (beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number)
+            {
+                in_a_segment = true;
+                start = ibin;
+                after = false;
+                before = false;
+            }
+        } else {
+            /* cerco la fine segmento da pulire*/
+            //if (b.data_w[ibin] != 0 || b.data_v_w[ibin] != -125 || ibin == (beam_info.cell_num -1) )
+            if (beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number || ibin == (beam_size - 1))
+            {
+                in_a_segment = false;
+                end = ibin - 1;
+                if (ibin == (beam_size - 1)) end = ibin;  // caso particolare per fine raggio
+                /* Fine trovata ora procedo alla pulizia eventuale */
+                segment_length = end - start;
+                counter = counter + (unsigned)(segment_length);
+
+                /* Cerco dati validi in Z prima del segmento */
+                for (int ib = ibin - 12; ib < 0 || (unsigned)ib < ibin; ++ib)
+                    if (ib >= 0 && beam_z(ib) > Z_missing)
+                        before = true;
+
+                /* Cerco dati validi in Z dopo il segmento */
+                for (unsigned ia = ibin + 1; ia <= ibin + 12; ++ia)
+                    if (ia < beam_size && beam_z(ia) >= Z_missing)
+                        after = true;
+
+                if ((segment_length >= min_segment_length && !before && !after) ||
+                        segment_length >= max_segment_length)
+                {
+                    /* qui pulisco */
+                    //         printf (" pulisco %d %d %d \n",segment_length, min_segment_length, max_segment_length);
+                    for (unsigned ib = start; ib <= end; ++ib)
+                        res[ib] = true;
+                }
+            }
+        }
+    }
+    return res;
+}
+
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v)
+{
+    if (scan_z.beam_count != scan_w.beam_count)
+        throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
+    if (scan_z.beam_size != scan_w.beam_size)
+        throw std::runtime_error("scan_z beam_size is different than scan_w beam_size");
+
+    if (scan_z.beam_count != scan_v.beam_count)
+        throw std::runtime_error("scan_z beam_count is different than scan_v beam_count");
+    if (scan_z.beam_size != scan_v.beam_size)
+        throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
+
+    const unsigned beam_count = scan_z.beam_count;
+    const unsigned beam_size = scan_z.beam_size;
+
+    for (unsigned i = 0; i < beam_count; ++i)
+    {
+        // Compute which elements need to be cleaned
+        vector<bool> corrected = clean_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i));
+
+        for (unsigned ib = 0; ib < beam_size; ++ib)
+            if (corrected[ib])
+            {
+                scan_z(i, ib) = Z_missing;
+                scan_w(i, ib) = W_threshold;
+                scan_v(i, ib) = V_missing;
+            }
+    }
+}
+
+}
 }

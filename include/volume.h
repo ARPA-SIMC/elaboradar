@@ -122,6 +122,8 @@ public:
    std::string units;
    T nodata;    // Value used as 'no data' value
    T undetect;  // Minimum amount that can be measured
+   T gain;
+   T offset;
 };
 
 template<typename T>
