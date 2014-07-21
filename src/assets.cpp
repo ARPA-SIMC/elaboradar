@@ -444,10 +444,13 @@ void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const cha
 
     LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
 
-    // Convert to col-major
-    Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> colmajor(image);
+    // Convert to south-north columns scanned west to east
+    Matrix2D<unsigned char> transformed(image.cols(), image.rows());
+    for (unsigned y = 0; y < image.cols(); ++y)
+        for (unsigned x = 0; x < image.rows(); ++x)
+            transformed(image.rows() - 1 - x, y) = image(y, x);
 
-    if (fwrite(colmajor.data(), colmajor.size(), 1, out) != 1)
+    if (fwrite(transformed.data(), transformed.size(), 1, out) != 1)
     {
         LOG_WARN("cannot write to %s: %s", fname.c_str(), strerror(errno));
         fclose(out);
