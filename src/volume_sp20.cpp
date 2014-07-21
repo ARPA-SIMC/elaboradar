@@ -1,4 +1,5 @@
 #include "volume/sp20.h"
+#include <radarlib/radar.hpp>
 #include "logging.h"
 #include "utils.h"
 #include "volume_cleaner.h"
@@ -121,6 +122,7 @@ struct Elevations : public std::vector<unique_ptr<Beams>>
 
 void SP20Loader::load(const std::string& pathname)
 {
+    namespace odim = OdimH5v21;
     LOG_CATEGORY("Volume");
     // dimensioni cella a seconda del tipo di acquisizione
     static const float size_cell_by_resolution[]={62.5,125.,250.,500.,1000.,2000.};
@@ -214,10 +216,37 @@ void SP20Loader::load(const std::string& pathname)
             beam_to_volumes(*beams->at(i), i, beams->beam_size, beams->el_num);
     }
 
-    if (vol_z) vol_z->load_info = load_info;
-    if (vol_d) vol_d->load_info = load_info;
-    if (vol_v) vol_v->load_info = load_info;
-    if (vol_w) vol_w->load_info = load_info;
+    if (vol_z)
+    {
+        vol_z->load_info = load_info;
+        vol_z->quantity.name = odim::PRODUCT_QUANTITY_DBZH;
+        vol_z->quantity.nodata = DBtoBYTE(0);    // TODO: validate
+        vol_z->quantity.undetect = DBtoBYTE(1);  // TODO: validate
+        vol_z->quantity.gain = 1;                // TODO: validate
+        vol_z->quantity.offset = 0;              // TODO: validate
+    }
+    if (vol_d)
+    {
+        vol_d->load_info = load_info;
+    }
+    if (vol_v)
+    {
+        vol_v->load_info = load_info;
+        vol_z->quantity.name = odim::PRODUCT_QUANTITY_VRAD;
+        vol_z->quantity.nodata = 0;              // TODO: validate
+        vol_z->quantity.undetect = 0.39;         // TODO: validate
+        vol_z->quantity.gain = 1;                // TODO: validate
+        vol_z->quantity.offset = 0;              // TODO: validate
+    }
+    if (vol_w)
+    {
+        vol_w->load_info = load_info;
+        vol_z->quantity.name = odim::PRODUCT_QUANTITY_WRAD;
+        vol_z->quantity.nodata = 0;              // TODO: validate
+        vol_z->quantity.undetect = 0.039;        // TODO: validate
+        vol_z->quantity.gain = 1;                // TODO: validate
+        vol_z->quantity.offset = 0;              // TODO: validate
+    }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
