@@ -329,12 +329,26 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
     using namespace cumbac::volume;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    SP20Loader loader(site, do_medium, do_clean, MyMAX_BIN);
+    bool use_new_cleaner = false;
 
-    Scans<double> full_volume;
-    loader.vol_z = &full_volume;
+    SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean, MyMAX_BIN);
+
+    Scans<double> z_volume;
+    Scans<double> w_volume;
+    Scans<double> v_volume;
+    loader.vol_z = &z_volume;
+    loader.vol_w = &w_volume;
+    loader.vol_v = &v_volume;
     loader.load(nome_file);
-    volume_resample<double>(full_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
+
+    if (use_new_cleaner && do_clean)
+    {
+        volume::Cleaner cleaner(z_volume.quantity, w_volume.quantity, v_volume.quantity);
+        for (unsigned i = 0; i < z_volume.size(); ++i)
+            cleaner.clean(z_volume.at(i), w_volume.at(i), v_volume.at(i));
+    }
+
+    volume_resample<double>(z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
 
     elev_fin.init();
 
