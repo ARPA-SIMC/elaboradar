@@ -40,12 +40,13 @@ void ODIMLoader::load(const std::string& pathname)
     using namespace Radar;
     using namespace std;
 
-    if (load_info) load_info->filename = pathname;
+    shared_ptr<LoadInfo> load_info = make_shared<LoadInfo>();
+    load_info->filename = pathname;
 
     unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
     unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
-    if (load_info) load_info->acq_date = volume->getDateTime();
+    load_info->acq_date = volume->getDateTime();
 
     std::vector<double> elevationAngles = volume->getElevationAngles();
 
@@ -217,6 +218,8 @@ void ODIMLoader::load(const std::string& pathname)
         }
 
     }
+
+    if (vol_z) vol_z->load_info = load_info;
 }
 
 
@@ -227,12 +230,13 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 	using namespace Radar;
 	using namespace std;
 
-	if (load_info) load_info->filename = pathname;
+    shared_ptr<LoadInfo> load_info = make_shared<LoadInfo>();
+	load_info->filename = pathname;
 
 	unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
 	unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
-	if (load_info) load_info->acq_date = volume->getDateTime();
+	load_info->acq_date = volume->getDateTime();
 
 	std::vector<double> elevationAngles = volume->getElevationAngles();
 
@@ -366,7 +370,9 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
             delete[] beam;
         }
 	*/
-  
+
+    if (vol_z) vol_z->load_info = load_info;
+
     return true;
 }
 

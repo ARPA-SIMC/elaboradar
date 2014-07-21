@@ -127,7 +127,8 @@ void SP20Loader::load(const std::string& pathname)
     //LOG_CATEGORY("radar.io");
     HD_DBP_SP20_RAW hd_char;
 
-    if (load_info) load_info->filename = pathname;
+    shared_ptr<LoadInfo> load_info = make_shared<LoadInfo>();
+    load_info->filename = pathname;
 
     // Replicato qui la read_dbp_SP20, per poi metterci mano e condividere codice con la lettura di ODIM
 
@@ -147,8 +148,8 @@ void SP20Loader::load(const std::string& pathname)
       -------*/
     struct tm data_nome;
     time_t acq_date = get_date_from_name(0, &data_nome, pathname.c_str());
-    if (load_info) load_info->acq_date = acq_date;
-    if (load_info) load_info->declutter_rsp = (bool)hd_file.filtro_clutter;
+    load_info->acq_date = acq_date;
+    load_info->declutter_rsp = (bool)hd_file.filtro_clutter;
     double size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
 
     BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
@@ -212,6 +213,11 @@ void SP20Loader::load(const std::string& pathname)
         for (unsigned i = 0; i < beams->size(); ++i)
             beam_to_volumes(*beams->at(i), i, beams->beam_size, beams->el_num);
     }
+
+    if (vol_z) vol_z->load_info = load_info;
+    if (vol_d) vol_d->load_info = load_info;
+    if (vol_v) vol_v->load_info = load_info;
+    if (vol_w) vol_w->load_info = load_info;
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)

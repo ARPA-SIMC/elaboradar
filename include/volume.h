@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
+#include <memory>
 #include <Eigen/Core>
 
 // TODO: prima o poi arriviamo a far senza di questi define
@@ -180,6 +181,23 @@ struct LinearFit
    }
 };
 
+namespace volume {
+
+struct LoadInfo
+{
+    std::string filename;
+    // Acquisition date
+    time_t acq_date;
+    bool declutter_rsp; // ?
+
+    LoadInfo()
+        : declutter_rsp(false)
+    {
+    }
+};
+
+}
+
 template<typename T>
 class Volume : protected std::vector<PolarScan<T>*>
 {
@@ -190,6 +208,7 @@ public:
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
     const unsigned beam_count;
     Variable<T> quantity;
+    std::shared_ptr<volume::LoadInfo> load_info;
 
     // Access a polar scan
     PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }

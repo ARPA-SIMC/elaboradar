@@ -6,7 +6,7 @@ namespace cumbac {
 namespace volume {
 
 Loader::Loader(const Site& site, bool medium, bool clean, unsigned max_bin)
-    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium)), max_bin(max_bin), load_info(0)
+    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium)), max_bin(max_bin)
 {
 }
 

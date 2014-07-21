@@ -21,7 +21,7 @@ TESTGRP(read);
 
 namespace {
 
-void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
+void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
 {
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
@@ -43,7 +43,7 @@ void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, con
     */
 
     // Check other header fields
-    wassert(actual(li.acq_date) == 1389108600);
+    wassert(actual(v.load_info->acq_date) == 1389108600);
     wassert(actual(v.scan(0).cell_size) == 250);
 
     // Arbitrary stats on volume contents so we can check that we read data
@@ -77,7 +77,7 @@ void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, con
     wassert(actual(stats.sum_others[5]) ==  101241);
 }
 
-void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, const Volume<double>& v)
+void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
 {
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
@@ -99,7 +99,7 @@ void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& li, con
     */
 
     // Check other header fields
-    wassert(actual(li.acq_date) == 1389108600);
+    wassert(actual(v.load_info->acq_date) == 1389108600);
     wassert(actual(v.scan(0).cell_size) == 250);
 
     // Arbitrary stats on volume contents so we can check that we read data
@@ -142,23 +142,6 @@ struct Difference
     Difference(unsigned idx, double val)
         : idx(idx), val(val) {}
 };
-}
-
-void test_loadinfo_equal(WIBBLE_TEST_LOCPRM, const volume::LoadInfo& vsp20, const volume::LoadInfo& vodim)
-{
-    using namespace std;
-
-    /*
-    wassert(actual(vsp20.scans.size()) == vodim.scans.size());
-
-    for (unsigned ie = 0; ie < vsp20.scans.size(); ++ie)
-    {
-        WIBBLE_TEST_INFO(testinfo);
-        testinfo() << "elevation " << ie;
-
-        wassert(actual(vsp20.scans[ie].beam_info.size()) == vodim.scans[ie].beam_info.size());
-    }
-    */
 }
 
 void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const Volume<double>& vodim)
@@ -226,17 +209,15 @@ void to::test<1>()
 {
     using namespace cumbac::volume;
     // Test loading of a radar volume via SP20
-    LoadInfo load_info;
     const Site& gat = Site::get("GAT");
     SP20Loader loader(gat, false, false);
     Scans<double> ssp20;
     loader.vol_z = &ssp20;
-    loader.load_info = &load_info;
     loader.load("testdata/DBP2_070120141530_GATTATICO");
     Volume<double> vsp20;
     volume_resample<double>(ssp20, loader.azimuth_maps, vsp20, merger_max_of_closest<double>);
     // Check the contents of what we read
-    wruntest(test_0120141530gat_SP20, load_info, vsp20);
+    wruntest(test_0120141530gat_SP20, vsp20);
 }
 
 template<> template<>
@@ -250,7 +231,7 @@ void to::test<2>()
     // Ensure that reading was successful
     wassert(actual(res).istrue());
     // Check the contents of what we read
-    wruntest(test_0120141530gat_ODIM, cb->load_info, cb->volume);
+    wruntest(test_0120141530gat_ODIM, cb->volume);
     delete cb;
 }
 
@@ -261,21 +242,17 @@ void to::test<3>()
     using namespace cumbac::volume;
     Scans<double> ssp20;
     Volume<double> vsp20;
-    LoadInfo liSP20;
     Scans<double> sodim;
     Volume<double> vodim;
-    LoadInfo liODIM;
 
     // FIXME: get rid of the static elev_array as soon as it is convenient to do so
     const Site& gat = Site::get("GAT");
 
     SP20Loader sp20(gat, false, false);
-    sp20.load_info = &liSP20;
     sp20.vol_z = &ssp20;
     sp20.load("testdata/DBP2_070120141530_GATTATICO");
 
     ODIMLoader odim(gat, false, false);
-    odim.load_info = &liODIM;
     odim.vol_z = &sodim;
     odim.load("testdata/MSG1400715300U.101.h5");
 
@@ -283,7 +260,6 @@ void to::test<3>()
     volume_resample<double>(sodim, odim.azimuth_maps, vodim, merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, vodim);
-    wruntest(test_loadinfo_equal, liSP20, liODIM);
 }
 
 template<> template<>
@@ -308,20 +284,16 @@ void to::test<5>()
     using namespace cumbac::volume;
     Scans<double> ssp20;
     Volume<double> vsp20;
-    LoadInfo liSP20;
     Scans<double> s_mod;
     Volume<double> v_mod;
-    LoadInfo li_mod;
 
     const Site& gat = Site::get("GAT");
 
     SP20Loader sp20(gat, false, true, 494);
-    sp20.load_info = &liSP20;
     sp20.vol_z = &ssp20;
     sp20.load("testdata/DBP2_060220140140_GATTATICO");
 
     SP20Loader _mod(gat, false, false);
-    _mod.load_info = &li_mod;
     _mod.vol_z = &s_mod;
     _mod.load("testdata/DBP2_060220140140_GATTATICO_mod");
 
@@ -329,7 +301,6 @@ void to::test<5>()
     volume_resample<double>(s_mod, _mod.azimuth_maps, v_mod, merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, v_mod);
-    wruntest(test_loadinfo_equal, liSP20, li_mod);
 }
 
 

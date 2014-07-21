@@ -22,8 +22,6 @@ void to::test<1>()
     static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
 
     volume::SP20Loader sp20(Site::get("GAT"), false, false);
-    volume::LoadInfo liSP20;
-    sp20.load_info = &liSP20;
     volume::Scans<double> vsp20;
     sp20.vol_z = &vsp20;
     sp20.load("testdata/DBP2_070120141530_GATTATICO");

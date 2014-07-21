@@ -26,8 +26,9 @@ template<typename T>
 void volume_resample(const Volume<T>& src, const AzimuthMap& azmap, Volume<T>& dst,
         std::function<void(const PolarScan<T>&, const AzimuthMap&, PolarScan<T>&, unsigned)> merger)
 {
-    // Copy quantity information
+    // Copy volume metadata
     dst.quantity = src.quantity;
+    dst.load_info = src.load_info;
 
     for (unsigned iel = 0; iel < src.size(); ++iel)
     {
@@ -49,8 +50,9 @@ template<typename T, typename AZMAP>
 void volume_resample(const volume::Scans<T>& src, const std::vector<AZMAP>& azmaps, Volume<T>& dst,
         std::function<void(const PolarScan<T>&, const AzimuthMap&, PolarScan<T>&, unsigned)> merger)
 {
-    // Copy quantity information
+    // Copy volume metadata
     dst.quantity = src.quantity;
+    dst.load_info = src.load_info;
 
     for (unsigned iel = 0; iel < src.size(); ++iel)
     {
