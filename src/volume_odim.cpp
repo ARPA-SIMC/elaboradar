@@ -26,10 +26,16 @@ unsigned int_to_unsigned(int val, const char* desc)
 namespace cumbac {
 namespace volume {
 
+void ODIMLoader::request_quantity(const std::string& name, Scans<double>* volume)
+{
+    to_load.insert(make_pair(name, volume));
+}
+
 void ODIMLoader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell)
 {
     if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
-    if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], size_cell);
+    for (auto& i: to_load)
+        i.second->make_scan(idx, beam_count, beam_size, elev_array[idx], size_cell);
 }
 
 void ODIMLoader::load(const std::string& pathname)
@@ -83,146 +89,156 @@ void ODIMLoader::load(const std::string& pathname)
             }
         }
 
-        // Pick the best quantity among the ones available
-        unique_ptr<odim::PolarScanData> data;
-        if (scan->hasQuantityData(odim::PRODUCT_QUANTITY_DBZH))
-        {
-            data.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_DBZH));
-	    vol_z->quantity.name=odim::PRODUCT_QUANTITY_DBZH;
-	}
-        else if (scan->hasQuantityData(odim::PRODUCT_QUANTITY_TH))
-        {
-            LOG_WARN("no DBZH found for elevation angle %f: using TH", elevation);
-            data.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_TH));
-	    vol_z->quantity.name=odim::PRODUCT_QUANTITY_TH;
-        }
-        else
-        {
-            LOG_WARN("no DBZH or TH found for elevation angle %f", elevation);
-            continue;
-        }
-
         // Get and validate the azimuth angles for this scan
         std::vector<odim::AZAngles> azangles = scan->getAzimuthAngles();
         int rpm_sign = scan->getDirection();
 
-        unsigned beam_count = int_to_unsigned(data->getNumRays(), "number of rays");
+        std::vector<double> elevation_angles = scan->getElevationAngles();
+
+        unsigned beam_count = int_to_unsigned(scan->getNumRays(), "number of rays");
         if (azangles.size() != beam_count)
         {
             LOG_ERROR("elevation %f has %zd azimuth angles and %d rays", elevation, azangles.size(), beam_count);
             throw runtime_error("mismatch between number of azumuth angles and number of rays");
         }
 
-        std::vector<double> elevation_angles = scan->getElevationAngles();
-
-        unsigned beam_size = int_to_unsigned(data->getNumBins(), "beam size");
-        //if (beam_size >= 512) beam_size=512;
-
-/* 
- *  per permettere al cleaner di funzionare per dati ODIm bisogna fare i seguenti passi
- *  
- *  1) leggere Z come valore fisico  data->readTranslatedData(matrix);
- *
- *  2) verificare che siano presenti le grandezze PRODUCT_QUANTITY_VRAD e PRODUCT_QUANTITY_WRAD
- *
- *  3) leggere VRAD (valore fisico)
- *
- *  4) leggere WRAD valore fisico)
- *
- *  5) calcolare bin_wind_magic_number  -> = VRAD.undetect*VRAD.gain+VRAD.offset
- *
- *  6) calcolare z_missing  -> noData
- *
- *  7) calcolare v_missing -> noData
- *
- *  8) soglia W = 0.
- *
- *  9) riempire la struttura Beams
- *
- * 10) eseguire il cleaner sulla struttura
- *
- * 11) copiare i dati ripuliti in volume
- *
- * 12) nuovo raggio si ricomincia da 1 fino a fine PolarScan
- *
- * */
-
-        // Read all scan beam data
-        // RayMatrix<float> matrix;
-        odim::RayMatrix<double> matrix;
-        matrix.resize(beam_count, beam_size);
-        data->readTranslatedData(matrix); // 1)
-      //  data->readData(const_cast<unsigned short*>(matrix.get()));
-        // define containe for VRAD adnd WRAD
-        unique_ptr<odim::PolarScanData> VRAD;
-        unique_ptr<odim::PolarScanData> WRAD;
-        odim::RayMatrix<double> VRAD_matrix;
-        odim::RayMatrix<double> WRAD_matrix;
-        double bin_wind_magic_number= 0;
-        double Z_missing    = -40.;
-        double W_threshold  = 0.;
-        double V_missing    = -100.;
-        if (clean) {
-           if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){                                      // 2)
-             VRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_VRAD));
-             VRAD_matrix.resize(beam_count, beam_size);
-             VRAD->readTranslatedData(VRAD_matrix);                                             // 3)
-             //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();  // 5)
-             bin_wind_magic_number = 0;
-             V_missing=VRAD->getNodata() * VRAD->getGain()+VRAD->getOffset();                   // 7)
-           } else clean = false;
-           if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){                                      // 2)
-             WRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_WRAD));
-             WRAD_matrix.resize(beam_count, beam_size);
-             WRAD->readTranslatedData(VRAD_matrix);                                             // 4)
-             W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();               // 8)
-           } else clean = false;
-// TODO: al momento setto il dato al valore minimo, ma biosognerà aggiornarlo a NoData e gestire attraverso una flag di qualità.
-           Z_missing=data->getUndetect() * data->getGain()+data->getOffset();                   // 6)
-        }
+        unsigned beam_size = int_to_unsigned(scan->getNumBins(), "beam size");
 
         int el_num = elevation_index(elevation);
         if (el_num < 0) continue;
-//std::cout<<"SCAN #"<<src_elev<<"   Clean "<<clean<<std::endl;
-        make_scan(el_num, beam_count, beam_size, range_scale);
-        PolarScan<double>& vol_pol_scan = vol_z->at(el_num);
 
-        //vol_pol_scan.elevation = elevation;
-        std::vector<bool> angles_seen(400, false);
+        // Create PolarScan objects for this elevation
+        make_scan(el_num, beam_count, beam_size, range_scale);
+
+        // Fill in the azimuth map for this elevation
         for (unsigned src_az = 0; src_az < beam_count; ++src_az)
-        {
             azimuth_maps[el_num].add(azangles[src_az].averagedAngle(rpm_sign), src_az);
 
-            Eigen::VectorXd beam(beam_size);
+        // Read all quantities that have been requested
+        for (auto& todo : to_load)
+        {
+            const string& name = todo.first;
+            Scans<double>& target = *todo.second;
+            PolarScan<double>& vol_pol_scan = target.at(el_num);
 
-            if (clean) {
-//std::cout<<"PASSO PER IL CLEANER - Raggio "<<src_az<<std::endl;
-              BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
-              unique_ptr<Beams<double>> b(new Beams<double>);
-              for (unsigned i = 0; i < beam_size; ++i){
-                         b->data_z[i]=matrix.elem(src_az,i);
-                         b->data_v[i]=VRAD_matrix.elem(src_az,i);
-                         b->data_w[i]=WRAD_matrix.elem(src_az,i);
-               }
-               vector <bool> cleaned(beam_size,false);
-               cleaner.clean_beams(*b,beam_size,cleaned);
-               for (unsigned i = 0; i < beam_size; ++i)
-                 beam(i) = b->data_z[i];
-            } else {
-                for (unsigned i = 0; i < beam_size; ++i)
-                    beam(i) = matrix.elem(src_az, i);
+            // Pick the best quantity among the ones available
+            if (!scan->hasQuantityData(name))
+            {
+                LOG_WARN("no %s found for elevation angle %f: skipping", name.c_str(), elevation);
+                continue;
             }
 
-            vol_pol_scan.row(src_az) = beam;
-            vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
-        }
+            unique_ptr<odim::PolarScanData> data(scan->getQuantityData(odim::PRODUCT_QUANTITY_DBZH));
 
+            // Fill variable metadata
+            target.quantity.name = name;
+            target.quantity.nodata = data->getNodata() * data->getGain() + data->getOffset();
+            target.quantity.undetect = data->getUndetect() * data->getGain() + data->getOffset();
+            target.quantity.gain = data->getGain();
+            target.quantity.offset = data->getOffset();
+
+            // Read actual data from ODIM
+            odim::RayMatrix<double> matrix;
+            matrix.resize(beam_count, beam_size);
+            data->readTranslatedData(matrix);
+
+
+#if 0
+    /* 
+     *  per permettere al cleaner di funzionare per dati ODIm bisogna fare i seguenti passi
+     *  
+     *  1) leggere Z come valore fisico  data->readTranslatedData(matrix);
+     *
+     *  2) verificare che siano presenti le grandezze PRODUCT_QUANTITY_VRAD e PRODUCT_QUANTITY_WRAD
+     *
+     *  3) leggere VRAD (valore fisico)
+     *
+     *  4) leggere WRAD valore fisico)
+     *
+     *  5) calcolare bin_wind_magic_number  -> = VRAD.undetect*VRAD.gain+VRAD.offset
+     *
+     *  6) calcolare z_missing  -> noData
+     *
+     *  7) calcolare v_missing -> noData
+     *
+     *  8) soglia W = 0.
+     *
+     *  9) riempire la struttura Beams
+     *
+     * 10) eseguire il cleaner sulla struttura
+     *
+     * 11) copiare i dati ripuliti in volume
+     *
+     * 12) nuovo raggio si ricomincia da 1 fino a fine PolarScan
+     *
+     * */
+
+            // define containe for VRAD adnd WRAD
+            unique_ptr<odim::PolarScanData> VRAD;
+            unique_ptr<odim::PolarScanData> WRAD;
+            odim::RayMatrix<double> VRAD_matrix;
+            odim::RayMatrix<double> WRAD_matrix;
+            double bin_wind_magic_number= 0;
+            double Z_missing    = -40.;
+            double W_threshold  = 0.;
+            double V_missing    = -100.;
+            if (clean) {
+               if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){                                      // 2)
+                 VRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_VRAD));
+                 VRAD_matrix.resize(beam_count, beam_size);
+                 VRAD->readTranslatedData(VRAD_matrix);                                             // 3)
+                 //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();  // 5)
+                 bin_wind_magic_number = 0;
+                 V_missing=VRAD->getNodata() * VRAD->getGain()+VRAD->getOffset();                   // 7)
+               } else clean = false;
+               if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){                                      // 2)
+                 WRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_WRAD));
+                 WRAD_matrix.resize(beam_count, beam_size);
+                 WRAD->readTranslatedData(VRAD_matrix);                                             // 4)
+                 W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();               // 8)
+               } else clean = false;
+    // TODO: al momento setto il dato al valore minimo, ma biosognerà aggiornarlo a NoData e gestire attraverso una flag di qualità.
+               Z_missing=data->getUndetect() * data->getGain()+data->getOffset();                   // 6)
+            }
+#endif
+            for (unsigned src_az = 0; src_az < beam_count; ++src_az)
+            {
+                Eigen::VectorXd beam(beam_size);
+
+#if 0
+                if (clean) {
+    //std::cout<<"PASSO PER IL CLEANER - Raggio "<<src_az<<std::endl;
+                  BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
+                  unique_ptr<Beams<double>> b(new Beams<double>);
+                  for (unsigned i = 0; i < beam_size; ++i){
+                             b->data_z[i]=matrix.elem(src_az,i);
+                             b->data_v[i]=VRAD_matrix.elem(src_az,i);
+                             b->data_w[i]=WRAD_matrix.elem(src_az,i);
+                   }
+                   vector <bool> cleaned(beam_size,false);
+                   cleaner.clean_beams(*b,beam_size,cleaned);
+                   for (unsigned i = 0; i < beam_size; ++i)
+                     beam(i) = b->data_z[i];
+                } else {
+#endif
+                    for (unsigned i = 0; i < beam_size; ++i)
+                        beam(i) = matrix.elem(src_az, i);
+#if 0
+                }
+#endif
+
+                vol_pol_scan.row(src_az) = beam;
+                vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
+            }
+
+        }
     }
 
-    if (vol_z) vol_z->load_info = load_info;
+    for (auto& i: to_load)
+        i.second->load_info = load_info;
 }
 
-
+#if 0
 bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 {
 	LOG_CATEGORY("radar.io");
@@ -375,6 +391,7 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 
     return true;
 }
+#endif
 
 
 }

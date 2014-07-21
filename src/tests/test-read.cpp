@@ -6,6 +6,7 @@
 #include "volume/resample.h"
 #include "site.h"
 #include "logging.h"
+#include <radarlib/radar.hpp>
 #include <stdio.h>
 #include <vector>
 
@@ -240,6 +241,7 @@ void to::test<3>()
 {
     using namespace std;
     using namespace cumbac::volume;
+    namespace odim = OdimH5v21;
     Scans<double> ssp20;
     Volume<double> vsp20;
     Scans<double> sodim;
@@ -248,16 +250,16 @@ void to::test<3>()
     // FIXME: get rid of the static elev_array as soon as it is convenient to do so
     const Site& gat = Site::get("GAT");
 
-    SP20Loader sp20(gat, false, false);
-    sp20.vol_z = &ssp20;
-    sp20.load("testdata/DBP2_070120141530_GATTATICO");
+    SP20Loader lsp20(gat, false, false);
+    lsp20.vol_z = &ssp20;
+    lsp20.load("testdata/DBP2_070120141530_GATTATICO");
 
-    ODIMLoader odim(gat, false, false);
-    odim.vol_z = &sodim;
-    odim.load("testdata/MSG1400715300U.101.h5");
+    ODIMLoader lodim(gat, false, false);
+    lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
+    lodim.load("testdata/MSG1400715300U.101.h5");
 
-    volume_resample<double>(ssp20, sp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
-    volume_resample<double>(sodim, odim.azimuth_maps, vodim, merger_max_of_closest<double>);
+    volume_resample<double>(ssp20, lsp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
+    volume_resample<double>(sodim, lodim.azimuth_maps, vodim, merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, vodim);
 }

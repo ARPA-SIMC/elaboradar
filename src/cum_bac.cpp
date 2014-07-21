@@ -4,11 +4,13 @@
 #include "site.h"
 #include "volume/sp20.h"
 #include "volume/odim.h"
+#include "volume/cleaner.h"
 #include "volume/resample.h"
 #include "cylindrical.h"
 #include "steiner.h"
 #include "viz.h"
 #include "interpola_vpr.h"
+#include <radarlib/radar.hpp>
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
@@ -356,15 +358,43 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 {
     using namespace cumbac::volume;
+    namespace odim = OdimH5v21;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     volume::ODIMLoader loader(site, do_medium, do_clean, MyMAX_BIN);
 
-    Scans<double> full_volume;
-    loader.vol_z = &full_volume;
+    Scans<double> dbzh_volume;
+    Scans<double> th_volume;
+    Scans<double> v_volume;
+    Scans<double> w_volume;
+    loader.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &dbzh_volume);
+    loader.request_quantity(odim::PRODUCT_QUANTITY_TH, &th_volume);
+    loader.request_quantity(odim::PRODUCT_QUANTITY_VRAD, &v_volume);
+    loader.request_quantity(odim::PRODUCT_QUANTITY_WRAD, &w_volume);
     loader.load(nome_file);
-    volume_resample<double>(full_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
 
+    if (dbzh_volume.empty() && th_volume.empty())
+    {
+        LOG_ERROR("neither DBZH nor TH were found in %s", nome_file);
+        return false;
+    }
+
+    Scans<double>* z_volume;
+    if (!dbzh_volume.empty())
+        z_volume = &dbzh_volume;
+    else {
+        LOG_WARN("no DBZH found: using TH");
+        z_volume = &th_volume;
+    }
+
+    if (do_clean)
+    {
+        volume::Cleaner cleaner(z_volume->quantity, w_volume.quantity, v_volume.quantity);
+        for (unsigned i = 0; i < z_volume->size(); ++i)
+            cleaner.clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
+    }
+
+    volume_resample<double>(*z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
     elev_fin.init();
 
     /*
