@@ -240,6 +240,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         PolarScanLoadInfo* li = 0;
         if (load_info) li = &(load_info->scans[el_num]);
         if (li) li->beam_info[az_idx].load_log.log(beam.beam_info.elevation,beam.beam_info.azimuth);
+        scan.elevations_real(az_idx) = beam.beam_info.elevation;
 
         /*
 #ifdef IMPRECISE_AZIMUT
@@ -263,6 +264,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
 
         PolarScan<double>& scan = vol_d->at(el_num);
         scan.row(az_idx) = dbs;
+        scan.elevations_real(az_idx) = beam.beam_info.elevation;
         /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, dbs);
@@ -301,6 +303,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
         PolarScan<double>& scan = vol_v->at(el_num);
         scan.row(az_idx) = ms;
+        scan.elevations_real(az_idx) = beam.beam_info.elevation;
         /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);
@@ -321,6 +324,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
 
         PolarScan<double>& scan = vol_w->at(el_num);
         scan.row(az_idx) = ms;
+        scan.elevations_real(az_idx) = beam.beam_info.elevation;
         /*
 #ifdef IMPRECISE_AZIMUT
         fill_beam(scan, el_num, beam.beam_info.elevation, (int)(beam.beam_info.azimuth / FATT_MOLT_AZ)*FATT_MOLT_AZ, max_range, ms);

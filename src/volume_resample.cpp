@@ -26,7 +26,10 @@ void merger_closest(const PolarScan<T>& src, const AzimuthMap& azmap, PolarScan<
     double dst_azimuth = (double)dst_idx / (double)dst.beam_count * 360.0;
     Position pos = azmap.closest(dst_azimuth);
 
-    //// Copy the closest beam
+    /// Copy the real elevation value
+    dst.elevations_real(dst_idx) = src.elevations_real(pos.index);
+
+    /// Copy the closest beam
     dst.row(dst_idx) = src.row(pos.index);
 }
 
@@ -37,9 +40,12 @@ void merger_max_of_closest(const PolarScan<T>& src, const AzimuthMap& azmap, Pol
     vector<Position> positions = azmap.intersecting(dst_azimuth, 360.0 / dst.beam_count);
     if (positions.empty()) throw std::runtime_error("no source beams found");
 
+    double el_sum = 0;
+
     // Copy the first beam
     auto i = positions.cbegin();
     dst.row(dst_idx) = src.row(i->index);
+    el_sum += src.elevations_real(i->index);
 
     // Take the maximum of all beam values
     for (++i; i != positions.end(); ++i)
@@ -47,7 +53,11 @@ void merger_max_of_closest(const PolarScan<T>& src, const AzimuthMap& azmap, Pol
         for (unsigned bi = 0; bi < dst.beam_size; ++bi)
             if (dst(dst_idx, bi) < src(i->index, bi))
                 dst(dst_idx, bi) = src(i->index, bi);
+        el_sum += src.elevations_real(i->index);
     }
+
+    // The real elevation of this beam is the average of the beams we used
+    dst.elevations_real(dst_idx) = el_sum / positions.size();
 }
 
 

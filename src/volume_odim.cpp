@@ -265,6 +265,7 @@ void ODIMLoader::load(const std::string& pathname)
             }
 
             vol_pol_scan.row(src_az) = beam;
+            vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
             //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
             //fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
         }
@@ -395,6 +396,7 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
             }
 
             vol_pol_scan.row(src_az) = beam;
+            vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
             //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
             //fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
         }
