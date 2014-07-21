@@ -11,10 +11,10 @@ struct Cleaner
     const unsigned min_segment_length =  4;
     const unsigned max_segment_length = 40;
 
-    double Z_missing;
-    double W_threshold;
-    double V_missing;
-    double bin_wind_magic_number;
+    const double Z_missing;
+    const double W_threshold;
+    const double V_missing;
+    const double bin_wind_magic_number;
 
     Cleaner(const Variable<double>& var_Z, const Variable<double>& var_W, const Variable<double>& var_V)
         : Z_missing(var_Z.nodata), W_threshold(var_W.undetect), V_missing(var_V.nodata),

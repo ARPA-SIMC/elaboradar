@@ -917,7 +917,7 @@ void to::test<10>()
 
     VolumeStats stats;
     cb->volume.compute_stats(stats);
-    wassert(actual(cb->volume).statsEqual( MISSING_DB, 0, -31.5,-25.86 , 71.25));
+    wassert(actual(cb->volume).statsEqual(MISSING_DB, 0, -31.5, -25.86, 71.25));
 
     wassert(actual(cb->beam_blocking).statsEqual(0, 1.25, 51));
 

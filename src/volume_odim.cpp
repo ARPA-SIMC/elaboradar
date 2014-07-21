@@ -142,90 +142,12 @@ void ODIMLoader::load(const std::string& pathname)
             matrix.resize(beam_count, beam_size);
             data->readTranslatedData(matrix);
 
-
-#if 0
-    /* 
-     *  per permettere al cleaner di funzionare per dati ODIm bisogna fare i seguenti passi
-     *  
-     *  1) leggere Z come valore fisico  data->readTranslatedData(matrix);
-     *
-     *  2) verificare che siano presenti le grandezze PRODUCT_QUANTITY_VRAD e PRODUCT_QUANTITY_WRAD
-     *
-     *  3) leggere VRAD (valore fisico)
-     *
-     *  4) leggere WRAD valore fisico)
-     *
-     *  5) calcolare bin_wind_magic_number  -> = VRAD.undetect*VRAD.gain+VRAD.offset
-     *
-     *  6) calcolare z_missing  -> noData
-     *
-     *  7) calcolare v_missing -> noData
-     *
-     *  8) soglia W = 0.
-     *
-     *  9) riempire la struttura Beams
-     *
-     * 10) eseguire il cleaner sulla struttura
-     *
-     * 11) copiare i dati ripuliti in volume
-     *
-     * 12) nuovo raggio si ricomincia da 1 fino a fine PolarScan
-     *
-     * */
-
-            // define containe for VRAD adnd WRAD
-            unique_ptr<odim::PolarScanData> VRAD;
-            unique_ptr<odim::PolarScanData> WRAD;
-            odim::RayMatrix<double> VRAD_matrix;
-            odim::RayMatrix<double> WRAD_matrix;
-            double bin_wind_magic_number= 0;
-            double Z_missing    = -40.;
-            double W_threshold  = 0.;
-            double V_missing    = -100.;
-            if (clean) {
-               if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_VRAD)){                                      // 2)
-                 VRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_VRAD));
-                 VRAD_matrix.resize(beam_count, beam_size);
-                 VRAD->readTranslatedData(VRAD_matrix);                                             // 3)
-                 //bin_wind_magic_number =VRAD->getUndetect() * VRAD->getGain()+VRAD->getOffset();  // 5)
-                 bin_wind_magic_number = 0;
-                 V_missing=VRAD->getNodata() * VRAD->getGain()+VRAD->getOffset();                   // 7)
-               } else clean = false;
-               if(scan->hasQuantityData(odim::PRODUCT_QUANTITY_WRAD)){                                      // 2)
-                 WRAD.reset(scan->getQuantityData(odim::PRODUCT_QUANTITY_WRAD));
-                 WRAD_matrix.resize(beam_count, beam_size);
-                 WRAD->readTranslatedData(VRAD_matrix);                                             // 4)
-                 W_threshold=WRAD->getUndetect() * WRAD->getGain()+WRAD->getOffset();               // 8)
-               } else clean = false;
-    // TODO: al momento setto il dato al valore minimo, ma biosognerà aggiornarlo a NoData e gestire attraverso una flag di qualità.
-               Z_missing=data->getUndetect() * data->getGain()+data->getOffset();                   // 6)
-            }
-#endif
             for (unsigned src_az = 0; src_az < beam_count; ++src_az)
             {
                 Eigen::VectorXd beam(beam_size);
 
-#if 0
-                if (clean) {
-    //std::cout<<"PASSO PER IL CLEANER - Raggio "<<src_az<<std::endl;
-                  BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
-                  unique_ptr<Beams<double>> b(new Beams<double>);
-                  for (unsigned i = 0; i < beam_size; ++i){
-                             b->data_z[i]=matrix.elem(src_az,i);
-                             b->data_v[i]=VRAD_matrix.elem(src_az,i);
-                             b->data_w[i]=WRAD_matrix.elem(src_az,i);
-                   }
-                   vector <bool> cleaned(beam_size,false);
-                   cleaner.clean_beams(*b,beam_size,cleaned);
-                   for (unsigned i = 0; i < beam_size; ++i)
-                     beam(i) = b->data_z[i];
-                } else {
-#endif
-                    for (unsigned i = 0; i < beam_size; ++i)
-                        beam(i) = matrix.elem(src_az, i);
-#if 0
-                }
-#endif
+                for (unsigned i = 0; i < beam_size; ++i)
+                    beam(i) = matrix.elem(src_az, i);
 
                 vol_pol_scan.row(src_az) = beam;
                 vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
