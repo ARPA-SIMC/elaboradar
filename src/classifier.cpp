@@ -131,7 +131,6 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
 	// TODO: I (davide) think that only 1 loader is needed and could be reused to load all variables
-	// Just reset load_info for every variable to ensure coherent loading (same beams)
 	volume::ODIMLoader loader_z(site, false, false, 1024);
 	volume::ODIMLoader loader_zdr(site, false, false, 1024);
 	volume::ODIMLoader loader_rhohv(site, false, false, 1024);
@@ -140,39 +139,28 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 
 	bool file_ok=true;
 
-	volume::LoadInfo load_info_z;
-	volume::LoadInfo load_info_zdr;
-	volume::LoadInfo load_info_rhohv;
-	volume::LoadInfo load_info_phidp;
-	volume::LoadInfo load_info_vrad;
-
 	volume::Scans<double> full_volume_z;
 	volume::Scans<double> full_volume_zdr;
 	volume::Scans<double> full_volume_rhohv;
 	volume::Scans<double> full_volume_phidp;
 	volume::Scans<double> full_volume_vrad;
 
-	loader_z.load_info = &load_info_z;
 	loader_z.vol_z = &full_volume_z;
 	file_ok = file_ok && loader_z.load(pathname,"DBZH");
 	volume::volume_resample<double>(full_volume_z, loader_z.azimuth_maps, vol_z, volume::merger_closest<double>);
 
-	loader_zdr.load_info = &load_info_zdr;
 	loader_zdr.vol_z = &full_volume_zdr;
 	file_ok = file_ok && loader_zdr.load(pathname,"ZDR");
 	volume::volume_resample<double>(full_volume_zdr, loader_zdr.azimuth_maps, vol_zdr, volume::merger_closest<double>);
 
-	loader_rhohv.load_info = &load_info_rhohv;
 	loader_rhohv.vol_z = &full_volume_rhohv;
 	file_ok = file_ok && loader_rhohv.load(pathname,"RHOHV");
 	volume::volume_resample<double>(full_volume_rhohv, loader_rhohv.azimuth_maps, vol_rhohv, volume::merger_closest<double>);
 	
-	loader_phidp.load_info = &load_info_phidp;
 	loader_phidp.vol_z = &full_volume_phidp;
 	file_ok = file_ok && loader_phidp.load(pathname,"PHIDP");
 	volume::volume_resample<double>(full_volume_phidp, loader_phidp.azimuth_maps, vol_phidp, volume::merger_closest<double>);
 
-	loader_vrad.load_info = &load_info_vrad;
 	loader_vrad.vol_z = &full_volume_vrad;
 	file_ok = file_ok && loader_vrad.load(pathname,"VRAD");
 	volume::volume_resample<double>(full_volume_vrad, loader_vrad.azimuth_maps, vol_vrad, volume::merger_closest<double>);

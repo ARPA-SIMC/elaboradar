@@ -20,43 +20,6 @@ unsigned int_to_unsigned(int val, const char* desc)
     return (unsigned)val;
 }
 
-double eldes_converter_azimut(double start, double stop)
-{
-    unsigned short azStart = (int)(start / 360.0 * 8192);
-    unsigned short azStop = (int)(stop / 360.0 * 8192);
-
-    //calcolo la media di azimuth e elevazione
-    unsigned short azAvg = (azStart + azStop) / 2;
-
-    //4096 e' la meta (cioe' 180 gradi) di un intero a 13 bit
-    //13 bit a 1 (360 gradi) corrispondono al valore 8191
-    //se si supera 4096 si sottrae 4096 sia per az che per ele
-    //se sono a cavallo di 180 gradi·
-    if( (azStart > (4096 + 2048) && azStop < 2048) ||
-        (azStart < 2048 && azStop > (4096 + 2048)) )
-        azAvg += 4095;
-
-    azAvg &= 0x1FFF;
-
-    double res = (double)azAvg * 360.0 / 8192.0;
-    return res;
-}
-
-#if 0
-unsigned char eldes_counter_to_db(unsigned short val)
-{
-    const int minScale = -20;
-    float fVal = -31.5f + val * ((96.0f + 31.5f) / 65535);
-    float ret = (fVal - minScale) / 0.3125f;
-    if( ret < 0 )
-        return 0;
-    else if( ret > 255 )
-        return 255;
-    else
-        return (unsigned char)(ret + 0.5f);
-}
-#endif
-
 }
 
 
@@ -65,7 +28,6 @@ namespace volume {
 
 void ODIMLoader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell)
 {
-    Loader::make_scan(idx, beam_size);
     if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
     if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], size_cell);
 }
@@ -228,10 +190,6 @@ void ODIMLoader::load(const std::string& pathname)
         std::vector<bool> angles_seen(400, false);
         for (unsigned src_az = 0; src_az < beam_count; ++src_az)
         {
-            // FIXME: reproduce a bad truncation from the eldes sp20 converte
-            //double azimut = azangles[src_az].averagedAngle(rpm_sign);
-            double azimut = eldes_converter_azimut(azangles[src_az].start, azangles[src_az].stop);
-
             azimuth_maps[el_num].add(azangles[src_az].averagedAngle(rpm_sign), src_az);
 
             Eigen::VectorXd beam(beam_size);
@@ -241,23 +199,17 @@ void ODIMLoader::load(const std::string& pathname)
               BeamCleaner<double> cleaner(bin_wind_magic_number, Z_missing, W_threshold, V_missing);
               unique_ptr<Beams<double>> b(new Beams<double>);
               for (unsigned i = 0; i < beam_size; ++i){
-                         b->data_z[i]=matrix.elem(src_az,i);         
-                         b->data_v[i]=VRAD_matrix.elem(src_az,i);         
-                         b->data_w[i]=WRAD_matrix.elem(src_az,i);         
+                         b->data_z[i]=matrix.elem(src_az,i);
+                         b->data_v[i]=VRAD_matrix.elem(src_az,i);
+                         b->data_w[i]=WRAD_matrix.elem(src_az,i);
                }
                vector <bool> cleaned(beam_size,false);
                cleaner.clean_beams(*b,beam_size,cleaned);
                for (unsigned i = 0; i < beam_size; ++i)
                  beam(i) = b->data_z[i];
             } else {
-             // Convert back to bytes, to fit into vol_pol as it is now
-               for (unsigned i = 0; i < beam_size; ++i){
-                 // FIXME: QUESTO PEZZO DI CODICE E' STATO INSERITO PER EMULARE LA CONVERSIONE ELDES IN FORMATO SP20
-                 // DEVE ESSERE RIMOSSO A FINE LAVORO E RIATTIVATA QUESTA LINEA DI CODICE ORA COMMENTATA
-                 // beam[i] = DBtoBYTE(matrix.elem(src_az, i));
-                 beam(i) = matrix.elem(src_az, i);
-                 //beam[i] = BYTEtoDB(eldes_counter_to_db(matrix.elem(src_az, i)));
-              }
+                for (unsigned i = 0; i < beam_size; ++i)
+                    beam(i) = matrix.elem(src_az, i);
             }
 
             vol_pol_scan.row(src_az) = beam;
@@ -359,9 +311,6 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 	std::vector<bool> angles_seen(400, false);
 	for (unsigned src_az = 0; src_az < beam_count; ++src_az)
 	{
-            // FIXME: reproduce a bad truncation from the eldes sp20 converte
-            //double azimut = azangles[src_az].averagedAngle(rpm_sign);
-		double azimut = eldes_converter_azimut(azangles[src_az].start, azangles[src_az].stop);
 		azimuth_maps[el_num].add(azangles[src_az].averagedAngle(rpm_sign), src_az);
 		Eigen::VectorXd beam(beam_size);
 /*
