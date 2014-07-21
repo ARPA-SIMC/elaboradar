@@ -361,7 +361,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     namespace odim = OdimH5v21;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    volume::ODIMLoader loader(site, do_medium, do_clean, MyMAX_BIN);
+    volume::ODIMLoader loader(site, do_medium, MyMAX_BIN);
 
     Scans<double> dbzh_volume;
     Scans<double> th_volume;
@@ -369,10 +369,14 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     Scans<double> w_volume;
     loader.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &dbzh_volume);
     loader.request_quantity(odim::PRODUCT_QUANTITY_TH, &th_volume);
-    loader.request_quantity(odim::PRODUCT_QUANTITY_VRAD, &v_volume);
-    loader.request_quantity(odim::PRODUCT_QUANTITY_WRAD, &w_volume);
+    if (do_clean)
+    {
+        loader.request_quantity(odim::PRODUCT_QUANTITY_VRAD, &v_volume);
+        loader.request_quantity(odim::PRODUCT_QUANTITY_WRAD, &w_volume);
+    }
     loader.load(nome_file);
 
+    // FIXME: are they really empty? isn't make_scan called on all of them?
     if (dbzh_volume.empty() && th_volume.empty())
     {
         LOG_ERROR("neither DBZH nor TH were found in %s", nome_file);
@@ -387,7 +391,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
         z_volume = &th_volume;
     }
 
-    if (do_clean)
+    if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
         volume::Cleaner cleaner(z_volume->quantity, w_volume.quantity, v_volume.quantity);
         for (unsigned i = 0; i < z_volume->size(); ++i)
