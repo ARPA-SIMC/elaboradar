@@ -43,15 +43,13 @@ struct ElevFin
 
     inline double elevation_rad_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        unsigned az = elev_fin[az_idx][ray_idx];
-        //return load_info.scan(az).get_elevation_rad(az_idx);
-        return (volume.scan(az).elevation *M_PI/180.);
+        return elevation_at_elev_preci(az_idx, ray_idx) * M_PI / 180.;
     }
 
     inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        unsigned az = elev_fin[az_idx][ray_idx];
-        return volume.scan(az).elevation;
+        unsigned el = elev_fin[az_idx][ray_idx];
+        return volume.scan(el).elevations_real(az_idx);
     }
 
     inline double db_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
