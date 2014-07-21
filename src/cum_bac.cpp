@@ -226,11 +226,9 @@ void CUM_BAC::compute_top()
     for (unsigned l=0; l<volume.size(); l++)
     {
         const auto& scan = volume.scan(l);
-        const auto& scan_info = load_info.scan(l);
         for (int i=0; i<NUM_AZ_X_PPI; i++)
         {
-            //const double elevaz = scan_info.get_elevation_rad(i); //--- elev reale
-            const double elevaz = scan.elevation * M_PI / 180.; //--- elev reale
+            const double elevaz = scan.elevations_real(i) * M_PI / 180.; //--- elev reale
             for (unsigned k = 0; k < scan.beam_size; ++k)
                 if (scan.get(i, k) > SOGLIA_TOP)
                     top(i, k) = (unsigned char)((quota_f(elevaz, k))/100.); //top in ettometri
@@ -891,15 +889,9 @@ void CUM_BAC::caratterizzo_volume()
     for (unsigned l=0; l<volume.size(); l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
         const auto& scan = volume.scan(l);
-        const auto& scan_info = load_info.scan(l);
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
-            //-----elevazione reale letta da file* fattore di conversione 360/4096
-            // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
-            //elevaz=(float)(volume.scan(l)[i].teta_true)*CONV_RAD;//--- elev reale
-            //elevaz=(float)(volume.scan(l)[i].elevation*DTOR);//--- elev reale
-            //const double elevaz = scan_info.get_elevation_rad(i);//--- elev reale
-            const double elevaz = scan.elevation * M_PI / 180.;//--- elev reale
+            const double elevaz = scan.elevations_real(i) * M_PI / 180.;//--- elev reale
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
@@ -1855,7 +1847,6 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
     for (unsigned l=0; l<cum_bac.volume.size(); l++)//ciclo elevazioni
     {
         const PolarScan<double>& scan = cum_bac.volume.scan(l);
-//        const volume::PolarScanLoadInfo& scan_info = cum_bac.load_info.scan(l);
 
         for (unsigned k=0; k < scan.beam_size; k++)/*ciclo range*/
         {
@@ -1870,11 +1861,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 i=(iA+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
 
                 //--------calcolo elevazione e quota---------
-                // FIXME: this reproduces the truncation we had by storing angles as short ints between 0 and 4096
-                //elevaz=(float)(cum_bac.volume.scan(l)[i].teta_true)*CONV_RAD;
-                //elevaz=(float)(cum_bac.volume.scan(l)[i].elevation*DTOR);
-                //const float elevaz = scan_info.get_elevation_rad(i);
-                const float elevaz = scan.elevation*M_PI/180.;
+                const double elevaz = scan.elevations_real(i) * M_PI / 180.;
                 quota_true_st=cum_bac.quota_f(elevaz,k);
 
                 //--------trovo ilay---------
