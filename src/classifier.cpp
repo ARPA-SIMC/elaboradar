@@ -131,17 +131,12 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
 	// TODO: I (davide) think that only 1 loader is needed and could be reused to load all variables
-	// Just reset load_info for every variable to ensure coherent loading (same beams) (update coherent_load is deprecated since resampling)
+	// Just reset load_info for every variable to ensure coherent loading (same beams)
 	volume::ODIMLoader loader_z(site, false, false, 1024);
 	volume::ODIMLoader loader_zdr(site, false, false, 1024);
 	volume::ODIMLoader loader_rhohv(site, false, false, 1024);
 	volume::ODIMLoader loader_phidp(site, false, false, 1024);
 	volume::ODIMLoader loader_vrad(site, false, false, 1024);
-	loader_z.coherent_loader=true;
-	loader_zdr.coherent_loader=true;
-	loader_rhohv.coherent_loader=true;
-	loader_phidp.coherent_loader=true;
-	loader_vrad.coherent_loader=true;
 
 	bool file_ok=true;
 

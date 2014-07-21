@@ -170,8 +170,6 @@ struct Loader
     bool clean;
     std::vector<double> elev_array;
 
-    bool coherent_loader;
-
     /**
      * If this is greather than zero, truncate each beam to this number of
      * samples
@@ -196,91 +194,6 @@ struct Loader
         // Long term plan: get rid of this, and let volume_resample mergers do
         // accounting if they feel like it.
         if (load_info) load_info->make_scan(idx, 460);
-    }
-
-    template<typename T>
-    void fill_beam(PolarScan<T>& scan, int el_num, double theta, double alpha, unsigned size, const T* data)
-    {
-        int alfa = alpha / FATT_MOLT_AZ;
-        if (alfa >= 4096) return;
-        double beam_width=360./scan.beam_count;
-
-        int az_num = azimut_index_MDB(alfa, scan.beam_count);
-	//std::cout<<"entro in fill_beam"<<std::endl;
-/*         
-        if (az_num <= 20)
-        {
-            printf("fbeam ϑ%f→%d α%f→%d %u", theta, el_num, alpha, az_num, size);
-            for (unsigned i = 0; i < 8; ++i)
-                printf(" %f\t", data[i]);
-            printf("\n");
-        }
-*/
-
-// if informations on beam azimuths has been recorded 
-// check if the current beam is closer to the nominal beam azimtuh
-// if no informations on beam azimuths has been recorded 
-// always update to ensure homogeneous beam data against different radar quantities (volumes)
-	if(coherent_loader)
-	{
-	 	unsigned overlap = std::min(scan.beam_size, size);
-		if(load_info) 
-		{
-			PolarScanLoadInfo* li = 0;
-	        	li = &(load_info->scans[el_num]);
-			if(li->beam_info[az_num].load_log.size())
-			{
-				double delta_alpha;
-				double delta_alpha_old=361.;
-				for(unsigned i=0;i<li->beam_info[az_num].load_log.size();i++)
-				{
-					delta_alpha=std::fmod(std::fabs(az_num*beam_width-li->beam_info[az_num].load_log[0].alpha),360.);
-					if(delta_alpha<delta_alpha_old) delta_alpha_old=delta_alpha;
-				}
-				delta_alpha=std::fmod(std::fabs(az_num*beam_width-alpha),360.);
-				if(delta_alpha<delta_alpha_old)
-				{
-					for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
-				}			
-			}
-			else for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
-			li->beam_info[az_num].load_log.log(theta,alpha);
-		}
-		else for (unsigned i = 0; i < overlap; ++i) scan.set(az_num,i,data[i]);
-	}
-	else  // Old code  										
-	{
-        	merge_beam(scan, el_num, az_num, theta, alpha, size, data);
-	        if(az_num*beam_width - alpha < 0.)
-	        {
-        	    int new_az_num = (az_num + 1) % scan.beam_count;
-	            if (new_az_num != az_num)
-        	        merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
-	        }
-	        else if(az_num*beam_width - alpha > 0.)
-        	{
-	            int new_az_num = (az_num -1+scan.beam_count) %scan.beam_count;
-        	    if (new_az_num != az_num)
-                	merge_beam(scan, el_num, new_az_num, theta, alpha, size, data);
-	        }
-	}
-	
-    }
-
-    template<typename T>
-    void merge_beam(PolarScan<T>& scan, int el_num, int az_num, double theta, double alpha, unsigned size, const T* dati)
-    {
-        PolarScanLoadInfo* li = 0;
-        if (load_info) li = &(load_info->scans[el_num]);
-
-        if (li) li->beam_info[az_num].load_log.log(theta, alpha);
-
-        unsigned overlap = std::min(scan.beam_size, size);
-        for (unsigned i = 0; i < overlap; ++i)
-            if (scan.get(az_num, i) < dati[i])
-                scan.set(az_num, i, dati[i]);
-
-        if (li) li->beam_info[az_num].elevation = theta;
     }
 };
 

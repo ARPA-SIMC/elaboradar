@@ -39,10 +39,6 @@ double eldes_converter_azimut(double start, double stop)
     azAvg &= 0x1FFF;
 
     double res = (double)azAvg * 360.0 / 8192.0;
-#ifdef IMPRECISE_AZIMUT
-    // Further truncate to 12 bits
-    res = (int)(res / FATT_MOLT_AZ) * FATT_MOLT_AZ;
-#endif
     return res;
 }
 
@@ -266,8 +262,6 @@ void ODIMLoader::load(const std::string& pathname)
 
             vol_pol_scan.row(src_az) = beam;
             vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
-            //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
-            //fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
         }
 
     }
@@ -397,8 +391,6 @@ bool ODIMLoader::load(const std::string& pathname, const std::string& quantity)
 
             vol_pol_scan.row(src_az) = beam;
             vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
-            //vol_pol_scan.fill_beam(el_num, elevation, azimut, beam_size, beam);
-            //fill_beam(vol_pol_scan, el_num, elevation_angles[src_az], azimut, beam_size, beam);
         }
 
     }

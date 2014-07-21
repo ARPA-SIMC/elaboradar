@@ -17,7 +17,6 @@ int main(int argc,char* argv[])
 	
 	Volume<double> volume;
 	volume::ODIMLoader loader(sito, false, false, 1024);
-	loader.coherent_loader=true;
 
 	volume::LoadInfo load_info;
 	loader.load_info = &load_info;

@@ -3,8 +3,6 @@
 #include <stdexcept>
 #include <algorithm>
 
-//#define IMPRECISE_AZIMUT
-
 using namespace std;
 
 namespace cumbac {
