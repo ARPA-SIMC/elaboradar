@@ -421,17 +421,6 @@ std::string Assets::fname_from_acq_time() const
     const unsigned buf_size = 16;
     char buf[buf_size];
 
-    /*
-    if( do_medium){
-    	tempo = gmtime(&load_info.acq_date);
-    	time = NormalizzoData(load_info.acq_date);
-    	tempo = gmtime(&time);
-    } else {
-    	time = NormalizzoData(load_info.acq_date);
-    	tempo = gmtime(&time);
-    }
-    */
-
     struct tm *tempo = gmtime(&conf_acq_time);
 
     snprintf(buf, buf_size, "%04d%02d%02d%02d%02d",

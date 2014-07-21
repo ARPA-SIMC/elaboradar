@@ -188,7 +188,7 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
-    time_t Time = NormalizzoData(volume.load_info->acq_date);
+    time_t Time = volume.load_info->acq_date;
     struct tm* tempo = gmtime(&Time);
     int month=tempo->tm_mon+1;
 
@@ -1131,7 +1131,7 @@ int CalcoloVPR::combina_profili()
 
 
     /* questo per fare ciclo sul vpr vecchio*/
-    Time = cum_bac.NormalizzoData(cum_bac.volume.load_info->acq_date);
+    Time = cum_bac.volume.load_info->acq_date;
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
@@ -1757,7 +1757,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
 
     /* nome data */
     //definisco stringa data in modo predefinito
-    Time = cum_bac.NormalizzoData(cum_bac.volume.load_info->acq_date);
+    Time = cum_bac.volume.load_info->acq_date;
     tempo = gmtime(&Time);
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
@@ -2071,10 +2071,6 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
     /*       ier=write_dbp(nome_file);  */
     /* #endif */
 
-    //  ----- test su normalizzazione data ( no minuti strani)
-    if (NormalizzoData(volume.load_info->acq_date) == -1)
-        return true;
-
     setup_elaborazione(nome_file);
 	printwork();
 
@@ -2257,23 +2253,6 @@ double CUM_BAC::BeamBlockingCorrection(double val_db, unsigned char beamblocking
 float CUM_BAC::RtoDBZ(float rain) const
 {
     return ::RtoDBZ(rain, aMP, bMP);
-}
-
-/* time è in secondi, itime è un intero che rappresenta il numero intero di intervalli da 5 minuti*/
-time_t CUM_BAC::NormalizzoData(time_t time)
-{
-    //Parametri passare da minuti del file a minuti standard arrotondando per difetto o eccesso ( prima si arrotondava al 5° ora si arrotonda al minuto )
-    // massima differenza in minuti tra data acquisizione e standard per arrotondare per difetto
-    const unsigned MAX_TIME_DIFF = do_medium ? 1 : 3;
-    const unsigned NMIN = 1;
-    int itime;
-
-    itime = time/(NMIN*60);
-
-    if(time - itime*NMIN*60 <MAX_TIME_DIFF*60) return (itime*NMIN*60); /* se la differenza è meno di tre minuti vado al 5° min. prec*/
-    if(time - itime*NMIN*60 >(NMIN-MAX_TIME_DIFF)*60) return ((itime+1)*NMIN*60); /* se la differenza è più di tre minuti vado al 5° min. successivo*/
-    //altrimenti ritorno -1
-    return -1;
 }
 
 Cart::Cart(unsigned max_bin)
