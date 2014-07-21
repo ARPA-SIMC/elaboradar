@@ -23,7 +23,7 @@ void LoadLog::print(FILE* out) const
 }
 
 Loader::Loader(const Site& site, bool medium, bool clean, unsigned max_bin)
-    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium)), max_bin(max_bin), load_info(0), coherent_loader(false)
+    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium)), max_bin(max_bin), load_info(0)
 {
 }
 

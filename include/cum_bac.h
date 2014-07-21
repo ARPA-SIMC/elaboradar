@@ -125,7 +125,6 @@ public:
     bool do_zlr_media = false;
     bool do_devel = false;
     bool do_readStaticMap = false;
-    bool do_coherent_loader=false;
 
     volume::LoadInfo load_info;
     Volume<double> volume;
