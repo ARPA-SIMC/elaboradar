@@ -76,7 +76,6 @@ struct Beam
 
 void SP20Loader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double cell_size)
 {
-    Loader::make_scan(idx, beam_size);
     if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
     if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
     if (vol_d) vol_d->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
@@ -216,7 +215,7 @@ void SP20Loader::load(const std::string& pathname)
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
-        LOG_DEBUG (" Scan %2zd - dimensione beam %5d -  numero raggi %3d - %d", i, vol_z->at(i).beam_size, vol_z->at(i).beam_count, load_info->scans[i].beam_info.size());
+        LOG_DEBUG (" Scan %2zd - dimensione beam %5d -  numero raggi %3d", i, vol_z->at(i).beam_size, vol_z->at(i).beam_count);
     // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
     // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
     //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
@@ -236,10 +235,6 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
             dbs(i) = BYTEtoDB(beam.beams.data_z[i]);
         PolarScan<double>& scan = vol_z->at(el_num);
         scan.row(az_idx) = dbs;
-
-        PolarScanLoadInfo* li = 0;
-        if (load_info) li = &(load_info->scans[el_num]);
-        if (li) li->beam_info[az_idx].load_log.log(beam.beam_info.elevation,beam.beam_info.azimuth);
         scan.elevations_real(az_idx) = beam.beam_info.elevation;
     }
 

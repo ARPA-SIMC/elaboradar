@@ -18,9 +18,6 @@ int main(int argc,char* argv[])
 	Volume<double> volume;
 	volume::ODIMLoader loader(sito, false, false, 1024);
 
-	volume::LoadInfo load_info;
-	loader.load_info = &load_info;
-
 	volume::Scans<double> full_volume;
 	loader.vol_z = &full_volume;
 

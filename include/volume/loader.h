@@ -69,77 +69,8 @@ struct Scans : public std::vector<PolarScan<T>>
     }
 };
 
-struct LoadLogEntry
-{
-    double theta;
-    double alpha;
-
-    LoadLogEntry(double theta, double alpha)
-        : theta(theta), alpha(alpha)
-    {
-    }
-
-    bool operator==(const LoadLogEntry& e) const
-    {
-        return theta == e.theta && alpha == e.alpha;
-    }
-};
-
-struct LoadLog : public std::vector<LoadLogEntry>
-{
-    void log(double theta, double alpha)
-    {
-        push_back(LoadLogEntry(theta, alpha));
-    }
-    void print(FILE* out) const;
-};
-
-struct BeamInfo
-{
-    /// Real beam elevation in degrees
-    LoadLog load_log;
-    double elevation;
-};
-
-struct PolarScanLoadInfo
-{
-    std::vector<volume::BeamInfo> beam_info;
-
-    PolarScanLoadInfo(unsigned beam_count)
-    {
-        beam_info.resize(beam_count);
-    }
-
-    /// Return the number of beams that have been filled with data while loading
-    unsigned count_rays_filled() const
-    {
-        unsigned count = 0;
-        for (std::vector<volume::BeamInfo>::const_iterator i = beam_info.begin(); i != beam_info.end(); ++i)
-            if (!i->load_log.empty())
-                ++count;
-        return count;
-    }
-
-    /// Return the load log for the given beam
-    const volume::LoadLog& get_beam_load_log(unsigned az) const
-    {
-        return beam_info[az].load_log;
-    }
-
-    inline double get_elevation(unsigned az) const
-    {
-        return beam_info[az].elevation;
-    }
-
-    inline double get_elevation_rad(unsigned az) const
-    {
-        return beam_info[az].elevation * M_PI / 180.;
-    }
-};
-
 struct LoadInfo
 {
-    std::vector<PolarScanLoadInfo> scans;
     std::string filename;
     // Acquisition date
     time_t acq_date;
@@ -148,17 +79,6 @@ struct LoadInfo
     LoadInfo()
         : declutter_rsp(false)
     {
-    }
-
-    const PolarScanLoadInfo& scan(unsigned idx) const
-    {
-        return scans[idx];
-    }
-
-    void make_scan(unsigned idx, unsigned beam_count)
-    {
-        while (idx >= scans.size())
-            scans.push_back(PolarScanLoadInfo(beam_count));
     }
 };
 
@@ -186,15 +106,6 @@ struct Loader
      * @returns -1 if no suitable index was found, else the index
      */
     int elevation_index(double elevation) const;
-
-    // Create or reuse a scan at position idx, with the given beam size
-    void make_scan(unsigned idx, unsigned beam_size)
-    {
-        // FIXME: hardcoding 450 to have enough space to test new SP20 loading.
-        // Long term plan: get rid of this, and let volume_resample mergers do
-        // accounting if they feel like it.
-        if (load_info) load_info->make_scan(idx, 460);
-    }
 };
 
 }

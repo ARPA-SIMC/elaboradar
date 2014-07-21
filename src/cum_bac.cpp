@@ -294,16 +294,21 @@ bool CUM_BAC::test_file(int file_type)
     }
     //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
 
+    if (volume.size() < n_elev)
+    {
+        LOG_ERROR("Volume has %zd elevations, but we are expecting at least %d", volume.size(), n_elev);
+        return false;
+    }
+
     for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
-        volume::PolarScanLoadInfo info = load_info.scan(k);
-        LOG_INFO("Numero beam presenti: %4d -- elevazione %d", info.count_rays_filled(), k);
+        LOG_INFO("Numero beam presenti: %4u -- elevazione %d", volume.scan(k).beam_count, k);
 
-        if (info.count_rays_filled() <  NUM_MIN_BEAM)
+        if (volume.scan(k).beam_count < NUM_MIN_BEAM)
             // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
         {
             //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d",k,info.count_rays_filled());
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d", k, volume.scan(k).beam_count);
             return false;
         }
     }                                                             /*end for*/
