@@ -48,12 +48,14 @@ public:
      * effective elevation of each single beam
      */
     double elevation;
+    /// Vector of actual elevations for each beam
+    Eigen::VectorXd elevations_real;
     /// Size of a beam cell in meters
     T cell_size;
 
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value)),
-          beam_count(beam_count), beam_size(beam_size), elevation(0)
+          beam_count(beam_count), beam_size(beam_size), elevation(0), elevations_real(beam_count)
     {
     }
 
