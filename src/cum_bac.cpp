@@ -2317,22 +2317,22 @@ void Cart::creo_cart(const CUM_BAC& cb)
                 {
                     case 0:
                         x = max_bin + i;
-                        y = max_bin + j;
+                        y = max_bin - j;
                         az = cd.azimut(i, j);
                         break;
                     case 1:
                         x = max_bin + j;
-                        y = max_bin - i;
+                        y = max_bin + i;
                         az = cd.azimut(i, j) + 90.;
                         break;
                     case 2:
                         x = max_bin - i;
-                        y = max_bin - j;
+                        y = max_bin + j;
                         az = cd.azimut(i, j) + 180.;
                         break;
                     case 3:
                         x = max_bin - j;
-                        y = max_bin + i;
+                        y = max_bin - i;
                         az = cd.azimut(i, j)+270.;
                         break;
                 }
@@ -2585,14 +2585,14 @@ void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
             assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
         }
     }
-        if (cb.do_devel && false)
+        if (cb.do_devel)
         {
             assets.write_gdal_image(beam_blocking_1x1, "DIR_DEBUG", "beam_blocking_1x1", "PNG");
             assets.write_gdal_image(dato_corr_1x1, "DIR_DEBUG", "dato_corr_1x1", "PNG");
             assets.write_gdal_image(quota_1x1, "DIR_DEBUG", "quota_1x1", "PNG");
             assets.write_gdal_image(elev_fin_1x1, "DIR_DEBUG", "elev_fin_1x1", "PNG");
             assets.write_gdal_image(top_1x1, "DIR_DEBUG", "top_1x1", "PNG");
-    	    assets.write_gdal_image(z_out, "DIR_DEBUG", "z_out", "PNG");
+    	    assets.write_gdal_image(z_out, "DIR_DEBUG", "zlr", "PNG");
             if (cb.do_vpr)
             {
                 assets.write_gdal_image(corr_1x1, "DIR_DEBUG", "corr_1x1", "PNG");
