@@ -37,12 +37,12 @@ struct Matrix2D : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen:
 
     Matrix2D<T> log10()
     {
-	return this->unaryExpr(Log10<T>());
+        return this->unaryExpr(Log10<T>());
     }
     Matrix2D<T> exp10()
     {
-	Matrix2D<T> base(Matrix2D<T>::Constant(this->rows(),this->cols(),10.));
-	return base.binaryExpr(*this,Exponential<T>());
+        Matrix2D<T> base(Matrix2D<T>::Constant(this->rows(),this->cols(),10.));
+        return base.binaryExpr(*this,Exponential<T>());
     }
 
 
