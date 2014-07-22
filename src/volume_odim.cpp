@@ -130,12 +130,18 @@ void ODIMLoader::load(const std::string& pathname)
 
             unique_ptr<odim::PolarScanData> data(scan->getQuantityData(name));
 
-            // Fill variable metadata
+            // Fill/overwrite variable metadata at volume level
             target.quantity.name = name;
             target.quantity.nodata = data->getNodata() * data->getGain() + data->getOffset();
             target.quantity.undetect = data->getUndetect() * data->getGain() + data->getOffset();
             target.quantity.gain = data->getGain();
             target.quantity.offset = data->getOffset();
+            // Fill variable metadata at scan level
+            vol_pol_scan.quantity.name = name;
+            vol_pol_scan.quantity.nodata = data->getNodata() * data->getGain() + data->getOffset();
+            vol_pol_scan.quantity.undetect = data->getUndetect() * data->getGain() + data->getOffset();
+            vol_pol_scan.quantity.gain = data->getGain();
+            vol_pol_scan.quantity.offset = data->getOffset();
 
             // Read actual data from ODIM
             odim::RayMatrix<double> matrix;
@@ -151,7 +157,7 @@ void ODIMLoader::load(const std::string& pathname)
 
                 vol_pol_scan.row(src_az) = beam;
                 vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
-            }
+           }
 
         }
     }

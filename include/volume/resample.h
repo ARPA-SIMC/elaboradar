@@ -51,14 +51,15 @@ void volume_resample(const volume::Scans<T>& src, const std::vector<AZMAP>& azma
         std::function<void(const PolarScan<T>&, const AzimuthMap&, PolarScan<T>&, unsigned)> merger)
 {
     // Copy volume metadata
-    dst.quantity = src.quantity;
     dst.load_info = src.load_info;
+    ds.quantity = src.quantity;
 
     for (unsigned iel = 0; iel < src.size(); ++iel)
     {
         const PolarScan<T>& src_scan = src.at(iel);
         PolarScan<T>& dst_scan = dst.make_scan(iel, src_scan.beam_size, src_scan.elevation, src_scan.cell_size);
         polarscan_resample(src_scan, azmaps[iel], dst_scan, merger);
+        dst_scan.quantity = src_scan.quantity;
     }
 }
 
