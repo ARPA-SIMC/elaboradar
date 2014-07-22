@@ -16,13 +16,16 @@ int main(int argc,char* argv[])
 	//site.name="GAT";
 	
 	Volume<double> volume;
-	volume::ODIMLoader loader(sito, false, false, 1024);
+	volume::ODIMLoader loader(sito, false, 1024);
 
 	volume::Scans<double> full_volume;
-	loader.vol_z = &full_volume;
+	//loader.vol_z = &full_volume;
 
-	if(loader.load(argv[1],argv[2])) std::cout<<"tutto bene"<<std::endl;
-	else std::cout<<"tutto male"<<std::endl;
+	loader.request_quantity(argv[2],&full_volume);
+
+	//if(loader.load(argv[1])) std::cout<<"tutto bene"<<std::endl;
+	//else std::cout<<"tutto male"<<std::endl;
+	loader.load(argv[1]);
 
 //	cout<<volume.beam_count<<" "<<full_volume[0].beam_count<<endl;
 

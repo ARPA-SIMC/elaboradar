@@ -18,10 +18,12 @@
 
 //#include "FIR_filter.h"
 #include "classifier.h"
+#include <radarlib/radar.hpp>
 
 using namespace cumbac;
 using namespace volume;
 using namespace std;
+namespace odim = OdimH5v21;
 
 PROB::PROB(double z,double zdr,double rhohv, double lkdp, double sdz, double sdphidp)
 {
@@ -130,14 +132,7 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
-	// TODO: I (davide) think that only 1 loader is needed and could be reused to load all variables
-	volume::ODIMLoader loader_z(site, false, false, 1024);
-	volume::ODIMLoader loader_zdr(site, false, false, 1024);
-	volume::ODIMLoader loader_rhohv(site, false, false, 1024);
-	volume::ODIMLoader loader_phidp(site, false, false, 1024);
-	volume::ODIMLoader loader_vrad(site, false, false, 1024);
-
-	bool file_ok=true;
+	volume::ODIMLoader loader_all(site, false, 1024);
 
 	volume::Scans<double> full_volume_z;
 	volume::Scans<double> full_volume_zdr;
@@ -145,28 +140,20 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	volume::Scans<double> full_volume_phidp;
 	volume::Scans<double> full_volume_vrad;
 
-	loader_z.vol_z = &full_volume_z;
-	file_ok = file_ok && loader_z.load(pathname,"DBZH");
-	volume::volume_resample<double>(full_volume_z, loader_z.azimuth_maps, vol_z, volume::merger_closest<double>);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rhohv);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_PHIDP,&full_volume_phidp);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_VRAD,&full_volume_vrad);
 
-	loader_zdr.vol_z = &full_volume_zdr;
-	file_ok = file_ok && loader_zdr.load(pathname,"ZDR");
-	volume::volume_resample<double>(full_volume_zdr, loader_zdr.azimuth_maps, vol_zdr, volume::merger_closest<double>);
+	loader_all.load(pathname);
+	printf("Non so se è andato tutto bene, ma almeno sono arrivato in fondo\n");
 
-	loader_rhohv.vol_z = &full_volume_rhohv;
-	file_ok = file_ok && loader_rhohv.load(pathname,"RHOHV");
-	volume::volume_resample<double>(full_volume_rhohv, loader_rhohv.azimuth_maps, vol_rhohv, volume::merger_closest<double>);
-	
-	loader_phidp.vol_z = &full_volume_phidp;
-	file_ok = file_ok && loader_phidp.load(pathname,"PHIDP");
-	volume::volume_resample<double>(full_volume_phidp, loader_phidp.azimuth_maps, vol_phidp, volume::merger_closest<double>);
-
-	loader_vrad.vol_z = &full_volume_vrad;
-	file_ok = file_ok && loader_vrad.load(pathname,"VRAD");
-	volume::volume_resample<double>(full_volume_vrad, loader_vrad.azimuth_maps, vol_vrad, volume::merger_closest<double>);
-
-	if(file_ok) printf("Everything is fine\n");
-	else printf("Something went wrong during loading %s\n",pathname.c_str());
+	volume::volume_resample<double>(full_volume_z, loader_all.azimuth_maps, vol_z, volume::merger_closest<double>);
+	volume::volume_resample<double>(full_volume_zdr, loader_all.azimuth_maps, vol_zdr, volume::merger_closest<double>);
+	volume::volume_resample<double>(full_volume_rhohv, loader_all.azimuth_maps, vol_rhohv, volume::merger_closest<double>);
+	volume::volume_resample<double>(full_volume_phidp, loader_all.azimuth_maps, vol_phidp, volume::merger_closest<double>);
+	volume::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, volume::merger_closest<double>);
 }
 
 void classifier::compute_lkdp()
