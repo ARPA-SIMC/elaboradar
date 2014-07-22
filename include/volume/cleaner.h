@@ -17,10 +17,10 @@ struct Cleaner
     const double bin_wind_magic_number;
 
     Cleaner(const Variable<double>& var_Z, const Variable<double>& var_W, const Variable<double>& var_V)
-        : Z_missing(var_Z.nodata), W_threshold(var_W.undetect), V_missing(var_V.nodata),
-          bin_wind_magic_number(var_V.undetect * var_V.gain + var_V.offset)
+        : Z_missing(var_Z.undetect), W_threshold(var_W.undetect), V_missing(var_V.nodata),
+          bin_wind_magic_number(var_V.undetect )
     {
-    }
+  }
 
     void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V);
 
