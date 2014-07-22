@@ -52,7 +52,7 @@ void volume_resample(const volume::Scans<T>& src, const std::vector<AZMAP>& azma
 {
     // Copy volume metadata
     dst.load_info = src.load_info;
-    ds.quantity = src.quantity;
+    dst.quantity = src.quantity;
 
     for (unsigned iel = 0; iel < src.size(); ++iel)
     {
