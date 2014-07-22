@@ -36,6 +36,24 @@ inline unsigned char DBtoBYTE(double dB)
         return 255;
 }
 
+/// Information about the quantity stored in a volume
+template<typename T>
+class Variable
+{
+public:
+   std::string name;
+   std::string units;
+   T nodata;    // Value used as 'no data' value
+   T undetect;  // Minimum amount that can be measured
+   T gain;
+   T offset;
+
+   Variable()
+   : name(""),units(""),nodata(0),undetect(0),gain(0),offset(0)
+   {
+   }
+};
+
 template<typename T>
 class PolarScan : public Matrix2D<T>
 {
@@ -53,6 +71,7 @@ public:
     Eigen::VectorXd elevations_real;
     /// Size of a beam cell in meters
     T cell_size;
+    Variable<T> quantity;
 
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value)),
@@ -111,19 +130,6 @@ struct VolumeStats
     std::vector<unsigned> sum_others;
 
     void print(FILE* out);
-};
-
-/// Information about the quantity stored in a volume
-template<typename T>
-class Variable
-{
-public:
-   std::string name;
-   std::string units;
-   T nodata;    // Value used as 'no data' value
-   T undetect;  // Minimum amount that can be measured
-   T gain;
-   T offset;
 };
 
 template<typename T>
@@ -209,8 +215,8 @@ public:
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
     const unsigned beam_count;
-    Variable<T> quantity;
     std::shared_ptr<volume::LoadInfo> load_info;
+    Variable<T> quantity;
 
     // Access a polar scan
     PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
@@ -385,7 +391,7 @@ public:
 
     void lin2dB(Volume<T>& lin)
     {
-	// this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
+	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
 	this->clear();
 	for(unsigned i=0;i<lin.size();i++)
 	{
@@ -399,7 +405,7 @@ public:
 
     void dB2lin(Volume<T>& DB)
     {
-	// this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
+	//this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
 	this->clear();
 	for(unsigned i=0;i<DB.size();i++)
 	{
