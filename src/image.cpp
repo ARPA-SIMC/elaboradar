@@ -52,7 +52,6 @@ public:
         nBlockXSize = image.cols();
         nBlockYSize = image.rows();
         // SetDescription(name.c_str());
-printf("MatrixRasterBand  %d %d \n", nBlockXSize, nBlockYSize);
 
         eDataType = get_gdal_datatype<T>();
     }
