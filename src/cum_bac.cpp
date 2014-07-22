@@ -411,8 +411,10 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     {
 	
         for (unsigned i = 0; i < z_volume->size(); ++i)
+        {
             volume::Cleaner cleaner(z_volume->at(i).quantity, w_volume.at(i).quantity, v_volume.at(i).quantity);
             cleaner.clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
+        }
     }
 
     volume_resample<double>(*z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
