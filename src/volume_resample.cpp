@@ -3,9 +3,9 @@
 #include<iostream>
 
 using namespace std;
-using namespace cumbac::volume::azimuthmap;
+using namespace elaboradar::volume::azimuthmap;
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 template<typename T>

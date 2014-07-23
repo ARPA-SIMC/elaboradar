@@ -9,7 +9,7 @@
 #include <vector>
 #include <H5Cpp.h>
 
-namespace cumbac {
+namespace elaboradar {
 
 struct Config;
 template<typename T> struct Matrix2D;
@@ -178,10 +178,10 @@ public:
      *
      * desc is used to get better error messages.
      */
-    void write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
+    void write_image(const Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
 
     template<typename T>
-    void write_gdal_image(const cumbac::Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
+    void write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
 
 protected:
     /// Build a basename (without extension) for a file given the current

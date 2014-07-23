@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 struct ODIMLoader : public volume::Loader

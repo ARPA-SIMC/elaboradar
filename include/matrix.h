@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace cumbac {
+namespace elaboradar {
 
 template<typename Scalar> struct Exponential {
 EIGEN_EMPTY_STRUCT_CTOR(Exponential)

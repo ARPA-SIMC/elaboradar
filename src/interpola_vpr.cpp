@@ -1,7 +1,7 @@
 #include "interpola_vpr.h"
 #include <vpr_par.h>
 
-namespace cumbac {
+namespace elaboradar {
 
 InterpolaVPR::InterpolaVPR()
     : B(NODATAVPR), E(NODATAVPR), G(NODATAVPR), C(NODATAVPR), F(NODATAVPR),

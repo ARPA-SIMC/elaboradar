@@ -18,7 +18,7 @@
 #define MINVAL_DB (80./255.-20.)
 #define MAXVAL_DB (60.)
 
-namespace cumbac {
+namespace elaboradar {
 
 inline double BYTEtoDB(unsigned char z)
 {

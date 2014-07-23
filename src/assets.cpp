@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace cumbac {
+namespace elaboradar {
 
 Assets::Assets(const Config& cfg)
     : logging_category(log4c_category_get("radar.assets")), cfg(cfg), outfile_devel_data(0)
@@ -378,7 +378,7 @@ void Assets::load_raw(const std::string& fname, const char* desc, Matrix2D<T>& m
     rewind(in);
 
     // Check that the file size is consistent with what we want
-    if (fsize != matrix.size() * sizeof(T))
+    if ((unsigned)fsize != matrix.size() * sizeof(T))
     {
         LOG_ERROR("Il file %s è %ld byte ma dovrebbe invece essere %ld byte\n",
                 fname.c_str(), fsize, matrix.size() * sizeof(T));
@@ -430,7 +430,7 @@ std::string Assets::fname_from_acq_time() const
     return buf;
 }
 
-void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc)
+void Assets::write_image(const Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc)
 {
     const char* dir = getenv(dir_env_var);
     if (!dir)
@@ -461,7 +461,7 @@ void Assets::write_image(const cumbac::Matrix2D<unsigned char>& image, const cha
 }
 
 template<typename T>
-void Assets::write_gdal_image(const cumbac::Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format)
+void Assets::write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format)
 {
     const char* dir = getenv(dir_env_var);
     if (!dir)
@@ -472,12 +472,12 @@ void Assets::write_gdal_image(const cumbac::Matrix2D<T>& image, const char* dir_
 
     string fname = string(dir) + "/" + fname_from_acq_time() + "-" + name + "." + gdal_extension_for_format(format);
 
-    cumbac::write_image(image, fname, format);
+    elaboradar::write_image(image, fname, format);
 }
 
-template void Assets::write_gdal_image(const cumbac::Matrix2D<unsigned char>&, const char*, const char*, const char*);
-template void Assets::write_gdal_image(const cumbac::Matrix2D<unsigned short>&, const char*, const char*, const char*);
-template void Assets::write_gdal_image(const cumbac::Matrix2D<double>&, const char*, const char*, const char*);
+template void Assets::write_gdal_image(const Matrix2D<unsigned char>&, const char*, const char*, const char*);
+template void Assets::write_gdal_image(const Matrix2D<unsigned short>&, const char*, const char*, const char*);
+template void Assets::write_gdal_image(const Matrix2D<double>&, const char*, const char*, const char*);
 
 
 }

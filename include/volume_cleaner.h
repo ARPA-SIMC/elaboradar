@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iostream>
 
-namespace cumbac {
+namespace elaboradar {
 
 template <class TB>
 struct Beams

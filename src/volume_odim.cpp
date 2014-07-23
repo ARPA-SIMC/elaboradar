@@ -23,7 +23,7 @@ unsigned int_to_unsigned(int val, const char* desc)
 }
 
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 void ODIMLoader::request_quantity(const std::string& name, Scans<double>* volume)
@@ -162,4 +162,4 @@ void ODIMLoader::load(const std::string& pathname)
 }
 
 }	// namespace volume
-}	// namespace cumbac
+}	// namespace elaboradar

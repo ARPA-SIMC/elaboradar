@@ -7,7 +7,7 @@
 #include "logging.h"
 #include "matrix.h"
 
-namespace cumbac {
+namespace elaboradar {
 
 /**
  * Open a file taking its name from a given env variable.

@@ -11,7 +11,7 @@
 #include <vector>
 
 using namespace wibble::tests;
-using namespace cumbac;
+using namespace elaboradar;
 
 namespace tut {
 
@@ -208,7 +208,7 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const V
 template<> template<>
 void to::test<1>()
 {
-    using namespace cumbac::volume;
+    using namespace elaboradar::volume;
     // Test loading of a radar volume via SP20
     const Site& gat = Site::get("GAT");
     SP20Loader loader(gat, false, false);
@@ -240,7 +240,7 @@ template<> template<>
 void to::test<3>()
 {
     using namespace std;
-    using namespace cumbac::volume;
+    using namespace elaboradar::volume;
     namespace odim = OdimH5v21;
     Scans<double> ssp20;
     Volume<double> vsp20;
@@ -283,7 +283,7 @@ template<> template<>
 void to::test<5>()
 {
     using namespace std;
-    using namespace cumbac::volume;
+    using namespace elaboradar::volume;
     Scans<double> ssp20;
     Volume<double> vsp20;
     Scans<double> s_mod;

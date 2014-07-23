@@ -4,7 +4,7 @@
 #include <wibble/tests.h>
 #include <volume.h>
 
-namespace cumbac {
+namespace elaboradar {
 struct Cart;
 struct CartLowris;
 struct CUM_BAC;
@@ -60,12 +60,12 @@ struct ArrayStats
             this->count_sample(arr[i]);
     }
 
-    void fill(const cumbac::Matrix2D<T>& arr)
+    void fill(const elaboradar::Matrix2D<T>& arr)
     {
         this->fill(arr.data(), arr.size());
     }
 
-    void fill(const cumbac::Volume<T>& vol)
+    void fill(const elaboradar::Volume<T>& vol)
     {
         for (unsigned i = 0; i < vol.size(); ++i)
             this->fill(vol.scan(i));
@@ -78,12 +78,12 @@ struct ArrayStats
             this->count_sample(missing, arr[i]);
     }
 
-    void fill(const T& missing, const cumbac::Matrix2D<T>& arr)
+    void fill(const T& missing, const elaboradar::Matrix2D<T>& arr)
     {
         this->fill(missing, arr.data(), arr.size());
     }
 
-    void fill(const T& missing, const cumbac::Volume<T>& vol)
+    void fill(const T& missing, const elaboradar::Volume<T>& vol)
     {
         for (unsigned i = 0; i < vol.size(); ++i)
             this->fill(missing, vol.scan(i));
@@ -170,40 +170,40 @@ struct TestStatsEqual
 };
 
 template<typename T>
-struct ActualMatrix2D : public wibble::tests::Actual<const cumbac::Matrix2D<T>&>
+struct ActualMatrix2D : public wibble::tests::Actual<const elaboradar::Matrix2D<T>&>
 {
-    using wibble::tests::Actual<const cumbac::Matrix2D<T>&>::Actual;
+    using wibble::tests::Actual<const elaboradar::Matrix2D<T>&>::Actual;
 
     template<typename... args>
-    TestStatsEqual<cumbac::Matrix2D<T>> statsEqual(args&&... params) const
+    TestStatsEqual<elaboradar::Matrix2D<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<cumbac::Matrix2D<T>>(this->actual, params...);
+        return TestStatsEqual<elaboradar::Matrix2D<T>>(this->actual, params...);
     }
 };
 
 template<typename T>
-struct ActualVolume : public wibble::tests::Actual<const cumbac::Volume<T>&>
+struct ActualVolume : public wibble::tests::Actual<const elaboradar::Volume<T>&>
 {
-    using wibble::tests::Actual<const cumbac::Volume<T>&>::Actual;
+    using wibble::tests::Actual<const elaboradar::Volume<T>&>::Actual;
 
     template<typename... args>
-    TestStatsEqual<cumbac::Volume<T>> statsEqual(args&&... params) const
+    TestStatsEqual<elaboradar::Volume<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<cumbac::Volume<T>>(this->actual, params...);
+        return TestStatsEqual<elaboradar::Volume<T>>(this->actual, params...);
     }
 };
 
 template<typename T>
-inline ActualMatrix2D<T> actual(const cumbac::Matrix2D<T>& actual) { return ActualMatrix2D<T>(actual); }
+inline ActualMatrix2D<T> actual(const elaboradar::Matrix2D<T>& actual) { return ActualMatrix2D<T>(actual); }
 
 template<typename T>
-inline ActualMatrix2D<T> actual(const cumbac::PolarScan<T>& actual) { return ActualMatrix2D<T>(actual); }
+inline ActualMatrix2D<T> actual(const elaboradar::PolarScan<T>& actual) { return ActualMatrix2D<T>(actual); }
 
 template<typename T>
-inline ActualMatrix2D<T> actual(const cumbac::Image<T>& actual) { return ActualMatrix2D<T>(actual); }
+inline ActualMatrix2D<T> actual(const elaboradar::Image<T>& actual) { return ActualMatrix2D<T>(actual); }
 
 template<typename T>
-inline ActualVolume<T> actual(const cumbac::Volume<T>& actual) { return ActualVolume<T>(actual); }
+inline ActualVolume<T> actual(const elaboradar::Volume<T>& actual) { return ActualVolume<T>(actual); }
 
 template<typename DATA>
 void print_stats(const std::string& name, const DATA& data, const typename DATA::Scalar& missing, std::ostream& out)
@@ -233,9 +233,9 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
         << "));" << endl;
 }
 
-void print_stats(const std::string& name, const cumbac::CUM_BAC& cb, std::ostream& out);
-void print_stats(const std::string& name, const cumbac::Cart& cart, std::ostream& out);
-void print_stats(const std::string& name, const cumbac::CartLowris& cart, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out);
 
 }
 

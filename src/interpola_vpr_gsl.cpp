@@ -125,7 +125,7 @@ float lineargauss(double xint , double a[])
 }
 
 
-namespace cumbac {
+namespace elaboradar {
 
 int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
 {

@@ -66,7 +66,7 @@ extern "C" {
 
 using namespace std;
 
-namespace cumbac {
+namespace elaboradar {
 
 namespace {
 /**
@@ -326,7 +326,7 @@ bool CUM_BAC::test_file(int file_type)
 
 bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 {
-    using namespace cumbac::volume;
+    using namespace elaboradar::volume;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     bool use_new_cleaner = true;
@@ -374,7 +374,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
 
 bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 {
-    using namespace cumbac::volume;
+    using namespace elaboradar::volume;
     namespace odim = OdimH5v21;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 

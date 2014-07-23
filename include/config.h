@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-namespace cumbac {
+namespace elaboradar {
 
 class Config
 {

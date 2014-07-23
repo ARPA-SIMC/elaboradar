@@ -10,7 +10,7 @@
 
 #undef FATT_MOLT_AZ
 
-namespace cumbac {
+namespace elaboradar {
 struct Site;
 
 namespace volume {
