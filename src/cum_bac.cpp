@@ -240,7 +240,7 @@ void CUM_BAC::compute_top()
 
 bool CUM_BAC::test_file(int file_type)
 {
-    int n_elev = -1;
+    unsigned n_elev = 0;
     int expected_size_cell = 0;// != volume.resolution?
 
     //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
@@ -302,7 +302,7 @@ bool CUM_BAC::test_file(int file_type)
         return false;
     }
 
-    for (int k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
+    for (unsigned k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
     {
         LOG_INFO("Numero beam presenti: %4u -- elevazione %d", volume.scan(k).beam_count, k);
 
@@ -345,8 +345,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
     {
     //    volume::Cleaner cleaner(z_volume.quantity, w_volume.quantity, v_volume.quantity);
         for (unsigned i = 0; i < z_volume.size(); ++i)  {
-        volume::Cleaner cleaner(z_volume.at(i).quantity, w_volume.at(i).quantity, v_volume.at(i).quantity);
-            cleaner.clean(z_volume.at(i), w_volume.at(i), v_volume.at(i));
+            volume::Cleaner::clean(z_volume.at(i), w_volume.at(i), v_volume.at(i));
         }
     }
 
@@ -411,10 +410,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     {
 	
         for (unsigned i = 0; i < z_volume->size(); ++i)
-        {
-            volume::Cleaner cleaner(z_volume->at(i).quantity, w_volume.at(i).quantity, v_volume.at(i).quantity);
-            cleaner.clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
-        }
+            volume::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
     }
 
     volume_resample<double>(*z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);

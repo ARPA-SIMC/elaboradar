@@ -94,20 +94,25 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
     if (scan_z.beam_size != scan_v.beam_size)
         throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
 
+    Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, scan_v.undetect);
+
     const unsigned beam_count = scan_z.beam_count;
     const unsigned beam_size = scan_z.beam_size;
+
+    //fprintf(stderr, "NEWCLEANER zmis %f, wthr %f, vmis %f, mn %f\n",
+    //        cleaner.Z_missing, cleaner.W_threshold, cleaner.V_missing, cleaner.bin_wind_magic_number);
 
     for (unsigned i = 0; i < beam_count; ++i)
     {
         // Compute which elements need to be cleaned
-        vector<bool> corrected = clean_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i));
+        vector<bool> corrected = cleaner.clean_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i));
 
         for (unsigned ib = 0; ib < beam_size; ++ib)
             if (corrected[ib])
             {
-                scan_z(i, ib) = Z_missing;
-                scan_w(i, ib) = W_threshold;
-                scan_v(i, ib) = V_missing;
+                scan_z(i, ib) = cleaner.Z_missing;
+                scan_w(i, ib) = cleaner.W_threshold;
+                scan_v(i, ib) = cleaner.V_missing;
             }
     }
 }

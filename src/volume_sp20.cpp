@@ -219,11 +219,14 @@ void SP20Loader::load(const std::string& pathname)
     if (vol_z)
     {
         vol_z->load_info = load_info;
-        vol_z->quantity.name = odim::PRODUCT_QUANTITY_DBZH;
-        vol_z->quantity.nodata = -40;            // TODO: validate
-        vol_z->quantity.undetect = DBtoBYTE(1);  // TODO: validate
-        vol_z->quantity.gain = 1;                // TODO: validate
-        vol_z->quantity.offset = 0;              // TODO: validate
+        vol_z->quantity = odim::PRODUCT_QUANTITY_DBZH;
+        for (auto& scan : *vol_z)
+        {
+            scan.nodata = -40;            // TODO: validate
+            scan.undetect = DBtoBYTE(1);  // TODO: validate
+            scan.gain = 1;                // TODO: validate
+            scan.offset = 0;              // TODO: validate
+        }
     }
     if (vol_d)
     {
@@ -232,20 +235,26 @@ void SP20Loader::load(const std::string& pathname)
     if (vol_v)
     {
         vol_v->load_info = load_info;
-        vol_v->quantity.name = odim::PRODUCT_QUANTITY_VRAD;
-        vol_v->quantity.nodata = -100;           // TODO: validate
-        vol_v->quantity.undetect = 0;            // TODO: validate
-        vol_v->quantity.gain = 1;                // TODO: validate
-        vol_v->quantity.offset = 0;              // TODO: validate
+        vol_v->quantity = odim::PRODUCT_QUANTITY_VRAD;
+        for (auto& scan : *vol_v)
+        {
+            scan.nodata = -100;           // TODO: validate
+            scan.undetect = 0;            // TODO: validate
+            scan.gain = 1;                // TODO: validate
+            scan.offset = 0;              // TODO: validate
+        }
     }
     if (vol_w)
     {
         vol_w->load_info = load_info;
-        vol_w->quantity.name = odim::PRODUCT_QUANTITY_WRAD;
-        vol_w->quantity.nodata = 0;              // TODO: validate
-        vol_w->quantity.undetect = 0;            // TODO: validate
-        vol_w->quantity.gain = 1;                // TODO: validate
-        vol_w->quantity.offset = 0;              // TODO: validate
+        vol_w->quantity = odim::PRODUCT_QUANTITY_WRAD;
+        for (auto& scan : *vol_w)
+        {
+            scan.nodata = 0;              // TODO: validate
+            scan.undetect = 0;            // TODO: validate
+            scan.gain = 1;                // TODO: validate
+            scan.offset = 0;              // TODO: validate
+        }
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());

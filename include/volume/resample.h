@@ -53,13 +53,17 @@ void volume_resample(const volume::Scans<T>& src, const std::vector<AZMAP>& azma
     // Copy volume metadata
     dst.load_info = src.load_info;
     dst.quantity = src.quantity;
+    dst.units = src.units;
 
     for (unsigned iel = 0; iel < src.size(); ++iel)
     {
         const PolarScan<T>& src_scan = src.at(iel);
         PolarScan<T>& dst_scan = dst.make_scan(iel, src_scan.beam_size, src_scan.elevation, src_scan.cell_size);
         polarscan_resample(src_scan, azmaps[iel], dst_scan, merger);
-        dst_scan.quantity = src_scan.quantity;
+        dst_scan.nodata = src_scan.nodata;
+        dst_scan.undetect = src_scan.undetect;
+        dst_scan.gain = src_scan.gain;
+        dst_scan.offset = src_scan.offset;
     }
 }
 
