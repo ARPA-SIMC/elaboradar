@@ -15,10 +15,10 @@
  *
  * =====================================================================================
  */
-#include "volume/cleaner.h"
+#include "algo/cleaner.h"
 
 namespace elaboradar {
-namespace volume {
+namespace algo {
 
 using namespace std;
 
