@@ -64,6 +64,23 @@ public:
     {
     }
 
+    PolarScan(const PolarScan& s)
+        : Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, s.nodata)),
+          beam_count(s.beam_count), beam_size(s.beam_size),
+          elevation(s.elevation), elevations_real(s.elevations_real),
+          nodata(s.nodata), undetect(s.undetect), gain(s.gain), offset(s.offset)
+    {
+    }
+
+    template<typename OT>
+    PolarScan(const PolarScan<OT>& s, const T& default_value)
+        : Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, default_value)),
+          beam_count(s.beam_count), beam_size(s.beam_size),
+          elevation(s.elevation), elevations_real(s.elevations_real),
+          nodata(default_value)
+    {
+    }
+
     ~PolarScan()
     {
     }
@@ -201,6 +218,20 @@ public:
     std::string units;
     std::shared_ptr<LoadInfo> load_info;
 
+    Scans() = default;
+
+    template<typename OT>
+    Scans(const Scans<OT>& v, const T& default_value)
+    {
+        this->quantity = v.quantity;
+        this->units = v.units;
+        this->load_info = v.load_info;
+        this->reserve(v.size());
+
+        for (const auto& src_scan : v)
+            this->push_back(PolarScan<T>(src_scan, default_value));
+    }
+
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
     {
@@ -261,24 +292,8 @@ public:
 
     template<typename OT>
     Volume(const Volume<OT>& v, const T& default_value)
-        : beam_count(v.beam_count)
+        : volume::Scans<T>(v, default_value), beam_count(v.beam_count)
     {
-        this->quantity = v.quantity;
-        this->units = v.units;
-        this->load_info = v.load_info;
-        this->reserve(v.size());
-
-        for (const auto& src_scan : v)
-        {
-            this->push_back(PolarScan<T>(beam_count, src_scan.beam_size, default_value));
-            this->back().elevation = src_scan.elevation;
-            this->back().elevations_real = src_scan.elevations_real;
-            this->back().cell_size = src_scan.cell_size;
-            this->back().nodata = src_scan.nodata;
-            this->back().undetect = src_scan.undetect;
-            this->back().gain = src_scan.gain;
-            this->back().offset = src_scan.offset;
-        }
     }
 
     /// Return the maximum beam size in all PolarScans
