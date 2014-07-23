@@ -64,6 +64,9 @@ public:
     {
     }
 
+    PolarScan(const PolarScan& s) = default;
+#if 0
+    // PolarScan(PolarScan&& s) = default;
     PolarScan(const PolarScan& s)
         : Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, s.nodata)),
           beam_count(s.beam_count), beam_size(s.beam_size),
@@ -71,6 +74,7 @@ public:
           nodata(s.nodata), undetect(s.undetect), gain(s.gain), offset(s.offset)
     {
     }
+#endif
 
     template<typename OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
