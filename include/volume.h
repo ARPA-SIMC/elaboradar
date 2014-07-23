@@ -189,24 +189,70 @@ struct LoadInfo
     }
 };
 
-}
-
+/**
+ * Volume of polarscans which can have a different beam count for each elevation
+ */
 template<typename T>
-class Volume : protected std::vector<PolarScan<T>*>
+class Scans : public std::vector<PolarScan<T>>
 {
 public:
-    using std::vector<PolarScan<T>*>::size;
     typedef T Scalar;
-    typedef typename std::vector<PolarScan<T>*>::iterator iterator;
-    typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
-    const unsigned beam_count;
     std::string quantity;
     std::string units;
-    std::shared_ptr<volume::LoadInfo> load_info;
+    std::shared_ptr<LoadInfo> load_info;
+
+    // Create or reuse a scan at position idx, with the given beam size
+    PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
+    {
+        if (idx < this->size())
+        {
+            if (beam_count != (*this)[idx].beam_count)
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_count=%u", idx, beam_count, beam_size, (*this)[idx].beam_count);
+                throw std::runtime_error("beam_size mismatch");
+            }
+            if (beam_size != (*this)[idx].beam_size)
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_count, beam_size, (*this)[idx].beam_size);
+                throw std::runtime_error("beam_size mismatch");
+            }
+        } else {
+            // If some elevation has been skipped, fill in the gap
+            if (idx > this->size())
+            {
+                if (this->empty())
+                    this->push_back(PolarScan<T>(beam_count, beam_size));
+                while (this->size() < idx)
+                    this->push_back(PolarScan<T>(beam_count, this->back().beam_size));
+            }
+
+            // Add the new polar scan
+            this->push_back(PolarScan<T>(beam_count, beam_size));
+            this->back().elevation = elevation;
+            this->back().cell_size = cell_size;
+        }
+
+        // Return it
+        return (*this)[idx];
+    }
+};
+
+}
+
+/**
+ * Homogeneous volume with a common beam count for all PolarScans
+ */
+template<typename T>
+class Volume : public volume::Scans<T>
+{
+public:
+    const unsigned beam_count;
 
     // Access a polar scan
-    PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
-    const PolarScan<T>& scan(unsigned idx) const { return *(*this)[idx]; }
+    PolarScan<T>& scan(unsigned idx) { return (*this)[idx]; }
+    const PolarScan<T>& scan(unsigned idx) const { return (*this)[idx]; }
 
     Volume(unsigned beam_count=NUM_AZ_X_PPI)
         : beam_count(beam_count)
@@ -217,38 +263,42 @@ public:
     Volume(const Volume<OT>& v, const T& default_value)
         : beam_count(v.beam_count)
     {
-        this->resize(v.size(), 0);
-        for (unsigned i = 0; i < v.size(); ++i)
-        {
-            (*this)[i] = new PolarScan<T>(beam_count, v.scan(i).beam_size, default_value);
-            (*this)[i]->elevation = v.scan(i).elevation;
-        }
-    }
+        this->quantity = v.quantity;
+        this->units = v.units;
+        this->load_info = v.load_info;
+        this->reserve(v.size());
 
-    ~Volume()
-    {
-        for (auto i: *this)
-            if (i) delete i;
+        for (const auto& src_scan : v)
+        {
+            this->push_back(PolarScan<T>(beam_count, src_scan.beam_size, default_value));
+            this->back().elevation = src_scan.elevation;
+            this->back().elevations_real = src_scan.elevations_real;
+            this->back().cell_size = src_scan.cell_size;
+            this->back().nodata = src_scan.nodata;
+            this->back().undetect = src_scan.undetect;
+            this->back().gain = src_scan.gain;
+            this->back().offset = src_scan.offset;
+        }
     }
 
     /// Return the maximum beam size in all PolarScans
     const unsigned max_beam_size() const
     {
         unsigned res = 0;
-        for (size_t i = 0; i < this->size(); ++i)
-            res = std::max(res, (*this)[i]->beam_size);
+        for (const auto& scan : *this)
+            res = std::max(res, scan.beam_size);
         return res;
     }
 
 
     double elevation_min() const
     {
-        return this->front()->elevation;
+        return this->front().elevation;
     }
 
     double elevation_max() const
     {
-        return this->back()->elevation;
+        return this->back().elevation;
     }
 
     /**
@@ -257,7 +307,7 @@ public:
      */
     void read_vertical_slice(unsigned az, Matrix2D<T>& slice, double missing_value) const
     {
-        unsigned size_z = std::max(size(), (size_t)slice.rows());
+        unsigned size_z = std::max(this->size(), (size_t)slice.rows());
         for (unsigned el = 0; el < size_z; ++el)
             scan(el).read_beam(az, slice.row_ptr(el), slice.cols(), missing_value);
     }
@@ -298,38 +348,7 @@ public:
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_size, double elevation, double cell_size)
     {
-        if (idx < this->size())
-        {
-            if (beam_count != (*this)[idx]->beam_count)
-            {
-                LOG_CATEGORY("radar.io");
-                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_count=%u", idx, beam_count, beam_size, (*this)[idx]->beam_count);
-                throw std::runtime_error("beam_size mismatch");
-            }
-            if (beam_size != (*this)[idx]->beam_size)
-            {
-                LOG_CATEGORY("radar.io");
-                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_count, beam_size, (*this)[idx]->beam_size);
-                throw std::runtime_error("beam_size mismatch");
-            }
-        } else {
-            // If some elevation has been skipped, fill in the gap
-            if (idx > this->size())
-            {
-                if (this->empty())
-                    this->push_back(new PolarScan<T>(beam_count, beam_size));
-                while (this->size() < idx)
-                    this->push_back(new PolarScan<T>(beam_count, this->back()->beam_size));
-            }
-
-            // Add the new polar scan
-            this->push_back(new PolarScan<T>(beam_count, beam_size));
-            this->back()->elevation = elevation;
-            this->back()->cell_size = cell_size;
-        }
-
-        // Return it
-        return *(*this)[idx];
+        return volume::Scans<T>::make_scan(idx, beam_count, beam_size, elevation, cell_size);
     }
 
     void filter(Volume<T>& raw, double filter_range)
@@ -381,11 +400,11 @@ public:
 	this->clear();
 	for(unsigned i=0;i<lin.size();i++)
 	{
-		this->push_back(new PolarScan<T>(lin.scan(i).beam_count,lin.scan(i).beam_size,0.));
-		this->back()->elevation = lin.scan(i).elevation;
-		this->back()->cell_size = lin.scan(i).cell_size;
-		this->back()->block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
-		this->back()->array()*=10.;
+		this->push_back(PolarScan<T>(lin.scan(i).beam_count,lin.scan(i).beam_size,0.));
+		this->back().elevation = lin.scan(i).elevation;
+		this->back().cell_size = lin.scan(i).cell_size;
+		this->back().block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
+		this->back().array()*=10.;
 	}
     }
 
@@ -395,11 +414,11 @@ public:
 	this->clear();
 	for(unsigned i=0;i<DB.size();i++)
 	{
-		this->push_back(new PolarScan<T>(DB.scan(i).beam_count,DB.scan(i).beam_size,0.));
-		this->back()->elevation = DB.scan(i).elevation;
-		this->back()->cell_size = DB.scan(i).cell_size;
-		this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=DB.scan(i).array()*0.1;
-		this->back()->block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=this->back()->exp10();
+		this->push_back(PolarScan<T>(DB.scan(i).beam_count,DB.scan(i).beam_size,0.));
+		this->back().elevation = DB.scan(i).elevation;
+		this->back().cell_size = DB.scan(i).cell_size;
+		this->back().block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=DB.scan(i).array()*0.1;
+		this->back().block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=this->back().exp10();
 	}
     }
 
@@ -426,9 +445,9 @@ private:
     void make_filter_scan_range(PolarScan<T>& raw, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
-	this->push_back(new PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	this->back()->elevation = raw.elevation;
-	this->back()->cell_size = raw.cell_size;
+	this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
+	this->back().elevation = raw.elevation;
+	this->back().cell_size = raw.cell_size;
 	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(raw.beam_count,raw.beam_size,0));
 	T value;
 	for(unsigned i=0;i<raw.rows();i++)
@@ -438,13 +457,13 @@ private:
 			value=raw(i,j);
 			if((value != raw.undetect) && (value != raw.nodata))
 			{
-				this->back()->block(i,0,1,half_win+1+j).array()+=value;
+				this->back().block(i,0,1,half_win+1+j).array()+=value;
 				counter.block(i,0,1,half_win+1+j).array()+=1;
 			}
 			value=raw(i,raw.beam_size-half_win+j);
 			if((value != raw.undetect)&&(value != raw.nodata))
 			{
-				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
+				this->back().block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
 				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
 			}
 		}
@@ -453,14 +472,14 @@ private:
 			value=raw(i,j);
 			if((value!= raw.undetect) && (value!=raw.nodata))
 			{
-				this->back()->block(i,j-half_win,1,win).array()+=value;
+				this->back().block(i,j-half_win,1,win).array()+=value;
 				counter.block(i,j-half_win,1,win).array()+=1;
 			}
 		}
 		for(unsigned j=0;j<raw.beam_size;j++)
 		{
-			if(counter(i,j)) this->back()->set(i,j,(this->back()->get(i,j))/counter(i,j));
-			else this->back()->set(i,j, raw.undetect);
+			if(counter(i,j)) this->back().set(i,j,(this->back().get(i,j))/counter(i,j));
+			else this->back().set(i,j, raw.undetect);
 		}
 	}
     }
@@ -468,9 +487,9 @@ private:
     void make_rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
-	this->push_back(new PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	this->back()->elevation = raw.elevation;
-	this->back()->cell_size = raw.cell_size;
+	this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
+	this->back().elevation = raw.elevation;
+	this->back().cell_size = raw.cell_size;
 	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(beam_count,raw.beam_size,0));
 	T value;
 	for(unsigned i=0;i<raw.rows();i++)
@@ -480,13 +499,13 @@ private:
 			if((raw(i,j)!=raw.undetect)&&(raw(i,j)!=raw.nodata))
 			{
 				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
-				this->back()->block(i,0,1,half_win+1+j).array()+=value;
+				this->back().block(i,0,1,half_win+1+j).array()+=value;
 				counter.block(i,0,1,half_win+1+j).array()+=1;
 			}
 			if((raw(i,raw.beam_size-half_win+j)!=raw.undetect)&&(raw(i,raw.beam_size-half_win+j)!=raw.nodata))
 			{
 				value=(raw(i,raw.beam_size-half_win+j)-filtered(i,raw.beam_size-half_win+j));
-				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
+				this->back().block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
 				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
 			}
 		}
@@ -495,14 +514,14 @@ private:
 			if((raw(i,j)!=raw.undetect)&&(raw(i,j)!=raw.nodata))
 			{
 				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
-				this->back()->block(i,j-half_win,1,win).array()+=value;
+				this->back().block(i,j-half_win,1,win).array()+=value;
 				counter.block(i,j-half_win,1,win).array()+=1;
 			}
 		}
 		for(unsigned j=0;j<raw.beam_size;j++)
 		{
-			if(counter(i,j)) this->back()->set(i,j,std::sqrt(this->back()->get(i,j)/counter(i,j)));
-			else this->back()->set(i,j,raw.undetect);
+			if(counter(i,j)) this->back().set(i,j,std::sqrt(this->back().get(i,j)/counter(i,j)));
+			else this->back().set(i,j,raw.undetect);
 		}
 	}
     }
@@ -510,9 +529,9 @@ private:
     void make_slope_scan_range(PolarScan<T>& raw, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
-	this->push_back(new PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	this->back()->elevation = raw.elevation;
-	this->back()->cell_size = raw.cell_size;
+	this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
+	this->back().elevation = raw.elevation;
+	this->back().cell_size = raw.cell_size;
 	LinearFit<T> fit;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
@@ -527,9 +546,9 @@ private:
 			}
 			if(fit.N)
 			{
-				this->back()->set(i,j,fit.compute_slope());
+				this->back().set(i,j,fit.compute_slope());
 			}
-			else this->back()->set(i,j,raw.nodata);
+			else this->back().set(i,j,raw.nodata);
 			fit.clear();
 
 			for(unsigned k=0;k<(win-j-1);k++)
@@ -541,9 +560,9 @@ private:
 			}
 			if(fit.N)
 			{
-				this->back()->set(i,raw.beam_size-half_win+j,fit.compute_slope());
+				this->back().set(i,raw.beam_size-half_win+j,fit.compute_slope());
 			}
-			else this->back()->set(i,raw.beam_size-half_win+j,raw.nodata);
+			else this->back().set(i,raw.beam_size-half_win+j,raw.nodata);
 			fit.clear();
 		}
 		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
@@ -557,9 +576,9 @@ private:
 			}
 			if(fit.N)
 			{
-				this->back()->set(i,j,fit.compute_slope());
+				this->back().set(i,j,fit.compute_slope());
 			}
-			else this->back()->set(i,j,raw.nodata);
+			else this->back().set(i,j,raw.nodata);
 			fit.clear();
 		}
 	}
