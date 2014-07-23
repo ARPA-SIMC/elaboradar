@@ -37,8 +37,11 @@
 namespace elaboradar {
 
 struct Site;
+
+namespace algo {
 struct CalcoloSteiner;
 struct CalcoloVIZ;
+}
 
 // Matrici per statistiche
 struct GridStats
@@ -392,7 +395,7 @@ struct CalcoloVPR
      *  @brief funzione  che interseca i punti convettivi delle due classificazioni Viz e Steiner e sottrae quelli con  picco stratiforme
      *  @return non ritorna valori
      */
-    void merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& viz);
+    void merge_metodi(const algo::CalcoloSteiner& steiner, const algo::CalcoloVIZ& viz);
 
     // stampa profilo combinato
     int stampa_vpr();

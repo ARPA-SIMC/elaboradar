@@ -5,10 +5,10 @@
 #include "volume/sp20.h"
 #include "volume/odim.h"
 #include "algo/cleaner.h"
+#include "algo/steiner.h"
+#include "algo/viz.h"
 #include "volume/resample.h"
 #include "cylindrical.h"
-#include "steiner.h"
-#include "viz.h"
 #include "interpola_vpr.h"
 #include <radarlib/radar.hpp>
 #include <cstring>
@@ -1118,13 +1118,13 @@ void CalcoloVPR::classifica_rain()
     LOG_DEBUG ("Matrice cilindrica Naz %3d Nrange %4d Nheight %4d", cil.slices.size(), cil.x_size, cil.z_size);
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity
-    CalcoloVIZ viz(cil, htbb, hbbb, t_ground);
+    algo::CalcoloVIZ viz(cil, htbb, hbbb, t_ground);
     viz.classifico_VIZ();
 
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
-    CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, x_size);
+    algo::CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, x_size);
     steiner.calcolo_background();
     steiner.classifico_STEINER();
     //  }
@@ -1132,7 +1132,7 @@ void CalcoloVPR::classifica_rain()
     return ;
 }
 
-void CalcoloVPR::merge_metodi(const CalcoloSteiner& steiner, const CalcoloVIZ& viz)
+void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::CalcoloVIZ& viz)
 {
     for (unsigned j=0; j<NUM_AZ_X_PPI; j++)
         for (unsigned k=0; k<x_size; k++)

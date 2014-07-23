@@ -6,6 +6,7 @@
 #include "volume/elev_fin.h"
 
 namespace elaboradar {
+namespace algo {
 
 namespace steiner {
 
@@ -71,6 +72,7 @@ struct CalcoloSteiner
     void add_sample(unsigned pos, unsigned azimut, unsigned range);
 };
 
+}
 }
 
 #endif

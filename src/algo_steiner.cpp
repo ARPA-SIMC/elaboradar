@@ -1,4 +1,4 @@
-#include "steiner.h"
+#include "algo/steiner.h"
 #include "par_class.h"
 
 #ifdef __cplusplus
@@ -21,6 +21,7 @@ static const double AMPLITUDE = 0.9; /* esternalizzo?*/ // ampiezza fascio radar
 using namespace std;
 
 namespace elaboradar {
+namespace algo {
 
 namespace steiner {
 
@@ -218,6 +219,5 @@ void CalcoloSteiner::classifico_STEINER()
     return;
 }
 
-
-
+}
 }

@@ -5,8 +5,9 @@
 #include "matrix.h"
 
 namespace elaboradar {
-
 struct CylindricalVolume;
+
+namespace algo {
 
 struct CalcoloVIZ
 {
@@ -33,6 +34,7 @@ struct CalcoloVIZ
     void classifico_VIZ();
 };
 
+}
 }
 
 #endif
