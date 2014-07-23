@@ -84,6 +84,11 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
 void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v)
 {
+    return clean(scan_z, scan_w, scan_v, scan_v.undetect);
+}
+
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, double bin_wind_magic_number)
+{
     if (scan_z.beam_count != scan_w.beam_count)
         throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
     if (scan_z.beam_size != scan_w.beam_size)
@@ -94,7 +99,7 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
     if (scan_z.beam_size != scan_v.beam_size)
         throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
 
-    Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, scan_v.undetect);
+    Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
 
     const unsigned beam_count = scan_z.beam_count;
     const unsigned beam_size = scan_z.beam_size;

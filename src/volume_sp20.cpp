@@ -153,6 +153,7 @@ void SP20Loader::load(const std::string& pathname)
     load_info->acq_date = acq_date;
     load_info->declutter_rsp = (bool)hd_file.filtro_clutter;
     double size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
+    bool has_dual_prf = hd_file.Dual_PRF;
 
     BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
 //    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
@@ -219,18 +220,29 @@ void SP20Loader::load(const std::string& pathname)
     if (vol_z)
     {
         vol_z->load_info = load_info;
-        vol_z->quantity = odim::PRODUCT_QUANTITY_DBZH;
+        if (load_info->declutter_rsp)
+            vol_z->quantity = odim::PRODUCT_QUANTITY_DBZH;
+        else
+            vol_z->quantity = odim::PRODUCT_QUANTITY_TH;
         for (auto& scan : *vol_z)
         {
-            scan.nodata = -40;            // TODO: validate
-            scan.undetect = DBtoBYTE(1);  // TODO: validate
-            scan.gain = 1;                // TODO: validate
-            scan.offset = 0;              // TODO: validate
+            scan.nodata = DBtoBYTE(0);
+            scan.undetect = DBtoBYTE(1);
+            scan.gain = 80.0 / 255.0;
+            scan.offset = -20;
         }
     }
     if (vol_d)
     {
         vol_d->load_info = load_info;
+        vol_v->quantity = odim::PRODUCT_QUANTITY_ZDR;
+        for (auto& scan : *vol_z)
+        {
+            scan.nodata = -7;
+            scan.undetect = -6;
+            scan.gain = 16.0 / 255.0;
+            scan.offset = -6;
+        }
     }
     if (vol_v)
     {
@@ -238,10 +250,18 @@ void SP20Loader::load(const std::string& pathname)
         vol_v->quantity = odim::PRODUCT_QUANTITY_VRAD;
         for (auto& scan : *vol_v)
         {
-            scan.nodata = -100;           // TODO: validate
-            scan.undetect = 0;            // TODO: validate
-            scan.gain = 1;                // TODO: validate
-            scan.offset = 0;              // TODO: validate
+            if (has_dual_prf)
+            {
+                scan.nodata = -49.5;
+                scan.undetect = -49.5;
+                scan.gain = 99.0 / 254;       // TODO: check why it's 254 and not 255
+                scan.offset = -49.5;
+            } else {
+                scan.nodata = -16.5;
+                scan.undetect = -16.5;
+                scan.gain = 33.0 / 254;       // TODO: check why it's 254 and not 255
+                scan.offset = -16.5;
+            }
         }
     }
     if (vol_w)
@@ -250,10 +270,10 @@ void SP20Loader::load(const std::string& pathname)
         vol_w->quantity = odim::PRODUCT_QUANTITY_WRAD;
         for (auto& scan : *vol_w)
         {
-            scan.nodata = 0;              // TODO: validate
-            scan.undetect = 0;            // TODO: validate
-            scan.gain = 1;                // TODO: validate
-            scan.offset = 0;              // TODO: validate
+            scan.nodata = -1;
+            scan.undetect = 0;
+            scan.gain = 10.0 / 255.0;
+            scan.offset = 0;
         }
     }
 

@@ -48,7 +48,7 @@ struct BeamCleaner
 	  Z_missing             =  Z;
 	  W_threshold           =  W;
 	  V_missing		= VM;
-        fprintf(stderr, "OLDCLEANER zmis %f, wthr %f, vmis %f, mn %f\n", (double)Z_missing, (double)W_threshold, (double)V_missing, (double)bin_wind_magic_number);
+      //fprintf(stderr, "OLDCLEANER zmis %f, wthr %f, vmis %f, mn %f\n", (double)Z_missing, (double)W_threshold, (double)V_missing, (double)bin_wind_magic_number);
 //std::cout<<bin_wind_magic_number<<" "<<Z_missing<<" "<<W_threshold<<" "<<V_missing<<std::endl;
 	}
 
