@@ -343,6 +343,7 @@ class MLpoints : public Matrix2D<unsigned>
 public:
 	double Hmin,Hmax;	// km
 	unsigned count;
+
 	MLpoints(double minHeight,double maxHeight,unsigned az_count,unsigned height_count) 
 	     : 	Matrix2D<unsigned>(Matrix2D::Constant(height_count,az_count,0)),
 		Hmin(minHeight),Hmax(maxHeight),count(0) {}
@@ -350,17 +351,10 @@ public:
 	double azimuth_deg(unsigned az_idx){return (double)az_idx*360./(double)this->cols();}
 	double azimuth_rad(unsigned az_idx){return (double)az_idx*2.*M_PI/(double)this->cols();}
 	unsigned rad2idx(double rad){return (unsigned)(rad*(double)this->cols()/(2.*M_PI));}
-	unsigned deg2idx(double deg)
-	{
-		//std::cout<<"converto gradi "<<deg<<std::endl;
-		return (unsigned)(deg*(double)this->cols()/360.);
-	}
+	unsigned deg2idx(double deg){return (unsigned)(deg*(double)this->cols()/360.);}
+
 	double height(unsigned h_idx){return Hmin+(double)h_idx*(Hmax-Hmin)/(double)this->rows();}
-	unsigned h_idx(double height)
-	{
-		//std::cout<<"converto altezze "<<height<<std::endl;
-		return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));
-	}
+	unsigned h_idx(double height){return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));	}
 
 	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
 };
