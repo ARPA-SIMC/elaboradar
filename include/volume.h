@@ -36,24 +36,6 @@ inline unsigned char DBtoBYTE(double dB)
         return 255;
 }
 
-/// Information about the quantity stored in a volume
-template<typename T>
-class Variable
-{
-public:
-   std::string name;
-   std::string units;
-   T nodata;    // Value used as 'no data' value
-   T undetect;  // Minimum amount that can be measured
-   T gain;
-   T offset;
-
-   Variable()
-   : name(""),units(""),nodata(0),undetect(0),gain(0),offset(0)
-   {
-   }
-};
-
 template<typename T>
 class PolarScan : public Matrix2D<T>
 {
@@ -70,8 +52,11 @@ public:
     /// Vector of actual elevations for each beam
     Eigen::VectorXd elevations_real;
     /// Size of a beam cell in meters
-    T cell_size;
-    Variable<T> quantity;
+    double cell_size;
+    T nodata = 0;    // Value used as 'no data' value
+    T undetect = 0;  // Minimum amount that can be measured
+    T gain = 1;
+    T offset = 0;
 
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value)),
@@ -215,8 +200,9 @@ public:
     typedef typename std::vector<PolarScan<T>*>::iterator iterator;
     typedef typename std::vector<PolarScan<T>*>::const_iterator const_iterator;
     const unsigned beam_count;
+    std::string quantity;
+    std::string units;
     std::shared_ptr<volume::LoadInfo> load_info;
-    Variable<T> quantity;
 
     // Access a polar scan
     PolarScan<T>& scan(unsigned idx) { return *(*this)[idx]; }
@@ -433,6 +419,10 @@ private:
     Volume(const Volume&);
     Volume& operator=(const Volume&);
 
+    /**
+     * Fill this volume by filtering through a mobile window the data from an
+     * existing volume
+     */
     void make_filter_scan_range(PolarScan<T>& raw, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
@@ -446,13 +436,13 @@ private:
 		for(unsigned j=0;j<half_win;j++)
 		{
 			value=raw(i,j);
-			if((value!=this->quantity.undetect)&&(value!=this->quantity.nodata))
+			if((value != raw.undetect) && (value != raw.nodata))
 			{
 				this->back()->block(i,0,1,half_win+1+j).array()+=value;
 				counter.block(i,0,1,half_win+1+j).array()+=1;
 			}
 			value=raw(i,raw.beam_size-half_win+j);
-			if((value!=this->quantity.undetect)&&(value!=this->quantity.nodata))
+			if((value != raw.undetect)&&(value != raw.nodata))
 			{
 				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
 				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
@@ -461,7 +451,7 @@ private:
 		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
 		{
 			value=raw(i,j);
-			if((value!=this->quantity.undetect)&&(value!=this->quantity.nodata))
+			if((value!= raw.undetect) && (value!=raw.nodata))
 			{
 				this->back()->block(i,j-half_win,1,win).array()+=value;
 				counter.block(i,j-half_win,1,win).array()+=1;
@@ -470,7 +460,7 @@ private:
 		for(unsigned j=0;j<raw.beam_size;j++)
 		{
 			if(counter(i,j)) this->back()->set(i,j,(this->back()->get(i,j))/counter(i,j));
-			else this->back()->set(i,j,this->quantity.undetect);
+			else this->back()->set(i,j, raw.undetect);
 		}
 	}
     }
@@ -487,13 +477,13 @@ private:
 	{
 		for(unsigned j=0;j<half_win;j++)
 		{
-			if((raw(i,j)!=this->quantity.undetect)&&(raw(i,j)!=this->quantity.nodata))
+			if((raw(i,j)!=raw.undetect)&&(raw(i,j)!=raw.nodata))
 			{
 				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
 				this->back()->block(i,0,1,half_win+1+j).array()+=value;
 				counter.block(i,0,1,half_win+1+j).array()+=1;
 			}
-			if((raw(i,raw.beam_size-half_win+j)!=this->quantity.undetect)&&(raw(i,raw.beam_size-half_win+j)!=this->quantity.nodata))
+			if((raw(i,raw.beam_size-half_win+j)!=raw.undetect)&&(raw(i,raw.beam_size-half_win+j)!=raw.nodata))
 			{
 				value=(raw(i,raw.beam_size-half_win+j)-filtered(i,raw.beam_size-half_win+j));
 				this->back()->block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
@@ -502,7 +492,7 @@ private:
 		}
 		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
 		{
-			if((raw(i,j)!=this->quantity.undetect)&&(raw(i,j)!=this->quantity.nodata))
+			if((raw(i,j)!=raw.undetect)&&(raw(i,j)!=raw.nodata))
 			{
 				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
 				this->back()->block(i,j-half_win,1,win).array()+=value;
@@ -512,7 +502,7 @@ private:
 		for(unsigned j=0;j<raw.beam_size;j++)
 		{
 			if(counter(i,j)) this->back()->set(i,j,std::sqrt(this->back()->get(i,j)/counter(i,j)));
-			else this->back()->set(i,j,this->quantity.undetect);
+			else this->back()->set(i,j,raw.undetect);
 		}
 	}
     }
@@ -530,7 +520,7 @@ private:
 		{
 			for(unsigned k=0;k<(half_win+j+1);k++)
 			{
-				if((raw(i,k)!=this->quantity.undetect)&&(raw(i,k)!=this->quantity.nodata))
+				if((raw(i,k)!=raw.undetect)&&(raw(i,k)!=raw.nodata))
 				{
 					fit.feed(k*raw.cell_size,raw.get(i,k));
 				}
@@ -539,12 +529,12 @@ private:
 			{
 				this->back()->set(i,j,fit.compute_slope());
 			}
-			else this->back()->set(i,j,this->quantity.nodata);
+			else this->back()->set(i,j,raw.nodata);
 			fit.clear();
 
 			for(unsigned k=0;k<(win-j-1);k++)
 			{
-				if((raw(i,raw.beam_size-win+1+j+k)!=this->quantity.undetect)&&(raw(i,raw.beam_size-win+1+j+k)!=this->quantity.nodata))
+				if((raw(i,raw.beam_size-win+1+j+k)!=raw.undetect)&&(raw(i,raw.beam_size-win+1+j+k)!=raw.nodata))
 				{
 					fit.feed(k*raw.cell_size,raw.get(i,raw.beam_size-win+1+j+k));
 				}
@@ -553,14 +543,14 @@ private:
 			{
 				this->back()->set(i,raw.beam_size-half_win+j,fit.compute_slope());
 			}
-			else this->back()->set(i,raw.beam_size-half_win+j,this->quantity.nodata);
+			else this->back()->set(i,raw.beam_size-half_win+j,raw.nodata);
 			fit.clear();
 		}
 		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
 		{
 			for(unsigned k=0;k<win;k++)
 			{
-				if((raw(i,j-half_win+k)!=this->quantity.undetect)&&(raw(i,j-half_win+k)!=this->quantity.nodata))
+				if((raw(i,j-half_win+k)!=raw.undetect)&&(raw(i,j-half_win+k)!=raw.nodata))
 				{
 					fit.feed(k*raw.cell_size,raw.get(i,j-half_win+k));
 				}
@@ -569,7 +559,7 @@ private:
 			{
 				this->back()->set(i,j,fit.compute_slope());
 			}
-			else this->back()->set(i,j,this->quantity.nodata);
+			else this->back()->set(i,j,raw.nodata);
 			fit.clear();
 		}
 	}

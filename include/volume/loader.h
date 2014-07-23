@@ -20,7 +20,8 @@ static const double FATT_MOLT_AZ = (double) 360./(double)4096.;
 template<typename T>
 struct Scans : public std::vector<PolarScan<T>>
 {
-    Variable<T> quantity;
+    std::string quantity;
+    std::string units;
     std::shared_ptr<LoadInfo> load_info;
 
     // Create or reuse a scan at position idx, with the given beam size
