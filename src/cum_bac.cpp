@@ -329,7 +329,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
     using namespace cumbac::volume;
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
-    bool use_new_cleaner = false;
+    bool use_new_cleaner = true;
 
     SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean, MyMAX_BIN);
 
@@ -345,7 +345,9 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
     {
     //    volume::Cleaner cleaner(z_volume.quantity, w_volume.quantity, v_volume.quantity);
         for (unsigned i = 0; i < z_volume.size(); ++i)  {
-            volume::Cleaner::clean(z_volume.at(i), w_volume.at(i), v_volume.at(i));
+            double bin_wind_magic_number = site.get_bin_wind_magic_number(v_volume.load_info->acq_date)
+                * v_volume.at(i).gain + v_volume.at(i).offset;
+            volume::Cleaner::clean(z_volume.at(i), w_volume.at(i), v_volume.at(i), bin_wind_magic_number);
         }
     }
 
