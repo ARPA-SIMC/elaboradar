@@ -119,10 +119,17 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
 			PolarScan<double>& zdr=vol_zdr_1km.scan(el);
 			for(unsigned rg=0;rg<rho.beam_size;rg++)	//TODO: check for climatological boundaries in ML height
+			{
 				for(unsigned az=0;az<rho.beam_count;az++)
 				{
-					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo())
+					//cout<<"az="<<az<<" rg="<<rg<<" ";
+					//if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo())
+					if(rho(az,rg)>=0.9)
 					{
+					 if(rho(az,rg)<=0.97)
+					 {
+					  if(HCA[el][az][rg].meteo_echo())
+					  {
 						curr_rg=rg;
 						while(curr_rg<z.beam_size && diff_height(z,rg,curr_rg)<0.5 && !confirmed)
 						{
@@ -138,8 +145,14 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 							melting_points.count++;
 							confirmed=false;
 						}
+					  }
+					  //else cout<<" non meteo"<<endl;
+					 }
+					 //else cout<<" rho >"<<endl;
 					}
+					//else cout<<" rho <"<<endl;
 				}
+			}
 		}
 	}
 
