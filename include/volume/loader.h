@@ -17,51 +17,6 @@ namespace volume {
 
 static const double FATT_MOLT_AZ = (double) 360./(double)4096.;
 
-template<typename T>
-struct Scans : public std::vector<PolarScan<T>>
-{
-    std::string quantity;
-    std::string units;
-    std::shared_ptr<LoadInfo> load_info;
-
-    // Create or reuse a scan at position idx, with the given beam size
-    PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
-    {
-        if (idx < this->size())
-        {
-            if (beam_count != (*this)[idx].beam_count)
-            {
-                LOG_CATEGORY("radar.io");
-                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_count=%u", idx, beam_count, beam_size, (*this)[idx].beam_count);
-                throw std::runtime_error("beam_size mismatch");
-            }
-            if (beam_size != (*this)[idx].beam_size)
-            {
-                LOG_CATEGORY("radar.io");
-                LOG_ERROR("make_scan(idx=%u, beam_count=%u, beam_size=%u) called, but the scan already existed with beam_size=%u", idx, beam_count, beam_size, (*this)[idx].beam_size);
-                throw std::runtime_error("beam_size mismatch");
-            }
-        } else {
-            // If some elevation has been skipped, fill in the gap
-            if (idx > this->size())
-            {
-                if (this->empty())
-                    this->push_back(PolarScan<T>(beam_count, beam_size));
-                while (this->size() < idx)
-                    this->push_back(PolarScan<T>(beam_count, this->back().beam_size));
-            }
-
-            // Add the new polar scan
-            this->push_back(PolarScan<T>(beam_count, beam_size));
-            this->back().elevation = elevation;
-            this->back().cell_size = cell_size;
-        }
-
-        // Return it
-        return (*this)[idx];
-    }
-};
-
 // Base class for volume loaders
 struct Loader
 {
