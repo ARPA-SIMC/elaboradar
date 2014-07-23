@@ -161,7 +161,7 @@ void classifier::compute_lkdp()
 	// TODO: la seguente è la traduzione del metodo per il calcolo di lkdp di Park et al. (2009)
 	// capire se si vuole fare diverso
 
-/*
+/*	// TODO: da reinserire negli opportuni polarscan
 	vol_lkdp_2km.quantity.name="LKDP";
 	vol_lkdp_2km.quantity.units="dB°/km";
 	vol_lkdp_2km.quantity.nodata=-9999.;
