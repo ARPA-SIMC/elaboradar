@@ -4,7 +4,7 @@
 #include "site.h"
 #include "volume/sp20.h"
 #include "volume/odim.h"
-#include "volume/cleaner.h"
+#include "algo/cleaner.h"
 #include "volume/resample.h"
 #include "cylindrical.h"
 #include "steiner.h"
@@ -347,7 +347,7 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
         for (unsigned i = 0; i < z_volume.size(); ++i)  {
             double bin_wind_magic_number = site.get_bin_wind_magic_number(v_volume.load_info->acq_date)
                 * v_volume.at(i).gain + v_volume.at(i).offset;
-            volume::Cleaner::clean(z_volume.at(i), w_volume.at(i), v_volume.at(i), bin_wind_magic_number);
+            algo::Cleaner::clean(z_volume.at(i), w_volume.at(i), v_volume.at(i), bin_wind_magic_number);
         }
     }
 
@@ -410,9 +410,8 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
 
     if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
-	
         for (unsigned i = 0; i < z_volume->size(); ++i)
-            volume::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
+            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
     }
 
     volume_resample<double>(*z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);

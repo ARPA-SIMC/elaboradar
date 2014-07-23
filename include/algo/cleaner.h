@@ -4,7 +4,7 @@
 #include <volume.h>
 
 namespace elaboradar {
-namespace volume {
+namespace algo {
 
 struct Cleaner
 {
