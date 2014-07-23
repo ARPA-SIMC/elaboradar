@@ -18,7 +18,7 @@ vector<double> make_elev_array(const int* data, unsigned count)
 }
 }
 
-namespace cumbac {
+namespace elaboradar {
 
 Site::~Site()
 {

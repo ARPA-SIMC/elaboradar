@@ -2,7 +2,7 @@
 #include "logging.h"
 #include "site.h"
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 Loader::Loader(const Site& site, bool medium, bool clean, unsigned max_bin)

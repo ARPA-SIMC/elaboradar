@@ -34,7 +34,7 @@
 
 #define MAX_BIN 512
 
-namespace cumbac {
+namespace elaboradar {
 
 struct Site;
 struct CalcoloSteiner;

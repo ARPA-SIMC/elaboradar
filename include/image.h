@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace cumbac {
+namespace elaboradar {
 
 /**
  * Initialize the GDAL library when called for the first time; does nothing all

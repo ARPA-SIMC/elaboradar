@@ -2,7 +2,7 @@
 
 // #define DO_INTERPOLA_VPR_NR
 
-namespace cumbac {
+namespace elaboradar {
 
 struct CalcoloVPR;
 

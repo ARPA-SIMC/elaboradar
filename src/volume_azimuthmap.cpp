@@ -1,8 +1,8 @@
 #include <volume/azimuthmap.h>
 
-using namespace cumbac::volume::azimuthmap;
+using namespace elaboradar::volume::azimuthmap;
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 namespace azimuthmap {

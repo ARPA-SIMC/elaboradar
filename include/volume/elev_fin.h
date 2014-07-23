@@ -5,7 +5,7 @@
 #include "volume/loader.h"
 #include <H5Cpp.h>
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 template<typename T>

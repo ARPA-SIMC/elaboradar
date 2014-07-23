@@ -3,7 +3,7 @@
 #include "utils.h"
 
 using namespace wibble::tests;
-using namespace cumbac;
+using namespace elaboradar;
 using namespace std;
 
 namespace tut {

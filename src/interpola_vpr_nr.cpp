@@ -67,7 +67,7 @@ int testfit(float a[], float chisq, float chisqin)
 
 }
 
-namespace cumbac {
+namespace elaboradar {
 
 /*
    comstart interpola_VPR

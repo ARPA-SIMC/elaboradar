@@ -26,7 +26,7 @@ using namespace std;
 /// This is not used anymore, but it is here to satisfy libSP20 linking needs
 int elev_array[15];
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 namespace sp20 {

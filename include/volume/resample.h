@@ -7,7 +7,7 @@
 #include <functional>
 #include <cmath>
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 template<typename T>

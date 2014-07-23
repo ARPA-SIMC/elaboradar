@@ -5,7 +5,7 @@
 #include "volume/loader.h"
 #include "volume/azimuthmap.h"
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 namespace sp20 {

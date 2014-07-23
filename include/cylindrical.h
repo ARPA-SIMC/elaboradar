@@ -4,7 +4,7 @@
 #include <vector>
 #include <volume.h>
 
-namespace cumbac {
+namespace elaboradar {
 
 struct CylindricalVolume
 {

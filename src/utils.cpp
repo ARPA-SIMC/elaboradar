@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace cumbac {
+namespace elaboradar {
 
 File::File()
     : logging_category(log4c_category_get("radar.utils"))

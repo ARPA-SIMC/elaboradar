@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace cumbac {
+namespace elaboradar {
 
 void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
 {

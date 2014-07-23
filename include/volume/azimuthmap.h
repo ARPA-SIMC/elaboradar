@@ -6,7 +6,7 @@
 #include <ostream>
 #include <volume.h>
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 namespace azimuthmap {
 

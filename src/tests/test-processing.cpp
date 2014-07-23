@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 using namespace wibble::tests;
-using namespace cumbac;
+using namespace elaboradar;
 using namespace testradar;
 using namespace std;
 

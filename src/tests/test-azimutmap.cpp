@@ -5,7 +5,7 @@
 
 using namespace std;
 using namespace wibble::tests;
-using namespace cumbac::volume;
+using namespace elaboradar::volume;
 
 namespace tut {
 

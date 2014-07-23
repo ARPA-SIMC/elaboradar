@@ -3,12 +3,12 @@
  * \brief Class to compute melting layer limits
  */
 
-#include"volume.h"
-#include<string>
-#include<iostream>
+#include "volume.h"
+#include <string>
+#include <iostream>
 
-namespace cumbac{
-namespace volume{
+namespace elaboradar {
+namespace volume {
 
 /*
  * ==================================================================
@@ -68,4 +68,4 @@ public:
 };
 
 } // namespace volume
-} // namespace cumbac
+} // namespace elaboradar

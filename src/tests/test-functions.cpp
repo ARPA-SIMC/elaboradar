@@ -4,7 +4,7 @@
 #include "logging.h"
 
 using namespace wibble::tests;
-using namespace cumbac;
+using namespace elaboradar;
 
 namespace tut {
 

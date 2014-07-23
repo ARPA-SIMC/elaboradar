@@ -4,7 +4,7 @@
 #include "logging.h"
 #include "matrix.h"
 
-namespace cumbac {
+namespace elaboradar {
 
 struct CylindricalVolume;
 

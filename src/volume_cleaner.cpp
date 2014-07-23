@@ -17,7 +17,7 @@
  */
 #include "volume/cleaner.h"
 
-namespace cumbac {
+namespace elaboradar {
 namespace volume {
 
 using namespace std;

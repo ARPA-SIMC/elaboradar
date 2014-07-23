@@ -20,7 +20,7 @@ static const double AMPLITUDE = 0.9; /* esternalizzo?*/ // ampiezza fascio radar
 
 using namespace std;
 
-namespace cumbac {
+namespace elaboradar {
 
 namespace steiner {
 
