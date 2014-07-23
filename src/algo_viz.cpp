@@ -1,4 +1,4 @@
-#include "viz.h"
+#include "algo/viz.h"
 #include "par_class.h"
 #include "vpr_par.h"
 #include "cylindrical.h"
@@ -8,6 +8,7 @@
 using namespace std;
 
 namespace elaboradar {
+namespace algo {
 
 CalcoloVIZ::CalcoloVIZ(const CylindricalVolume& cil, double htbb, double hbbb, double t_ground)
     : cil(cil), x_size(cil.x_size), z_size(cil.z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground),
@@ -103,6 +104,5 @@ void CalcoloVIZ::classifico_VIZ()
     return;
 }
 
-
-
+}
 }
