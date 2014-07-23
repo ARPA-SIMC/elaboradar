@@ -161,6 +161,7 @@ void classifier::compute_lkdp()
 	// TODO: la seguente è la traduzione del metodo per il calcolo di lkdp di Park et al. (2009)
 	// capire se si vuole fare diverso
 
+/*
 	vol_lkdp_2km.quantity.name="LKDP";
 	vol_lkdp_2km.quantity.units="dB°/km";
 	vol_lkdp_2km.quantity.nodata=-9999.;
@@ -169,7 +170,7 @@ void classifier::compute_lkdp()
 	vol_lkdp_6km.quantity.units="dB°/km";
 	vol_lkdp_6km.quantity.nodata=-9999.;
 	vol_lkdp_6km.quantity.undetect=-9999.;
-	
+*/	
 	printf("calcolo kdp 2km\n");
 	vol_lkdp_2km.moving_average_slope(vol_phidp_2km,2000.);
 	vol_lkdp_2km*=1000.;
@@ -203,8 +204,8 @@ void classifier::correct_phidp()
 	printf("filtro phidp 2 km\n");
 	vol_phidp_2km.filter(vol_phidp,2000.);
 	printf("filtro phidp 6 km\n");
-	//vol_phidp_6km.filter(vol_phidp,6000.);
-
+	vol_phidp_6km.filter(vol_phidp,6000.);
+/*
 	for(unsigned el=0; el<vol_phidp.size();el++)
 	{
 		cout<<"el= "<<el<<endl;
@@ -220,7 +221,7 @@ void classifier::correct_phidp()
 			fil.feed(vol_phidp.scan(el).row_ptr(az));
 			fil.perform();
 
-			if(el==5&&az==65)
+			/*if(el==5&&az==65)
 			{
 				//for(unsigned rg=0;rg<vol_phidp.scan(el).beam_size;rg++) vol_phidp.scan(el).set(az,rg,rg==0?1:0);
 				//fil.feed(vol_phidp.scan(el).row_ptr(az));
@@ -232,11 +233,12 @@ void classifier::correct_phidp()
 					cout<<fixed<<vol_phidp.scan(el).get(az,i)<<"\t"<<re_in[i]/vol_phidp.scan(el).beam_size<<endl;
 				}
 				cout<<endl<<endl;
-			}
+			}///
 		}
 		cout<<"fine el= "<<el<<endl;
 		delete re_in;
 	}
+*/
 }
 
 

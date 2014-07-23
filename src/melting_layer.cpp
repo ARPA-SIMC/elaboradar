@@ -19,6 +19,8 @@
 
 //#include "melting_layer.h"
 #include "classifier.h"
+#include "image.h"
+#include <string>
 
 #define kea 8494666.666667	// c'è qualcosa in geo_par.h
 
@@ -97,7 +99,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	vol_z_0_5km.filter(vol_z,500.);
 	vol_zdr_1km.filter(vol_zdr,1000.);
 	vol_rhohv_1km.filter(vol_rhohv,1000.);
-
+	cout<<"filtrati"<<endl;
 	//TODO: correzione attenuazione con phidp
 	//TODO: altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
@@ -109,10 +111,11 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	
 	for(unsigned el=0;el<vol_rhohv_1km.size();el++)
 	{
-		cout<<"\t\t ML el "<<el<<endl;
+		cout<<"\t\t ML el ";
 		PolarScan<double>& rho=vol_rhohv.scan(el);
 		if(rho.elevation>4.&&rho.elevation<10.)
 		{
+			cout<<el<<endl;
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
 			PolarScan<double>& zdr=vol_zdr_1km.scan(el);
 			for(unsigned rg=0;rg<rho.beam_size;rg++)	//TODO: check for climatological boundaries in ML height
@@ -142,7 +145,21 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
-	cout<<"Altezza ML"<<endl;
-	for(unsigned i=0;i<ML_bot.size();i++)	cout<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+//	cout<<"Altezza ML"<<endl;
+//	for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+	Matrix2D<double> img;
+	img.resize(2,ML_bot.size());
+	for(unsigned i=0;i<ML_bot.size();i++)
+	{
+		img(0,i)=(ML_bot[i]*100);
+		img(1,i)=(ML_top[i]*100);
+//		cout<<i<<" "<<endl;
+//		img.col(i)<<(short)(ML_bot[i]*100),(short)(ML_top[i]*100);
+	}
+	const string filename="melting";
+	const string format="png";
+	gdal_init_once();
+	write_image(img, filename, gdal_extension_for_format(format));
+
 	//TODO: fill empty azimuths
 }

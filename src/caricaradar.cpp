@@ -53,7 +53,9 @@ int main(int argc,char* argv[])
 	}
 */
 	volume::classifier classificatore(argv[1],sito);
+	cout<<"riempito classificatore"<<endl;
 	classificatore.compute_derived_volumes();
+	cout<<"calcolati i volumi derivati"<<endl;
 /*
 	for(unsigned az=0;az<10;az++)
 	{
