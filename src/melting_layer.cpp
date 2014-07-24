@@ -113,7 +113,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	{
 		cout<<"\t\t ML el ";
 		PolarScan<double>& rho=vol_rhohv.scan(el);
-		if(rho.elevation>4.&&rho.elevation<10.)
+		if(rho.elevation>0.&&rho.elevation<10.)
 		{
 			cout<<el<<endl;
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
@@ -124,6 +124,16 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 				{
 					//cout<<"az="<<az<<" rg="<<rg<<" ";
 					//if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo())
+					/*
+					if(el==3&&az==87&&rg>200&&rg<344)
+					{
+						if(rg>260)HCA[el][az][rg].Ai[RA]=0;
+						if(rg>260)HCA[el][az][rg].Ai[HR]=0;
+						if(rg<260)HCA[el][az][rg].Ai[DS]=0;
+						EchoClass EC=HCA[el][az][rg].echo();
+						cout<<"classe "<<EC<<endl;
+					}
+					*/
 					if(rho(az,rg)>=0.9)
 					{
 					 if(rho(az,rg)<=0.97)
@@ -160,19 +170,19 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
 //	cout<<"Altezza ML"<<endl;
 //	for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
-	Matrix2D<double> img;
-	img.resize(2,ML_bot.size());
-	for(unsigned i=0;i<ML_bot.size();i++)
+//	Matrix2D<double> img;
+//	img.resize(2,ML_bot.size());
+//	for(unsigned i=0;i<ML_bot.size();i++)
 	{
-		img(0,i)=(ML_bot[i]*100);
-		img(1,i)=(ML_top[i]*100);
+//		img(0,i)=(ML_bot[i]*100);
+//		img(1,i)=(ML_top[i]*100);
 //		cout<<i<<" "<<endl;
 //		img.col(i)<<(short)(ML_bot[i]*100),(short)(ML_top[i]*100);
 	}
-	const string filename="melting";
-	const string format="png";
-	gdal_init_once();
-	write_image(img, filename, gdal_extension_for_format(format));
+//	const string filename="melting";
+//	const string format="png";
+//	gdal_init_once();
+//	write_image(img, filename, gdal_extension_for_format(format));
 
 	//TODO: fill empty azimuths
 }
