@@ -305,4 +305,17 @@ void classifier::HCA_Park_2009()
 	cout<<"uscito da ML"<<endl;
 	//TODO:check aggregation values
 	//TODO:check hard thresholds
+	unsigned elev=2;
+	unsigned azim=75;
+	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
+	{
+		cout<<fixed<<vol_Ai[elev][azim][rg].Ai[GC_AP]<<"\t"<<vol_Ai[elev][azim][rg].Ai[BS]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[DS]<<"\t"<<vol_Ai[elev][azim][rg].Ai[WS]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[CR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[GR]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[BD]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RA]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<endl;
+	}
+
+	
 }

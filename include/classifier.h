@@ -84,6 +84,7 @@ inline std::ostream& operator<<(std::ostream& oss, EchoClass& ECl)
 	}
 	return oss;
 }
+
 /*
  * ==================================================================
  * 	 Class: PROB
@@ -201,6 +202,14 @@ public:
 		Ai.maxCoeff(&idx);
 		if(idx==0||idx==1) return false;
 		else return true;
+	}
+
+	EchoClass echo()
+	{
+		unsigned idx;
+		Ai.maxCoeff(&idx);
+		EchoClass hca=(EchoClass)idx;
+		return hca;
 	}
 };
 
