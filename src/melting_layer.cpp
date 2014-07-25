@@ -73,7 +73,7 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 		}
 		bottom_lim=bot_th*box_count;
 		top_lim=top_th*box_count;
-		if(box_count!=0)
+		if(box_count>=89)	// 1600/(360/20)
 		{
 			box_count=0;
 			for(unsigned h=0;h<this->rows();h++)
@@ -103,7 +103,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	//TODO: correzione attenuazione con phidp
 	//TODO: altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
-	MLpoints melting_points(0.,10.,vol_z.beam_count,200);
+	MLpoints melting_points(1.,10.,vol_z.beam_count,200);
 	ML_top.resize(vol_z.beam_count);
 	ML_bot.resize(vol_z.beam_count);
 	unsigned curr_rg=0;
@@ -122,28 +122,13 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 			{
 				for(unsigned az=0;az<rho.beam_count;az++)
 				{
-					//cout<<"az="<<az<<" rg="<<rg<<" ";
-					//if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo())
-					/*
-					if(el==3&&az==87&&rg>200&&rg<344)
+					if((rho(az,rg)>=0.9)&&(rho(az,rg)<=0.97)&&(HCA[el][az][rg].meteo_echo()))
 					{
-						if(rg>260)HCA[el][az][rg].Ai[RA]=0;
-						if(rg>260)HCA[el][az][rg].Ai[HR]=0;
-						if(rg<260)HCA[el][az][rg].Ai[DS]=0;
-						EchoClass EC=HCA[el][az][rg].echo();
-						cout<<"classe "<<EC<<endl;
-					}
-					*/
-					if(rho(az,rg)>=0.9)
-					{
-					 if(rho(az,rg)<=0.97)
-					 {
-					  if(HCA[el][az][rg].meteo_echo())
-					  {
 						curr_rg=rg;
 						while(curr_rg<z.beam_size && diff_height(z,rg,curr_rg)<0.5 && !confirmed)
 						{
-							if(z(az,rg)>30 && z(az,rg)<47 && zdr(az,rg)>0.8 && zdr(az,rg)<2.5 && height(z,rg)>melting_points.Hmin)
+							if(z(az,curr_rg)>30 && z(az,curr_rg)<47 && zdr(az,curr_rg)>0.8 &&
+								 zdr(az,curr_rg)<2.5 && height(z,rg)>melting_points.Hmin)
 							{
 								confirmed=true;
 							}
@@ -154,13 +139,9 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 							increment(melting_points,z,az,rg);
 							melting_points.count++;
 							confirmed=false;
+							//cout<< az*0.9 <<"\t"<<height(z,rg)<<endl;
 						}
-					  }
-					  //else cout<<" non meteo"<<endl;
-					 }
-					 //else cout<<" rho >"<<endl;
 					}
-					//else cout<<" rho <"<<endl;
 				}
 			}
 		}
@@ -168,21 +149,21 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
-//	cout<<"Altezza ML"<<endl;
-//	for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
-//	Matrix2D<double> img;
-//	img.resize(2,ML_bot.size());
-//	for(unsigned i=0;i<ML_bot.size();i++)
+	cout<<"Altezza ML"<<endl;
+	for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+	Matrix2D<double> img;
+	img.resize(2,ML_bot.size());
+	for(unsigned i=0;i<ML_bot.size();i++)
 	{
-//		img(0,i)=(ML_bot[i]*100);
-//		img(1,i)=(ML_top[i]*100);
+		img(0,i)=(ML_bot[i]*100);
+		img(1,i)=(ML_top[i]*100);
 //		cout<<i<<" "<<endl;
-//		img.col(i)<<(short)(ML_bot[i]*100),(short)(ML_top[i]*100);
+		img.col(i)<<(short)(ML_bot[i]*100),(short)(ML_top[i]*100);
 	}
-//	const string filename="melting";
-//	const string format="png";
-//	gdal_init_once();
-//	write_image(img, filename, gdal_extension_for_format(format));
+	const string filename="melting";
+	const string format="png";
+	gdal_init_once();
+	write_image(img, filename, gdal_extension_for_format(format));
 
 	//TODO: fill empty azimuths
 }
