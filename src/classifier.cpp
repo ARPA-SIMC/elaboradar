@@ -139,12 +139,14 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	volume::Scans<double> full_volume_rhohv;
 	volume::Scans<double> full_volume_phidp;
 	volume::Scans<double> full_volume_vrad;
+	volume::Scans<double> full_volume_snr;
 
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rhohv);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_PHIDP,&full_volume_phidp);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_VRAD,&full_volume_vrad);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
 
 	loader_all.load(pathname);
 	printf("Non so se è andato tutto bene, ma almeno sono arrivato in fondo\n");
@@ -154,6 +156,7 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	volume::volume_resample<double>(full_volume_rhohv, loader_all.azimuth_maps, vol_rhohv, volume::merger_closest<double>);
 	volume::volume_resample<double>(full_volume_phidp, loader_all.azimuth_maps, vol_phidp, volume::merger_closest<double>);
 	volume::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, volume::merger_closest<double>);
+	volume::volume_resample<double>(full_volume_snr, loader_all.azimuth_maps, vol_snr, volume::merger_closest<double>);
 }
 
 void classifier::compute_lkdp()
@@ -170,7 +173,8 @@ void classifier::compute_lkdp()
 	vol_lkdp_6km.quantity.units="dB°/km";
 	vol_lkdp_6km.quantity.nodata=-9999.;
 	vol_lkdp_6km.quantity.undetect=-9999.;
-*/	
+*/
+/*
 	printf("calcolo kdp 2km\n");
 	vol_lkdp_2km.moving_average_slope(vol_phidp_2km,2000.);
 	vol_lkdp_2km*=1000.;
@@ -194,6 +198,100 @@ void classifier::compute_lkdp()
 			}
 		}
 	}
+*/
+	/// METODO DI VULPIANI 2012 ///
+	unsigned win_6km=25;
+	unsigned win_2km=9;
+	unsigned half_win6km=12;
+	unsigned half_win2km=4;
+	double kdp;
+	unsigned tries;
+
+	double phidp1,phidp2;
+	double undet,nodat;
+
+	for(unsigned el=0;el<vol_phidp.size();el++)
+	{
+		vol_lkdp_6km.push_back(vol_phidp[el]);
+		vol_lkdp_2km.push_back(vol_phidp[el]);
+		vol_phidp_6km.push_back(vol_phidp[el]);
+		vol_phidp_2km.push_back(vol_phidp[el]);
+		
+		undet=vol_phidp[el].undetect;
+		nodat=vol_phidp[el].nodata;
+
+		for(unsigned az=0;az<vol_phidp[el].beam_count;az++)
+		{
+			vol_phidp_6km[el].set(az,0,0.);
+			for(unsigned rg=0;rg<vol_phidp[el].beam_size;rg++)
+			{
+				if(rg<half_win6km||rg>(vol_phidp[el].beam_size-half_win6km-1)){kdp=0.;}
+				else
+				{
+					phidp1=vol_phidp[el].get(az,rg-half_win6km);
+					phidp2=vol_phidp[el].get(az,rg+half_win6km);
+					if(phidp1==undet||phidp1==nodat||phidp2==undet||phidp2==nodat){kdp=0.;}
+					else
+					{
+						kdp=0.5*(phidp2-phidp1)/6.;
+						tries=0;
+						while(tries<3)
+						{
+							if((kdp<-2.)||(kdp>20.))
+							{
+								if(kdp<-10.)	// vulpiani diceva -20, ma considerava ricetrasmettitori simultanei (360°) e L=7km
+								{
+									kdp=0.5*(phidp2-phidp1+180.)/6.;
+								}
+								else
+								{
+									kdp=0.;
+								}
+								tries++;
+							}
+							else {tries=4;}
+						}
+					}
+				}
+				if(rg){vol_phidp_6km[el].set(az,rg,vol_phidp_6km[el].get(az,rg-1)+2.*kdp*vol_phidp[el].cell_size*0.001);}
+				vol_lkdp_6km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
+			}
+			vol_phidp_2km[el].set(az,0,0.);
+			for(unsigned rg=0;rg<vol_phidp[el].beam_size;rg++)
+			{
+				if(rg<half_win2km||rg>(vol_phidp[el].beam_size-half_win2km-1)){kdp=0.;}
+				else
+				{
+					phidp1=vol_phidp[el].get(az,rg-half_win2km);
+					phidp2=vol_phidp[el].get(az,rg+half_win2km);
+					if(phidp1==undet||phidp1==nodat||phidp2==undet||phidp2==nodat){kdp=0.;}
+					else
+					{
+						kdp=0.5*(phidp2-phidp1)/2.;
+						tries=0;
+						while(tries<3)
+						{
+							if((kdp<-2.)||(kdp>20.))
+							{
+								if(kdp<-40.)	// vulpiani diceva -20, ma considerava ricetrasmettitori simultanei (360°) e L=7km
+								{
+									kdp=0.5*(phidp2-phidp1+180.)/6.;
+								}
+								else
+								{
+									kdp=0.;
+								}
+								tries++;
+							}
+							else {tries=4;}
+						}
+					}
+				}
+				if(rg){vol_phidp_2km[el].set(az,rg,vol_phidp_2km[el].get(az,rg-1)+2.*kdp*vol_phidp[el].cell_size*0.001);}
+				vol_lkdp_2km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
+			}
+		}
+	}
 }
 
 
@@ -205,7 +303,9 @@ void classifier::correct_phidp()
 	vol_phidp_2km.filter(vol_phidp,2000.);
 	printf("filtro phidp 6 km\n");
 	vol_phidp_6km.filter(vol_phidp,6000.);
-/*
+
+
+/*	FIR FILTER //
 	for(unsigned el=0; el<vol_phidp.size();el++)
 	{
 		cout<<"el= "<<el<<endl;
@@ -241,10 +341,50 @@ void classifier::correct_phidp()
 */
 }
 
+void classifier::correct_for_attenuation()
+{
+
+}
+
+void classifier::correct_for_snr()
+{
+	cout<<"inizio snr"<<endl;
+	Volume<double> vol_snr_linear;
+	vol_snr_linear.dB2lin(vol_snr);
+	Volume<double> vol_zdr_linear;
+	vol_zdr_linear.dB2lin(vol_zdr);
+	double alpha=1.48; // horizontal to vertical noise ratio. 1.48 S-band (Schuur 2003)
+	for(unsigned el=0;el<vol_rhohv.size();el++)
+	{
+		// vol_rhohv[el].array()*=(vol_snr_linear[el].array()+1)/vol_snr_linear[el].array(); // TODO: rhohv è già > 1 in molti casi
+													// questa correzione la aumenta ancora di più
+		vol_snr_linear[el].array()*=alpha;
+		vol_zdr_linear[el].array()=vol_snr_linear[el].array()*vol_zdr_linear[el].array()/(vol_snr_linear[el].array()+alpha-vol_zdr_linear[el].array());
+	}
+	vol_zdr.lin2dB(vol_zdr_linear);
+	cout<<"finito snr"<<endl;
+}
 
 void classifier::compute_derived_volumes()
 {
-	correct_phidp();
+	//correct_phidp();	//TODO: probabilmente inutile se adottiamo il metodo di Vulpiani che stima direttamente la kdp
+	correct_for_snr();
+/*
+ * TODO: Now we should correct Z and Zdr for attenuation by adding estimated bias
+ * dZ=0.04*vol_phidp_6km;
+ * dZdr=0.004*vol_phidp_6km;
+ */
+	compute_lkdp();
+	correct_for_attenuation();
+	
+
+	const unsigned elev=2;
+	const unsigned azim=90;
+	for(unsigned rg=0;rg<vol_phidp[elev].beam_size;rg++)
+	{
+		cout<<fixed<<vol_phidp[elev](azim,rg)<<"\t"<<vol_phidp_2km[elev](azim,rg)<<"\t"<<vol_phidp_6km[elev](azim,rg)<<"\t"
+				<<vol_lkdp_2km[elev](azim,rg)<<"\t"<<vol_lkdp_6km[elev](azim,rg)<<endl;
+	}
 
 	// filtro i volumi
 	printf("filtro Z 1 km\n");
@@ -257,15 +397,6 @@ void classifier::compute_derived_volumes()
 	// calcolo le texture
 	vol_sdz.textureSD(vol_z,1000.);
 	vol_sdphidp.textureSD(vol_phidp,2000.);
-
-/*
- * TODO: Now we should correct Z and Zdr for attenuation by adding estimated bias
- * dZ=0.04*vol_phidp_6km;
- * dZdr=0.004*vol_phidp_6km;
- */
-
-	// calcolo lkdp
-	compute_lkdp();
 }
 
 void classifier::HCA_Park_2009()
@@ -282,19 +413,26 @@ void classifier::HCA_Park_2009()
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
 			BEAM.resize(vol_z.scan(el).beam_size);
+			//cout<<"az "<<az<<endl;
+			//cout<<vol_lkdp_2km[el](az,180)<<endl;
 			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
 			{
+				//cout<<rg<<endl;
 				Z=vol_z_1km.scan(el).get(az,rg);
 				Zdr=vol_zdr_2km.scan(el).get(az,rg);
 				rhohv=vol_rhohv_2km.scan(el).get(az,rg);
-
-				lkdp=Z>40?vol_lkdp_2km.scan(el).get(az,rg):vol_lkdp_6km.scan(el).get(az,rg);
-
+				//cout<<"carico 2 "<<Z<<endl;
+				lkdp=Z>40?vol_lkdp_2km[el].get(az,rg):vol_lkdp_6km[el].get(az,rg);
+				//lkdp=vol_lkdp_2km[el].get(az,rg);
+				//cout<<"carico 6 "<<Z<<endl;
+				//lkdp=vol_lkdp_6km[el].get(az,rg);
+				//cout<<"assunta lkdp "<<endl;
 				sdz=vol_sdz.scan(el).get(az,rg);
 				sdphidp=vol_sdphidp.scan(el).get(az,rg);
 
 				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp);
 				BEAM[rg]=hca;
+				//cout<<"riempito beam "<<endl;
 			}
 			SCAN[az]=BEAM;
 		}
