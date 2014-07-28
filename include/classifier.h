@@ -265,6 +265,10 @@ public:
  * Polar Volume of radial velocity
  */
 	Volume<double> vol_vrad;
+/*!
+ * Polar Volume of signal to noise ratio
+ */
+	Volume<double> vol_snr;
 
 /*!
  * Filtered copolar reflectivity over 1 km window
@@ -325,6 +329,14 @@ public:
  * moving average filter along beam path
  */
 	void correct_phidp();
+/*!
+ * \brief correct rhohv and zdr for noise (Schuur et al. 2003)
+ */
+	void correct_for_snr();
+/*!
+ * \brief correct Z and Zdr for path attenuation
+ */
+	void correct_for_attenuation();
 /*!
  * \brief Initialize vol_lkdp
  * 10log10 of the moving average slope of phidp along beam path

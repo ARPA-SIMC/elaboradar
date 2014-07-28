@@ -150,7 +150,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
 	cout<<"Altezza ML"<<endl;
-	for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+	//for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
 	Matrix2D<double> img;
 	img.resize(2,ML_bot.size());
 	for(unsigned i=0;i<ML_bot.size();i++)
