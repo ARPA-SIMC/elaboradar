@@ -3,6 +3,8 @@
 
 namespace elaboradar {
 
+//typedef Statistic<double> LinearFit;	// da eliminare appena possibile
+
 template<typename T>
 PolarScan<T> make_slope_scan_range(PolarScan<T>& raw, unsigned win)
 {
@@ -13,7 +15,7 @@ PolarScan<T> make_slope_scan_range(PolarScan<T>& raw, unsigned win)
 	//this->back().cell_size = raw.cell_size;
 
 	//	using namespace stat;
-	LinearFit<T> fit;
+	Statistic<T> fit;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
 		for(unsigned j=0;j<half_win;j++)
