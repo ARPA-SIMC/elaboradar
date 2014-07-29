@@ -1,27 +1,7 @@
 #include"volume.h"
-#include "statistics.h"
+#include"statistics.h"
 
 namespace elaboradar {
-namespace volume {
-
-template<typename T>
-Volume<T> moving_average_slope(Volume<T>& raw, double slope_range) // least-squares
-{
-	unsigned window_size;
-	Volume<T> vol;
-	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
-							// intervenire con un metodo che 
-							// determina la quantity della slope 
-							// in funzione della quantity di raw.
-							// Per adesso si suppone che la quantity
-							// del volume di slope sia settata a priori 
-	for(unsigned i=0;i<raw.size();i++)
-	{
-		window_size=1+2*std::floor(0.5*slope_range/raw.scan(i).cell_size);
-		vol.push_back(make_slope_scan_range(raw.scan(i),window_size));
-	}
-	return vol;
-}
 
 template<typename T>
 PolarScan<T> make_slope_scan_range(PolarScan<T>& raw, unsigned win)
@@ -85,6 +65,29 @@ PolarScan<T> make_slope_scan_range(PolarScan<T>& raw, unsigned win)
 	}
 	return scan;
 }
+
+namespace volume {
+
+template<typename T>
+Volume<T> moving_average_slope(Volume<T>& raw, double slope_range) // least-squares
+{
+	unsigned window_size;
+	Volume<T> vol;
+	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
+							// intervenire con un metodo che 
+							// determina la quantity della slope 
+							// in funzione della quantity di raw.
+							// Per adesso si suppone che la quantity
+							// del volume di slope sia settata a priori 
+	for(unsigned i=0;i<raw.size();i++)
+	{
+		window_size=1+2*std::floor(0.5*slope_range/raw.scan(i).cell_size);
+		vol.push_back(make_slope_scan_range(raw.scan(i),window_size));
+	}
+	return vol;
+}
+
+
 
 }	// namespace volume
 }	// namespace elaboradar

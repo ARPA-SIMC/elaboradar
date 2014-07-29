@@ -376,7 +376,7 @@ public:
 	return *this;
     }
 
-    Volume& operator=(const Volume&);
+    Volume& operator=(const Volume&){return *this;};
     Volume(const Volume&);
 
 protected:
