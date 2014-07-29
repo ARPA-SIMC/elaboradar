@@ -1,9 +1,9 @@
 #include<cmath>
 
-//namespace stat {
-
+namespace elaboradar {
+/*
 template<typename T>
-class Statistics
+class Statistic
 {
 public:
 	T sum_x;
@@ -12,7 +12,7 @@ public:
 	T sum_x2;
 	unsigned N;
 
-	Statistics():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0){}
+	Statistic():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0){}
 
 	void feed(T x, T y)
 	{
@@ -32,14 +32,42 @@ public:
 		N=0;
    	}
 };
-
+*/
 template<typename T>
-class LinearFit : public Statistics
+class LinearFit //: public Statistic<OT>
 {
+public:
+	T sum_x;
+	T sum_y;
+	T sum_xy;
+	T sum_x2;
+	unsigned N;
+
+	LinearFit():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0){}
+
+	void feed(T x, T y)
+	{
+		sum_x+=x;
+		sum_y+=y;
+		sum_xy+=x*y;
+		sum_x2+=x*x;
+		N++;
+	}
+
+	void clear()
+	{
+		sum_x=0;
+		sum_y=0;
+		sum_xy=0;
+		sum_x2=0;
+		N=0;
+   	}
+
+
 	T slope;
 	T intercept;
 
-	LinearFit(){}
+	//LinearFit(){}
 
 	T compute_slope()
 	{
@@ -65,4 +93,4 @@ class LinearFit : public Statistics
 	T get_intercept() {return intercept;}
 };
 
-//}	// namespace stat
+}	// namespace elaboradar

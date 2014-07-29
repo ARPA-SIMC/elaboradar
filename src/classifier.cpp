@@ -201,8 +201,8 @@ void classifier::compute_lkdp()
 	}
 */
 	/// METODO DI VULPIANI 2012 ///
-	unsigned win_6km=25;
-	unsigned win_2km=9;
+//	unsigned win_6km=25;
+//	unsigned win_2km=9;
 	unsigned half_win6km=12;
 	unsigned half_win2km=4;
 	double kdp;
@@ -454,8 +454,8 @@ void classifier::HCA_Park_2009()
 	cout<<"uscito da ML"<<endl;
 	//TODO:check aggregation values
 	//TODO:check hard thresholds
-	unsigned elev=2;
-	unsigned azim=75;
+//	unsigned elev=2;
+//	unsigned azim=75;
 /*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
