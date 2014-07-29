@@ -176,9 +176,9 @@ void classifier::compute_lkdp()
 	vol_lkdp_6km.quantity.undetect=-9999.;
 */
 
-	printf("calcolo kdp 2km\n");
+/*	printf("calcolo kdp 2km\n");
 	vol_lkdp_2km=moving_average_slope(vol_phidp_2km,2000.);
-/*	vol_lkdp_2km*=1000.;
+	vol_lkdp_2km*=1000.;
 	printf("calcolo kdp 6 km\n");
 	vol_lkdp_6km.moving_average_slope(vol_phidp_6km,6000.);
 	vol_lkdp_6km*=1000.;
@@ -204,7 +204,7 @@ void classifier::compute_lkdp()
 //	unsigned win_6km=25;
 //	unsigned win_2km=9;
 	unsigned half_win6km=12;
-	unsigned half_win2km=4;
+	unsigned half_win2km=8;
 	double kdp;
 	unsigned tries;
 
@@ -278,7 +278,7 @@ void classifier::compute_lkdp()
 					if(phidp1==undet||phidp1==nodat||phidp2==undet||phidp2==nodat){kdp=0.;}
 					else
 					{
-						kdp=0.5*(phidp2-phidp1)/2.;
+						kdp=0.5*(phidp2-phidp1)/5.;
 						tries=0;
 						while(tries<3)
 						{
@@ -286,7 +286,7 @@ void classifier::compute_lkdp()
 							{
 								if(kdp<-40.)	// vulpiani diceva -20, ma considerava ricetrasmettitori simultanei (360°) e L=7km
 								{
-									kdp=0.5*(phidp2-phidp1+180.)/2.;
+									kdp=0.5*(phidp2-phidp1+180.)/5.;
 								}
 								else
 								{
