@@ -138,63 +138,6 @@ struct VolumeStats
     void print(FILE* out);
 };
 
-template<typename T>
-struct LinearFit
-{
-   T slope;
-   T intercept;
-
-   T sum_x;
-   T sum_y;
-   T sum_xy;
-   T sum_x2;
-   unsigned N;
-
-   LinearFit():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0){}
-
-   void feed(T x, T y)
-   {
-	sum_x+=x;
-	sum_y+=y;
-	sum_xy+=x*y;
-	sum_x2+=x*x;
-	N++;
-   }
-   
-   T compute_slope()
-   {
-	if(N)
-	{
-		slope = (N*sum_xy-sum_x*sum_y)/(N*sum_x2-sum_x*sum_x);
-		return slope;
-	}
-	else return slope/(slope-slope); // orribile modo di far ritornare NaN
-
-   }
-
-   T compute_intercept()
-   {
-	if(N)
-	{
-		intercept = (sum_y*sum_x2-sum_x*sum_xy)/(N*sum_x2-sum_x*sum_x);
-		return intercept;
-	}
-	else return slope/(slope-slope);
-   }
-   
-   T get_slope() {return slope;}
-   T get_intercept() {return intercept;}
-
-   void clear()
-   {
-	sum_x=0;
-	sum_y=0;
-	sum_xy=0;
-	sum_x2=0;
-	N=0;
-   }
-};
-
 namespace volume {
 
 struct LoadInfo
@@ -396,23 +339,6 @@ public:
 	}
     }
 
-    void moving_average_slope(Volume<T>& raw,double slope_range) // least-squares
-    {
-	unsigned window_size;
-	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
-							// intervenire con un metodo che 
-							// determina la quantity della slope 
-							// in funzione della quantity di raw.
-							// Per adesso si suppone che la quantity
-							// del volume di slope sia settata a priori 
-	this->clear();
-	for(unsigned i=0;i<raw.size();i++)
-	{
-		window_size=1+2*std::floor(0.5*slope_range/raw.scan(i).cell_size);
-		this->make_slope_scan_range(raw.scan(i),window_size);
-	}
-    }
-
     void lin2dB(Volume<T>& lin)
     {
 	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
@@ -450,12 +376,15 @@ public:
 	return *this;
     }
 
+    Volume& operator=(const Volume&);
+    Volume(const Volume&);
+
 protected:
     void resize_elev_fin();
 
 private:
-    Volume(const Volume&);
-    Volume& operator=(const Volume&);
+   
+    
 
     /**
      * Fill this volume by filtering through a mobile window the data from an
@@ -545,63 +474,7 @@ private:
 	}
     }
 
-    void make_slope_scan_range(PolarScan<T>& raw, unsigned win)
-    {
-	unsigned half_win=0.5*(win-1);
-	this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	this->back().elevation = raw.elevation;
-	this->back().cell_size = raw.cell_size;
-	LinearFit<T> fit;
-	for(unsigned i=0;i<raw.rows();i++)
-	{
-		for(unsigned j=0;j<half_win;j++)
-		{
-			for(unsigned k=0;k<(half_win+j+1);k++)
-			{
-				if((raw(i,k)!=raw.undetect)&&(raw(i,k)!=raw.nodata))
-				{
-					fit.feed(k*raw.cell_size,raw.get(i,k));
-				}
-			}
-			if(fit.N)
-			{
-				this->back().set(i,j,fit.compute_slope());
-			}
-			else this->back().set(i,j,raw.nodata);
-			fit.clear();
-
-			for(unsigned k=0;k<(win-j-1);k++)
-			{
-				if((raw(i,raw.beam_size-win+1+j+k)!=raw.undetect)&&(raw(i,raw.beam_size-win+1+j+k)!=raw.nodata))
-				{
-					fit.feed(k*raw.cell_size,raw.get(i,raw.beam_size-win+1+j+k));
-				}
-			}
-			if(fit.N)
-			{
-				this->back().set(i,raw.beam_size-half_win+j,fit.compute_slope());
-			}
-			else this->back().set(i,raw.beam_size-half_win+j,raw.nodata);
-			fit.clear();
-		}
-		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
-		{
-			for(unsigned k=0;k<win;k++)
-			{
-				if((raw(i,j-half_win+k)!=raw.undetect)&&(raw(i,j-half_win+k)!=raw.nodata))
-				{
-					fit.feed(k*raw.cell_size,raw.get(i,j-half_win+k));
-				}
-			}
-			if(fit.N)
-			{
-				this->back().set(i,j,fit.compute_slope());
-			}
-			else this->back().set(i,j,raw.nodata);
-			fit.clear();
-		}
-	}
-    }
+    
 };
 
 

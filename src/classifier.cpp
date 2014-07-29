@@ -19,6 +19,7 @@
 //#include "FIR_filter.h"
 #include "classifier.h"
 #include <radarlib/radar.hpp>
+#include "algo/elabora_volume.h"
 
 using namespace elaboradar;
 using namespace volume;
@@ -174,10 +175,10 @@ void classifier::compute_lkdp()
 	vol_lkdp_6km.quantity.nodata=-9999.;
 	vol_lkdp_6km.quantity.undetect=-9999.;
 */
-/*
+
 	printf("calcolo kdp 2km\n");
-	vol_lkdp_2km.moving_average_slope(vol_phidp_2km,2000.);
-	vol_lkdp_2km*=1000.;
+	vol_lkdp_2km=moving_average_slope(vol_phidp_2km,2000.);
+/*	vol_lkdp_2km*=1000.;
 	printf("calcolo kdp 6 km\n");
 	vol_lkdp_6km.moving_average_slope(vol_phidp_6km,6000.);
 	vol_lkdp_6km*=1000.;
@@ -209,6 +210,8 @@ void classifier::compute_lkdp()
 
 	double phidp1,phidp2;
 	double undet,nodat;
+
+	//stat::LinearFit<double> fitter;
 
 	for(unsigned el=0;el<vol_phidp.size();el++)
 	{
@@ -262,6 +265,14 @@ void classifier::compute_lkdp()
 				if(rg<half_win2km||rg>(vol_phidp[el].beam_size-half_win2km-1)){kdp=0.;}
 				else
 				{
+					/*for(unsigned rgx=rg-half_win2km;rgx<=rg+half_win2km;rgx++)
+					{
+						phidp1=vol_phidp[el].get(az,rgx);
+						if(phidp1!=undet&&phidp1!=nodat)fitter.feed(rgx*0.25,phidp1);
+					}
+					if(fitter.N>4)kdp=fitter.compute_slope();
+					else kdp=0.;
+					fitter.clear();*/
 					phidp1=vol_phidp[el].get(az,rg-half_win2km);
 					phidp2=vol_phidp[el].get(az,rg+half_win2km);
 					if(phidp1==undet||phidp1==nodat||phidp2==undet||phidp2==nodat){kdp=0.;}
@@ -275,7 +286,7 @@ void classifier::compute_lkdp()
 							{
 								if(kdp<-40.)	// vulpiani diceva -20, ma considerava ricetrasmettitori simultanei (360°) e L=7km
 								{
-									kdp=0.5*(phidp2-phidp1+180.)/6.;
+									kdp=0.5*(phidp2-phidp1+180.)/2.;
 								}
 								else
 								{
@@ -321,7 +332,7 @@ void classifier::correct_phidp()
 			fil.feed(vol_phidp.scan(el).row_ptr(az));
 			fil.perform();
 
-			/*if(el==5&&az==65)
+			///if(el==5&&az==65)
 			{
 				//for(unsigned rg=0;rg<vol_phidp.scan(el).beam_size;rg++) vol_phidp.scan(el).set(az,rg,rg==0?1:0);
 				//fil.feed(vol_phidp.scan(el).row_ptr(az));
@@ -378,8 +389,8 @@ void classifier::compute_derived_volumes()
 	correct_for_attenuation();
 	
 
-	const unsigned elev=2;
-	const unsigned azim=90;
+	const unsigned elev=1;
+	const unsigned azim=85;
 	for(unsigned rg=0;rg<vol_phidp[elev].beam_size;rg++)
 	{
 		cout<<fixed<<vol_phidp[elev](azim,rg)<<"\t"<<vol_phidp_2km[elev](azim,rg)<<"\t"<<vol_phidp_6km[elev](azim,rg)<<"\t"
