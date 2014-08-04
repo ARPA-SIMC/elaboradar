@@ -312,7 +312,7 @@ public:
     {
         return volume::Scans<T>::make_scan(idx, beam_count, beam_size, elevation, cell_size);
     }
-
+/*
     void textureSD(Volume<T>& raw, double filter_range)
     {
 	Volume<T> filtered;
@@ -326,7 +326,7 @@ public:
 		this->make_rms_scan_range(raw.scan(i),filtered.scan(i),window_size);
 	}
     }
-
+*/
     void lin2dB(Volume<T>& lin)
     {
 	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
@@ -370,7 +370,7 @@ protected:
 private:
     Volume& operator=(Volume&);
     Volume(const Volume&);
-
+/*
     void make_rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
     {
 	unsigned half_win=0.5*(win-1);
@@ -412,7 +412,7 @@ private:
 		}
 	}
     }
-
+*/
     
 };
 

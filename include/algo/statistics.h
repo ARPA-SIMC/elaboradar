@@ -87,8 +87,6 @@ public:
 	
 	T compute_dev_std(unsigned minimum=2)
 	{
-		//compute_variance(minimum);
-		//dev_std=sqrt(variance);
 		if(N>=minimum)
 			dev_std = sqrt(N*sum_x2-sum_x*sum_x)/N;
 		else dev_std = dev_std/(dev_std-dev_std);
@@ -102,9 +100,6 @@ public:
 		else mean = mean/(mean-mean);
 		return mean;
 	}
-   
-	T get_slope() {return slope;}
-	T get_intercept() {return intercept;}
 };
 
 /*
