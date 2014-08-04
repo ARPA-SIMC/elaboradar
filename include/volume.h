@@ -383,9 +383,6 @@ protected:
     void resize_elev_fin();
 
 private:
-   
-    
-
     /**
      * Fill this volume by filtering through a mobile window the data from an
      * existing volume

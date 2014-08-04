@@ -3,70 +3,66 @@
 
 namespace elaboradar {
 
-//typedef Statistic<double> LinearFit;	// da eliminare appena possibile
-
 template<typename T>
-PolarScan<T> make_slope_scan_range(PolarScan<T>& raw, unsigned win)
+PolarScan<T> make_slope_scan(PolarScan<T>& raw, unsigned win)
 {
 	unsigned half_win=0.5*(win-1);
 	PolarScan<T> scan(raw);
-	//this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	//this->back().elevation = raw.elevation;
-	//this->back().cell_size = raw.cell_size;
-
-	//	using namespace stat;
 	Statistic<T> fit;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
-		for(unsigned j=0;j<half_win;j++)
-		{
-			for(unsigned k=0;k<(half_win+j+1);k++)
-			{
-				if((raw(i,k)!=raw.undetect)&&(raw(i,k)!=raw.nodata))
-				{
-					fit.feed(k*raw.cell_size,raw.get(i,k));
-				}
-			}
-			if(fit.N)
-			{
-				scan.set(i,j,fit.compute_slope());
-			}
-			else scan.set(i,j,raw.nodata);
-			fit.clear();
+		fit.clear();
+		for(unsigned j=0;j<half_win+1;j++)
+			if(raw(i,j)!=raw.undetect&&raw(i,j)!=raw.nodata)
+				fit.feed(0*raw.cell_size,raw(i,j));
+		scan.set(i,0,fit.compute_slope());
+		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
 
-			for(unsigned k=0;k<(win-j-1);k++)
-			{
-				if((raw(i,raw.beam_size-win+1+j+k)!=raw.undetect)&&(raw(i,raw.beam_size-win+1+j+k)!=raw.nodata))
-				{
-					fit.feed(k*raw.cell_size,raw.get(i,raw.beam_size-win+1+j+k));
-				}
-			}
-			if(fit.N)
-			{
-				scan.set(i,raw.beam_size-half_win+j,fit.compute_slope());
-			}
-			else scan.set(i,raw.beam_size-half_win+j,raw.nodata);
-			fit.clear();
-		}
-		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
+		for(unsigned j=1;j<raw.beam_size+1;j++)
 		{
-			for(unsigned k=0;k<win;k++)
-			{
-				if((raw(i,j-half_win+k)!=raw.undetect)&&(raw(i,j-half_win+k)!=raw.nodata))
-				{
-					fit.feed(k*raw.cell_size,raw.get(i,j-half_win+k));
-				}
-			}
-			if(fit.N)
-			{
-				scan.set(i,j,fit.compute_slope());
-			}
-			else scan.set(i,j,raw.nodata);
-			fit.clear();
+			if(j-half_win-1>=0)
+				if(raw(i,j-half_win-1)!=raw.undetect&&raw(i,j-half_win-1)!=raw.nodata)
+					fit.slim((j-half_win-1)*raw.cell_size,raw(i,j-half_win-1));
+			if(j+half_win<=raw.beam_size)
+				if(raw(i,j+half_win)!=raw.undetect&&raw(i,j+half_win)!=raw.nodata)
+					fit.feed(j*raw.cell_size,raw(i,j+half_win));
+			scan.set(i,j,fit.compute_slope());
+			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
 		}
 	}
 	return scan;
 }
+
+template<typename T>
+void make_rms_scan(PolarScan<T>& raw, unsigned win)
+{
+	unsigned half_win=0.5*(win-1);
+	PolarScan<T> scan(raw);
+	Statistic<T> rms;
+	for(unsigned i=0;i<raw.rows();i++)
+	{
+		rms.clear();
+		for(unsigned j=0;j<half_win+1;j++)
+			if(raw(i,j)!=raw.undetect&&raw(i,j)!=raw.nodata)
+				rms.feed(raw(i,j));
+		scan.set(i,0,rms.compute_dev_std());
+		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
+
+		for(unsigned j=1;j<raw.beam_size+1;j++)
+		{
+			if(j-half_win-1>=0)
+				if(raw(i,j-half_win-1)!=raw.undetect&&raw(i,j-half_win-1)!=raw.nodata)
+					rms.slim(raw(i,j-half_win-1));
+			if(j+half_win<=raw.beam_size)
+				if(raw(i,j+half_win)!=raw.undetect&&raw(i,j+half_win)!=raw.nodata)
+					rms.feed(raw(i,j+half_win));
+			scan.set(i,j,rms.compute_dev_std());
+			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
+		}
+	}
+	return scan;
+}
+
 
 namespace volume {
 
@@ -75,21 +71,29 @@ Volume<T> moving_average_slope(Volume<T>& raw, double slope_range) // least-squa
 {
 	unsigned window_size;
 	Volume<T> vol;
-	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
-							// intervenire con un metodo che 
-							// determina la quantity della slope 
-							// in funzione della quantity di raw.
-							// Per adesso si suppone che la quantity
-							// del volume di slope sia settata a priori 
+	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe
 	for(unsigned i=0;i<raw.size();i++)
 	{
 		window_size=1+2*std::floor(0.5*slope_range/raw.scan(i).cell_size);
-		vol.push_back(make_slope_scan_range(raw.scan(i),window_size));
+		vol.push_back(make_slope_scan(raw.scan(i),window_size));
 	}
 	return vol;
 }
 
+template<typename T>
+Volume<T> textureSD(Volume<T>& raw, double filter_range) // least-squares
+{
+	unsigned window_size;
+	Volume<T> vol;
+	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
 
+	for(unsigned i=0;i<raw.size();i++)
+	{
+		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
+		vol.push_back(make_rms_scan(raw.scan(i),window_size));
+	}
+	return vol;
+}
 
 }	// namespace volume
 }	// namespace elaboradar

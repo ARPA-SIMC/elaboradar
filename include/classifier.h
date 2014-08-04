@@ -375,7 +375,7 @@ public:
 	unsigned deg2idx(double deg){return (unsigned)(deg*(double)this->cols()/360.);}
 
 	double height(unsigned h_idx){return Hmin+(double)h_idx*(Hmax-Hmin)/(double)this->rows();}
-	unsigned h_idx(double height){return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));	}
+	unsigned h_idx(double height){return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));}
 
 	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
 };
@@ -402,17 +402,9 @@ public:
 	Volume<double> vol_zdr_1km;
 	Volume<double> vol_rhohv_1km;
 
-	MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
+	MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, 
+			std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
 };
-
-
-
-
-
-
-
-
-
 
 
 
