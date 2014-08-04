@@ -46,12 +46,13 @@ int main(int argc,char* argv[])
 	Volume<double> Z_slope;
 //	moving_average_slope(volume,Z_slope,1000.);
 
+
 	for(unsigned idx=0;idx<1000;idx++)
 	{
-		//filter(volume,Z_fil,1000.);
+		filter(volume,Z_fil,1000.);
 		//filtro.filter(volume,1000.);
 		//textureSD(volume,Z_SD,1000.);
-		rms.textureSD(volume,1000.);
+		//rms.textureSD(volume,1000.);
 	}
 
 

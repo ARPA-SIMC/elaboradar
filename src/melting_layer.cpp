@@ -21,6 +21,7 @@
 #include "classifier.h"
 #include "image.h"
 #include <string>
+#include "algo/elabora_volume.h"
 
 #define kea 8494666.666667	// c'è qualcosa in geo_par.h
 
@@ -96,9 +97,9 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, vector< vector< vector< HCA_Park> > >& HCA)
 {
 	cout<<"\tInizio melting Layer"<<endl;
-	vol_z_0_5km.filter(vol_z,500.);
-	vol_zdr_1km.filter(vol_zdr,1000.);
-	vol_rhohv_1km.filter(vol_rhohv,1000.);
+	filter(vol_z,vol_z_0_5km,500.);
+	filter(vol_zdr,vol_zdr_1km,1000.);
+	filter(vol_rhohv,vol_rhohv_1km,1000.);
 	cout<<"filtrati"<<endl;
 	//TODO: correzione attenuazione con phidp
 	//TODO: altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
