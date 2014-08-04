@@ -313,18 +313,6 @@ public:
         return volume::Scans<T>::make_scan(idx, beam_count, beam_size, elevation, cell_size);
     }
 
-    void filter(Volume<T>& raw, double filter_range)
-    {
-	unsigned window_size;
-	this->quantity=raw.quantity;
-	this->clear();
-	for(unsigned i=0;i<raw.size();i++)
-	{
-		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		this->make_filter_scan_range(raw.scan(i),window_size);
-	}
-    }
-
     void textureSD(Volume<T>& raw, double filter_range)
     {
 	Volume<T> filtered;
@@ -376,58 +364,12 @@ public:
 	return *this;
     }
 
-    Volume& operator=(const Volume&){return *this;};
-    Volume(const Volume&);
-
 protected:
     void resize_elev_fin();
 
 private:
-    /**
-     * Fill this volume by filtering through a mobile window the data from an
-     * existing volume
-     */
-    void make_filter_scan_range(PolarScan<T>& raw, unsigned win)
-    {
-	unsigned half_win=0.5*(win-1);
-	this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	this->back().elevation = raw.elevation;
-	this->back().cell_size = raw.cell_size;
-	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(raw.beam_count,raw.beam_size,0));
-	T value;
-	for(unsigned i=0;i<raw.rows();i++)
-	{
-		for(unsigned j=0;j<half_win;j++)
-		{
-			value=raw(i,j);
-			if((value != raw.undetect) && (value != raw.nodata))
-			{
-				this->back().block(i,0,1,half_win+1+j).array()+=value;
-				counter.block(i,0,1,half_win+1+j).array()+=1;
-			}
-			value=raw(i,raw.beam_size-half_win+j);
-			if((value != raw.undetect)&&(value != raw.nodata))
-			{
-				this->back().block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
-				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
-			}
-		}
-		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
-		{
-			value=raw(i,j);
-			if((value!= raw.undetect) && (value!=raw.nodata))
-			{
-				this->back().block(i,j-half_win,1,win).array()+=value;
-				counter.block(i,j-half_win,1,win).array()+=1;
-			}
-		}
-		for(unsigned j=0;j<raw.beam_size;j++)
-		{
-			if(counter(i,j)) this->back().set(i,j,(this->back().get(i,j))/counter(i,j));
-			else this->back().set(i,j, raw.undetect);
-		}
-	}
-    }
+    Volume& operator=(Volume&);
+    Volume(const Volume&);
 
     void make_rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
     {
