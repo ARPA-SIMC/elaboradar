@@ -59,42 +59,48 @@ public:
 	T intercept;
 	T variance;
 	T dev_std;
+	T mean;
 
 	T compute_slope(unsigned minimum=2)
 	{
-		if(N>(minimum-1))
-		{
-			slope = (N*sum_xy-sum_x*sum_y)/(N*sum_x2-sum_x*sum_x);
-			return slope;
-		}
-		else return slope/(slope-slope); // orribile modo di far ritornare NaN
+		if(N>=minimum)
+			slope = (N*sum_xy-sum_x*sum_y)/(N*sum_x*sum_x-sum_x2);
+		else slope = slope/(slope-slope); // orribile modo di far ritornare NaN
+		return slope;
 	}
 
 	T compute_intercept(unsigned minimum=2)
 	{
-		if(N>(minimum-1))
-		{
+		if(N>=minimum)
 			intercept = (sum_y*sum_x2-sum_x*sum_xy)/(N*sum_x2-sum_x*sum_x);
-			return intercept;
-		}
-		else return slope/(slope-slope);
+		else return intercept = slope/(slope-slope);
+		return intercept;
 	}
 
 	T compute_variance(unsigned minimum=2)
 	{
-		if(N>(minimum-1))
-		{
+		if(N>=minimum)
 			variance = (sum_x2-sum_x*sum_x/(double)N)/((double)N-1.);
-			return variance;
-		}
-		else return variance/(variance-variance);
+		else variance = variance/(variance-variance);
+		return variance;
 	}
 	
 	T compute_dev_std(unsigned minimum=2)
 	{
-		compute_variance(minimum);
-		dev_std=sqrt(variance);
+		//compute_variance(minimum);
+		//dev_std=sqrt(variance);
+		if(N>=minimum)
+			dev_std = sqrt(N*sum_x2-sum_x*sum_x)/N;
+		else dev_std = dev_std/(dev_std-dev_std);
 		return dev_std;
+	}
+	
+	T compute_mean(unsigned minimum=2)
+	{
+		if(N>=minimum)
+			mean = sum_x/(T)N;
+		else mean = mean/(mean-mean);
+		return mean;
 	}
    
 	T get_slope() {return slope;}

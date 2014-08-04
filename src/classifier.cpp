@@ -29,16 +29,16 @@ namespace odim = OdimH5v21;
 PROB::PROB(double z,double zdr,double rhohv, double lkdp, double sdz, double sdphidp)
 {
 	this->resize(10,6);
-	this->row(0)=prob_class(GC_AP,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(1)=prob_class(   BS,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(2)=prob_class(   DS,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(3)=prob_class(   WS,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(4)=prob_class(   CR,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(5)=prob_class(   GR,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(6)=prob_class(   BD,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(7)=prob_class(   RA,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(8)=prob_class(   HR,z,zdr,rhohv,lkdp,sdz,sdphidp);
-	this->row(9)=prob_class(   RH,z,zdr,rhohv,lkdp,sdz,sdphidp);
+	this->row(0)=prob_class(GC_AP, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(1)=prob_class(   BS, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(2)=prob_class(   DS, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(3)=prob_class(   WS, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(4)=prob_class(   CR, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(5)=prob_class(   GR, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(6)=prob_class(   BD, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(7)=prob_class(   RA, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(8)=prob_class(   HR, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(9)=prob_class(   RH, z, zdr, rhohv, lkdp, sdz, sdphidp);
 }
 
 Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp)
