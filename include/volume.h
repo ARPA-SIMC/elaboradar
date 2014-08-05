@@ -312,48 +312,6 @@ public:
     {
         return volume::Scans<T>::make_scan(idx, beam_count, beam_size, elevation, cell_size);
     }
-/*
-    void textureSD(Volume<T>& raw, double filter_range)
-    {
-	Volume<T> filtered;
-	filtered.filter(raw,filter_range);
-	unsigned window_size;
-	this->quantity=raw.quantity;
-	this->clear();
-	for(unsigned i=0;i<raw.size();i++)
-	{
-		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		this->make_rms_scan_range(raw.scan(i),filtered.scan(i),window_size);
-	}
-    }
-*/
-    void lin2dB(Volume<T>& lin)
-    {
-	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
-	this->clear();
-	for(unsigned i=0;i<lin.size();i++)
-	{
-		this->push_back(PolarScan<T>(lin.scan(i).beam_count,lin.scan(i).beam_size,0.));
-		this->back().elevation = lin.scan(i).elevation;
-		this->back().cell_size = lin.scan(i).cell_size;
-		this->back().block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
-		this->back().array()*=10.;
-	}
-    }
-
-    void dB2lin(Volume<T>& DB)
-    {
-	//this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
-	this->clear();
-	for(unsigned i=0;i<DB.size();i++)
-	{
-		this->push_back(PolarScan<T>(DB.scan(i).beam_count,DB.scan(i).beam_size,0.));
-		this->back().elevation = DB.scan(i).elevation;
-		this->back().cell_size = DB.scan(i).cell_size;
-		this->back().block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=DB.scan(i).array()*0.1;
-		this->back().block(0,0,DB.scan(i).beam_count,DB.scan(i).beam_size)=this->back().exp10();
-	}
-    }
 
     Volume& operator*=(const T coefficient)
     {
@@ -370,50 +328,6 @@ protected:
 private:
     Volume& operator=(Volume&);
     Volume(const Volume&);
-/*
-    void make_rms_scan_range(PolarScan<T>& raw, PolarScan<T>& filtered, unsigned win)
-    {
-	unsigned half_win=0.5*(win-1);
-	this->push_back(PolarScan<T>(raw.beam_count,raw.beam_size,0.));
-	this->back().elevation = raw.elevation;
-	this->back().cell_size = raw.cell_size;
-	Matrix2D<unsigned> counter(Matrix2D<unsigned>::Constant(beam_count,raw.beam_size,0));
-	T value;
-	for(unsigned i=0;i<raw.rows();i++)
-	{
-		for(unsigned j=0;j<half_win;j++)
-		{
-			if((raw(i,j)!=raw.undetect)&&(raw(i,j)!=raw.nodata))
-			{
-				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
-				this->back().block(i,0,1,half_win+1+j).array()+=value;
-				counter.block(i,0,1,half_win+1+j).array()+=1;
-			}
-			if((raw(i,raw.beam_size-half_win+j)!=raw.undetect)&&(raw(i,raw.beam_size-half_win+j)!=raw.nodata))
-			{
-				value=(raw(i,raw.beam_size-half_win+j)-filtered(i,raw.beam_size-half_win+j));
-				this->back().block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=value;
-				counter.block(i,raw.beam_size-win+1+j,1,win-1-j).array()+=1;
-			}
-		}
-		for(unsigned j=half_win;j<(raw.beam_size-half_win);j++)
-		{
-			if((raw(i,j)!=raw.undetect)&&(raw(i,j)!=raw.nodata))
-			{
-				value=(raw(i,j)-filtered(i,j))*(raw(i,j)-filtered(i,j));
-				this->back().block(i,j-half_win,1,win).array()+=value;
-				counter.block(i,j-half_win,1,win).array()+=1;
-			}
-		}
-		for(unsigned j=0;j<raw.beam_size;j++)
-		{
-			if(counter(i,j)) this->back().set(i,j,std::sqrt(this->back().get(i,j)/counter(i,j)));
-			else this->back().set(i,j,raw.undetect);
-		}
-	}
-    }
-*/
-    
 };
 
 

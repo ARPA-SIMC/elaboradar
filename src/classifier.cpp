@@ -361,9 +361,9 @@ void classifier::correct_for_snr()
 {
 	cout<<"inizio snr"<<endl;
 	Volume<double> vol_snr_linear;
-	vol_snr_linear.dB2lin(vol_snr);
+	dB2lin(vol_snr,vol_snr_linear);
 	Volume<double> vol_zdr_linear;
-	vol_zdr_linear.dB2lin(vol_zdr);
+	dB2lin(vol_zdr,vol_zdr_linear);
 	double alpha=1.48; // horizontal to vertical noise ratio. 1.48 S-band (Schuur 2003)
 	for(unsigned el=0;el<vol_rhohv.size();el++)
 	{
@@ -372,7 +372,7 @@ void classifier::correct_for_snr()
 		vol_snr_linear[el].array()*=alpha;
 		vol_zdr_linear[el].array()=vol_snr_linear[el].array()*vol_zdr_linear[el].array()/(vol_snr_linear[el].array()+alpha-vol_zdr_linear[el].array());
 	}
-	vol_zdr.lin2dB(vol_zdr_linear);
+	lin2dB(vol_zdr_linear,vol_zdr);
 	cout<<"finito snr"<<endl;
 }
 
