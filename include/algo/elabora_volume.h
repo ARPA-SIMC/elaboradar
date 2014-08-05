@@ -165,5 +165,57 @@ void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range)
 	}
 }
 
+template<typename T>
+void lin2dB(Volume<T>& lin, Volume<T>& dB)
+{
+	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
+	dB.clear();
+	for(unsigned i=0;i<lin.size();i++)
+	{
+		dB.push_back(PolarScan<T>(lin.scan(i).beam_count,lin.scan(i).beam_size,0.));
+		dB[i].cell_size = lin[i].cell_size;
+		dB[i].elevation = lin.scan(i).elevation;
+		dB[i].block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
+		dB[i].array()*=10.;
+	}
+}
+
+template<typename T>
+void dB2lin(Volume<T>& dB, Volume<T>& lin)
+{
+	//this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
+	lin.clear();
+	for(unsigned i=0;i<dB.size();i++)
+	{
+		lin.push_back(PolarScan<T>(dB.scan(i).beam_count,dB.scan(i).beam_size,0.));
+		lin[i].cell_size = dB[i].cell_size;
+		lin[i].elevation = dB.scan(i).elevation;
+		lin[i].block(0,0,dB.scan(i).beam_count,dB.scan(i).beam_size) = dB.scan(i)*10;
+		lin[i].block(0,0,dB.scan(i).beam_count,dB.scan(i).beam_size) = lin.scan(i).exp10();
+	}
+}
+
+template<typename T>
+void lin2dB(Volume<T>& lin)
+{
+	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
+	for(unsigned i=0;i<lin.size();i++)
+	{
+		lin.block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
+		lin[i].array()*=10.;
+	}
+}
+
+template<typename T>
+void dB2lin(Volume<T>& dB)
+{
+	//this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
+	dB*=0.1;
+	for(unsigned i=0;i<dB.size();i++)
+	{
+		dB[i].block(0,0,dB.scan(i).beam_count,dB.scan(i).beam_size) = dB.scan(i).exp10();		
+	}
+}
+
 }	// namespace volume
 }	// namespace elaboradar
