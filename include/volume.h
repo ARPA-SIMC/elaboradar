@@ -322,6 +322,15 @@ public:
 	return *this;
     }
 
+    Volume& operator+=(Volume& addend)
+    {
+	for(unsigned el=0;el<this->size();el++)
+	{
+		this->scan(el)+=addend[el];
+	}
+	return *this;
+    }
+
 protected:
     void resize_elev_fin();
 

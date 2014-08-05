@@ -101,8 +101,8 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	filter(vol_zdr,vol_zdr_1km,1000.);
 	filter(vol_rhohv,vol_rhohv_1km,1000.);
 	cout<<"filtrati"<<endl;
-	//TODO: correzione attenuazione con phidp
-	//TODO: altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
+	//correzione attenuazione con phidp fatta a priori da chi ha invocato
+	//altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
 	MLpoints melting_points(1.,10.,vol_z.beam_count,200);
 	ML_top.resize(vol_z.beam_count);

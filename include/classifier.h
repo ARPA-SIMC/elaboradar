@@ -269,7 +269,6 @@ public:
  * Polar Volume of signal to noise ratio
  */
 	Volume<double> vol_snr;
-
 /*!
  * Filtered copolar reflectivity over 1 km window
  */

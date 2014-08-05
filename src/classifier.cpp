@@ -204,14 +204,11 @@ void classifier::compute_lkdp()
 //	unsigned win_6km=25;
 //	unsigned win_2km=9;
 	unsigned half_win6km=12;
-	unsigned half_win2km=8;
+	unsigned half_win2km=4;
 	double kdp;
 	unsigned tries;
-
 	double phidp1,phidp2;
 	double undet,nodat;
-
-	//stat::LinearFit<double> fitter;
 
 	for(unsigned el=0;el<vol_phidp.size();el++)
 	{
@@ -265,20 +262,12 @@ void classifier::compute_lkdp()
 				if(rg<half_win2km||rg>(vol_phidp[el].beam_size-half_win2km-1)){kdp=0.;}
 				else
 				{
-					/*for(unsigned rgx=rg-half_win2km;rgx<=rg+half_win2km;rgx++)
-					{
-						phidp1=vol_phidp[el].get(az,rgx);
-						if(phidp1!=undet&&phidp1!=nodat)fitter.feed(rgx*0.25,phidp1);
-					}
-					if(fitter.N>4)kdp=fitter.compute_slope();
-					else kdp=0.;
-					fitter.clear();*/
 					phidp1=vol_phidp[el].get(az,rg-half_win2km);
 					phidp2=vol_phidp[el].get(az,rg+half_win2km);
 					if(phidp1==undet||phidp1==nodat||phidp2==undet||phidp2==nodat){kdp=0.;}
 					else
 					{
-						kdp=0.5*(phidp2-phidp1)/5.;
+						kdp=0.5*(phidp2-phidp1)/2.;
 						tries=0;
 						while(tries<3)
 						{
@@ -286,7 +275,7 @@ void classifier::compute_lkdp()
 							{
 								if(kdp<-40.)	// vulpiani diceva -20, ma considerava ricetrasmettitori simultanei (360°) e L=7km
 								{
-									kdp=0.5*(phidp2-phidp1+180.)/5.;
+									kdp=0.5*(phidp2-phidp1+180.)/2.;
 								}
 								else
 								{
@@ -354,7 +343,15 @@ void classifier::correct_phidp()
 
 void classifier::correct_for_attenuation()
 {
-
+//	for(unsigned rg=0;rg<50;rg++) cout<<fixed<<vol_z[0](85,rg)<<" ";
+//	cout<<endl;
+	for(unsigned el=0;el<vol_z.size();el++)
+	{
+		vol_z[el]+=0.06*vol_phidp_6km[el];
+		vol_zdr[el]+=0.01*vol_phidp_6km[el];
+	}
+//	for(unsigned rg=0;rg<50;rg++) cout<<fixed<<vol_z[0](85,rg)<<" ";
+//	cout<<endl;
 }
 
 void classifier::correct_for_snr()
@@ -388,15 +385,14 @@ void classifier::compute_derived_volumes()
 	compute_lkdp();
 	correct_for_attenuation();
 	
-
-	const unsigned elev=1;
+/*	const unsigned elev=1;
 	const unsigned azim=85;
 	for(unsigned rg=0;rg<vol_phidp[elev].beam_size;rg++)
 	{
 		cout<<fixed<<vol_phidp[elev](azim,rg)<<"\t"<<vol_phidp_2km[elev](azim,rg)<<"\t"<<vol_phidp_6km[elev](azim,rg)<<"\t"
 				<<vol_lkdp_2km[elev](azim,rg)<<"\t"<<vol_lkdp_6km[elev](azim,rg)<<endl;
 	}
-
+*/
 	// filtro i volumi
 	printf("filtro Z 1 km\n");
 	filter(vol_z,vol_z_1km,1000.);
@@ -454,17 +450,18 @@ void classifier::HCA_Park_2009()
 	cout<<"uscito da ML"<<endl;
 	//TODO:check aggregation values
 	//TODO:check hard thresholds
-//	unsigned elev=2;
-//	unsigned azim=75;
-/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+	unsigned elev=2;
+	unsigned azim=75;
+	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
-		cout<<fixed<<vol_Ai[elev][azim][rg].Ai[GC_AP]<<"\t"<<vol_Ai[elev][azim][rg].Ai[BS]<<"\t"<<
-		vol_Ai[elev][azim][rg].Ai[DS]<<"\t"<<vol_Ai[elev][azim][rg].Ai[WS]<<"\t"<<
-		vol_Ai[elev][azim][rg].Ai[CR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[GR]<<"\t"<<
-		vol_Ai[elev][azim][rg].Ai[BD]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RA]<<"\t"<<
-		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<endl;
+		cout.precision(3);
+		cout<<fixed<<vol_Ai[elev][azim][rg].Ai[GC_AP]<<" "<<vol_Ai[elev][azim][rg].Ai[BS]<<" "<<
+		vol_Ai[elev][azim][rg].Ai[DS]<<" "<<vol_Ai[elev][azim][rg].Ai[WS]<<" "<<
+		vol_Ai[elev][azim][rg].Ai[CR]<<" "<<vol_Ai[elev][azim][rg].Ai[GR]<<" "<<
+		vol_Ai[elev][azim][rg].Ai[BD]<<" "<<vol_Ai[elev][azim][rg].Ai[RA]<<" "<<
+		vol_Ai[elev][azim][rg].Ai[HR]<<" "<<vol_Ai[elev][azim][rg].Ai[RH]<<endl;
 	}
-*/
+
 	
 }
