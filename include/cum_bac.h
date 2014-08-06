@@ -131,6 +131,7 @@ public:
 
     Volume<double> volume;
     volume::ElevFin<double> elev_fin;
+    Volume<double> SD_Z6;
 
     CalcoloVPR* calcolo_vpr;
 
@@ -433,6 +434,28 @@ struct Cart
 
     void write_out(const CUM_BAC& cb, Assets& assets);
 };
+
+struct SingleCart
+{
+    const unsigned max_bin;
+
+    // vol_pol riportato in cartesiano
+    Image<unsigned char> cart;
+
+    SingleCart(unsigned max_bin);
+
+    /**
+     *  conversione da polare a cartesiano alta risoluzione
+     *
+     *  @brief funzione che crea l'output cartesiano dal polare
+     *  @details cicla sui quadranti e su i e j, usando il range e l'azimut ottenuti tramite la funzione creo_matrice_conv()
+     *  @return 
+     */
+    void creo_cart(const Volume <double> & volume, unsigned int el_index);
+
+    void write_out(Assets& assets, const std::string tagname, const std::string format="PNG");
+};
+
 
 struct CartLowris
 {
