@@ -43,9 +43,12 @@ double diff_height(PolarScan<double>& scan, unsigned rg_start, unsigned rg_end)
 
 void increment(MLpoints& matrix,PolarScan<double>& scan, unsigned az_idx, unsigned rg_idx)
 {
+//	cout<<"\t"<<rg_idx<<endl;
 	unsigned m_h_idx=matrix.h_idx(height(scan,rg_idx));
 	unsigned m_az_idx=matrix.deg2idx((double)az_idx*360./scan.beam_count);
+//	cout<<"\t height "<<m_h_idx<<" "<<matrix.rows()<<"\t azim "<<m_az_idx<<" "<<matrix.cols()<<endl;
 	matrix(m_h_idx,m_az_idx)++;
+//	cout<<"\t"<<rg_idx<<endl;
 }
 
 void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t)
@@ -72,6 +75,7 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 			
 			for(unsigned h=0;h<this->rows();h++)box_count+=(*this)(h,round_bm);
 		}
+		//if(az==0)cout<<box_count<<endl;
 		bottom_lim=bot_th*box_count;
 		top_lim=top_th*box_count;
 		if(box_count>=89)	// 1600/(360/20)
@@ -104,7 +108,10 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	//correzione attenuazione con phidp fatta a priori da chi ha invocato
 	//altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
-	MLpoints melting_points(1.,10.,vol_z.beam_count,200);
+	double MAX_ML_H=7.;
+	double MIN_ML_H=0.;
+
+	MLpoints melting_points(MIN_ML_H,MAX_ML_H,vol_z.beam_count,200);
 	ML_top.resize(vol_z.beam_count);
 	ML_bot.resize(vol_z.beam_count);
 	unsigned curr_rg=0;
@@ -113,7 +120,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	for(unsigned el=0;el<vol_rhohv_1km.size();el++)
 	{
 		cout<<"\t\t ML el ";
-		PolarScan<double>& rho=vol_rhohv.scan(el);
+		PolarScan<double>& rho=vol_rhohv_1km.scan(el);
 		if(rho.elevation>0.&&rho.elevation<10.)
 		{
 			cout<<el<<endl;
@@ -123,11 +130,14 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 			{
 				for(unsigned az=0;az<rho.beam_count;az++)
 				{
-					if((rho(az,rg)>=0.9)&&(rho(az,rg)<=0.97)&&(HCA[el][az][rg].meteo_echo()))
+					//if(el==5)cout<<rg<<" "<<rho.beam_size<<"\t"<<az<<" "<<rho.beam_count<<endl;
+					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo() && height(z,rg)>MIN_ML_H && height(z,rg)<MAX_ML_H)
 					{
 						curr_rg=rg;
 						while(curr_rg<z.beam_size && diff_height(z,rg,curr_rg)<0.5 && !confirmed)
 						{
+							if(el==5&&az==165&&rg==448)cout<<curr_rg<<endl;
+							//if(el==4)if(az==85)if(rg>200)if(rg<250)cout<<rg<<" "<<rho(az,rg)<<" "<<z(az,rg)<<" "<<zdr(az,rg)<<endl;
 							if(z(az,curr_rg)>30 && z(az,curr_rg)<47 && zdr(az,curr_rg)>0.8 &&
 								 zdr(az,curr_rg)<2.5 && height(z,rg)>melting_points.Hmin)
 							{
@@ -148,11 +158,12 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 		}
 	}
 
+	cout<<melting_points<<endl;
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
 	cout<<"Altezza ML"<<endl;
-	//for(unsigned i=0;i<ML_bot.size();i++)	cout<<i<<"\t"<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
-	Matrix2D<double> img;
+//	for(unsigned i=0;i<ML_bot.size();i++)	cout<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+/*	Matrix2D<double> img;
 	img.resize(2,ML_bot.size());
 	for(unsigned i=0;i<ML_bot.size();i++)
 	{
@@ -165,6 +176,6 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	const string format="png";
 	gdal_init_once();
 	write_image(img, filename, gdal_extension_for_format(format));
-
+*/
 	//TODO: fill empty azimuths
 }
