@@ -376,12 +376,8 @@ void classifier::correct_for_snr()
 void classifier::compute_derived_volumes()
 {
 	//correct_phidp();	//TODO: probabilmente inutile se adottiamo il metodo di Vulpiani che stima direttamente la kdp
-	correct_for_snr();
-/*
- * TODO: Now we should correct Z and Zdr for attenuation by adding estimated bias
- * dZ=0.04*vol_phidp_6km;
- * dZdr=0.004*vol_phidp_6km;
- */
+	//correct_for_snr();	//TODO: fa danni indicibili questa correzione. Maledetto Schuur 2003 !!!  
+
 	compute_lkdp();
 	correct_for_attenuation();
 	
@@ -452,7 +448,7 @@ void classifier::HCA_Park_2009()
 	//TODO:check hard thresholds
 	unsigned elev=2;
 	unsigned azim=75;
-	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
 		cout.precision(3);
@@ -462,6 +458,6 @@ void classifier::HCA_Park_2009()
 		vol_Ai[elev][azim][rg].Ai[BD]<<" "<<vol_Ai[elev][azim][rg].Ai[RA]<<" "<<
 		vol_Ai[elev][azim][rg].Ai[HR]<<" "<<vol_Ai[elev][azim][rg].Ai[RH]<<endl;
 	}
-
+*/
 	
 }
