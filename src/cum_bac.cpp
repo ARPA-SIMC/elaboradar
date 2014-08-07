@@ -539,9 +539,9 @@ void CUM_BAC::elabora_dato()
 
     //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala----------------
 
-	textureSD(volume,SD_Z6,6000.);
+	textureSD(volume,SD_Z6,6000.,true);
 
-    //for(unsigned i=290; i<310; i++)
+    //for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
     for(unsigned i=0; i<NUM_AZ_X_PPI; i++)
     {
     //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
@@ -573,7 +573,7 @@ void CUM_BAC::elabora_dato()
             }
            if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
 	   while (loc_el_inf > 0 && SD_Z6[loc_el_inf-1].get(i,k) < 3. &&  SD_Z6[loc_el_inf-1].get(i,k)>=0.&& volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
-//LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD_Z6[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
+// LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD_Z6[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
 		loc_el_inf--;
 	   }
             //const int el_inf = first_level(i, k);
@@ -610,7 +610,7 @@ void CUM_BAC::elabora_dato()
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             //if((el_inf>=1)&&(k>LIMITE_ANAP)&&(bin_low_low-bin_low<10)) //-----------ANNULLO EFFETTO TEST ANAP
             //if(el_inf >= 1 && SD_Z6[el_inf].get(i,k)<= 3. && SD_Z6[el_inf-1].get(i,k)<= 3.  &&  (k>LIMITE_ANAP))                     //-----------ANNULLO EFFETTO TEST ANAP
-            if(bin_high == fondo_scala && SD_Z6[el_inf].get(i,k)<= 3. && SD_Z6[el_inf].get(i,k) >= 0)                     //-----------ANNULLO EFFETTO TEST ANAP
+            if(bin_high == fondo_scala && SD_Z6[el_inf].get(i,k)<= 3. && SD_Z6[el_inf].get(i,k) > 0)                     //-----------ANNULLO EFFETTO TEST ANAP
             {
 		do_test_AP=false;
                 // FIXME: perché BYTEtoDB se assegnamo a degli interi? [Enrico]
@@ -727,12 +727,13 @@ void CUM_BAC::elabora_dato()
  		  else {	
                     if (do_beamblocking && do_bloccorr)
                     {
-                      volume[el_inf].set(i, k, BeamBlockingCorrection(bin_low, beam_blocking(i, k)));
+                      //volume[el_inf].set(i, k, BeamBlockingCorrection(bin_low, beam_blocking(i, k)));
+                      bin_low=BeamBlockingCorrection(bin_low, beam_blocking(i, k));
                       grid_stats.incr_bloc(i, k, beam_blocking(i, k));
                     }
 		  }
                   for(unsigned l=0; l<=el_inf; l++)
-                      volume[l].set(i, k, volume[el_inf].get(i, k));
+                      volume[l].set(i, k, bin_low);
 //  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),count_low );
 
 //cont_anap=0;
