@@ -5,12 +5,12 @@ using namespace std;
 
 namespace elaboradar {
 
-namespace {bool phidp=false;}
+namespace {bool check_undetect=false;}
 
 template<typename T>
 inline bool good(const PolarScan<T>& scan, unsigned row, unsigned col)
 {
-	if(phidp)
+	if(check_undetect)
 		if(scan(row,col)!=scan.nodata&&scan(row,col)!=scan.undetect)
 			return true;
 		else return false;
@@ -38,13 +38,13 @@ PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre=j-half_win-1;
+			pre=j-half_win;
 			post=j+half_win;
 			if(pre>=0)
-				if(good(raw,i,j))
+				if(good(raw,i,pre))
 					fit.slim(pre*raw.cell_size,raw(i,pre));
 			if(post<raw.beam_size)
-				if(good(raw,i,j))
+				if(good(raw,i,post))
 					fit.feed(post*raw.cell_size,raw(i,post));
 			scan.set(i,j,fit.compute_slope());
 			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
@@ -71,13 +71,13 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned win)
 
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre=j-half_win-1;
+			pre=j-half_win;
 			post=j+half_win;
 			if(pre>=0)
-				if(good(raw,i,j))
+				if(good(raw,i,pre))
 					rms.slim(raw(i,pre));
 			if(post<raw.beam_size)
-				if(good(raw,i,j))
+				if(good(raw,i,post))
 					rms.feed(raw(i,post));
 			scan.set(i,j,rms.compute_dev_std());
 			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
@@ -103,13 +103,13 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned win)
 		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre=j-half_win-1;
+			pre=j-half_win;
 			post=j+half_win;
 			if(pre>=0)
-				if(good(raw,i,j))
+				if(good(raw,i,pre))
 					filter.slim(raw(i,pre));
 			if(post<raw.beam_size)
-				if(good(raw,i,j))
+				if(good(raw,i,post))
 					filter.feed(raw(i,post));
 			scan.set(i,j,filter.compute_mean());
 			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
@@ -121,12 +121,11 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned win)
 namespace volume {
 
 template<typename T>
-void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_range)
+void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_range, bool force_check_undetect=false)
 {
 	unsigned window_size;
 	vol.clear();
-	if(strcmp(raw.quantity.c_str(),"PHIDP")) phidp=false;
-	else phidp=true;
+	check_undetect=force_check_undetect;
 	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe
 	for(unsigned i=0;i<raw.size();i++)
 	{
@@ -136,12 +135,11 @@ void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_ran
 }
 
 template<typename T>
-void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range)
+void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
 {
 	unsigned window_size;
 	vol.clear();
-	if(strcmp(raw.quantity.c_str(),"PHIDP")) phidp=false;
-	else phidp=true;
+	check_undetect=force_check_undetect;
 	//this->quantity=raw.quantity.quantity_rms(); // TODO: è complesso ma si potrebbe 
 	for(unsigned i=0;i<raw.size();i++)
 	{
@@ -151,12 +149,11 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range)
 }
 
 template<typename T>
-void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range)
+void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
 {
 	unsigned window_size;
 	vol.clear();
-	if(strcmp(raw.quantity.c_str(),"PHIDP")) phidp=false;
-	else phidp=true;
+	check_undetect=force_check_undetect;
 	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
 	for(unsigned i=0;i<raw.size();i++)
 	{
