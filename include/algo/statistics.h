@@ -80,7 +80,7 @@ public:
 	T compute_variance(unsigned minimum=2)
 	{
 		if(N>=minimum)
-			variance = (sum_x2-sum_x*sum_x/(double)N)/((double)N-1.);
+			variance = (sum_x2-sum_x*sum_x/(double)N)/((double)N);
 		else variance = variance/(variance-variance);
 		return variance;
 	}
@@ -89,7 +89,7 @@ public:
 	{
 		if(N>=minimum)
 			dev_std = sqrt(N*sum_x2-sum_x*sum_x)/N;
-		else dev_std = dev_std/(dev_std-dev_std);
+		else dev_std = sqrt(-1);
 		return dev_std;
 	}
 	
@@ -97,7 +97,7 @@ public:
 	{
 		if(N>=minimum)
 			mean = sum_x/(T)N;
-		else mean = mean/(mean-mean);
+		else mean = sqrt(-1);
 		return mean;
 	}
 };

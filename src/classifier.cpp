@@ -177,10 +177,10 @@ void classifier::compute_lkdp()
 */
 
 /*	printf("calcolo kdp 2km\n");
-	vol_lkdp_2km=moving_average_slope(vol_phidp_2km,2000.);
+	vol_lkdp_2km=moving_average_slope(vol_phidp_2km,2000.,true);
 	vol_lkdp_2km*=1000.;
 	printf("calcolo kdp 6 km\n");
-	vol_lkdp_6km.moving_average_slope(vol_phidp_6km,6000.);
+	vol_lkdp_6km.moving_average_slope(vol_phidp_6km,6000.,true);
 	vol_lkdp_6km*=1000.;
 
 	double lkdp=0;
@@ -300,9 +300,9 @@ void classifier::correct_phidp()
 	// It is assumed that vol_phidp exist and has been initialized
 	// moving window average over a range length of 2km and 6km as prescribed by Park et al. (2009)
 	printf("filtro phidp 2 km\n");
-	filter(vol_phidp,vol_phidp_2km,2000.);
+	filter(vol_phidp,vol_phidp_2km,2000.,true);
 	printf("filtro phidp 6 km\n");
-	filter(vol_phidp,vol_phidp_6km,6000.);
+	filter(vol_phidp,vol_phidp_6km,6000.,true);
 
 
 /*	FIR FILTER //
@@ -391,15 +391,15 @@ void classifier::compute_derived_volumes()
 */
 	// filtro i volumi
 	printf("filtro Z 1 km\n");
-	filter(vol_z,vol_z_1km,1000.);
+	filter(vol_z,vol_z_1km,1000.,false);
 	printf("filtro Zdr 2 km\n");
-	filter(vol_zdr,vol_zdr_2km,2000.);
+	filter(vol_zdr,vol_zdr_2km,2000.,false);
 	printf("filtro rhohv 2 km\n");
-	filter(vol_rhohv,vol_rhohv_2km,2000.);
+	filter(vol_rhohv,vol_rhohv_2km,2000.,false);
 
 	// calcolo le texture
-	textureSD(vol_z,vol_sdz,1000.);
-	textureSD(vol_phidp,vol_sdphidp,2000.);
+	textureSD(vol_z,vol_sdz,1000.,false);
+	textureSD(vol_phidp,vol_sdphidp,2000.,true);
 }
 
 void classifier::HCA_Park_2009()

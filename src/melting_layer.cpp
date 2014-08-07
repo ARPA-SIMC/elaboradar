@@ -43,12 +43,10 @@ double diff_height(PolarScan<double>& scan, unsigned rg_start, unsigned rg_end)
 
 void increment(MLpoints& matrix,PolarScan<double>& scan, unsigned az_idx, unsigned rg_idx)
 {
-//	cout<<"\t"<<rg_idx<<endl;
 	unsigned m_h_idx=matrix.h_idx(height(scan,rg_idx));
 	unsigned m_az_idx=matrix.deg2idx((double)az_idx*360./scan.beam_count);
-//	cout<<"\t height "<<m_h_idx<<" "<<matrix.rows()<<"\t azim "<<m_az_idx<<" "<<matrix.cols()<<endl;
 	matrix(m_h_idx,m_az_idx)++;
-//	cout<<"\t"<<rg_idx<<endl;
+	matrix.count++;
 }
 
 void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t)
@@ -75,10 +73,9 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 			
 			for(unsigned h=0;h<this->rows();h++)box_count+=(*this)(h,round_bm);
 		}
-		//if(az==0)cout<<box_count<<endl;
 		bottom_lim=bot_th*box_count;
 		top_lim=top_th*box_count;
-		if(box_count>=89)	// 1600/(360/20)
+		if(box_count>=100)
 		{
 			box_count=0;
 			for(unsigned h=0;h<this->rows();h++)
@@ -98,30 +95,53 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 	}
 }
 
+void MeltingLayer::fill_empty_azimuths()
+{
+	// X FACILE riempo con la media
+	// DIFFICILE interpolo fra settori buoni
+	Statistic<double> mean_bot;
+	Statistic<double> mean_top;
+	for(unsigned i=0;i<ML_bot.size();i++)
+	{
+		if(ML_bot[i]!=-99) mean_bot.feed(ML_bot[i]);
+		if(ML_top[i]!=-99) mean_top.feed(ML_top[i]);
+	}
+	mean_bot.compute_mean();
+	mean_top.compute_mean();
+	for(unsigned i=0;i<ML_bot.size();i++)
+	{
+		if(ML_bot[i]==-99) ML_bot[i]=mean_bot.mean;
+		if(ML_top[i]==-99) ML_top[i]=mean_top.mean;
+	}
+}
+
 MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, vector< vector< vector< HCA_Park> > >& HCA)
 {
 	cout<<"\tInizio melting Layer"<<endl;
-	filter(vol_z,vol_z_0_5km,500.);
-	filter(vol_zdr,vol_zdr_1km,1000.);
-	filter(vol_rhohv,vol_rhohv_1km,1000.);
+	filter(vol_z,vol_z_0_5km,500.,false);
+	filter(vol_zdr,vol_zdr_1km,1000.,false);
+	filter(vol_rhohv,vol_rhohv_1km,1000.,false);
 	cout<<"filtrati"<<endl;
 	//correzione attenuazione con phidp fatta a priori da chi ha invocato
 	//altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
 	double MAX_ML_H=7.;
-	double MIN_ML_H=0.;
+	double MIN_ML_H=1.;
 
 	MLpoints melting_points(MIN_ML_H,MAX_ML_H,vol_z.beam_count,200);
 	ML_top.resize(vol_z.beam_count);
 	ML_bot.resize(vol_z.beam_count);
 	unsigned curr_rg=0;
 	bool confirmed=false;
+
+//	Matrix2D<double> ML_coo;
+//	ML_coo.resize(7720,2);
 	
 	for(unsigned el=0;el<vol_rhohv_1km.size();el++)
 	{
 		cout<<"\t\t ML el ";
 		PolarScan<double>& rho=vol_rhohv_1km.scan(el);
-		if(rho.elevation>0.&&rho.elevation<10.)
+		if(rho.elevation>4.&&rho.elevation<10.)
 		{
 			cout<<el<<endl;
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
@@ -148,9 +168,10 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 						if(confirmed)
 						{
 							increment(melting_points,z,az,rg);
-							melting_points.count++;
 							confirmed=false;
 							//cout<< az*0.9 <<"\t"<<height(z,rg)<<endl;
+							//ML_coo(melting_points.count,0)=az;
+							//ML_coo(melting_points.count,1)=height(z,rg);
 						}
 					}
 				}
@@ -158,11 +179,14 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 		}
 	}
 
-	cout<<melting_points<<endl;
+//	cout<<melting_points<<endl;
+//	cout<<ML_coo;
+//	cout<<endl;
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
+	fill_empty_azimuths();
 	cout<<"Altezza ML"<<endl;
-//	for(unsigned i=0;i<ML_bot.size();i++)	cout<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+	for(unsigned i=0;i<ML_bot.size();i++)	cout<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
 /*	Matrix2D<double> img;
 	img.resize(2,ML_bot.size());
 	for(unsigned i=0;i<ML_bot.size();i++)
