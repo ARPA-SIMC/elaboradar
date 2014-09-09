@@ -75,7 +75,7 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 		}
 		bottom_lim=bot_th*box_count;
 		top_lim=top_th*box_count;
-		if(box_count>=100)
+		if(box_count>=200)
 		{
 			box_count=0;
 			for(unsigned h=0;h<this->rows();h++)
@@ -93,6 +93,13 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 			}
 		}
 	}
+}
+
+void MLpoints::save2file()
+{
+	ofstream OUT;
+	OUT.open("melting_points.dat");
+	OUT<<*this;
 }
 
 void MeltingLayer::fill_empty_azimuths()
@@ -118,15 +125,15 @@ void MeltingLayer::fill_empty_azimuths()
 MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, vector< vector< vector< HCA_Park> > >& HCA)
 {
 	cout<<"\tInizio melting Layer"<<endl;
-	filter(vol_z,vol_z_0_5km,500.,false);
-	filter(vol_zdr,vol_zdr_1km,1000.,false);
-	filter(vol_rhohv,vol_rhohv_1km,1000.,false);
+	filter(vol_z,vol_z_0_5km,1000.,false);
+	filter(vol_zdr,vol_zdr_1km,2000.,false);
+	filter(vol_rhohv,vol_rhohv_1km,2000.,false);
 	cout<<"filtrati"<<endl;
 	//correzione attenuazione con phidp fatta a priori da chi ha invocato
 	//altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
-	double MAX_ML_H=7.;
-	double MIN_ML_H=1.;
+	double MAX_ML_H=4.5;
+	double MIN_ML_H=0.;
 
 	MLpoints melting_points(MIN_ML_H,MAX_ML_H,vol_z.beam_count,200);
 	ML_top.resize(vol_z.beam_count);
@@ -136,6 +143,8 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 
 //	Matrix2D<double> ML_coo;
 //	ML_coo.resize(7720,2);
+	ofstream OUT;
+	OUT.open("ml.dat");
 	
 	for(unsigned el=0;el<vol_rhohv_1km.size();el++)
 	{
@@ -169,6 +178,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 						{
 							increment(melting_points,z,az,rg);
 							confirmed=false;
+							OUT<<el<<"\t"<<az<<"\t"<<height(z,rg)<<endl;
 							//cout<< az*0.9 <<"\t"<<height(z,rg)<<endl;
 							//ML_coo(melting_points.count,0)=az;
 							//ML_coo(melting_points.count,1)=height(z,rg);
@@ -183,6 +193,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 //	cout<<ML_coo;
 //	cout<<endl;
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
+	melting_points.save2file();
 	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
 	fill_empty_azimuths();
 	cout<<"Altezza ML"<<endl;
@@ -201,5 +212,4 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	gdal_init_once();
 	write_image(img, filename, gdal_extension_for_format(format));
 */
-	//TODO: fill empty azimuths
 }
