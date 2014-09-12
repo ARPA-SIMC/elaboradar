@@ -16,34 +16,19 @@
  * =====================================================================================
  */
 
-
 //#include "melting_layer.h"
 #include "classifier.h"
 #include "image.h"
 #include <string>
 #include "algo/elabora_volume.h"
 
-#define kea 8494666.666667	// c'è qualcosa in geo_par.h
-
 using namespace elaboradar;
 using namespace volume;
 using namespace std;
 
-double height(PolarScan<double>& scan, unsigned rg)
-{
-	double range=(double)rg*scan.cell_size;
-	double h=sqrt(range*range+kea*kea+2.*kea*range*sin(scan.elevation*M_PI/180.))-kea;	//meters
-	return h/1000.;	//km
-}
-
-double diff_height(PolarScan<double>& scan, unsigned rg_start, unsigned rg_end)
-{
-	return fabs(height(scan, rg_end)-height(scan, rg_start));
-}
-
 void increment(MLpoints& matrix,PolarScan<double>& scan, unsigned az_idx, unsigned rg_idx)
 {
-	unsigned m_h_idx=matrix.h_idx(height(scan,rg_idx));
+	unsigned m_h_idx=matrix.h_idx(scan.height(rg_idx));
 	unsigned m_az_idx=matrix.deg2idx((double)az_idx*360./scan.beam_count);
 	matrix(m_h_idx,m_az_idx)++;
 	matrix.count++;
@@ -108,36 +93,36 @@ void MeltingLayer::fill_empty_azimuths()
 	// DIFFICILE interpolo fra settori buoni
 	Statistic<double> mean_bot;
 	Statistic<double> mean_top;
-	for(unsigned i=0;i<ML_bot.size();i++)
+	for(unsigned i=0;i<bot.size();i++)
 	{
-		if(ML_bot[i]!=-99) mean_bot.feed(ML_bot[i]);
-		if(ML_top[i]!=-99) mean_top.feed(ML_top[i]);
+		if(bot[i]!=-99) mean_bot.feed(bot[i]);
+		if(top[i]!=-99) mean_top.feed(top[i]);
 	}
 	mean_bot.compute_mean();
 	mean_top.compute_mean();
-	for(unsigned i=0;i<ML_bot.size();i++)
+	for(unsigned i=0;i<bot.size();i++)
 	{
-		if(ML_bot[i]==-99) ML_bot[i]=mean_bot.mean;
-		if(ML_top[i]==-99) ML_top[i]=mean_top.mean;
+		if(bot[i]==-99) bot[i]=mean_bot.mean;
+		if(top[i]==-99) top[i]=mean_top.mean;
 	}
 }
 
 MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, vector< vector< vector< HCA_Park> > >& HCA)
 {
 	cout<<"\tInizio melting Layer"<<endl;
-	filter(vol_z,vol_z_0_5km,1000.,false);
+	filter(vol_z,vol_z_0_5km,1000.,false);	// TODO: se tengo questo range di filtro, semplificare la struttura e riusare i vol_1km vol_2km già filtrati
 	filter(vol_zdr,vol_zdr_1km,2000.,false);
 	filter(vol_rhohv,vol_rhohv_1km,2000.,false);
 	cout<<"filtrati"<<endl;
 	//correzione attenuazione con phidp fatta a priori da chi ha invocato
 	//altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
 
-	double MAX_ML_H=4.5;
+	double MAX_ML_H=4.5;	//TODO: check for climatological boundaries in ML height
 	double MIN_ML_H=0.;
 
 	MLpoints melting_points(MIN_ML_H,MAX_ML_H,vol_z.beam_count,200);
-	ML_top.resize(vol_z.beam_count);
-	ML_bot.resize(vol_z.beam_count);
+	top.resize(vol_z.beam_count);
+	bot.resize(vol_z.beam_count);
 	unsigned curr_rg=0;
 	bool confirmed=false;
 
@@ -155,20 +140,20 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 			cout<<el<<endl;
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
 			PolarScan<double>& zdr=vol_zdr_1km.scan(el);
-			for(unsigned rg=0;rg<rho.beam_size;rg++)	//TODO: check for climatological boundaries in ML height
+			for(unsigned rg=0;rg<rho.beam_size;rg++)
 			{
 				for(unsigned az=0;az<rho.beam_count;az++)
 				{
 					//if(el==5)cout<<rg<<" "<<rho.beam_size<<"\t"<<az<<" "<<rho.beam_count<<endl;
-					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo() && height(z,rg)>MIN_ML_H && height(z,rg)<MAX_ML_H)
+					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo() && z.height(rg)>MIN_ML_H && z.height(rg)<MAX_ML_H)
 					{
 						curr_rg=rg;
-						while(curr_rg<z.beam_size && diff_height(z,rg,curr_rg)<0.5 && !confirmed)
+						while(curr_rg<z.beam_size && z.diff_height(rg,curr_rg)<0.5 && !confirmed)
 						{
 							if(el==5&&az==165&&rg==448)cout<<curr_rg<<endl;
 							//if(el==4)if(az==85)if(rg>200)if(rg<250)cout<<rg<<" "<<rho(az,rg)<<" "<<z(az,rg)<<" "<<zdr(az,rg)<<endl;
 							if(z(az,curr_rg)>30 && z(az,curr_rg)<47 && zdr(az,curr_rg)>0.8 &&
-								 zdr(az,curr_rg)<2.5 && height(z,rg)>melting_points.Hmin)
+								zdr(az,curr_rg)<2.5 && z.height(rg)>melting_points.Hmin)
 							{
 								confirmed=true;
 							}
@@ -178,34 +163,28 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 						{
 							increment(melting_points,z,az,rg);
 							confirmed=false;
-							OUT<<el<<"\t"<<az<<"\t"<<height(z,rg)<<endl;
-							//cout<< az*0.9 <<"\t"<<height(z,rg)<<endl;
-							//ML_coo(melting_points.count,0)=az;
-							//ML_coo(melting_points.count,1)=height(z,rg);
+							OUT<<el<<"\t"<<az<<"\t"<<z.height(rg)<<endl;
 						}
 					}
 				}
 			}
 		}
 	}
-
-//	cout<<melting_points<<endl;
-//	cout<<ML_coo;
-//	cout<<endl;
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
 	melting_points.save2file();
-	melting_points.box_top_bottom(20.,0.2,0.8,ML_bot,ML_top);
+	melting_points.box_top_bottom(20.,0.2,0.8,bot,top);
 	fill_empty_azimuths();
+	
 	cout<<"Altezza ML"<<endl;
-	for(unsigned i=0;i<ML_bot.size();i++)	cout<<ML_bot[i]<<"\t"<<ML_top[i]<<endl;
+	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
 /*	Matrix2D<double> img;
-	img.resize(2,ML_bot.size());
-	for(unsigned i=0;i<ML_bot.size();i++)
+	img.resize(2,bot.size());
+	for(unsigned i=0;i<bot.size();i++)
 	{
-		img(0,i)=(ML_bot[i]*100);
-		img(1,i)=(ML_top[i]*100);
+		img(0,i)=(bot[i]*100);
+		img(1,i)=(top[i]*100);
 //		cout<<i<<" "<<endl;
-		img.col(i)<<(short)(ML_bot[i]*100),(short)(ML_top[i]*100);
+		img.col(i)<<(short)(bot[i]*100),(short)(top[i]*100);
 	}
 	const string filename="melting";
 	const string format="png";
