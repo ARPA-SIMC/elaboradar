@@ -381,8 +381,8 @@ void classifier::compute_derived_volumes()
 	compute_lkdp();
 	correct_for_attenuation();
 	
-/*	const unsigned elev=1;
-	const unsigned azim=85;
+/*	const unsigned elev=4;
+	const unsigned azim=370;
 	for(unsigned rg=0;rg<vol_phidp[elev].beam_size;rg++)
 	{
 		cout<<fixed<<vol_phidp[elev](azim,rg)<<"\t"<<vol_phidp_2km[elev](azim,rg)<<"\t"<<vol_phidp_6km[elev](azim,rg)<<"\t"
@@ -416,26 +416,16 @@ void classifier::HCA_Park_2009()
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
 			BEAM.resize(vol_z.scan(el).beam_size);
-			//cout<<"az "<<az<<endl;
-			//cout<<vol_lkdp_2km[el](az,180)<<endl;
 			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
 			{
-				//cout<<rg<<endl;
 				Z=vol_z_1km.scan(el).get(az,rg);
 				Zdr=vol_zdr_2km.scan(el).get(az,rg);
 				rhohv=vol_rhohv_2km.scan(el).get(az,rg);
-				//cout<<"carico 2 "<<Z<<endl;
 				lkdp=Z>40?vol_lkdp_2km[el].get(az,rg):vol_lkdp_6km[el].get(az,rg);
-				//lkdp=vol_lkdp_2km[el].get(az,rg);
-				//cout<<"carico 6 "<<Z<<endl;
-				//lkdp=vol_lkdp_6km[el].get(az,rg);
-				//cout<<"assunta lkdp "<<endl;
 				sdz=vol_sdz.scan(el).get(az,rg);
 				sdphidp=vol_sdphidp.scan(el).get(az,rg);
-
 				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp);
 				BEAM[rg]=hca;
-				//cout<<"riempito beam "<<endl;
 			}
 			SCAN[az]=BEAM;
 		}
@@ -444,10 +434,95 @@ void classifier::HCA_Park_2009()
 	// Dopo aver calcolato i valori di aggregazione cerco il melting layer
 	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
 	cout<<"uscito da ML"<<endl;
+	
+	double Rbb,Rb,Rt,Rtt;
+	double elev;
+	//double sinelup, sinel, sinelbot;
+	double Hb,Ht;
+	cout<<"applico ML criteria ad HCA"<<endl;
+	for(unsigned el=0;el<vol_z.size();el++)
+	{
+		elev=vol_z.scan(el).elevation;
+		cout<<"El "<<el<<"\t"<<elev<<endl;
+		//sinelup=sin((elev+0.45)*M_PI/180.);
+		//sinel=sin(elev*M_PI/180.);
+		//sinelbot=sin((elev-0.45)*M_PI/180.);
+		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
+		{
+			Ht=ML.top[az];
+			Hb=ML.bot[az];
+			/*
+			Rbb=-ker*sinelup+sqrt(ker*ker*sinelup*sinelup+Hb*(Hb+2*ker));
+			Rb=-ker*sinel+sqrt(ker*ker*sinel*sinel+Hb*(Hb+2*ker));
+			Rt=-ker*sinel+sqrt(ker*ker*sinel*sinel+Ht*(Ht+2*ker));
+			Rtt=-ker*sinelbot+sqrt(ker*ker*sinelbot*sinelbot+Ht*(Ht+2*ker));
+			*/	// TODO The direct inversion seems to be numerically unstable
+
+			bool fhbb=true;
+			bool fhb=true;
+			bool fht=true;
+			bool fhtt=true;
+			unsigned rg=0;
+			while(fhbb&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg,+0.45)<Hb)
+				{
+					vol_Ai[el][az][rg].Ai[DS]=0.;
+					vol_Ai[el][az][rg].Ai[WS]=0.;
+					vol_Ai[el][az][rg].Ai[CR]=0.;
+					vol_Ai[el][az][rg].Ai[GR]=0.;
+					rg++;
+				}
+				else fhbb=false;				
+			}
+			while(fhb&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg)<Hb)
+				{
+					vol_Ai[el][az][rg].Ai[DS]=0.;
+					vol_Ai[el][az][rg].Ai[CR]=0.;
+					rg++;
+				}
+				else fhb=false;
+			}
+			while(fht&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg)<Ht)
+				{
+					vol_Ai[el][az][rg].Ai[CR]=0.;
+					vol_Ai[el][az][rg].Ai[RA]=0.;
+					vol_Ai[el][az][rg].Ai[HR]=0.;
+					rg++;
+				}
+				else fht=false;
+			}
+			while(fhtt&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg,-0.45)<Ht)
+				{
+					vol_Ai[el][az][rg].Ai[RA]=0.;
+					vol_Ai[el][az][rg].Ai[HR]=0.;
+					rg++;
+				}
+				else fhtt=false;
+			}
+			while(rg<vol_z.scan(el).beam_size)
+			{
+				vol_Ai[el][az][rg].Ai[GC_AP]=0.;
+				vol_Ai[el][az][rg].Ai[BS]=0.;
+				vol_Ai[el][az][rg].Ai[WS]=0.;
+				vol_Ai[el][az][rg].Ai[BD]=0.;
+				vol_Ai[el][az][rg].Ai[RA]=0.;
+				vol_Ai[el][az][rg].Ai[HR]=0.;
+				rg++;
+			}
+
+		}
+	}
 	//TODO:check aggregation values
 	//TODO:check hard thresholds
-	unsigned elev=2;
-	unsigned azim=75;
+//	unsigned elev=2;
+//	unsigned azim=75;
 /*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{

@@ -11,6 +11,8 @@
 #include <memory>
 #include <Eigen/Core>
 
+#define ker 8494666.666667	// c'è qualcosa in geo_par.h
+
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
 
@@ -125,6 +127,18 @@ public:
         this->conservativeResize(Eigen::NoChange, new_beam_size);
         this->rightCols(new_beam_size - this->beam_size).colwise() = this->col(this->beam_size - 1);
         this->beam_size = new_beam_size;
+    }
+
+    double height(unsigned rg, double beam_half_width=0.0)
+    {
+	double range=(double)rg*cell_size;
+	double h=sqrt(range*range+ker*ker+2.*ker*range*sin((elevation+beam_half_width)*M_PI/180.))-ker;	//meters
+	return h/1000.;	//km
+    }
+
+    double diff_height(unsigned rg_start, unsigned rg_end)
+    {
+	return fabs(height(rg_end)-height(rg_start));
     }
 };
 

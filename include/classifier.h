@@ -6,8 +6,10 @@
 #include"volume.h"
 #include"volume/odim.h"
 #include"volume/loader.h"
-#include "volume/resample.h"
+#include"volume/resample.h"
 #include"site.h"
+
+//#include "algo/polar_cart.h"
 //#include"melting_layer.h"
 //#include"FIR_filter.h"
 
@@ -318,7 +320,6 @@ public:
  * \param [in] site - site object
  */ 
 	classifier(const std::string& file, const Site& site);
-
 /*!
  * \brief Initialize derived input data
  * could be part of the constructor
@@ -396,8 +397,8 @@ public:
 class MeltingLayer
 {
 public:
-	std::vector<double> ML_top;
-	std::vector<double> ML_bot;
+	std::vector<double> top;
+	std::vector<double> bot;
 
 	Volume<double> vol_z_0_5km;
 	Volume<double> vol_zdr_1km;
@@ -407,6 +408,7 @@ public:
 			std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
 
 	void fill_empty_azimuths();
+	
 };
 
 
