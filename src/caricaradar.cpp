@@ -13,12 +13,13 @@ using namespace std;
 
 int main(int argc,char* argv[])
 {
-	const Site& sito(Site::get("GAT"));
+	const Site& sito(Site::get("SPC"));
 	//site.name="GAT";
 	
 	Volume<double> volume;
 	volume::ODIMLoader loader(sito, false, 1024);
 
+/*
 	volume::Scans<double> full_volume;
 	loader.request_quantity(argv[2],&full_volume);
 	loader.load(argv[1]);
@@ -44,7 +45,7 @@ int main(int argc,char* argv[])
 //		textureSD(volume,Z_fil,1000.,false);
 //		textureSD(volume,Z_SD,1000.,false);
 	//}
-
+*/
 
 
 
@@ -61,6 +62,7 @@ int main(int argc,char* argv[])
 	cout<<"calcolati i volumi derivati"<<endl;
 
 	classificatore.HCA_Park_2009();
+	classificatore.print_ppi_class(5);
 	cout<<endl<<"Fine"<<endl;
 
 }
