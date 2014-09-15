@@ -16,9 +16,7 @@
  * =====================================================================================
  */
 
-//#include "melting_layer.h"
 #include "classifier.h"
-#include "image.h"
 #include <string>
 #include "algo/elabora_volume.h"
 
@@ -175,8 +173,8 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	melting_points.box_top_bottom(20.,0.2,0.8,bot,top);
 	fill_empty_azimuths();
 	
-	cout<<"Altezza ML"<<endl;
-	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
+//	cout<<"Altezza ML"<<endl;
+//	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
 /*	Matrix2D<double> img;
 	img.resize(2,bot.size());
 	for(unsigned i=0;i<bot.size();i++)

@@ -16,32 +16,32 @@
  * =====================================================================================
  */
 
-//#include "FIR_filter.h"
 #include "classifier.h"
 #include <radarlib/radar.hpp>
 #include "algo/elabora_volume.h"
+#include"image.h"
 
 using namespace elaboradar;
 using namespace volume;
 using namespace std;
 namespace odim = OdimH5v21;
 
-PROB::PROB(double z,double zdr,double rhohv, double lkdp, double sdz, double sdphidp)
+PROB::PROB(double z,double zdr,double rhohv, double lkdp, double sdz, double sdphidp, double vrad)
 {
 	this->resize(10,6);
-	this->row(0)=prob_class(GC_AP, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(1)=prob_class(   BS, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(2)=prob_class(   DS, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(3)=prob_class(   WS, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(4)=prob_class(   CR, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(5)=prob_class(   GR, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(6)=prob_class(   BD, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(7)=prob_class(   RA, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(8)=prob_class(   HR, z, zdr, rhohv, lkdp, sdz, sdphidp);
-	this->row(9)=prob_class(   RH, z, zdr, rhohv, lkdp, sdz, sdphidp);
+	this->row(0)=prob_class(GC_AP, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(1)=prob_class(   BS, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(2)=prob_class(   DS, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(3)=prob_class(   WS, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(4)=prob_class(   CR, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(5)=prob_class(   GR, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(6)=prob_class(   BD, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(7)=prob_class(   RA, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(8)=prob_class(   HR, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
+	this->row(9)=prob_class(   RH, z, zdr, rhohv, lkdp, sdz, sdphidp, vrad);
 }
 
-Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp)
+Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp, double vrad)
 {
 	Matrix2D<double> probability(1,6);
 	probability=Matrix2D::Constant(1,6,0.);
@@ -53,47 +53,77 @@ Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double 
 	switch(classe)
 	{
 		case GC_AP:
-			probability<<trap(15.,20.,70.,80.,z),trap(-4.,-2.,1.,2.,zdr),trap(0.5,0.6,0.9,0.95,rhohv),
-			trap(-30.,-25.,10.,20.,lkdp),trap(2.,4.,10.,15.,sdz),trap(30.,40.,50.,60.,sdphidp);
+			if(vrad<1.)
+			{
+				probability<<trap(15.,20.,70.,80.,z),trap(-4.,-2.,1.,2.,zdr),trap(0.5,0.6,0.9,0.95,rhohv),
+				trap(-30.,-25.,10.,20.,lkdp),trap(2.,4.,10.,15.,sdz),trap(30.,40.,50.,60.,sdphidp);
+			}
 			return probability;
 		case BS:
-			probability<<trap(5.,10.,20.,30.,z),trap(0.,2.,10.,12.,zdr),trap(0.3,0.5,0.8,0.83,rhohv),
-			trap(-30.,-25.,10.,10.,lkdp),trap(1.,2.,4.,7.,sdz),trap(8.,10.,40.,60.,sdphidp);
+			if(rhohv<0.97)
+			{
+				probability<<trap(5.,10.,20.,30.,z),trap(0.,2.,10.,12.,zdr),trap(0.3,0.5,0.8,0.83,rhohv),
+				trap(-30.,-25.,10.,10.,lkdp),trap(1.,2.,4.,7.,sdz),trap(8.,10.,40.,60.,sdphidp);
+			}
 			return probability;
 		case DS:
-			probability<<trap(5.,10.,35.,40.,z),trap(-0.3,0.,0.3,0.6,zdr),trap(0.95,0.98,1.,1.01,rhohv),
-			trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(zdr<2.)
+			{
+				probability<<trap(5.,10.,35.,40.,z),trap(-0.3,0.,0.3,0.6,zdr),trap(0.95,0.98,1.,1.01,rhohv),
+				trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case WS:
-			probability<<trap(25.,30.,40.,50.,z),trap(0.5,1.,2.,3.0,zdr),trap(0.88,0.92,0.95,0.985,rhohv),
-			trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(z>20.&&zdr>0.)
+			{
+				probability<<trap(25.,30.,40.,50.,z),trap(0.5,1.,2.,3.0,zdr),trap(0.88,0.92,0.95,0.985,rhohv),
+				trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case CR:
-			probability<<trap(0.,5.,20.,25.,z),trap(0.1,0.4,3.,3.3,zdr),trap(0.95,0.98,1.,1.01,rhohv),
-			trap(-5.,0.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(z<40.)
+			{
+				probability<<trap(0.,5.,20.,25.,z),trap(0.1,0.4,3.,3.3,zdr),trap(0.95,0.98,1.,1.01,rhohv),
+				trap(-5.,0.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case GR:
-			probability<<trap(25.,35.,50.,55.,z),trap(-0.3,0,f1,f1+0.3,zdr),trap(0.9,0.97,1.,1.01,rhohv),
-			trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(z>10.&&z<60.)
+			{
+				probability<<trap(25.,35.,50.,55.,z),trap(-0.3,0,f1,f1+0.3,zdr),trap(0.9,0.97,1.,1.01,rhohv),
+				trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case BD:
-			probability<<trap(20.,25.,45.,50.,z),trap(f2-0.3,f2,f3,f3+1.,zdr),trap(0.92,0.95,1.,1.01,rhohv),
-			trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(zdr>(f2-0.3))
+			{
+				probability<<trap(20.,25.,45.,50.,z),trap(f2-0.3,f2,f3,f3+1.,zdr),trap(0.92,0.95,1.,1.01,rhohv),
+				trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case RA:
-			probability<<trap(5.,10.,45.,50.,z),trap(f1-0.3,f1,f2,f2+0.5,zdr),trap(0.95,0.97,1.,1.01,rhohv),
-			trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(z<50.)
+			{
+				probability<<trap(5.,10.,45.,50.,z),trap(f1-0.3,f1,f2,f2+0.5,zdr),trap(0.95,0.97,1.,1.01,rhohv),
+				trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case HR:
-			probability<<trap(40.,45.,55.,60.,z),trap(f1-0.3,f1,f2,f2+0.5,zdr),trap(0.92,0.95,1.,1.01,rhohv),
-			trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(z>30.)
+			{
+				probability<<trap(40.,45.,55.,60.,z),trap(f1-0.3,f1,f2,f2+0.5,zdr),trap(0.92,0.95,1.,1.01,rhohv),
+				trap(g1-1.,g1,g2,g2+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		case RH:
-			probability<<trap(45.,50.,75.,80.,z),trap(-0.3,0.,f1,f1+0.5,zdr),trap(0.85,0.9,1.,1.01,rhohv),
-			trap(-10.,-4.,g1,g1+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			if(z>40.)
+			{
+				probability<<trap(45.,50.,75.,80.,z),trap(-0.3,0.,f1,f1+0.5,zdr),trap(0.85,0.9,1.,1.01,rhohv),
+				trap(-10.,-4.,g1,g1+1.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+			}
 			return probability;
 		default:
-			cout<<"ERROR!!!   unknown echo type "<<classe<<endl;
+			cout<<"ERROR!!!   PROBability calculator does not known the requested echo type "<<classe<<endl;
 			return probability;	// without it produces compile warnings and runtime error if reached
 	}
 }
@@ -106,10 +136,10 @@ double PROB::trap(double x1, double x2, double x3, double x4, double val)
 	else return 0.; // (val<=x1||val>=x4)
 }
 
-HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP)
-	: z(Z),zdr(ZDR),rhohv(RHOHV),lkdp(LKDP),sdz(SDZ),sdphidp(SDPHIDP)
+HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP, double VRAD)
+	: z(Z),zdr(ZDR),rhohv(RHOHV),lkdp(LKDP),sdz(SDZ),sdphidp(SDPHIDP), vrad(VRAD)
 {
-	PROB Pij(z,zdr,rhohv,lkdp,sdz,sdphidp);
+	PROB Pij(z,zdr,rhohv,lkdp,sdz,sdphidp,vrad);
 	CONF Qi;	// TODO: confidence vector calculation not implemented,
 			// currently it uses a vector of ones.
 	Matrix2D<double> Wij(10,6);
@@ -402,13 +432,104 @@ void classifier::compute_derived_volumes()
 	textureSD(vol_phidp,vol_sdphidp,2000.,true);
 }
 
+void classifier::melting_layer_classification(MeltingLayer& ML)
+{
+	double elev;
+	double Hb,Ht;
+	for(unsigned el=0;el<vol_z.size();el++)
+	{
+		elev=vol_z.scan(el).elevation;
+		cout<<"El "<<el<<"\t"<<elev<<endl;
+		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
+		{
+			Ht=ML.top[az];
+			Hb=ML.bot[az];
+			bool flag=true;
+			unsigned rg=0;
+			while(flag&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg,+0.45)<Hb)
+				{
+					vol_Ai[el][az][rg].Ai[DS]=0.;
+					vol_Ai[el][az][rg].Ai[WS]=0.;
+					vol_Ai[el][az][rg].Ai[CR]=0.;
+					vol_Ai[el][az][rg].Ai[GR]=0.;
+					rg++;
+				}
+				else flag=false;				
+			}
+			flag=true;
+			while(flag&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg)<Hb)
+				{
+					vol_Ai[el][az][rg].Ai[DS]=0.;
+					vol_Ai[el][az][rg].Ai[CR]=0.;
+					rg++;
+				}
+				else flag=false;
+			}
+			flag=true;
+			while(flag&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg)<Ht)
+				{
+					vol_Ai[el][az][rg].Ai[CR]=0.;
+					vol_Ai[el][az][rg].Ai[RA]=0.;
+					vol_Ai[el][az][rg].Ai[HR]=0.;
+					rg++;
+				}
+				else flag=false;
+			}
+			flag=true;
+			while(flag&&rg<vol_z.scan(el).beam_size)
+			{
+				if(vol_z.scan(el).height(rg,-0.45)<Ht)
+				{
+					vol_Ai[el][az][rg].Ai[RA]=0.;
+					vol_Ai[el][az][rg].Ai[HR]=0.;
+					rg++;
+				}
+				else flag=false;
+			}
+			flag=true;
+			while(rg<vol_z.scan(el).beam_size)
+			{
+				vol_Ai[el][az][rg].Ai[GC_AP]=0.;
+				vol_Ai[el][az][rg].Ai[BS]=0.;
+				vol_Ai[el][az][rg].Ai[WS]=0.;
+				vol_Ai[el][az][rg].Ai[BD]=0.;
+				vol_Ai[el][az][rg].Ai[RA]=0.;
+				vol_Ai[el][az][rg].Ai[HR]=0.;
+				rg++;
+			}
+
+		}
+	}
+}
+
+void classifier::class_designation()
+{
+	for(unsigned el=0;el<vol_z.size();el++)
+	{
+		vol_hca.push_back(PolarScan<EchoClass>(vol_z.scan(el).beam_count,vol_z.scan(el).beam_size, NC));
+		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
+		{
+			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
+			{
+				vol_hca[el](az,rg)=vol_Ai[el][az][rg].echo(0.00001);
+			}
+		}
+	}
+}
+
 void classifier::HCA_Park_2009()
 {
 	vector< vector< HCA_Park > > SCAN;
 	vector< HCA_Park > BEAM;
 	printf("inizio HCA\n");
 	vol_Ai.resize(vol_z.size());
-	double Z,Zdr,rhohv,lkdp,sdz,sdphidp;
+	double Z,Zdr,rhohv,lkdp,sdz,sdphidp,vrad;
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
 		cout<<"\tHCA el "<<el<<endl;
@@ -424,7 +545,8 @@ void classifier::HCA_Park_2009()
 				lkdp=Z>40?vol_lkdp_2km[el].get(az,rg):vol_lkdp_6km[el].get(az,rg);
 				sdz=vol_sdz.scan(el).get(az,rg);
 				sdphidp=vol_sdphidp.scan(el).get(az,rg);
-				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp);
+				vrad=vol_vrad.scan(el).get(az,rg);
+				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp,vrad);
 				BEAM[rg]=hca;
 			}
 			SCAN[az]=BEAM;
@@ -433,106 +555,40 @@ void classifier::HCA_Park_2009()
 	}
 	// Dopo aver calcolato i valori di aggregazione cerco il melting layer
 	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
-	cout<<"uscito da ML"<<endl;
-	
-	double Rbb,Rb,Rt,Rtt;
-	double elev;
-	//double sinelup, sinel, sinelbot;
-	double Hb,Ht;
 	cout<<"applico ML criteria ad HCA"<<endl;
-	for(unsigned el=0;el<vol_z.size();el++)
-	{
-		elev=vol_z.scan(el).elevation;
-		cout<<"El "<<el<<"\t"<<elev<<endl;
-		//sinelup=sin((elev+0.45)*M_PI/180.);
-		//sinel=sin(elev*M_PI/180.);
-		//sinelbot=sin((elev-0.45)*M_PI/180.);
-		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
-		{
-			Ht=ML.top[az];
-			Hb=ML.bot[az];
-			/*
-			Rbb=-ker*sinelup+sqrt(ker*ker*sinelup*sinelup+Hb*(Hb+2*ker));
-			Rb=-ker*sinel+sqrt(ker*ker*sinel*sinel+Hb*(Hb+2*ker));
-			Rt=-ker*sinel+sqrt(ker*ker*sinel*sinel+Ht*(Ht+2*ker));
-			Rtt=-ker*sinelbot+sqrt(ker*ker*sinelbot*sinelbot+Ht*(Ht+2*ker));
-			*/	// TODO The direct inversion seems to be numerically unstable
-
-			bool fhbb=true;
-			bool fhb=true;
-			bool fht=true;
-			bool fhtt=true;
-			unsigned rg=0;
-			while(fhbb&&rg<vol_z.scan(el).beam_size)
-			{
-				if(vol_z.scan(el).height(rg,+0.45)<Hb)
-				{
-					vol_Ai[el][az][rg].Ai[DS]=0.;
-					vol_Ai[el][az][rg].Ai[WS]=0.;
-					vol_Ai[el][az][rg].Ai[CR]=0.;
-					vol_Ai[el][az][rg].Ai[GR]=0.;
-					rg++;
-				}
-				else fhbb=false;				
-			}
-			while(fhb&&rg<vol_z.scan(el).beam_size)
-			{
-				if(vol_z.scan(el).height(rg)<Hb)
-				{
-					vol_Ai[el][az][rg].Ai[DS]=0.;
-					vol_Ai[el][az][rg].Ai[CR]=0.;
-					rg++;
-				}
-				else fhb=false;
-			}
-			while(fht&&rg<vol_z.scan(el).beam_size)
-			{
-				if(vol_z.scan(el).height(rg)<Ht)
-				{
-					vol_Ai[el][az][rg].Ai[CR]=0.;
-					vol_Ai[el][az][rg].Ai[RA]=0.;
-					vol_Ai[el][az][rg].Ai[HR]=0.;
-					rg++;
-				}
-				else fht=false;
-			}
-			while(fhtt&&rg<vol_z.scan(el).beam_size)
-			{
-				if(vol_z.scan(el).height(rg,-0.45)<Ht)
-				{
-					vol_Ai[el][az][rg].Ai[RA]=0.;
-					vol_Ai[el][az][rg].Ai[HR]=0.;
-					rg++;
-				}
-				else fhtt=false;
-			}
-			while(rg<vol_z.scan(el).beam_size)
-			{
-				vol_Ai[el][az][rg].Ai[GC_AP]=0.;
-				vol_Ai[el][az][rg].Ai[BS]=0.;
-				vol_Ai[el][az][rg].Ai[WS]=0.;
-				vol_Ai[el][az][rg].Ai[BD]=0.;
-				vol_Ai[el][az][rg].Ai[RA]=0.;
-				vol_Ai[el][az][rg].Ai[HR]=0.;
-				rg++;
-			}
-
-		}
-	}
-	//TODO:check aggregation values
-	//TODO:check hard thresholds
-//	unsigned elev=2;
-//	unsigned azim=75;
-/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+	melting_layer_classification(ML);
+	class_designation();
+/*	unsigned elev=2;
+	unsigned azim=216;
+	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
-		cout.precision(3);
-		cout<<fixed<<vol_Ai[elev][azim][rg].Ai[GC_AP]<<" "<<vol_Ai[elev][azim][rg].Ai[BS]<<" "<<
-		vol_Ai[elev][azim][rg].Ai[DS]<<" "<<vol_Ai[elev][azim][rg].Ai[WS]<<" "<<
-		vol_Ai[elev][azim][rg].Ai[CR]<<" "<<vol_Ai[elev][azim][rg].Ai[GR]<<" "<<
-		vol_Ai[elev][azim][rg].Ai[BD]<<" "<<vol_Ai[elev][azim][rg].Ai[RA]<<" "<<
-		vol_Ai[elev][azim][rg].Ai[HR]<<" "<<vol_Ai[elev][azim][rg].Ai[RH]<<endl;
+		cout.precision(5);
+		cout<<fixed<<vol_Ai[elev][azim][rg].Ai[GC_AP]<<"\t"<<vol_Ai[elev][azim][rg].Ai[BS]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[DS]<<"\t"<<vol_Ai[elev][azim][rg].Ai[WS]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[CR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[GR]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[BD]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RA]<<"\t"<<
+		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<"\t"<<
+		vol_hca[elev](azim,rg)<<endl;
 	}
 */
-	
+}
+
+void classifier::print_ppi_class(unsigned elev)
+{
+	const string filename="class.png";
+	const string format="png";
+	gdal_init_once();
+	Matrix2D<unsigned short> img;
+	img=vol_hca[elev].cast<unsigned short>();
+	img*=6553;
+/*	unsigned azim=350;
+	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
+	{
+		cout<<img(azim,rg)<<endl;
+	}
+*/	//gdal_extension_for_format(format)
+	//write_image(img, filename, "PNG");
+	write_image(img, filename, "PNG");
+
 }
