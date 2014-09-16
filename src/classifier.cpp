@@ -18,6 +18,7 @@
 
 #include "classifier.h"
 #include <radarlib/radar.hpp>
+#include <sstream>
 #include "algo/elabora_volume.h"
 #include"image.h"
 
@@ -574,21 +575,28 @@ void classifier::HCA_Park_2009()
 */
 }
 
-void classifier::print_ppi_class(unsigned elev)
+void classifier::print_ppi_class(int elev=-1)
 {
-	const string filename="class.png";
-	const string format="png";
 	gdal_init_once();
-	Matrix2D<unsigned short> img;
-	img=vol_hca[elev].cast<unsigned short>();
-	img*=6553;
-/*	unsigned azim=350;
-	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
+	if(elev>=0)
 	{
-		cout<<img(azim,rg)<<endl;
+		ostringstream filename;
+		filename<<"class_"<<elev<<".png";
+		Matrix2D<unsigned short> img;
+		img=vol_hca[elev].cast<unsigned short>();
+		img*=6553;
+		write_image(img, filename.str(), "PNG");
 	}
-*/	//gdal_extension_for_format(format)
-	//write_image(img, filename, "PNG");
-	write_image(img, filename, "PNG");
-
+	else
+	{
+		for(unsigned el=0;el<vol_hca.size();el++)
+		{
+			ostringstream filename;
+			filename<<"class_"<<el<<".png";
+			Matrix2D<unsigned short> img;
+			img=vol_hca[el].cast<unsigned short>();
+			img*=6553;
+			write_image(img, filename.str(), "PNG");
+		}
+	}
 }
