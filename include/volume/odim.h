@@ -26,6 +26,8 @@ struct ODIMLoader : public volume::Loader
 
     // Create or reuse a scan at position idx, with the given beam size
     void make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell);
+
+    void store();
 };
 
 }

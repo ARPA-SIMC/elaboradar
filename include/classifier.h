@@ -9,10 +9,6 @@
 #include"volume/resample.h"
 #include"site.h"
 
-//#include "algo/polar_cart.h"
-//#include"melting_layer.h"
-//#include"FIR_filter.h"
-
 #include<string>
 #include<iostream>
 #include<fstream>
@@ -45,7 +41,8 @@ enum EchoClass {
 	BD,	// big drops
 	RA,	// light and moderate rain
 	HR,	// heavy rain
-	RH	// mixture of rain and hail
+	RH,	// mixture of rain and hail
+	NC	// not classified
 };
 
 inline std::ostream& operator<<(std::ostream& oss, EchoClass& ECl)
@@ -82,6 +79,9 @@ inline std::ostream& operator<<(std::ostream& oss, EchoClass& ECl)
 		case RH:
 			oss<<"RH";
 			break;
+		case NC:
+			oss<<"NC";
+			break;
 		default:
 			oss<<"unknown echo type "<<ECl;
 	}
@@ -103,7 +103,7 @@ public:
 /*!
  * Constructor
  */
-	PROB(double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp);
+	PROB(double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp, double vrad);
 	
 private:
 /*!
@@ -133,7 +133,39 @@ private:
 /*!
  * vector of trapezoidal probability for a specific class of echo
  */
-	Matrix2D<double> prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp);
+	Matrix2D<double> prob_class(EchoClass classe,double z, double zdr, double rhohv, double lkdp, double sdz, double sdphidp, double vrad);
+};
+
+/*
+ * ==================================================================
+ *	      Class: MLpoints
+ *	Description: store ML points in a azimuth height matrix
+ * ==================================================================
+ */
+/*!
+ * 	\brief MLpoints
+ * 	Melting Layer Points matrix AzH
+ */
+class MLpoints : public Matrix2D<unsigned>
+{
+public:
+	double Hmin,Hmax;	// km
+	unsigned count;
+
+	MLpoints(double minHeight,double maxHeight,unsigned az_count,unsigned height_count) 
+	     : 	Matrix2D<unsigned>(Matrix2D::Constant(height_count,az_count,0)),
+		Hmin(minHeight),Hmax(maxHeight),count(0) {}
+
+	double azimuth_deg(unsigned az_idx){return (double)az_idx*360./(double)this->cols();}
+	double azimuth_rad(unsigned az_idx){return (double)az_idx*2.*M_PI/(double)this->cols();}
+	unsigned rad2idx(double rad){return (unsigned)(rad*(double)this->cols()/(2.*M_PI));}
+	unsigned deg2idx(double deg){return (unsigned)(deg*(double)this->cols()/360.);}
+
+	double height(unsigned h_idx){return Hmin+(double)h_idx*(Hmax-Hmin)/(double)this->rows();}
+	unsigned h_idx(double height){return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));}
+
+	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
+	void save2file();
 };
 
 /*
@@ -171,7 +203,7 @@ public:
 /*!
  * Passed input variables
  */
-	double z,zdr,rhohv,lkdp,sdz,sdphidp;
+	double z,zdr,rhohv,lkdp,sdz,sdphidp,vrad;
 /*!
  * Vector of aggregation classes
  */
@@ -185,7 +217,7 @@ public:
 /*!
  * Constructor
  */
-	HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP);
+	HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP, double VRAD);
 /*!
  * Search for non meteorological echoes
  */
@@ -207,15 +239,43 @@ public:
 		else return true;
 	}
 
-	EchoClass echo()
+	EchoClass echo(double minimum=0.)
 	{
 		unsigned idx;
 		Ai.maxCoeff(&idx);
-		EchoClass hca=(EchoClass)idx;
+		EchoClass hca=NC;
+		if(Ai(idx)>minimum) hca=(EchoClass)idx;
 		return hca;
 	}
 };
 
+/*
+ * ==================================================================
+ *	      Class: MeltingLayer
+ *	Description: compute melting layer boundaries from polarimetry
+ * ==================================================================
+ */
+/*!
+ * 	\brief MeltingLayer
+ * 	Melting Layer Detection Algorithm MLDA
+ * 	Giangrande et al. 2008
+ */
+class MeltingLayer
+{
+public:
+	std::vector<double> top;
+	std::vector<double> bot;
+
+	Volume<double> vol_z_0_5km;
+	Volume<double> vol_zdr_1km;
+	Volume<double> vol_rhohv_1km;
+
+	MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, 
+			std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
+
+	void fill_empty_azimuths();
+	
+};
 
 /*
  * ==================================================================
@@ -348,71 +408,21 @@ public:
  * Park et al. (2009) HCA algorithm
  */
 	void HCA_Park_2009();
-};
-
-/*
- * ==================================================================
- *	      Class: MLpoints
- *	Description: store ML points in a azimuth height matrix
- * ==================================================================
- */
 /*!
- * 	\brief MLpoints
- * 	Melting Layer Points matrix AzH
+ * \brief Check consistency respect to Melting Layer height
  */
-class MLpoints : public Matrix2D<unsigned>
-{
-public:
-	double Hmin,Hmax;	// km
-	unsigned count;
+	void melting_layer_classification(MeltingLayer& ML);
 
-	MLpoints(double minHeight,double maxHeight,unsigned az_count,unsigned height_count) 
-	     : 	Matrix2D<unsigned>(Matrix2D::Constant(height_count,az_count,0)),
-		Hmin(minHeight),Hmax(maxHeight),count(0) {}
-
-	double azimuth_deg(unsigned az_idx){return (double)az_idx*360./(double)this->cols();}
-	double azimuth_rad(unsigned az_idx){return (double)az_idx*2.*M_PI/(double)this->cols();}
-	unsigned rad2idx(double rad){return (unsigned)(rad*(double)this->cols()/(2.*M_PI));}
-	unsigned deg2idx(double deg){return (unsigned)(deg*(double)this->cols()/360.);}
-
-	double height(unsigned h_idx){return Hmin+(double)h_idx*(Hmax-Hmin)/(double)this->rows();}
-	unsigned h_idx(double height){return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));}
-
-	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
-	void save2file();
-};
-
-
-/*
- * ==================================================================
- *	      Class: MeltingLayer
- *	Description: compute melting layer boundaries from polarimetry
- * ==================================================================
- */
 /*!
- * 	\brief MeltingLayer
- * 	Melting Layer Detection Algorithm MLDA
- * 	Giangrande et al. 2008
+ * \brief Designate class echo
+ * Find the maximum of aggregation values
  */
-class MeltingLayer
-{
-public:
-	std::vector<double> top;
-	std::vector<double> bot;
-
-	Volume<double> vol_z_0_5km;
-	Volume<double> vol_zdr_1km;
-	Volume<double> vol_rhohv_1km;
-
-	MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, 
-			std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
-
-	void fill_empty_azimuths();
-	
+	void class_designation();
+/*!
+ * \brief print PPI of EchoClass
+ */
+	void print_ppi_class(int elev=-1);
 };
-
-
-
 
 } // namespace volume
 } // namespace elaboradar

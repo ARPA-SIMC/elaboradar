@@ -26,7 +26,7 @@ struct Loader
     std::vector<double> elev_array;
 
     /**
-     * If this is greather than zero, truncate each beam to this number of
+     * If this is greater than zero, truncate each beam to this number of
      * samples
      */
     unsigned max_bin;

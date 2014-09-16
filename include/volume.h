@@ -78,7 +78,7 @@ public:
     }
 #endif
 
-    template<typename OT>
+    template<class OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
         : Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, default_value)),
           beam_count(s.beam_count), beam_size(s.beam_size),
@@ -265,7 +265,6 @@ public:
             res = std::max(res, scan.beam_size);
         return res;
     }
-
 
     double elevation_min() const
     {

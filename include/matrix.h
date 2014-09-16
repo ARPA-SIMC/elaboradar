@@ -28,7 +28,7 @@ Scalar operator()(const Scalar& argument) const { return std::log10(argument); }
 };
 
 /// Base for all matrices we use, since we rely on row-major data
-template<typename T>
+template<class T>
 struct Matrix2D : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
 {
     using Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Matrix;
