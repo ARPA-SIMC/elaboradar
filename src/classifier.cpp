@@ -189,6 +189,7 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	volume::volume_resample<double>(full_volume_phidp, loader_all.azimuth_maps, vol_phidp, volume::merger_closest<double>);
 	volume::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, volume::merger_closest<double>);
 	volume::volume_resample<double>(full_volume_snr, loader_all.azimuth_maps, vol_snr, volume::merger_closest<double>);
+	vol_hca.quantity="CLASS";
 }
 
 void classifier::compute_lkdp()
