@@ -58,7 +58,7 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 		}
 		bottom_lim=bot_th*box_count;
 		top_lim=top_th*box_count;
-		if(box_count>=200)
+		if(box_count>=100)
 		{
 			box_count=0;
 			for(unsigned h=0;h<this->rows();h++)

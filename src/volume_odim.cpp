@@ -161,5 +161,55 @@ void ODIMLoader::load(const std::string& pathname)
         i.second->load_info = load_info;
 }
 
+void ODIMStorer::store(const std::string& pathname)
+{
+//    LOG_CATEGORY("radar.io");
+
+    namespace odim = OdimH5v21;
+    using namespace Radar;
+    using namespace std;
+
+    shared_ptr<LoadInfo> load_info = make_shared<LoadInfo>();
+    load_info->filename = pathname;
+
+    unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
+    unique_ptr<odim::PolarVolume> volume(factory->createPolarVolume(pathname));
+
+//    unsigned max_elev=0;
+    for(unsigned i=0;i<to_store_int.size();i++)
+	for(unsigned j=0;j<to_store_int[i]->size();j++)
+	{
+		unique_ptr<odim::PolarScan> scan(volume->createScan());
+		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_int[i]->quantity));
+		data->setGain((double)to_store_int[i]->scan(j).gain);
+		data->setOffset((double)to_store_int[i]->scan(j).offset);
+		data->setNodata((double)to_store_int[i]->scan(j).nodata);
+		data->setUndetect((double)to_store_int[i]->scan(j).undetect);
+		odim::RayMatrix<unsigned char> matrix;
+        	matrix.resize(to_store_int[i]->scan(j).beam_count,to_store_int[i]->scan(j).beam_size);
+		for(unsigned ii=0;ii<to_store_int[i]->scan(j).beam_count;ii++)
+			for(unsigned jj=0;jj<to_store_int[i]->scan(j).beam_size;jj++)
+				matrix.elem(ii,jj) = to_store_int[i]->scan(j)(ii,jj);
+		data->writeData(matrix);
+	}
+    for(unsigned i=0;i<to_store_fp.size();i++)
+	for(unsigned j=0;j<to_store_fp[i]->size();j++)
+	{
+		unique_ptr<odim::PolarScan> scan(volume->createScan());
+		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_fp[i]->quantity));
+		data->setGain((double)to_store_fp[i]->scan(j).gain);
+		data->setOffset((double)to_store_fp[i]->scan(j).offset);
+		data->setNodata((double)to_store_fp[i]->scan(j).nodata);
+		data->setUndetect((double)to_store_fp[i]->scan(j).undetect);
+		odim::RayMatrix<float> matrix;
+        	matrix.resize(to_store_int[i]->scan(j).beam_count,to_store_int[i]->scan(j).beam_size);
+		for(unsigned ii=0;ii<to_store_fp[i]->scan(j).beam_count;ii++)
+			for(unsigned jj=0;jj<to_store_fp[i]->scan(j).beam_size;jj++)
+				matrix.elem(ii,jj) = to_store_fp[i]->scan(j)(ii,jj);
+		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),H5::PredType::NATIVE_UINT16);
+	}
+}
+
+
 }	// namespace volume
 }	// namespace elaboradar

@@ -6,6 +6,7 @@
 #include "volume/azimuthmap.h"
 #include <string>
 #include <map>
+#include <vector>
 
 namespace elaboradar {
 namespace volume {
@@ -26,12 +27,32 @@ struct ODIMLoader : public volume::Loader
 
     // Create or reuse a scan at position idx, with the given beam size
     void make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell);
-
-    void store();
 };
 
-}
-}
+/*
+union bit64
+{
+	double fp64;
+	int64_t int64;
+};
+*/
+
+class ODIMStorer : public volume::Loader
+{
+public:
+    ODIMStorer(const Site& site, bool medium=false, unsigned max_bin=0)
+        : Loader(site, medium, false, max_bin)
+    {
+    }
+    std::vector<Volume<double>*> to_store_fp;
+    std::vector<Volume<int>*> to_store_int;
+    void store_quantity_fp(Volume<double>* vol_fp) {to_store_fp.push_back(vol_fp);}
+    void store_quantity_int(Volume<int>* vol_int) {to_store_int.push_back(vol_int);}
+    void store(const std::string& pathname);
+};
+
+} // volume
+} // elaboradars
 
 #endif
 
