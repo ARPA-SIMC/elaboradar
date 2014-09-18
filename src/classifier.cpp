@@ -515,6 +515,7 @@ void classifier::class_designation()
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
 		vol_hca.push_back(PolarScan<EchoClass>(vol_z.scan(el).beam_count,vol_z.scan(el).beam_size, NC));
+		vol_hca[el].elevation=vol_z[el].elevation;
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
 			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)

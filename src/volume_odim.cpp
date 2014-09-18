@@ -173,19 +173,27 @@ void ODIMStorer::store(const std::string& pathname)
     load_info->filename = pathname;
 
     unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
-    unique_ptr<odim::PolarVolume> volume(factory->createPolarVolume(pathname));
+    unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
 //    unsigned max_elev=0;
     for(unsigned i=0;i<to_store_int.size();i++)
 	for(unsigned j=0;j<to_store_int[i]->size();j++)
 	{
-		unique_ptr<odim::PolarScan> scan(volume->createScan());
+		vector<odim::PolarScan*> scans;
+		scans = volume->getScans(to_store_int[i]->scan(j).elevation,0.1);
+		shared_ptr<odim::PolarScan> scan;
+		if(scans.size()) scan.reset(scans[0]);
+		else
+		{
+			scan.reset(volume->createScan());
+			scan->setEAngle(to_store_int[i]->scan(j).elevation);
+		}
 		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_int[i]->quantity));
 		data->setGain((double)to_store_int[i]->scan(j).gain);
 		data->setOffset((double)to_store_int[i]->scan(j).offset);
 		data->setNodata((double)to_store_int[i]->scan(j).nodata);
 		data->setUndetect((double)to_store_int[i]->scan(j).undetect);
-		odim::RayMatrix<unsigned char> matrix;
+		odim::RayMatrix<unsigned short> matrix;
         	matrix.resize(to_store_int[i]->scan(j).beam_count,to_store_int[i]->scan(j).beam_size);
 		for(unsigned ii=0;ii<to_store_int[i]->scan(j).beam_count;ii++)
 			for(unsigned jj=0;jj<to_store_int[i]->scan(j).beam_size;jj++)
@@ -195,7 +203,15 @@ void ODIMStorer::store(const std::string& pathname)
     for(unsigned i=0;i<to_store_fp.size();i++)
 	for(unsigned j=0;j<to_store_fp[i]->size();j++)
 	{
-		unique_ptr<odim::PolarScan> scan(volume->createScan());
+		vector<odim::PolarScan*> scans;
+		scans = volume->getScans(to_store_fp[i]->scan(j).elevation,0.1);
+		odim::PolarScan* scan;
+		if(scans.size()) scan = scans[0];
+		else
+		{
+			scan = (volume->createScan());
+			scan->setEAngle(to_store_fp[i]->scan(j).elevation);
+		}
 		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_fp[i]->quantity));
 		data->setGain((double)to_store_fp[i]->scan(j).gain);
 		data->setOffset((double)to_store_fp[i]->scan(j).offset);
