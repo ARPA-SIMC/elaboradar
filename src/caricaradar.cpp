@@ -41,7 +41,7 @@ int main(int argc,char* argv[])
 	cout<<classificatore.vol_hca.scan(0).get(0,0)<<" "<<storer.to_store_int[0]->scan(0).get(0,0)<<endl;
 	cout<<classificatore.vol_hca.scan(0).get(20,200)<<" "<<storer.to_store_int[0]->scan(0).get(20,200)<<endl;
 
-	storer.store("volume_scritto.h5");
+	storer.store("h5vol.h5");
 
 	cout<<endl<<"Fine"<<endl;
 	
