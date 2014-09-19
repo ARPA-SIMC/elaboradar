@@ -190,12 +190,12 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	volume::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, volume::merger_closest<double>);
 	volume::volume_resample<double>(full_volume_snr, loader_all.azimuth_maps, vol_snr, volume::merger_closest<double>);
 	vol_hca.quantity="CLASS";
+
+	cout<<vol_z.load_info->acq_date<<endl;
 }
 
 void classifier::compute_lkdp()
 {
-	// TODO: la seguente è la traduzione del metodo per il calcolo di lkdp di Park et al. (2009)
-	// capire se si vuole fare diverso
 
 /*	// TODO: da reinserire negli opportuni polarscan
 	vol_lkdp_2km.quantity.name="LKDP";
@@ -208,33 +208,7 @@ void classifier::compute_lkdp()
 	vol_lkdp_6km.quantity.undetect=-9999.;
 */
 
-/*	printf("calcolo kdp 2km\n");
-	vol_lkdp_2km=moving_average_slope(vol_phidp_2km,2000.,true);
-	vol_lkdp_2km*=1000.;
-	printf("calcolo kdp 6 km\n");
-	vol_lkdp_6km.moving_average_slope(vol_phidp_6km,6000.,true);
-	vol_lkdp_6km*=1000.;
-
-	double lkdp=0;
-	for(unsigned el=0; el<vol_phidp.size();el++)
-	{
-		PolarScan<double>& lkdp2 = vol_lkdp_2km.scan(el);
-		PolarScan<double>& lkdp6 = vol_lkdp_6km.scan(el);
-		for(unsigned az=0; az<lkdp2.beam_count;az++)
-		{
-			for(unsigned rg=0; rg<lkdp2.beam_size;rg++)
-			{
-				lkdp=lkdp2.get(az,rg);
-				lkdp2.set(az,rg,lkdp>0.001?10.*std::log10(lkdp):-30.);
-				lkdp=lkdp6.get(az,rg);
-				lkdp6.set(az,rg,lkdp>0.001?10.*std::log10(lkdp):-30.);
-			}
-		}
-	}
-*/
 	/// METODO DI VULPIANI 2012 ///
-//	unsigned win_6km=25;
-//	unsigned win_2km=9;
 	unsigned half_win6km=12;
 	unsigned half_win2km=4;
 	double kdp;
@@ -335,42 +309,6 @@ void classifier::correct_phidp()
 	filter(vol_phidp,vol_phidp_2km,2000.,true);
 	printf("filtro phidp 6 km\n");
 	filter(vol_phidp,vol_phidp_6km,6000.,true);
-
-
-/*	FIR FILTER //
-	for(unsigned el=0; el<vol_phidp.size();el++)
-	{
-		cout<<"el= "<<el<<endl;
-		double* re_in = new double[vol_phidp.scan(el).beam_size];
-		FIR_filter fil(vol_phidp.scan(el).beam_size,re_in);
-		for(unsigned az=0;az<vol_phidp.scan(el).beam_count;az++)
-		{
-			vol_phidp.scan(el).set(az,0,vol_phidp.scan(el).row(az).mean());
-			for(unsigned rg=1;rg<vol_phidp.scan(el).beam_size;rg++)
-			{
-				if(vol_phidp.scan(el).get(az,rg)<-179.) vol_phidp.scan(el).set(az,rg,vol_phidp.scan(el).get(az,rg-1));
-			}
-			fil.feed(vol_phidp.scan(el).row_ptr(az));
-			fil.perform();
-
-			///if(el==5&&az==65)
-			{
-				//for(unsigned rg=0;rg<vol_phidp.scan(el).beam_size;rg++) vol_phidp.scan(el).set(az,rg,rg==0?1:0);
-				//fil.feed(vol_phidp.scan(el).row_ptr(az));
-				//fil.perform();
-				//fil.dump();
-				cout<<endl<<endl;
-				for(unsigned i=0;i<400;i++)
-				{
-					cout<<fixed<<vol_phidp.scan(el).get(az,i)<<"\t"<<re_in[i]/vol_phidp.scan(el).beam_size<<endl;
-				}
-				cout<<endl<<endl;
-			}///
-		}
-		cout<<"fine el= "<<el<<endl;
-		delete re_in;
-	}
-*/
 }
 
 void classifier::correct_for_attenuation()

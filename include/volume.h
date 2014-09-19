@@ -157,6 +157,10 @@ namespace volume {
 struct LoadInfo
 {
     std::string filename;
+    std::string location;
+//    std::string date;
+//    std::string time;
+
     // Acquisition date
     time_t acq_date;
     bool declutter_rsp; // ?

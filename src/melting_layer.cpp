@@ -17,7 +17,6 @@
  */
 
 #include "classifier.h"
-#include <string>
 #include "algo/elabora_volume.h"
 
 using namespace elaboradar;
@@ -78,13 +77,6 @@ void MLpoints::box_top_bottom(double box_width_deg, double bot_th, double top_th
 	}
 }
 
-void MLpoints::save2file()
-{
-	ofstream OUT;
-	OUT.open("melting_points.dat");
-	OUT<<*this;
-}
-
 void MeltingLayer::fill_empty_azimuths()
 {
 	// X FACILE riempo con la media
@@ -126,8 +118,11 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 
 //	Matrix2D<double> ML_coo;
 //	ML_coo.resize(7720,2);
+	ostringstream ML;
+	ostringstream DATE;
+	DATE<<vol_z.load_info->acq_date<<".ml";
 	ofstream OUT;
-	OUT.open("ml.dat");
+	OUT.open(DATE.str());
 	
 	for(unsigned el=0;el<vol_rhohv_1km.size();el++)
 	{
@@ -161,15 +156,15 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 						{
 							increment(melting_points,z,az,rg);
 							confirmed=false;
-							OUT<<el<<"\t"<<az<<"\t"<<z.height(rg)<<endl;
+							ML<<el<<"\t"<<az<<"\t"<<z.height(rg)<<endl;
 						}
 					}
 				}
 			}
 		}
 	}
+	OUT<<ML.str();
 	cout<<"I punti ML trovati sono "<<melting_points.count<<endl;
-	melting_points.save2file();
 	melting_points.box_top_bottom(20.,0.2,0.8,bot,top);
 	fill_empty_azimuths();
 	
