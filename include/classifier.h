@@ -12,6 +12,7 @@
 #include<string>
 #include<iostream>
 #include<fstream>
+#include<sstream>
 
 namespace elaboradar {
 namespace volume {
@@ -165,7 +166,6 @@ public:
 	unsigned h_idx(double height){return (unsigned)((height-Hmin)*(double)this->rows()/(Hmax-Hmin));}
 
 	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
-	void save2file();
 };
 
 /*
@@ -412,7 +412,6 @@ public:
  * \brief Check consistency respect to Melting Layer height
  */
 	void melting_layer_classification(MeltingLayer& ML);
-
 /*!
  * \brief Designate class echo
  * Find the maximum of aggregation values

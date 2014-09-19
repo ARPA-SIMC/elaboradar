@@ -28,6 +28,7 @@ void volume_resample(const Volume<T>& src, const AzimuthMap& azmap, Volume<T>& d
 {
     // Copy volume metadata
     dst.quantity = src.quantity;
+    dst.units = src.units;
     dst.load_info = src.load_info;
 
     for (unsigned iel = 0; iel < src.size(); ++iel)
