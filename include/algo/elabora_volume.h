@@ -36,11 +36,11 @@ PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 			if(good(raw,i,j))
 				fit.feed(0*raw.cell_size,raw(i,j));
 		scan.set(i,0,fit.compute_slope());
-		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
+		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);	// changed to undetect
 
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre=j-half_win;
+			pre=j-half_win-1;
 			post=j+half_win;
 			if(pre>=0)
 				if(good(raw,i,pre))
@@ -49,7 +49,7 @@ PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 				if(good(raw,i,post))
 					fit.feed(post*raw.cell_size,raw(i,post));
 			scan.set(i,j,fit.compute_slope());
-			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
+			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);	// changed to undetect
 		}
 	}
 	return scan;
@@ -70,7 +70,7 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 		for(unsigned j=0;j<half_len+1;j++)
 		{
 			if(good(raw,i,j)) rms.feed(raw(i,j));
-			for(unsigned k=1;k<=half_wid;k++)
+			for(unsigned k=1;k<=half_wid;k++) // 0 è già inclusa, se half_wid=0 non dovrebbe partire il for
 			{
 				pre_w=i-k;
 				post_w=i+k;
@@ -85,10 +85,10 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 			}
 		}
 		scan.set(i,0,rms.compute_dev_std());
-		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
+		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);	// changed to undetect
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre_l=j-half_len;
+			pre_l=j-half_len-1;
 			post_l=j+half_len;
 			if(pre_l>=0)
 			{
@@ -127,7 +127,11 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 				}
 			}
 			scan.set(i,j,rms.compute_dev_std());
-			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
+			if(scan(i,j)!=scan(i,j)) 
+			{
+				cout<<scan(i,j)<<" "<<rms.N<<" "<<rms.sum_x*rms.sum_x<<" "<<rms.sum_x2<<"\t";
+				scan.set(i,j,raw.nodata);
+			}
 		}
 	}
 	return scan;
@@ -163,10 +167,10 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wi
 			}
 		}
 		scan.set(i,0,filter.compute_mean());
-		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
+		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);	// change to undetect
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre_l=j-half_len;
+			pre_l=j-half_len-1;
 			post_l=j+half_len;
 			if(pre_l>=0)
 			{
@@ -205,7 +209,11 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wi
 				}
 			}
 			scan.set(i,j,filter.compute_mean());
-			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
+			if(scan(i,j)!=scan(i,j))
+			{
+				scan.set(i,j,raw.nodata);
+				cout<<scan(i,j)<<" ";
+			}
 		}
 	}
 	return scan;
@@ -242,6 +250,7 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double
 	{
 		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
 		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
+		std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
 		vol.push_back(make_rms_scan(raw.scan(i),window_length, window_width));
 	}
 }
