@@ -20,6 +20,8 @@ inline bool good(const PolarScan<T>& scan, unsigned row, unsigned col)
 		else return false;
 }
 
+//===========================PolarScan manipulators==========================//
+
 template<typename T>
 PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 {
@@ -54,31 +56,76 @@ PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 }
 
 template<typename T>
-PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned win)
+PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 {
-	unsigned half_win=0.5*(win-1);
+	unsigned half_len=0.5*(len-1);
+	unsigned half_wid=0.5*(wid-1);
 	PolarScan<T> scan(raw);
 	Statistic<T> rms;
-	int pre,post;
+	int pre_l,post_l;
+	int pre_w,post_w;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
 		rms.clear();
-		for(unsigned j=0;j<half_win+1;j++)
-			if(good(raw,i,j))
-				rms.feed(raw(i,j));
+		for(unsigned j=0;j<half_len+1;j++)
+		{
+			if(good(raw,i,j)) rms.feed(raw(i,j));
+			for(unsigned k=1;k<=half_wid;k++)
+			{
+				pre_w=i-k;
+				post_w=i+k;
+				if(pre_w<0) 
+					pre_w=raw.beam_count+pre_w;
+				if(post_w>=raw.beam_count)
+					post_w=post_w-raw.beam_count;
+				if(good(raw,pre_w,j))
+					rms.feed(raw(pre_w,j));
+				if(good(raw,post_w,j))
+					rms.feed(raw(post_w,j));
+			}
+		}
 		scan.set(i,0,rms.compute_dev_std());
 		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
-
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre=j-half_win;
-			post=j+half_win;
-			if(pre>=0)
-				if(good(raw,i,pre))
-					rms.slim(raw(i,pre));
-			if(post<raw.beam_size)
-				if(good(raw,i,post))
-					rms.feed(raw(i,post));
+			pre_l=j-half_len;
+			post_l=j+half_len;
+			if(pre_l>=0)
+			{
+				if(good(raw,i,pre_l))
+					rms.slim(raw(i,pre_l));
+				for(unsigned k=1;k<=half_wid;k++)
+				{
+					pre_w=i-k;
+					post_w=i+k;
+					if(pre_w<0) 
+						pre_w=raw.beam_count+pre_w;
+					if(post_w>=raw.beam_count)
+						post_w=post_w-raw.beam_count;
+					if(good(raw,pre_w,j))
+						rms.slim(raw(pre_w,pre_l));
+					if(good(raw,post_w,j))
+						rms.slim(raw(post_w,pre_l));
+				}
+			}
+			if(post_l<raw.beam_size)
+			{
+				if(good(raw,i,post_l))
+					rms.feed(raw(i,post_l));
+				for(unsigned k=1;k<=half_wid;k++)
+				{
+					pre_w=i-k;
+					post_w=i+k;
+					if(pre_w<0) 
+						pre_w=raw.beam_count+pre_w;
+					if(post_w>=raw.beam_count)
+						post_w=post_w-raw.beam_count;
+					if(good(raw,pre_w,j))
+						rms.feed(raw(pre_w,post_l));
+					if(good(raw,post_w,j))
+						rms.feed(raw(post_w,post_l));
+				}
+			}
 			scan.set(i,j,rms.compute_dev_std());
 			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
 		}
@@ -87,36 +134,84 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned win)
 }
 
 template<typename T>
-PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned win)
+PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 {
-	unsigned half_win=0.5*(win-1);
+	unsigned half_len=0.5*(len-1);
+	unsigned half_wid=0.5*(wid-1);
 	PolarScan<T> scan(raw);
 	Statistic<T> filter;
-	int pre,post;
+	int pre_l,post_l;
+	int pre_w,post_w;
 	for(unsigned i=0;i<raw.rows();i++)
 	{
 		filter.clear();
-		for(unsigned j=0;j<half_win+1;j++)
-			if(good(raw,i,j))
-				filter.feed(raw(i,j));
+		for(unsigned j=0;j<half_len+1;j++)
+		{
+			if(good(raw,i,j)) filter.feed(raw(i,j));
+			for(unsigned k=1;k<=half_wid;k++)
+			{
+				pre_w=i-k;
+				post_w=i+k;
+				if(pre_w<0) 
+					pre_w=raw.beam_count+pre_w;
+				if(post_w>=raw.beam_count)
+					post_w=post_w-raw.beam_count;
+				if(good(raw,pre_w,j))
+					filter.feed(raw(pre_w,j));
+				if(good(raw,post_w,j))
+					filter.feed(raw(post_w,j));
+			}
+		}
 		scan.set(i,0,filter.compute_mean());
 		if(scan(i,0)!=scan(i,0)) scan.set(i,0,raw.nodata);
 		for(unsigned j=1;j<raw.beam_size;j++)
 		{
-			pre=j-half_win;
-			post=j+half_win;
-			if(pre>=0)
-				if(good(raw,i,pre))
-					filter.slim(raw(i,pre));
-			if(post<raw.beam_size)
-				if(good(raw,i,post))
-					filter.feed(raw(i,post));
+			pre_l=j-half_len;
+			post_l=j+half_len;
+			if(pre_l>=0)
+			{
+				if(good(raw,i,pre_l))
+					filter.slim(raw(i,pre_l));
+				for(unsigned k=1;k<=half_wid;k++)
+				{
+					pre_w=i-k;
+					post_w=i+k;
+					if(pre_w<0) 
+						pre_w=raw.beam_count+pre_w;
+					if(post_w>=raw.beam_count)
+						post_w=post_w-raw.beam_count;
+					if(good(raw,pre_w,j))
+						filter.slim(raw(pre_w,pre_l));
+					if(good(raw,post_w,j))
+						filter.slim(raw(post_w,pre_l));
+				}
+			}
+			if(post_l<raw.beam_size)
+			{
+				if(good(raw,i,post_l))
+					filter.feed(raw(i,post_l));
+				for(unsigned k=1;k<=half_wid;k++)
+				{
+					pre_w=i-k;
+					post_w=i+k;
+					if(pre_w<0) 
+						pre_w=raw.beam_count+pre_w;
+					if(post_w>=raw.beam_count)
+						post_w=post_w-raw.beam_count;
+					if(good(raw,pre_w,j))
+						filter.feed(raw(pre_w,post_l));
+					if(good(raw,post_w,j))
+						filter.feed(raw(post_w,post_l));
+				}
+			}
 			scan.set(i,j,filter.compute_mean());
 			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
 		}
 	}
 	return scan;
 }
+
+//===========================Volume manipulators=============================//
 
 namespace volume {
 
@@ -135,30 +230,37 @@ void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_ran
 }
 
 template<typename T>
-void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
+void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth=0. ,bool force_check_undetect=false)
 {
-	unsigned window_size;
+	unsigned window_length;
+	unsigned window_width;
 	vol.clear();
 	check_undetect=force_check_undetect;
-	//this->quantity=raw.quantity.quantity_rms(); // TODO: è complesso ma si potrebbe 
+	vol.quantity=raw.quantity;
+	vol.units=raw.units;
 	for(unsigned i=0;i<raw.size();i++)
 	{
-		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		vol.push_back(make_rms_scan(raw.scan(i),window_size));
+		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
+		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
+		vol.push_back(make_rms_scan(raw.scan(i),window_length, window_width));
 	}
 }
 
 template<typename T>
-void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
+void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth=0. , bool force_check_undetect=false)
 {
-	unsigned window_size;
+	unsigned window_length;
+	unsigned window_width;
 	vol.clear();
 	check_undetect=force_check_undetect;
-	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe 
+	vol.quantity=raw.quantity;
+	vol.units=raw.units;
 	for(unsigned i=0;i<raw.size();i++)
 	{
-		window_size=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		vol.push_back(make_filter_scan(raw.scan(i),window_size));
+		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
+		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
+		std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
+		vol.push_back(make_filter_scan(raw.scan(i),window_length,window_width));
 	}
 }
 

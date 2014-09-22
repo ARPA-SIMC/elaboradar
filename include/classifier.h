@@ -273,6 +273,7 @@ public:
 	MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, 
 			std::vector< std::vector< std::vector< HCA_Park> > >& HCA);
 
+	void seek4mlfile(time_t now, MLpoints&);
 	void fill_empty_azimuths();
 	
 };
