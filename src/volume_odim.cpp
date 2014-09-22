@@ -175,6 +175,7 @@ void ODIMStorer::store(const std::string& pathname)
     unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
     unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
+cout<<"aperto file"<<endl;
 //    unsigned max_elev=0;
     for(unsigned i=0;i<to_store_int.size();i++)
 	for(unsigned j=0;j<to_store_int[i]->size();j++)
@@ -200,29 +201,37 @@ void ODIMStorer::store(const std::string& pathname)
 				matrix.elem(ii,jj) = to_store_int[i]->scan(j)(ii,jj);
 		data->writeData(matrix);
 	}
+//cout<<"vado coi double"<<endl;
     for(unsigned i=0;i<to_store_fp.size();i++)
 	for(unsigned j=0;j<to_store_fp[i]->size();j++)
 	{
+//cout<<"vol "<<i<<"scan "<<j<<endl;
 		vector<odim::PolarScan*> scans;
 		scans = volume->getScans(to_store_fp[i]->scan(j).elevation,0.1);
-		odim::PolarScan* scan;
-		if(scans.size()) scan = scans[0];
+		shared_ptr<odim::PolarScan> scan;
+		if(scans.size()) scan.reset(scans[0]);
 		else
 		{
-			scan = (volume->createScan());
+			scan.reset(volume->createScan());
 			scan->setEAngle(to_store_fp[i]->scan(j).elevation);
 		}
+//cout<<"settato puntatore a scan"<<endl;
 		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_fp[i]->quantity));
+//cout<<"settato puntatore a data "<<to_store_fp[i]->quantity<<endl;
 		data->setGain((double)to_store_fp[i]->scan(j).gain);
 		data->setOffset((double)to_store_fp[i]->scan(j).offset);
 		data->setNodata((double)to_store_fp[i]->scan(j).nodata);
 		data->setUndetect((double)to_store_fp[i]->scan(j).undetect);
+//cout<<"settati metadati"<<endl;
 		odim::RayMatrix<float> matrix;
-        	matrix.resize(to_store_int[i]->scan(j).beam_count,to_store_int[i]->scan(j).beam_size);
+        	matrix.resize(to_store_fp[i]->scan(j).beam_count,to_store_fp[i]->scan(j).beam_size);
+//cout<<"settate dimensioni matrice"<<endl;
 		for(unsigned ii=0;ii<to_store_fp[i]->scan(j).beam_count;ii++)
 			for(unsigned jj=0;jj<to_store_fp[i]->scan(j).beam_size;jj++)
 				matrix.elem(ii,jj) = to_store_fp[i]->scan(j)(ii,jj);
+//cout<<"scrivo matrice"<<endl;
 		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),H5::PredType::NATIVE_UINT16);
+//cout<<"scritto"<<endl;
 	}
 }
 
