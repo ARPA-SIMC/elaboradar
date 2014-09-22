@@ -36,9 +36,10 @@ int main(int argc,char* argv[])
 	Volume<double> fil_zdr;
 	Volume<double> fil_z;
 	cout<<"filtro"<<endl;
-	filter(classificatore.vol_rhohv,fil_rho,1000,0.,true);
-	filter(classificatore.vol_zdr,fil_zdr,1000,0.,true);
-	filter(classificatore.vol_z,fil_z,1000,0.,true);
+	bool undet=false;
+	textureSD(classificatore.vol_rhohv,fil_rho,1000,0.,undet);
+	textureSD(classificatore.vol_zdr,fil_zdr,1000,0.,undet);
+	textureSD(classificatore.vol_z,fil_z,1000,0.,undet);
 	volume::ODIMStorer store2(sito, false, 1024);
 	cout<<"salvo"<<endl;
 	store2.store_quantity_fp(&fil_rho);
@@ -47,16 +48,16 @@ int main(int argc,char* argv[])
 	cout<<"scrivo"<<endl;
 	store2.store("vol_rad.h5");
 	
-	filter(classificatore.vol_rhohv,fil_rho,1000,3.,false);
-	filter(classificatore.vol_zdr,fil_zdr,1000,3.,false);
-	filter(classificatore.vol_z,fil_z,1000,3.,false);
+	textureSD(classificatore.vol_rhohv,fil_rho,0.,5.,undet);
+	textureSD(classificatore.vol_zdr,fil_zdr,0.,5.,undet);
+	textureSD(classificatore.vol_z,fil_z,0.,5.,undet);
 	volume::ODIMStorer store3(sito, false, 1024);
 	cout<<"salvo"<<endl;
 	store3.store_quantity_fp(&fil_rho);
 	store3.store_quantity_fp(&fil_zdr);
 	store3.store_quantity_fp(&fil_z);
 	cout<<"scrivo"<<endl;
-	store2.store("vol_azrad.h5");
+	store2.store("vol_az.h5");
 
 	cout<<endl<<"Fine"<<endl;
 	
