@@ -19,6 +19,7 @@ int main(int argc,char* argv[])
 	//volume::ODIMLoader loader(sito, false, 1024);
 
 	volume::classifier classificatore(argv[1],sito);
+/*
 	cout<<"riempito classificatore"<<endl;
 	classificatore.compute_derived_volumes();
 	cout<<"calcolati i volumi derivati"<<endl;
@@ -26,17 +27,36 @@ int main(int argc,char* argv[])
 	classificatore.print_ppi_class();
 
 	volume::ODIMStorer storer(sito, false, 1024);
-
 	storer.store_quantity_int((Volume<int>*)(&classificatore.vol_hca));
-	storer.store_quantity_fp(&classificatore.vol_z);
-//	cout<<storer.to_store_fp.size()<<endl;
-//	cout<<storer.to_store_int.size()<<endl;
-//	cout<<classificatore.vol_z.scan(0).get(0,0)<<" "<<storer.to_store_fp[0]->scan(0).get(0,0)<<endl;
-//	cout<<classificatore.vol_z.scan(0).get(20,200)<<" "<<storer.to_store_fp[0]->scan(0).get(20,200)<<endl;
-//	cout<<classificatore.vol_hca.scan(0).get(0,0)<<" "<<storer.to_store_int[0]->scan(0).get(0,0)<<endl;
-//	cout<<classificatore.vol_hca.scan(0).get(20,200)<<" "<<storer.to_store_int[0]->scan(0).get(20,200)<<endl;
+	storer.store(argv[1]);
+*/
 
-	storer.store("h5vol.h5");
+	cout<<"parte interessante"<<endl;
+	Volume<double> fil_rho;
+	Volume<double> fil_zdr;
+	Volume<double> fil_z;
+	cout<<"filtro"<<endl;
+	filter(classificatore.vol_rhohv,fil_rho,1000,0.,true);
+	filter(classificatore.vol_zdr,fil_zdr,1000,0.,true);
+	filter(classificatore.vol_z,fil_z,1000,0.,true);
+	volume::ODIMStorer store2(sito, false, 1024);
+	cout<<"salvo"<<endl;
+	store2.store_quantity_fp(&fil_rho);
+	store2.store_quantity_fp(&fil_zdr);
+	store2.store_quantity_fp(&fil_z);
+	cout<<"scrivo"<<endl;
+	store2.store("vol_rad.h5");
+	
+	filter(classificatore.vol_rhohv,fil_rho,1000,3.,false);
+	filter(classificatore.vol_zdr,fil_zdr,1000,3.,false);
+	filter(classificatore.vol_z,fil_z,1000,3.,false);
+	volume::ODIMStorer store3(sito, false, 1024);
+	cout<<"salvo"<<endl;
+	store3.store_quantity_fp(&fil_rho);
+	store3.store_quantity_fp(&fil_zdr);
+	store3.store_quantity_fp(&fil_z);
+	cout<<"scrivo"<<endl;
+	store2.store("vol_azrad.h5");
 
 	cout<<endl<<"Fine"<<endl;
 	
