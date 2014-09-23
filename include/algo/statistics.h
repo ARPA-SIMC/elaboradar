@@ -10,9 +10,17 @@ public:
 	T sum_y;
 	T sum_xy;
 	T sum_x2;
+
+	T slope;
+	T intercept;
+	T variance;
+	T dev_std;
+	T mean;
+	T M2;
+	T delta;
 	unsigned N;
 
-	Statistic():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0){}
+	Statistic():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0),mean(0),M2(0){}
 
 	void feed(T x, T y)
 	{
@@ -37,6 +45,10 @@ public:
 		sum_x+=x;
 		sum_x2+=x*x;
 		N++;
+
+		delta = x-mean;
+		mean = mean+delta/(double)N;
+		M2 = M2+delta*(x-mean);
 	}
 
 	void slim(T x)
@@ -44,6 +56,18 @@ public:
 		sum_x-=x;
 		sum_x2-=x*x;
 		N--;
+
+		if(N)
+		{
+			delta = x-mean;
+			mean = mean-delta/(double)N;
+			M2 = M2-delta*(x-mean);
+		}
+		else
+		{
+			mean=0.;
+			M2=0;
+		}
 	}
 
 	void clear()
@@ -53,19 +77,15 @@ public:
 		sum_xy=0;
 		sum_x2=0;
 		N=0;
+		mean=0.;
+		M2=0.;
    	}
-
-	T slope;
-	T intercept;
-	T variance;
-	T dev_std;
-	T mean;
 
 	T compute_slope(unsigned minimum=2)
 	{
 		if(N>=minimum)
 			slope = (N*sum_xy-sum_x*sum_y)/(N*sum_x*sum_x-sum_x2);
-		else slope = sqrt(-1); // orribile modo di far ritornare NaN
+		else slope = sqrt(-1); // NaN
 		return slope;
 	}
 
@@ -79,26 +99,22 @@ public:
 
 	T compute_variance(unsigned minimum=1)
 	{
-		if(N>=minimum)
-			variance = (sum_x2-sum_x*sum_x/(double)N)/((double)N);
-		else variance = sqrt(-1);
-		return variance;
+		if(M2<0.1e-11)M2=0.;
+		if(N>=minimum) return M2/(double)N;
+		else return sqrt(-1);
 	}
 	
 	T compute_dev_std(unsigned minimum=1)
 	{
-		if(N>=minimum)
-			dev_std = sqrt(N*sum_x2-sum_x*sum_x)/N;
-		else dev_std = sqrt(-1);
-		return dev_std;
+		if(N>=minimum) return sqrt(compute_variance());
+		else return sqrt(-1);
 	}
 	
 	T compute_mean(unsigned minimum=1)
 	{
 		if(N>=minimum)
-			mean = sum_x/(T)N;
-		else mean = sqrt(-1);
-		return mean;
+			return mean;
+		else return sqrt(-1);
 	}
 };
 

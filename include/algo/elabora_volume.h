@@ -102,9 +102,9 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 						pre_w=raw.beam_count+pre_w;
 					if(post_w>=raw.beam_count)
 						post_w=post_w-raw.beam_count;
-					if(good(raw,pre_w,j))
+					if(good(raw,pre_w,pre_l))
 						rms.slim(raw(pre_w,pre_l));
-					if(good(raw,post_w,j))
+					if(good(raw,post_w,pre_l))
 						rms.slim(raw(post_w,pre_l));
 				}
 			}
@@ -120,18 +120,14 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 						pre_w=raw.beam_count+pre_w;
 					if(post_w>=raw.beam_count)
 						post_w=post_w-raw.beam_count;
-					if(good(raw,pre_w,j))
+					if(good(raw,pre_w,post_l))
 						rms.feed(raw(pre_w,post_l));
-					if(good(raw,post_w,j))
+					if(good(raw,post_w,post_l))
 						rms.feed(raw(post_w,post_l));
 				}
 			}
 			scan.set(i,j,rms.compute_dev_std());
-			if(scan(i,j)!=scan(i,j)) 
-			{
-				cout<<scan(i,j)<<" "<<rms.N<<" "<<rms.sum_x*rms.sum_x<<" "<<rms.sum_x2<<"\t";
-				scan.set(i,j,raw.nodata);
-			}
+			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
 		}
 	}
 	return scan;
@@ -184,9 +180,9 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wi
 						pre_w=raw.beam_count+pre_w;
 					if(post_w>=raw.beam_count)
 						post_w=post_w-raw.beam_count;
-					if(good(raw,pre_w,j))
+					if(good(raw,pre_w,pre_l))
 						filter.slim(raw(pre_w,pre_l));
-					if(good(raw,post_w,j))
+					if(good(raw,post_w,pre_l))
 						filter.slim(raw(post_w,pre_l));
 				}
 			}
@@ -202,18 +198,14 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wi
 						pre_w=raw.beam_count+pre_w;
 					if(post_w>=raw.beam_count)
 						post_w=post_w-raw.beam_count;
-					if(good(raw,pre_w,j))
+					if(good(raw,pre_w,post_l))
 						filter.feed(raw(pre_w,post_l));
-					if(good(raw,post_w,j))
+					if(good(raw,post_w,post_l))
 						filter.feed(raw(post_w,post_l));
 				}
 			}
 			scan.set(i,j,filter.compute_mean());
-			if(scan(i,j)!=scan(i,j))
-			{
-				scan.set(i,j,raw.nodata);
-				cout<<scan(i,j)<<" ";
-			}
+			if(scan(i,j)!=scan(i,j)) scan.set(i,j,raw.nodata);
 		}
 	}
 	return scan;
@@ -251,7 +243,7 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double
 		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
 		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
 		std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
-		vol.push_back(make_rms_scan(raw.scan(i),window_length, window_width));
+		vol.push_back(make_rms_scan(raw.scan(i), window_length, window_width));
 	}
 }
 
@@ -269,7 +261,7 @@ void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double fi
 		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
 		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
 		std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
-		vol.push_back(make_filter_scan(raw.scan(i),window_length,window_width));
+		vol.push_back(make_filter_scan(raw.scan(i), window_length, window_width));
 	}
 }
 
