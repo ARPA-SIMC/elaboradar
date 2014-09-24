@@ -20,7 +20,7 @@ public:
 	T delta;
 	unsigned N;
 
-	Statistic():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),N(0),mean(0),M2(0){}
+	Statistic():sum_x(0),sum_y(0),sum_xy(0),sum_x2(0),mean(0),M2(0),N(0){}
 
 	void feed(T x, T y)
 	{

@@ -206,6 +206,6 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	melting_points.box_top_bottom(20.,0.2,0.8,bot,top);
 	fill_empty_azimuths();
 	
-	cout<<"Altezza ML"<<endl;
-	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
+//	cout<<"Altezza ML"<<endl;
+//	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
 }
