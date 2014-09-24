@@ -242,7 +242,7 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double
 	{
 		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
 		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
-		std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
+		//std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
 		vol.push_back(make_rms_scan(raw.scan(i), window_length, window_width));
 	}
 }
@@ -260,7 +260,7 @@ void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double fi
 	{
 		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
 		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
-		std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
+		//std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
 		vol.push_back(make_filter_scan(raw.scan(i), window_length, window_width));
 	}
 }

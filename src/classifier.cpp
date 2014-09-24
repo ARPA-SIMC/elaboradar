@@ -54,7 +54,7 @@ Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double 
 	switch(classe)
 	{
 		case GC_AP:
-			if(vrad<1.)
+			if(abs(vrad)<1.)
 			{
 				probability<<trap(15.,20.,70.,80.,z),trap(-4.,-2.,1.,2.,zdr),trap(0.5,0.6,0.9,0.95,rhohv),
 				trap(-30.,-25.,10.,20.,lkdp),trap(2.,4.,10.,15.,sdz),trap(30.,40.,50.,60.,sdphidp);
@@ -146,16 +146,17 @@ HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, 
 	Matrix2D<double> Wij(10,6);
 
 //		Z	Zdr	rhohv	lkdp	SDZ	SDphidp
-	Wij <<	0.2,	0.4,	1.0,	0.0,	0.6,	0.8,	// GC_AP
-		0.4,	0.6,	1.0,	0.0,	0.8,	0.8,	// BS
-		1.0,	0.8,	0.6,	0.0,	0.2,	0.2,	// DS
-		0.6,	0.8,	1.0,	0.0,	0.2,	0.2,	// WS
-		1.0,	0.6,	0.4,	0.5,	0.2,	0.2,	// CR
-		0.8,	1.0,	0.4,	0.0,	0.2,	0.2,	// GR
-		0.8,	1.0,	0.6,	0.0,	0.2,	0.2,	// BD
-		1.0,	0.8,	0.6,	0.0,	0.2,	0.2,	// RA
-		1.0,	0.8,	0.6,	1.0,	0.2,	0.2,	// HR
-		1.0,	0.8,	0.6,	1.0,	0.2,	0.2;	// RH
+	Wij <<	0.2,	0.4,	1.0,	0.0,	0.6,	0.8,	// GC_AP	3.0
+		0.4,	0.6,	1.0,	0.0,	0.8,	0.8,	// BS		3.6
+		1.0,	0.8,	0.6,	0.0,	0.2,	0.2,	// DS		2.8
+		0.6,	0.8,	1.0,	0.0,	0.2,	0.2,	// WS		2.8
+		1.0,	0.6,	0.4,	0.5,	0.2,	0.2,	// CR		2.9
+		0.8,	1.0,	0.4,	0.0,	0.2,	0.2,	// GR		2.6
+		0.8,	1.0,	0.6,	0.0,	0.2,	0.2,	// BD		2.8
+		1.0,	0.8,	0.6,	0.0,	0.2,	0.2,	// RA		2.8
+		1.0,	0.8,	0.6,	1.0,	0.2,	0.2,	// HR		3.8
+		1.0,	0.8,	0.6,	1.0,	0.2,	0.2;	// RH		3.8
+// TOT =	8.8	7.6	6.8	2.5	3.0	3.2
 	Ai.resize(10);
 	Ai=((Wij.array()*Pij.array()).matrix()*Qi).array()/(Wij*Qi).array();
 }
@@ -196,32 +197,21 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 
 void classifier::compute_lkdp()
 {
-
-/*	// TODO: da reinserire negli opportuni polarscan
-	vol_lkdp_2km.quantity.name="LKDP";
-	vol_lkdp_2km.quantity.units="dB°/km";
-	vol_lkdp_2km.quantity.nodata=-9999.;
-	vol_lkdp_2km.quantity.undetect=-9999.;
-	vol_lkdp_6km.quantity.name="LKDP";
-	vol_lkdp_6km.quantity.units="dB°/km";
-	vol_lkdp_6km.quantity.nodata=-9999.;
-	vol_lkdp_6km.quantity.undetect=-9999.;
-*/
-
 	/// METODO DI VULPIANI 2012 ///
 	unsigned half_win6km=12;
-	unsigned half_win2km=4;
+//	unsigned half_win2km=4;
 	double kdp;
 	unsigned tries;
-	double phidp1,phidp2;
+	double phidp1;
+//	double phidp2;
 	double undet,nodat;
 
 	for(unsigned el=0;el<vol_phidp.size();el++)
 	{
-		vol_lkdp_6km.push_back(vol_phidp[el]);
-		vol_lkdp_2km.push_back(vol_phidp[el]);
+		//vol_lkdp_6km.push_back(vol_phidp[el]);
+		//vol_lkdp_2km.push_back(vol_phidp[el]);
 		vol_phidp_6km.push_back(vol_phidp[el]);
-		vol_phidp_2km.push_back(vol_phidp[el]);
+		//vol_phidp_2km.push_back(vol_phidp[el]);
 		
 		undet=vol_phidp[el].undetect;
 		nodat=vol_phidp[el].nodata;
@@ -260,8 +250,12 @@ void classifier::compute_lkdp()
 					}
 				}
 				if(rg){vol_phidp_6km[el].set(az,rg,vol_phidp_6km[el].get(az,rg-1)+2.*kdp*vol_phidp[el].cell_size*0.001);}
-				vol_lkdp_6km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
+				//vol_lkdp_6km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
+				//cout<<"fil 6km rg "<<el<<" "<<rg<<"  "<<kdp<<"  "<<vol_phidp_6km[el].get(az,rg)<<endl;
 			}
+/*	// TODO: tutta questa parte non serve più perchè abbiamo visto che la 6km è una buona finestra per ricostruire la phidp.
+	// la lkdp viene ricostruita dalla phidp6km con due diversi filtri per la slope
+
 			vol_phidp_2km[el].set(az,0,0.);
 			for(unsigned rg=0;rg<vol_phidp[el].beam_size;rg++)
 			{
@@ -294,10 +288,36 @@ void classifier::compute_lkdp()
 					}
 				}
 				if(rg){vol_phidp_2km[el].set(az,rg,vol_phidp_2km[el].get(az,rg-1)+2.*kdp*vol_phidp[el].cell_size*0.001);}
-				vol_lkdp_2km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
+				//vol_lkdp_2km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
+				//if(el==2&&az==300)cout<<"fil 2km rg"<<rg<<"  "<<kdp<<"  "<<vol_phidp_2km[el].get(az,rg)<<endl;
 			}
+*/	
 		}
+	}	// finita la ricostruzione di phidp secondo Vulpiani 2012
+	moving_average_slope(vol_phidp_6km,vol_lkdp_6km,6000.,false);
+	moving_average_slope(vol_phidp_6km,vol_lkdp_2km,2000.,false);
+
+	// TODO: da reinserire negli opportuni polarscan
+	vol_lkdp_2km.quantity="LKDP";
+	vol_lkdp_2km.units="°/km";
+	vol_lkdp_6km.quantity="LKDP";
+	vol_lkdp_6km.units="°/km";
+	vol_lkdp_2km*=1000.;
+	vol_lkdp_6km*=1000.;
+	for(unsigned el=0;el<vol_lkdp_6km.size();el++)
+	{
+		vol_lkdp_2km[el].nodata=-9999;
+		vol_lkdp_2km[el].undetect=-30;
+		vol_lkdp_6km[el].nodata=-9999;
+		vol_lkdp_6km[el].undetect=-30;
+		for(unsigned az=0;az<vol_lkdp_6km[el].beam_count;az++)
+			for(unsigned rg=0;rg<vol_lkdp_6km[el].beam_size;rg++)
+			{
+				vol_lkdp_6km[el](az,rg)=vol_lkdp_6km[el](az,rg)>0.001?10*log10(vol_lkdp_6km[el](az,rg)):vol_lkdp_6km[el].undetect;
+				vol_lkdp_2km[el](az,rg)=vol_lkdp_2km[el](az,rg)>0.001?10*log10(vol_lkdp_2km[el](az,rg)):vol_lkdp_2km[el].undetect;
+			}
 	}
+
 }
 
 
@@ -406,6 +426,7 @@ void classifier::melting_layer_classification(MeltingLayer& ML)
 					vol_Ai[el][az][rg].Ai[DS]=0.;
 					vol_Ai[el][az][rg].Ai[CR]=0.;
 					rg++;
+					//vol_Ai[el][az][rg].Ai[GR]=0.; // TODO: aggiunta a posteriori per vedere l'effetto che fa
 				}
 				else flag=false;
 			}
@@ -499,8 +520,8 @@ void classifier::HCA_Park_2009()
 	cout<<"applico ML criteria ad HCA"<<endl;
 	melting_layer_classification(ML);
 	class_designation();
-/*	unsigned elev=2;
-	unsigned azim=216;
+	unsigned elev=2;
+	unsigned azim=300;
 	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
@@ -512,7 +533,7 @@ void classifier::HCA_Park_2009()
 		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<"\t"<<
 		vol_hca[elev](azim,rg)<<endl;
 	}
-*/
+
 }
 
 void classifier::print_ppi_class(int elev=-1)

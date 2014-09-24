@@ -168,6 +168,7 @@ public:
 	void box_top_bottom(double box_width_deg, double bot_th, double top_th, std::vector<double>& ML_b, std::vector<double>& ML_t);
 };
 
+
 /*
  * ==================================================================
  * 	 Class: CONF
@@ -185,7 +186,9 @@ public:
 		this->resize(6,1);
 		*this<<1.,1.,1.,1.,1.,1.;
 	}
+	
 };
+
 
 /*
  * ==================================================================
