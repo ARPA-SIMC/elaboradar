@@ -71,11 +71,13 @@ void ODIMLoader::load(const std::string& pathname)
 
     // Iterate all scans
     unsigned scan_count = int_to_unsigned(volume->getScanCount(), "scan count");
+    double old_elevation = -1000.;
     for (unsigned src_elev = 0; src_elev < scan_count; ++src_elev)
     {
         unique_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
-
+        if( elevation == old_elevation ) continue;
+	old_elevation=elevation;
         // Read and and validate resolution information
         if (src_elev == 0)
             range_scale = scan->getRangeScale();
