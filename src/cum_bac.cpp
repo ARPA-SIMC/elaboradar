@@ -1211,6 +1211,7 @@ void CalcoloVPR::classifica_rain()
     //classificazione con STEINER
     //  if (hmax > 2000.) {// per evitare contaminazioni della bright band, si puo' tunare
     // if (hbbb > 500.) {// per evitare contaminazioni della bright band, si puo' tunare
+
     algo::CalcoloSteiner steiner(cum_bac.volume, cum_bac.elev_fin, x_size);
     steiner.calcolo_background();
     steiner.classifico_STEINER();
@@ -1221,10 +1222,15 @@ void CalcoloVPR::classifica_rain()
 
 void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::CalcoloVIZ& viz)
 {
+    printf ("hbbb %f \n", hbbb);
     for (unsigned j=0; j<NUM_AZ_X_PPI; j++)
         for (unsigned k=0; k<x_size; k++)
+          if (cum_bac.quota(j, k) < hbbb*1000.)
+            conv(j,k) = steiner.conv_STEINER(j, k);
+          else
             if (steiner.conv_STEINER(j, k) == viz.conv_VIZ(j, k) && steiner.conv_STEINER(j, k) > 0 && viz.stratiform(j, k) < 1)
                 conv(j,k) = viz.conv_VIZ(j, k);
+    
 }
 
 //----------ALGORITMO
@@ -1876,7 +1882,8 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                         {
                             if (*hliq<0) *hliq=0;
                             tipo_profilo=2;
-                            *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
+                            //*vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
+                            *vpr_liq=iv.C;
                         }
                     }
                 }
@@ -2859,7 +2866,6 @@ for (unsigned ciclo=0; ciclo<100; ciclo++){
 //----------------------------  FINE
 #endif
 }
-
 
 void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
 {
