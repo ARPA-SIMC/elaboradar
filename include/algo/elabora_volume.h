@@ -210,6 +210,44 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wi
 	}
 	return scan;
 }
+template<typename T>
+PolarScan<T> make_gradient_azimuth_scan(const PolarScan<T>& raw)
+{
+	PolarScan<T> scan(raw);
+
+	for(unsigned rg=0;rg<raw.beam_size;rg++)
+	{
+		//cout<<"0"<<" "<<rg<<endl;
+		if(good(raw,raw.beam_count-1,rg) && good(raw,0,rg))
+			scan(0,rg) = raw(raw.beam_count-1,rg)-raw(0,rg);
+		else scan(0,rg) = 0.;
+	}
+	for(unsigned az=1;az<raw.beam_count;az++)		
+		for(unsigned rg=0;rg<raw.beam_size;rg++)
+		{
+			//cout<<az<<" "<<rg<<endl;
+			if(good(raw,az-1,rg) && good(raw,az,rg) )
+				scan(az,rg) = raw(az-1,rg)-raw(az,rg);
+			else scan(az,rg) = 0.;
+		}
+	scan*=(0.5*raw.beam_count/M_PI);
+	return scan;
+}
+
+template<typename T>
+PolarScan<T> make_gradient_elevation_scan(const PolarScan<T>& low, const PolarScan<T>& up)
+{
+	PolarScan<T> scan(up);
+	for(unsigned az=0;az<up.beam_count;az++)		
+		for(unsigned rg=0;rg<up.beam_size;rg++)
+		{
+			if(good(up,az,rg) && good(low,az,rg))
+				scan(az,rg) = up(az,rg)-low(az,rg);
+			else scan(az,rg) = 0.;
+		}
+	scan*=abs(up.elevation-low.elevation)*M_PI/180.;
+	return scan;
+}
 
 //===========================Volume manipulators=============================//
 
@@ -248,7 +286,7 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double
 }
 
 template<typename T>
-void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth=0. , bool force_check_undetect=false)
+void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth=0., bool force_check_undetect=false)
 {
 	unsigned window_length;
 	unsigned window_width;
@@ -262,6 +300,35 @@ void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double fi
 		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
 		//std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
 		vol.push_back(make_filter_scan(raw.scan(i), window_length, window_width));
+	}
+}
+
+template<typename T>
+void gradient_azimuth(const Volume<T>& raw, Volume<T>& vol, bool force_check_undetect=false)
+{
+	vol.clear();
+	check_undetect=force_check_undetect;
+	vol.quantity=raw.quantity;
+	vol.units=raw.units;
+	for(unsigned el=0;el<raw.size();el++)
+	{	//cout<<"grad azim el "<<el<<endl;
+		vol.push_back(make_gradient_azimuth_scan(raw.scan(el)));
+		//cout<<"grad azim el "<<el<<endl;
+	}
+}
+
+template<typename T>
+void gradient_elevation(const Volume<T>& raw, Volume<T>& vol, bool force_check_undetect=false)
+{
+	vol.clear();
+	check_undetect=force_check_undetect;
+	vol.quantity=raw.quantity;
+	vol.units=raw.units;
+	vol.push_back(make_gradient_elevation_scan(raw.scan(1),raw.scan(0)));
+	for(unsigned el=1;el<raw.size();el++)
+	{	//cout<<"gradient el "<<el<<" low "<<el-1<<endl;
+		vol.push_back(make_gradient_elevation_scan(raw.scan(el-1),raw.scan(el)));
+		//cout<<"gradient el "<<el<<" low "<<el-1<<endl;
 	}
 }
 

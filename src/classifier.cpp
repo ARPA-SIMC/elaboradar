@@ -137,14 +137,17 @@ double PROB::trap(double x1, double x2, double x3, double x4, double val)
 	else return 0.; // (val<=x1||val>=x4)
 }
 
-HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP, double VRAD)
-	: z(Z),zdr(ZDR),rhohv(RHOHV),lkdp(LKDP),sdz(SDZ),sdphidp(SDPHIDP), vrad(VRAD)
+HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP, double VRAD,
+		double PHIDP, double SNR, double GPHITH, double GPHIPHI, double GZTH, double GZPHI, double GZDRTH, double GZDRPHI)
+	: z(Z),zdr(ZDR),rhohv(RHOHV),lkdp(LKDP),sdz(SDZ),sdphidp(SDPHIDP), vrad(VRAD),phidp(PHIDP),snr(SNR),gradphitheta(GPHITH),
+	gradphiphi(GPHIPHI),gradZtheta(GZTH),gradZphi(GZPHI),gradZdrtheta(GZDRTH),gradZdrphi(GZDRPHI)
 {
 	PROB Pij(z,zdr,rhohv,lkdp,sdz,sdphidp,vrad);
-	CONF Qi;	// TODO: confidence vector calculation not implemented,
+	//CONF Qi;	// TODO: confidence vector calculation not implemented,
 			// currently it uses a vector of ones.
-	Matrix2D<double> Wij(10,6);
+	CONF Qi(phidp, rhohv, snr, gradphitheta, gradphiphi, gradZtheta, gradZphi, gradZdrtheta, gradZdrphi);	// gradients must be precomputed
 
+	Matrix2D<double> Wij(10,6);
 //		Z	Zdr	rhohv	lkdp	SDZ	SDphidp
 	Wij <<	0.2,	0.4,	1.0,	0.0,	0.6,	0.8,	// GC_AP	3.0
 		0.4,	0.6,	1.0,	0.0,	0.8,	0.8,	// BS		3.6
@@ -202,17 +205,12 @@ void classifier::compute_lkdp()
 //	unsigned half_win2km=4;
 	double kdp;
 	unsigned tries;
-	double phidp1;
-//	double phidp2;
+	double phidp1, phidp2;
 	double undet,nodat;
 
 	for(unsigned el=0;el<vol_phidp.size();el++)
 	{
-		//vol_lkdp_6km.push_back(vol_phidp[el]);
-		//vol_lkdp_2km.push_back(vol_phidp[el]);
 		vol_phidp_6km.push_back(vol_phidp[el]);
-		//vol_phidp_2km.push_back(vol_phidp[el]);
-		
 		undet=vol_phidp[el].undetect;
 		nodat=vol_phidp[el].nodata;
 
@@ -252,52 +250,12 @@ void classifier::compute_lkdp()
 				if(rg){vol_phidp_6km[el].set(az,rg,vol_phidp_6km[el].get(az,rg-1)+2.*kdp*vol_phidp[el].cell_size*0.001);}
 				//vol_lkdp_6km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
 				//cout<<"fil 6km rg "<<el<<" "<<rg<<"  "<<kdp<<"  "<<vol_phidp_6km[el].get(az,rg)<<endl;
-			}
-/*	// TODO: tutta questa parte non serve più perchè abbiamo visto che la 6km è una buona finestra per ricostruire la phidp.
-	// la lkdp viene ricostruita dalla phidp6km con due diversi filtri per la slope
-
-			vol_phidp_2km[el].set(az,0,0.);
-			for(unsigned rg=0;rg<vol_phidp[el].beam_size;rg++)
-			{
-				if(rg<half_win2km||rg>(vol_phidp[el].beam_size-half_win2km-1)){kdp=0.;}
-				else
-				{
-					phidp1=vol_phidp[el].get(az,rg-half_win2km);
-					phidp2=vol_phidp[el].get(az,rg+half_win2km);
-					if(phidp1==undet||phidp1==nodat||phidp2==undet||phidp2==nodat){kdp=0.;}
-					else
-					{
-						kdp=0.5*(phidp2-phidp1)/2.;
-						tries=0;
-						while(tries<3)
-						{
-							if((kdp<-2.)||(kdp>20.))
-							{
-								if(kdp<-40.)	// vulpiani diceva -20, ma considerava ricetrasmettitori simultanei (360°) e L=7km
-								{
-									kdp=0.5*(phidp2-phidp1+180.)/2.;
-								}
-								else
-								{
-									kdp=0.;
-								}
-								tries++;
-							}
-							else {tries=4;}
-						}
-					}
-				}
-				if(rg){vol_phidp_2km[el].set(az,rg,vol_phidp_2km[el].get(az,rg-1)+2.*kdp*vol_phidp[el].cell_size*0.001);}
-				//vol_lkdp_2km[el](az,rg)=kdp>0.001?10.*log10(kdp):-30;
-				//if(el==2&&az==300)cout<<"fil 2km rg"<<rg<<"  "<<kdp<<"  "<<vol_phidp_2km[el].get(az,rg)<<endl;
-			}
-*/	
+			}	
 		}
 	}	// finita la ricostruzione di phidp secondo Vulpiani 2012
 	moving_average_slope(vol_phidp_6km,vol_lkdp_6km,6000.,false);
 	moving_average_slope(vol_phidp_6km,vol_lkdp_2km,2000.,false);
 
-	// TODO: da reinserire negli opportuni polarscan
 	vol_lkdp_2km.quantity="LKDP";
 	vol_lkdp_2km.units="°/km";
 	vol_lkdp_6km.quantity="LKDP";
@@ -390,6 +348,14 @@ void classifier::compute_derived_volumes()
 	// calcolo le texture
 	textureSD(vol_z,vol_sdz,1000.,false);
 	textureSD(vol_phidp,vol_sdphidp,2000.,true);
+
+	printf("calcolo i gradienti\n");
+	gradient_azimuth(vol_z_1km, vol_grad_z_phi, false);
+	gradient_elevation(vol_z_1km, vol_grad_z_theta, false);
+	gradient_azimuth(vol_zdr_2km, vol_grad_zdr_phi,false);
+	gradient_elevation(vol_zdr_2km, vol_grad_zdr_theta,false);
+	gradient_azimuth(vol_phidp, vol_grad_phi_phi,true);
+	gradient_elevation(vol_phidp, vol_grad_phi_theta,true);
 }
 
 void classifier::melting_layer_classification(MeltingLayer& ML)
@@ -492,6 +458,7 @@ void classifier::HCA_Park_2009()
 	printf("inizio HCA\n");
 	vol_Ai.resize(vol_z.size());
 	double Z,Zdr,rhohv,lkdp,sdz,sdphidp,vrad;
+	double phidp,snr,gradphitheta,gradphiphi,gradZtheta,gradZphi,gradZdrtheta,gradZdrphi;
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
 		cout<<"\tHCA el "<<el<<endl;
@@ -508,7 +475,15 @@ void classifier::HCA_Park_2009()
 				sdz=vol_sdz.scan(el).get(az,rg);
 				sdphidp=vol_sdphidp.scan(el).get(az,rg);
 				vrad=vol_vrad.scan(el).get(az,rg);
-				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp,vrad);
+				phidp=vol_phidp[el](az,rg);
+				snr=vol_snr[el](az,rg);
+				gradphitheta=vol_grad_phi_theta[el](az,rg);
+				gradphiphi=vol_grad_phi_phi[el](az,rg);
+				gradZtheta=vol_grad_z_theta[el](az,rg);
+				gradZphi=vol_grad_z_phi[el](az,rg);
+				gradZdrtheta=vol_grad_zdr_theta[el](az,rg);
+				gradZdrphi=vol_grad_zdr_phi[el](az,rg);
+				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp,vrad,phidp,snr,gradphitheta,gradphiphi,gradZtheta,gradZphi,gradZdrtheta,gradZdrphi);
 				BEAM[rg]=hca;
 			}
 			SCAN[az]=BEAM;
