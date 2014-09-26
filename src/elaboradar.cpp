@@ -156,6 +156,7 @@ int main (int argc, char **argv)
     cb->do_devel 	= CL_opt.do_devel;
     cb->do_readStaticMap= CL_opt.do_readStaticMap;
     cb->do_zlr_media	= true;
+    cb->do_anaprop	= CL_opt.do_anaprop;
     try {
    //    cb->StampoFlag(); 
        if (cb->esegui_tutto(nome_file, file_type,  CL_opt.data_in_odim)){
