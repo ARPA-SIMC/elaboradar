@@ -186,6 +186,48 @@ public:
 		this->resize(6,1);
 		*this<<1.,1.,1.,1.,1.,1.;
 	}
+
+	CONF(double phidp, double rhohv, double snr, 
+		double gradphitheta, double gradphiphi, double gradZtheta, double gradZphi, double gradZdrtheta,double gradZdrphi, 
+		double omega=0.9, double alpha=0.)	// omega e alpha li predefinisco in attesa di implementare metodi specifici
+	{
+		double phidpZ=250.;
+		double phidpZdr=250.;
+		double delphidpt=10.;
+		double delrhohv1=0.2;
+		double delrhohv2=0.1;
+		double delZdrt=std::pow(10.,0.005);
+		double snrZ=1.; // 10^0.;
+		double snrKdp=1.;
+		double snrZdr=std::pow(10.,0.05);
+		double snrrhohv=std::pow(10.,0.05);
+
+		double delZdr,csi,chi;
+		if(rhohv<0.8)
+		{
+			delZdr=0.;
+			csi=1.;
+			chi=0.;
+		}
+		else
+		{
+			chi=std::exp(-0.0000137*omega*omega*(gradphitheta*gradphitheta+gradphiphi*gradphiphi));
+			delZdr=0.02*omega*omega*(gradZtheta*gradZdrtheta+gradZphi*gradZdrphi);
+			chi=(1.-rhohv)/delrhohv1;
+			chi=chi*chi;
+		}
+		double delphi=0.02*omega*omega*(gradphitheta*gradZtheta + gradphiphi*gradZphi); // ho messo gradZh == gradZ
+		this->resize(6,1);
+
+		*this<<std::exp(-0.69*( phidp*phidp/(phidpZ*phidpZ) + snrZ*snrZ/(snr*snr) + alpha*alpha/(50.*50.))),
+		std::exp(-0.69*(phidp*phidp/(phidpZdr*phidpZdr) + delZdr*delZdr/(delZdrt*delZdrt) 
+			+ (1.-rhohv)*(1.-rhohv)/(delrhohv1*delrhohv1) + snrZdr*snrZdr/(snr*snr) + alpha*alpha/(50.*50.))),
+		std::exp(-0.69*((1.-chi)*(1.-chi)/(delrhohv2*delrhohv2) + (1.-rhohv)*(1.-rhohv)/(delrhohv1*delrhohv1) + snrrhohv*snrrhohv/(snr*snr))),
+		std::exp(-0.69*(delphi*delphi/(delphidpt*delphidpt) + (1.-rhohv)*(1.-rhohv)/(delrhohv1*delrhohv1) + snrKdp*snrKdp/(snr*snr))),
+		std::exp(-0.69*snrZ*snrZ/(snr*snr)), // definire snrSDZ perfavore, io per adesso ci metto snrZ in analogia con snrSDphi che è snrKdp
+		std::exp(-0.69*snrKdp*snrKdp/(snr*snr));
+		
+	}
 	
 };
 
@@ -207,6 +249,7 @@ public:
  * Passed input variables
  */
 	double z,zdr,rhohv,lkdp,sdz,sdphidp,vrad;
+	double phidp,snr,gradphitheta,gradphiphi,gradZtheta,gradZphi,gradZdrtheta,gradZdrphi;
 /*!
  * Vector of aggregation classes
  */
@@ -220,7 +263,8 @@ public:
 /*!
  * Constructor
  */
-	HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP, double VRAD);
+	HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, double SDPHIDP, double VRAD,
+		double PHIDP, double SNR, double GPHITH, double GPHIPHI, double GZTH, double GZPHI, double GZDRTH, double GZDRPHI);
 /*!
  * Search for non meteorological echoes
  */
@@ -372,6 +416,30 @@ public:
  * Texture parameter SD of differential phase volume
  */
 	Volume<double> vol_sdphidp;
+/*!
+ * Volume of azimuthal gradients of Z
+ */
+	Volume<double> vol_grad_z_phi;
+/*!
+ * Volume of elevation gradients of Z
+ */
+	Volume<double> vol_grad_z_theta;
+/*!
+ * Volume of azimuthal gradients of Zdr
+ */
+	Volume<double> vol_grad_zdr_phi;
+/*!
+ * Volume of elevation gradients of Zdr
+ */
+	Volume<double> vol_grad_zdr_theta;
+/*!
+ * Volume of azimuthal gradients of phi
+ */
+	Volume<double> vol_grad_phi_phi;
+/*!
+ * Volume of elevation gradients of phi
+ */
+	Volume<double> vol_grad_phi_theta;
 
 
 	/*================== METHODS ====================*/
