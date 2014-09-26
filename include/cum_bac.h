@@ -128,6 +128,7 @@ public:
     bool do_zlr_media = false;
     bool do_devel = false;
     bool do_readStaticMap = false;
+    bool do_anaprop=false;
 
     Volume<double> volume;
     volume::ElevFin<double> elev_fin;

@@ -18,6 +18,7 @@ struct CUM_BAC_CLOPT {
    bool do_clean;
    bool do_class;
    bool do_devel;
+   bool do_anaprop;
 
    bool data_in_odim;
    bool do_readStaticMap;  

@@ -50,6 +50,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 //	xorpulse.push_back(&Medium);
 //	cmd.xorAdd( xorpulse );
 
+	TCLAP::SwitchArg Anaprop("A", "Anaprop", "Performe Anaprop identification algorith", false);
+        cmd.add(Anaprop);
 	TCLAP::SwitchArg Quality("Q", "Quality", "Calculate quality", false);
         cmd.add(Quality);
 	TCLAP::SwitchArg BeamBlocking("B", "BeamBlocking", "Performe BeamBlocking correction", false);
@@ -86,6 +88,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	opt->sito=sito.getValue();
 //	if (Short.isSet()) opt->do_medium=false;
 	opt->do_medium=Medium.getValue();
+	opt->do_anaprop=Anaprop.getValue();
 	opt->do_quality=Quality.getValue();
 	opt->do_beamblocking=BeamBlocking.getValue();
 	opt->do_declut=Declut.getValue();
