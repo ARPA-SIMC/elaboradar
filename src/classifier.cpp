@@ -341,9 +341,9 @@ void classifier::compute_derived_volumes()
 	printf("filtro Z 1 km\n");
 	filter(vol_z,vol_z_1km,1000.,false);
 	printf("filtro Zdr 2 km\n");
-	filter(vol_zdr,vol_zdr_2km,2000.,false);
+	filter(vol_zdr,vol_zdr_2km,2000.,false);	//TODO: test new filter on azimuth to enhance melting characteristics
 	printf("filtro rhohv 2 km\n");
-	filter(vol_rhohv,vol_rhohv_2km,2000.,false);
+	filter(vol_rhohv,vol_rhohv_2km,2000.,3.,false);
 
 	// calcolo le texture
 	textureSD(vol_z,vol_sdz,1000.,false);
@@ -496,8 +496,8 @@ void classifier::HCA_Park_2009()
 	melting_layer_classification(ML);
 	class_designation();
 	unsigned elev=2;
-	unsigned azim=300;
-	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+	unsigned azim=350;
+/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
 		cout.precision(5);
@@ -508,7 +508,7 @@ void classifier::HCA_Park_2009()
 		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<"\t"<<
 		vol_hca[elev](azim,rg)<<endl;
 	}
-
+*/
 }
 
 void classifier::print_ppi_class(int elev=-1)
