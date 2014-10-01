@@ -270,11 +270,11 @@ void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_ran
 template<typename T>
 void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
 {
-  textureSD(raw,vol,filter_range,0.,force_check_undetect);
+	textureSD(raw,vol,filter_range,0.,force_check_undetect);
 }
 
 template<typename T>
-void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth=0. ,bool force_check_undetect=false)
+void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth, bool force_check_undetect=false)
 {
 	unsigned window_length;
 	unsigned window_width;
@@ -289,6 +289,12 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double
 		//std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
 		vol.push_back(make_rms_scan(raw.scan(i), window_length, window_width));
 	}
+}
+
+template<typename T>
+void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
+{
+	filter(raw,vol,filter_range,0.,force_check_undetect);
 }
 
 template<typename T>
