@@ -134,7 +134,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 								vector< vector< vector< HCA_Park> > >& HCA)
 {
 	cout<<"\tInizio melting Layer"<<endl;
-	filter(vol_z,vol_z_0_5km,1000.,false);	// TODO: se tengo questo range di filtro, semplificare la struttura e riusare i vol_1km vol_2km già filtrati
+	filter(vol_z,vol_z_0_5km,1000.,0.,false);	// TODO: se tengo questo range di filtro, semplificare la struttura e riusare i vol_1km vol_2km già filtrati
 	filter(vol_zdr,vol_zdr_1km,2000.,0.,false);
 	filter(vol_rhohv,vol_rhohv_1km,2000.,0.,false);
 	cout<<"filtrati"<<endl;
@@ -206,6 +206,6 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	melting_points.box_top_bottom(20.,0.2,0.8,bot,top);
 	fill_empty_azimuths();
 	
-//	cout<<"Altezza ML"<<endl;
-//	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
+	cout<<"Altezza ML"<<endl;
+	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
 }
