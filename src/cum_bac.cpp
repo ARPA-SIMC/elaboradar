@@ -530,7 +530,17 @@ void CUM_BAC::elabora_dato()
 
     //--------ciclo sugli azimut e bins per trovare punti con propagazione anomala----------------
 
-	textureSD(volume,SD_Z6,6000.,true);
+	textureSD(volume,SD_Z6,6000., false);
+
+   double TEXTURE_THRESHOLD = 3;
+// test to define the more appropriate value for textture_threshold for rainy and clutter data
+   int is_rainy = 0;
+   for (unsigned iaz=0; iaz<volume[2].beam_count; iaz++)
+     for (unsigned k=80; k < volume[2].beam_size; k ++)
+       if (volume[2].get(iaz,k) > 0.) is_rainy ++;
+   if (is_rainy > 10000 ) TEXTURE_THRESHOLD = 5.;
+LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- numero di pixel trovati %6d",TEXTURE_THRESHOLD, is_rainy);
+
    if(do_anaprop)
    {
     //for(unsigned i=200; i<201; i++)
@@ -564,7 +574,7 @@ void CUM_BAC::elabora_dato()
                 loc_el_inf--;
                 if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
             }
-	    while (loc_el_inf > 0 && SD_Z6[loc_el_inf-1].get(i,k) < 3. &&  SD_Z6[loc_el_inf-1].get(i,k)>=0.&& volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
+	    while (loc_el_inf > 0 && SD_Z6[loc_el_inf-1].get(i,k) < TEXTURE_THRESHOLD &&  SD_Z6[loc_el_inf-1].get(i,k)>=0.01 && volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
 //  LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD_Z6[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
 		loc_el_inf--;
 	    }
@@ -587,7 +597,7 @@ void CUM_BAC::elabora_dato()
 	    }
 
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
-            if(bin_high == fondo_scala && SD_Z6[el_inf].get(i,k)<= 3. && SD_Z6[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
+            if(bin_high == fondo_scala && SD_Z6[el_inf].get(i,k)<= TEXTURE_THRESHOLD && SD_Z6[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
             {
 		do_test_AP=false;
                 MAX_DIF_NEXT=BYTEtoDB(255);
@@ -609,7 +619,7 @@ void CUM_BAC::elabora_dato()
                 test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
             else
                 test_an=(bin_low > fondo_scala && bin_high > fondo_scala );
-//  	LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f - cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+//  	LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f",i,k,el_inf,el_up,bin_low,bin_high,   cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
             //------------------ se ho qualcosa sia al livello base che sopra allora effettuo il confronto-----------------
             if(test_an )
             {
@@ -640,7 +650,7 @@ void CUM_BAC::elabora_dato()
                     ) 
                                   || 
                     (
-                      SD_Z6[el_inf].get(i,k) > 3 
+                      SD_Z6[el_inf].get(i,k) > TEXTURE_THRESHOLD
 //                                  &&  
 //                    (
 //                          SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) < 3
@@ -652,16 +662,16 @@ void CUM_BAC::elabora_dato()
 		  )
                 {
                   //--------ricopio valore a el_up su tutte elev inferiori--------------
-	          if(k < volume[el_up].beam_size && SD_Z6[el_up].get(i,k) <= 3 ){
+	          if(k < volume[el_up].beam_size && SD_Z6[el_up].get(i,k) <= TEXTURE_THRESHOLD  && SD_Z6[el_up].get(i,k) >= 0.01){
                     for(unsigned l=0; l<el_up; l++){
                             volume[l].set(i, k, bin_high);  //ALTERN
                      }
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f %6.2f TA-AN",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k), SD_Z6[el_up].get(i,k)) ;
+//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f %6.2f TA-AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k), SD_Z6[el_up].get(i,k)) ;
 		   } else {
                     for(unsigned l=0; l<el_up; l++){
                             volume[l].set(i, k, fondo_scala);  //ALTERN
                      }
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  TA-AN set to fondo_scala",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT);
+// if (k < volume[el_up].beam_size) LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --   %6.2f %6.2f %6.2f TA-AN set to fondo_scala",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,SD_Z6[el_up].get(i,k),SD_Z6[el_up].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_up].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
 		   }
                   //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
                   flag_anap = true;
@@ -684,14 +694,14 @@ void CUM_BAC::elabora_dato()
 		  unsigned count_high=0;
 	 	  for (unsigned ii=0; ii<7; ii++){
 		      int iaz_prox= (i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
-			if( SD_Z6[el_inf].get(iaz_prox,k) < 3 && SD_Z6[el_inf].get(iaz_prox,k) > 0.01) count_low++;
-			if( k < SD_Z6[el_up].beam_size && SD_Z6[el_up].get(iaz_prox,k) < 5 && SD_Z6[el_up].get(iaz_prox,k) > 0.01) count_high++;
+			if( SD_Z6[el_inf].get(iaz_prox,k) < TEXTURE_THRESHOLD && SD_Z6[el_inf].get(iaz_prox,k) > 0.01) count_low++;
+			if( k < SD_Z6[el_up].beam_size && SD_Z6[el_up].get(iaz_prox,k) < 1.7*TEXTURE_THRESHOLD&& SD_Z6[el_up].get(iaz_prox,k) > 0.01) count_high++;
 		  }
-		  if ( !(SD_Z6[el_inf].get(i,k) < 4 && SD_Z6[el_inf].get(i,k) > 0.01 && count_low >=5)) {
-		     if ( k >= SD_Z6[el_up].beam_size || !(SD_Z6[el_up].get(i,k) < 5 && SD_Z6[el_up].get(i,k) > 0.01 && count_high >=3)){
+		  if ( !(SD_Z6[el_inf].get(i,k) < 1.3*TEXTURE_THRESHOLD && SD_Z6[el_inf].get(i,k) > 0.01 && count_low >=5)) {
+		     if ( k >= SD_Z6[el_up].beam_size || !(SD_Z6[el_up].get(i,k) < 1.7* TEXTURE_THRESHOLD && SD_Z6[el_up].get(i,k) > 0.01 && count_high >=3)){
 			bin_low = fondo_scala;
-//		        if ( k < SD_Z6[el_up].beam_size )  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_up].get(i,k),count_high );  
-//		        else   LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  -- %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,count_high );
+//		        if ( k < SD_Z6[el_up].beam_size )  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_up].get(i,k),count_high );  
+//		        else   LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  -- %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,count_high );
                      }
 		     else {
 			bin_low=bin_high;
@@ -713,7 +723,7 @@ void CUM_BAC::elabora_dato()
 		  }
                   for(unsigned l=0; l<=el_inf; l++)
                       volume[l].set(i, k, bin_low);
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),count_low );
+//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),count_low );
 
                   if (do_quality)
                   {
@@ -736,7 +746,7 @@ void CUM_BAC::elabora_dato()
                         volume[l].set(i, k, fondo_scala);
 		
                 }
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low <fondo",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low <fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto(i, k))
                 if (do_quality)
                 {
@@ -760,9 +770,11 @@ void CUM_BAC::elabora_dato()
 
             {
 		  unsigned count =0;
-	 	  for (unsigned ii=0; ii<7; ii++)
-			if( SD_Z6[el_inf].get((i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k) < 3 && SD_Z6[el_inf].get((i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k) > 0.01) count++;
-		if ( !(SD_Z6[el_inf].get(i,k) < 3 && SD_Z6[el_inf].get(i,k) >0.01 && count >=5 )) 
+	 	  for (unsigned ii=0; ii<7; ii++){
+		        int iaz=(i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
+			if( SD_Z6[el_inf].get(iaz,k) < TEXTURE_THRESHOLD && SD_Z6[el_inf].get(iaz,k) > 0.01) count++;
+	          }
+		if ( !(SD_Z6[el_inf].get(i,k) < TEXTURE_THRESHOLD && SD_Z6[el_inf].get(i,k) >0.01 && count >=5 )) 
 			   bin_low = fondo_scala;
 
                 for(unsigned l=0; l<=el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
@@ -770,7 +782,7 @@ void CUM_BAC::elabora_dato()
                     if (volume[l].beam_size > k)
                         volume[l].set(i, k, bin_low);
                 }
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - ll %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low ==fondo",i,k,el_inf,el_up,bin_low,bin_high, bin_low_low,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low ==fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD_Z6[el_inf].get(i,k),SD_Z6[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD_Z6[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
 
                 if (do_quality)
                 {
@@ -793,12 +805,12 @@ void CUM_BAC::elabora_dato()
    }      // 
 
 //---------------------------- Code to plot data from polarMatrix
-//   Image <unsigned char> toBePlotted (volume[0].beam_size, volume[0].beam_count);
-//   for(unsigned i=0; i<volume[0].beam_count; i++)
-//      for(unsigned k=0 ; k<volume[0].beam_size; k++){
-//         toBePlotted(i,k)= DBtoBYTE(volume[0].get(i, k));
-//	}
-//   elaboradar::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");
+   Image <unsigned char> toBePlotted (volume[0].beam_size, volume[0].beam_count);
+   for(unsigned i=0; i<volume[0].beam_count; i++)
+      for(unsigned k=0 ; k<volume[0].beam_size; k++){
+         toBePlotted(i,k)= DBtoBYTE(volume[0].get(i, k));
+	}
+   elaboradar::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");
 
     LOG_INFO("elabora_dato completed");
     ScrivoStatistica();
