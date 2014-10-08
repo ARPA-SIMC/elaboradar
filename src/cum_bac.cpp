@@ -805,12 +805,12 @@ LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- numero di pixel trovati %6d",TEXTURE_T
    }      // 
 
 //---------------------------- Code to plot data from polarMatrix
-   Image <unsigned char> toBePlotted (volume[0].beam_size, volume[0].beam_count);
+/*   Image <unsigned char> toBePlotted (volume[0].beam_size, volume[0].beam_count);
    for(unsigned i=0; i<volume[0].beam_count; i++)
       for(unsigned k=0 ; k<volume[0].beam_size; k++){
          toBePlotted(i,k)= DBtoBYTE(volume[0].get(i, k));
 	}
-   elaboradar::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");
+        elaboradar::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");*/
 
     LOG_INFO("elabora_dato completed");
     ScrivoStatistica();
