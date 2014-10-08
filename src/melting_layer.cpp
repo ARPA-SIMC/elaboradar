@@ -114,6 +114,7 @@ void MeltingLayer::fill_empty_azimuths()
 {
 	// X FACILE riempo con la media
 	// DIFFICILE interpolo fra settori buoni
+	// TODO se tutti i punti sono -99 la media è 0 di default!! verifica a posteriori la numerosità del campione della media
 	Statistic<double> mean_bot;
 	Statistic<double> mean_top;
 	for(unsigned i=0;i<bot.size();i++)
@@ -123,20 +124,34 @@ void MeltingLayer::fill_empty_azimuths()
 	}
 	mean_bot.compute_mean();
 	mean_top.compute_mean();
+
+	if(mean_bot.N==0)
+	{
+		mean_bot.mean=3.0;	//TODO: i valori di default dovrebbero essere noti da metodi scientifici (modello, T al suolo, ecc...)
+		mean_top.mean=3.5;
+	}
 	for(unsigned i=0;i<bot.size();i++)
 	{
 		if(bot[i]==-99) bot[i]=mean_bot.mean;
 		if(top[i]==-99) top[i]=mean_top.mean;
-	}
+	}	
 }
 
 MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, 
 								vector< vector< vector< HCA_Park> > >& HCA)
 {
 	cout<<"\tInizio melting Layer"<<endl;
-	filter(vol_z,vol_z_0_5km,1000.,0.,false);	// TODO: se tengo questo range di filtro, semplificare la struttura e riusare i vol_1km vol_2km già filtrati
-	filter(vol_zdr,vol_zdr_1km,2000.,0.,false);
-	filter(vol_rhohv,vol_rhohv_1km,2000.,0.,false);
+//	filter(vol_z,vol_z_0_5km,1000.,0.,false);	// TODO: se tengo questo range di filtro, semplificare la struttura e riusare i vol_1km vol_2km già filtrati
+//	filter(vol_zdr,vol_zdr_1km,2000.,0.,false);
+//	filter(vol_rhohv,vol_rhohv_1km,2000.,0.,false);
+
+	Volume<double> dummy;
+	filter(vol_z,vol_z_0_5km,1000.,3.,false);
+	filter(vol_zdr,dummy,2000.,3.,false);
+	filter(dummy,vol_zdr_1km,2000.,3.,false);
+	filter(vol_rhohv,dummy,2000.,3.,false);
+	filter(dummy,vol_rhohv_1km,2000.,3.,false);
+
 	cout<<"filtrati"<<endl;
 	//correzione attenuazione con phidp fatta a priori da chi ha invocato
 	//altro preprocessing Ryzhkov 2005b ??? sull'articolo non c'è nulla
@@ -167,20 +182,28 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 			cout<<el<<endl;
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
 			PolarScan<double>& zdr=vol_zdr_1km.scan(el);
-			for(unsigned rg=0;rg<rho.beam_size;rg++)
+			for(unsigned az=0;az<rho.beam_count;az++)
 			{
-				for(unsigned az=0;az<rho.beam_count;az++)
+				Statistic<double> average;
+				double min_zdr=0.8;
+				for(unsigned rg=0;rg<rho.beam_size;rg++)
+				{
+					if(zdr(az,rg)>0.5)average.feed(zdr(az,rg));
+				}
+				min_zdr=average.compute_mean();
+				
+				for(unsigned rg=0;rg<rho.beam_size;rg++)
 				{
 					//if(el==5)cout<<rg<<" "<<rho.beam_size<<"\t"<<az<<" "<<rho.beam_count<<endl;
-					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.97 && HCA[el][az][rg].meteo_echo() && z.height(rg)>MIN_ML_H && z.height(rg)<MAX_ML_H)	//TODO diminuisco la soglia minima di rho da 0.9 a 0.85 e la massima da 0.97 a 0.95
+					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.95 && HCA[el][az][rg].meteo_echo() && z.height(rg)>MIN_ML_H && z.height(rg)<MAX_ML_H)	//TODO diminuisco la soglia minima di rho da 0.9 a 0.85 e la massima da 0.97 a 0.95
 					{
 						curr_rg=rg;
 						while(curr_rg<z.beam_size && z.diff_height(rg,curr_rg)<0.5 && !confirmed)
 						{
 							//if(el==5&&az==165&&rg==448)cout<<curr_rg<<endl;
 							//if(el==4)if(az==85)if(rg>200)if(rg<250)cout<<rg<<" "<<rho(az,rg)<<" "<<z(az,rg)<<" "<<zdr(az,rg)<<endl;
-							if(z(az,curr_rg)>30 && z(az,curr_rg)<47 && zdr(az,curr_rg)>0.8 &&  //TODO aumento la zdr soglia min da 0.8 a 1
-								zdr(az,curr_rg)<2.5 && z.height(rg)>melting_points.Hmin)
+							if(z(az,curr_rg)>20. && z(az,curr_rg)<47 && zdr(az,curr_rg)>min_zdr &&  //TODO cambio la soglia minima da 0.8 a metodo wise
+								zdr(az,curr_rg)<2.5 && z.height(rg)>melting_points.Hmin)	// TODO diminuisco soglia minima z da 30 a 20
 							{
 								confirmed=true;
 							}

@@ -54,10 +54,12 @@ Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double 
 	switch(classe)
 	{
 		case GC_AP:
-			if(abs(vrad)<1.)
+			if(abs(vrad)<2.)
 			{
 				probability<<trap(15.,20.,70.,80.,z),trap(-4.,-2.,1.,2.,zdr),trap(0.5,0.6,0.9,0.95,rhohv),
-				trap(-30.,-25.,10.,20.,lkdp),trap(2.,4.,10.,15.,sdz),trap(30.,40.,50.,60.,sdphidp);
+				trap(-30.,-25.,10.,20.,lkdp),trap(2.,4.,35.,50.,sdz),trap(20.,30.,50.,60.,sdphidp);
+				// TODO : il clutter appennino da sdz > 15, quello alpino > 20 cambio le soglie da 2,4,10,15
+				// TODO : Anche con la sdphi voglio essere più cattivo e abbasso la minima da 30,40,50,60
 			}
 			return probability;
 		case BS:
@@ -143,8 +145,7 @@ HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, 
 	gradphiphi(GPHIPHI),gradZtheta(GZTH),gradZphi(GZPHI),gradZdrtheta(GZDRTH),gradZdrphi(GZDRPHI)
 {
 	PROB Pij(z,zdr,rhohv,lkdp,sdz,sdphidp,vrad);
-	//CONF Qi;	// TODO: confidence vector calculation not implemented,
-			// currently it uses a vector of ones.
+//	CONF Qi;	// TODO: confidence vector calculation could produce shit!!
 	CONF Qi(phidp, rhohv, snr, gradphitheta, gradphiphi, gradZtheta, gradZphi, gradZdrtheta, gradZdrphi);	// gradients must be precomputed
 
 	Matrix2D<double> Wij(10,6);
@@ -495,9 +496,9 @@ void classifier::HCA_Park_2009()
 	cout<<"applico ML criteria ad HCA"<<endl;
 	melting_layer_classification(ML);
 	class_designation();
-	unsigned elev=2;
-	unsigned azim=350;
-/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+	unsigned elev=1;
+	unsigned azim=200;
+	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
 		cout.precision(5);
@@ -508,7 +509,7 @@ void classifier::HCA_Park_2009()
 		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<"\t"<<
 		vol_hca[elev](azim,rg)<<endl;
 	}
-*/
+
 }
 
 void classifier::print_ppi_class(int elev=-1)
