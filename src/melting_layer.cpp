@@ -146,11 +146,11 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 //	filter(vol_rhohv,vol_rhohv_1km,2000.,0.,false);
 
 	Volume<double> dummy;
-	filter(vol_z,vol_z_0_5km,1000.,3.,false);
-	filter(vol_zdr,dummy,2000.,3.,false);
-	filter(dummy,vol_zdr_1km,2000.,3.,false);
-	filter(vol_rhohv,dummy,2000.,3.,false);
-	filter(dummy,vol_rhohv_1km,2000.,3.,false);
+	filter(vol_z,vol_z_0_5km,500.,3.,false);
+	filter(vol_zdr,dummy,1000.,3.,false);
+	filter(dummy,vol_zdr_1km,1000.,3.,false);
+	filter(vol_rhohv,dummy,1000.,3.,false);
+	filter(dummy,vol_rhohv_1km,1000.,3.,false);
 
 	cout<<"filtrati"<<endl;
 	//correzione attenuazione con phidp fatta a priori da chi ha invocato
@@ -165,8 +165,6 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	unsigned curr_rg=0;
 	bool confirmed=false;
 
-//	Matrix2D<double> ML_coo;
-//	ML_coo.resize(7720,2);
 	ostringstream ML;
 	ostringstream DATE;
 	DATE<<vol_z.load_info->acq_date<<".ml";
@@ -190,7 +188,8 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 				{
 					if(zdr(az,rg)>0.5)average.feed(zdr(az,rg));
 				}
-				min_zdr=average.compute_mean();
+				//min_zdr=average.compute_mean();
+				min_zdr=0.8;
 				
 				for(unsigned rg=0;rg<rho.beam_size;rg++)
 				{
@@ -229,6 +228,6 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	melting_points.box_top_bottom(20.,0.2,0.8,bot,top);
 	fill_empty_azimuths();
 	
-	cout<<"Altezza ML"<<endl;
-	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
+//	cout<<"Altezza ML"<<endl;
+//	for(unsigned i=0;i<bot.size();i++)cout<<bot[i]<<"\t"<<top[i]<<endl;
 }
