@@ -454,14 +454,8 @@ public:
 	classifier(const std::string& file, const Site& site);
 /*!
  * \brief Initialize derived input data
- * could be part of the constructor
  */
 	void compute_derived_volumes();
-/*!
- * \brief correct phidp for sparse nodata and undetected
- * moving average filter along beam path
- */
-	void correct_phidp();
 /*!
  * \brief correct rhohv and zdr for noise (Schuur et al. 2003)
  */

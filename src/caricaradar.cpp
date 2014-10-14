@@ -37,19 +37,22 @@ int main(int argc,char* argv[])
 	Volume<double> fil_rho;
 	Volume<double> fil_zdr;
 	Volume<double> fil_z;
+	Volume<double> fil_phi;
 	cout<<"filtro"<<endl;
 	bool undet=false;
 	filter(classificatore.vol_rhohv,fil_rho,2000.,0.,undet);
 	filter(classificatore.vol_zdr,fil_zdr,2000.,0.,undet);
 	filter(classificatore.vol_z,fil_z,1000.,0.,undet);
+	filter(classificatore.vol_phidp_6km,fil_phi,0.,0.,undet);
 	volume::ODIMStorer store2(sito, false, 1024);
 	cout<<"salvo"<<endl;
 	store2.store_quantity_fp(&fil_rho);
 	store2.store_quantity_fp(&fil_zdr);
 	store2.store_quantity_fp(&fil_z);
+	store2.store_quantity_fp(&fil_phi);
 	cout<<"scrivo"<<endl;
 	store2.store("vol_rad.h5");	
-	filter(classificatore.vol_rhohv,fil_rho,0.,3.,undet);
+/*	filter(classificatore.vol_rhohv,fil_rho,0.,3.,undet);
 	filter(classificatore.vol_zdr,fil_zdr,0.,3.,undet);
 	filter(classificatore.vol_z,fil_z,0.,3.,undet);
 	volume::ODIMStorer store3(sito, false, 1024);
@@ -119,7 +122,7 @@ int main(int argc,char* argv[])
 	storeSD.store_quantity_fp(&vol_sdphidp);
 	storeSD.store_quantity_fp(&vol_sdz);
 	storeSD.store("vol_sd.h5");
-	
+*/	
 
 	cout<<endl<<"Fine"<<endl;
 	

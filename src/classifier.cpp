@@ -79,8 +79,9 @@ Matrix2D<double> PROB::prob_class(EchoClass classe,double z, double zdr, double 
 		case WS:
 			if(z>20.&&zdr>0.)
 			{
-				probability<<trap(25.,30.,40.,50.,z),trap(0.5,1.,2.,3.0,zdr),trap(0.88,0.92,0.95,0.985,rhohv),
+				probability<<trap(25.,30.,50.,60.,z),trap(0.5,1.,2.,3.0,zdr),trap(0.88,0.92,0.95,0.985,rhohv),
 				trap(-30.,-25.,10.,20.,lkdp),trap(0.,0.5,3.,6.,sdz),trap(0.,1.,15.,30.,sdphidp);
+				//TODO alzo le soglie z di ws da 25,30,40,50
 			}
 			return probability;
 		case CR:
@@ -203,7 +204,6 @@ void classifier::compute_lkdp()
 {
 	/// METODO DI VULPIANI 2012 ///
 	unsigned half_win6km=12;
-//	unsigned half_win2km=4;
 	double kdp;
 	unsigned tries;
 	double phidp1, phidp2;
@@ -257,6 +257,8 @@ void classifier::compute_lkdp()
 	moving_average_slope(vol_phidp_6km,vol_lkdp_6km,6000.,false);
 	moving_average_slope(vol_phidp_6km,vol_lkdp_2km,2000.,false);
 
+	vol_phidp_6km.quantity="PHIDP";
+	vol_phidp_6km.units="°";
 	vol_lkdp_2km.quantity="LKDP";
 	vol_lkdp_2km.units="°/km";
 	vol_lkdp_6km.quantity="LKDP";
@@ -279,28 +281,22 @@ void classifier::compute_lkdp()
 
 }
 
-
-void classifier::correct_phidp()
-{
-	// It is assumed that vol_phidp exist and has been initialized
-	// moving window average over a range length of 2km and 6km as prescribed by Park et al. (2009)
-	printf("filtro phidp 2 km\n");
-	filter(vol_phidp,vol_phidp_2km,2000.,0.,true);
-	printf("filtro phidp 6 km\n");
-	filter(vol_phidp,vol_phidp_6km,6000.,0.,true);
-}
-
 void classifier::correct_for_attenuation()
 {
-//	for(unsigned rg=0;rg<50;rg++) cout<<fixed<<vol_z[0](85,rg)<<" ";
-//	cout<<endl;
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
-		vol_z[el]+=0.06*vol_phidp_6km[el];
-		vol_zdr[el]+=0.01*vol_phidp_6km[el];
+		//TODO posso evitare che corregga l'attenuazione dove non c'è segnale applicando la maschera al campo di phi
+		//vol_z[el]+=0.06*vol_phidp_6km[el];
+		//vol_zdr[el]+=0.01*vol_phidp_6km[el];
+		for(unsigned az=0;az<vol_z[el].beam_count;az++)
+			for(unsigned rg=0;rg<vol_z[el].beam_size;rg++)
+			{
+				if((vol_z[el](az,rg)!=vol_z[el].nodata)&&(vol_z[el](az,rg)!=vol_z[el].undetect))
+					vol_z[el](az,rg)+=0.06*vol_phidp_6km[el](az,rg);
+				if((vol_zdr[el](az,rg)!=vol_zdr[el].nodata)&&(vol_zdr[el](az,rg)!=vol_zdr[el].undetect))
+					vol_zdr[el](az,rg)+=0.01*vol_phidp_6km[el](az,rg);
+			}
 	}
-//	for(unsigned rg=0;rg<50;rg++) cout<<fixed<<vol_z[0](85,rg)<<" ";
-//	cout<<endl;
 }
 
 void classifier::correct_for_snr()
@@ -330,14 +326,6 @@ void classifier::compute_derived_volumes()
 	compute_lkdp();
 	correct_for_attenuation();
 	
-/*	const unsigned elev=4;
-	const unsigned azim=370;
-	for(unsigned rg=0;rg<vol_phidp[elev].beam_size;rg++)
-	{
-		cout<<fixed<<vol_phidp[elev](azim,rg)<<"\t"<<vol_phidp_2km[elev](azim,rg)<<"\t"<<vol_phidp_6km[elev](azim,rg)<<"\t"
-				<<vol_lkdp_2km[elev](azim,rg)<<"\t"<<vol_lkdp_6km[elev](azim,rg)<<endl;
-	}
-*/
 	// filtro i volumi
 	printf("filtro Z 1 km\n");
 	filter(vol_z,vol_z_1km,1000.,0.,false);
@@ -498,7 +486,7 @@ void classifier::HCA_Park_2009()
 	class_designation();
 	unsigned elev=1;
 	unsigned azim=200;
-	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
 		cout.precision(5);
@@ -509,7 +497,7 @@ void classifier::HCA_Park_2009()
 		vol_Ai[elev][azim][rg].Ai[HR]<<"\t"<<vol_Ai[elev][azim][rg].Ai[RH]<<"\t"<<
 		vol_hca[elev](azim,rg)<<endl;
 	}
-
+*/
 }
 
 void classifier::print_ppi_class(int elev=-1)
