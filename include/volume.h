@@ -53,12 +53,6 @@ struct PolarScanBase
     double diff_height(unsigned rg_start, unsigned rg_end);
 
     /**
-     * Return the height (in meters) of the sample at the given range (in
-     * meters)
-     */
-    double sample_height(double range) const;
-
-    /**
      * Return the height (in meters) of the sample at the given cell index
      */
     double sample_height(unsigned cell_idx) const;

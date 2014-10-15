@@ -19,11 +19,6 @@ double PolarScanBase::diff_height(unsigned rg_start, unsigned rg_end)
     return fabs(height(rg_end) - height(rg_start));
 }
 
-double PolarScanBase::sample_height(double range) const
-{
-    return sample_height(elevation, range);
-}
-
 double PolarScanBase::sample_height(unsigned cell_idx) const
 {
     return sample_height(elevation, (double)cell_idx * cell_size);
