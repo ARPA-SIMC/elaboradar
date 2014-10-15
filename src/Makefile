@@ -16,10 +16,9 @@ LDLIBS_NR=-L$(libNR_DIR) -lNR_C_ANSI
 
 LDLIBS=$(LDLIBS_SP20) $(LDLIBS_ZR) $(LDLIBS_NR) -lm \
 	   $(shell log4c-config --libs) \
-	   $(shell pkg-config --libs radarlib) \
-	   -lhdf5_cpp -lhdf5 \
+	   $(shell pkg-config --libs radarlib hdf5 eigen3) \
+	   -lhdf5_cpp \
 	   $(shell gsl-config --libs) \
-	   $(shell pkg-config eigen3 --libs) \
 	   $(shell gdal-config --libs)
 
 CC=cc 
@@ -29,9 +28,8 @@ CXX=g++
 CFLAGS=-g --std=c++11 -I../include -Wall -O2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) \
 	   -DHAVE_INLINE \
 	   $(shell log4c-config --cflags) \
-	   $(shell pkg-config --cflags radarlib) \
+	   $(shell pkg-config --cflags radarlib hdf5 eigen3) \
 	   $(shell gsl-config --cflags) \
-	   $(shell pkg-config eigen3 --cflags) \
 	   $(shell gdal-config --cflags)
 # Scommentare per disabilitare il range checking di GSL e guadagnare un po' in velocità
 # CFLAGS += -DGSL_RANGE_CHECK_OFF
