@@ -34,7 +34,7 @@ double PolarScanBase::sample_height(double elevation, double range, double equiv
     return sqrt(
             range * range
             + equiv_earth_radius * equiv_earth_radius
-            + 2. * equiv_earth_radius * range * sin(elevation*M_PI/180.)
+            + 2. * equiv_earth_radius * range * sin(elevation * M_PI / 180.)
            ) - equiv_earth_radius; //meters
 }
 

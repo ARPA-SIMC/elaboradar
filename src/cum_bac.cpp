@@ -234,10 +234,12 @@ void CUM_BAC::compute_top()
         const auto& scan = volume[l];
         for (int i=0; i<NUM_AZ_X_PPI; i++)
         {
-            const double elevaz = scan.elevations_real(i) * M_PI / 180.; //--- elev reale
+            const double elevaz = scan.elevations_real(i); //--- elev reale in gradi
             for (unsigned k = 0; k < scan.beam_size; ++k)
                 if (scan.get(i, k) > SOGLIA_TOP)
-                    top(i, k) = (unsigned char)((quota_f(elevaz, k))/100.); //top in ettometri
+                    //top in ettometri
+                    top(i, k) = (unsigned char)(PolarScanBase::sample_height(
+                                elevaz, (k + 0.5) * scan.cell_size) / 100.);
         }
     }
 }
@@ -796,10 +798,9 @@ LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- numero di pixel trovati %6d",TEXTURE_T
             //-----finiti tutti i controlli assegno le varibili di qualita definitive: elevazione, quota calcolata sull'elevazione reale con propagazione standard , e quota relativa al suolo calcolata con elevazione nominale e propagazione da radiosondaggio.
 
             if (do_quality)
-            {
-                const float elevaz = elev_fin.elevation_rad_at_elev_preci(i, k);
-                quota(i, k)=(unsigned short)(quota_f(elevaz,k));
-            }
+                quota(i, k)=(unsigned short)PolarScanBase::sample_height(
+                        elev_fin.elevation_rad_at_elev_preci(i, k),
+                        (k + 0.5) * volume[0].cell_size);
         }
      }    //  end for over beam_count
    }      // 
@@ -881,18 +882,6 @@ void CUM_BAC::leggo_first_level()
                         first_level(i%NUM_AZ_X_PPI, j)=first_level_tmp(k%NUM_AZ_X_PPI, j);
         LOG_INFO(" fine patch %u ",MyMAX_BIN);
     }
-}
-
-//------------funzione quota_f-----------------------
-//---------funzione che calcola la quota in metri del centro del fascio-----------------------
-//--------distanza=k*dimensionecella +semidimensionecella in metri ----------------------
-//--------quota=f(distinkm, rstinkm, elevazinrad) in metri
-double CUM_BAC::quota_f(double elevaz, int k) // quota funzione di elev(radianti) e range
-{
-    // TODO: make quota_f a scan-specific method
-    double dist = k * volume[0].cell_size + volume[0].cell_size / 2.;
-    // quota in prop. standard da elevazione reale
-    return (sqrt(pow(dist / 1000., 2) + (rst * rst) + 2.0 * dist / 1000. * rst * sin(elevaz)) - rst) * 1000.;
 }
 
 void CUM_BAC::ScrivoStatistica()
@@ -1023,7 +1012,7 @@ void CUM_BAC::caratterizzo_volume()
         const auto& scan = volume[l];
         for (int i=0; i<NUM_AZ_X_PPI; i++)/*ciclo azimuth*/
         {
-            const double elevaz = scan.elevations_real(i) * M_PI / 180.;//--- elev reale
+            const double elevaz = scan.elevations_real(i); //--- elev reale in gradi
 
             //--assegno PIA=0 lungo il raggio NB: il ciclo nn va cambiato in ordine di indici!
             PIA=0.;
@@ -1049,7 +1038,8 @@ void CUM_BAC::caratterizzo_volume()
                 PIA=attenuation(DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
-                dhst =quota_f(elevaz+0.45*DTOR,k)-quota_f(elevaz-0.45*DTOR,k);
+                dhst = PolarScanBase::sample_height(elevaz + 0.45, dist)
+                     - PolarScanBase::sample_height(elevaz - 0.45, dist);
 
 
                 //----qui si fa un po' di mischione: finchè ho il dato dal programma di beam blocking uso il dh con propagazione da radiosondaggio, alle elevazioni superiori assegno dh=dhst  e calcolo quota come se fosse prop. standard, però uso le elevazioni nominali
@@ -1998,8 +1988,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 i=(iA+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
 
                 //--------calcolo elevazione e quota---------
-                const double elevaz = scan.elevations_real(i) * M_PI / 180.;
-                quota_true_st=cum_bac.quota_f(elevaz,k);
+                quota_true_st = scan.sample_height_real(i, k);
 
                 //--------trovo ilay---------
                 ilay=floor(quota_true_st/TCK_VPR);//  in teoria quota indipendente da azimuth  , in realtà no (se c'è vento)
@@ -2015,6 +2004,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
 
                 /* //---------calcolo la distanza proiettata sul piano-------------  */
 
+                const double elevaz = scan.elevations_real(i) * M_PI / 180.;
                 dist_plain=(long int)(dist*cos(elevaz));
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
                     flag_vpr->scan(l).set(i, k, 0);

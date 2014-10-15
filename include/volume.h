@@ -136,6 +136,15 @@ public:
     }
 
     /**
+     * Return the hight (in meters) of a sample given its azimuth and cell
+     * indices
+     */
+    double sample_height_real(unsigned az, unsigned cell_idx) const
+    {
+        return PolarScanBase::sample_height(elevations_real(az), (cell_idx + 0.5) * cell_size);
+    }
+
+    /**
      * Riempie un array di float con i dati del raggio convertiti in DB
      * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
      */
