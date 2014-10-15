@@ -27,7 +27,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
     //double range_max=(max_bin-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
-    double zmin=volume[0].sample_height(0) + h_radar; // quota  minima in prop standard
+    double zmin=volume[0].sample_height(0) / 1000. + h_radar; // quota  minima in prop standard
 
     double resol[2];
     resol[0]=RES_HOR_CIL; // uguale a dimensione cella volume polare .. va parametrizzato
@@ -59,7 +59,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
 
         for (unsigned k=0; k < volume.size(); k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
-            double zz = volume.scan(k).sample_height(i) + h_radar;// quota
+            double zz = volume.scan(k).sample_height(i) / 1000. + h_radar;// quota
             double xx = range*cos(elev_rad); // distanza
             unsigned i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
             unsigned i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k

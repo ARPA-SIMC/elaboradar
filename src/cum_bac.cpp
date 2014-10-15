@@ -1168,14 +1168,13 @@ void CalcoloVPR::classifica_rain()
     // TODO: to compute scan by scan?
     const double size_cell = volume[0].cell_size;
     double range_min=0.5 * size_cell/1000.;
-    double range_maxUpperRay=(volume[volume.size()-1].beam_size-0.5) * size_cell/1000.;
     double range_maxLowestRay=(volume[0].beam_size-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
-    double zmin=pow(pow(range_min,2.)+pow(4./3*REARTH,2.)+2.*range_min*4./3.*REARTH*sin(volume.elevation_min() * DTOR),.5) -4./3.*REARTH+h_radar; // quota  minima in prop standard
+    double zmin=volume[0].sample_height(0) / 1000. + h_radar; // quota  minima in prop standard
     double xmax=floor(range_maxLowestRay*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
-    double zmax=pow(pow(range_maxUpperRay,2.)+pow(4./3*REARTH,2.)+2.*range_maxUpperRay*4./3.*REARTH*sin(volume.elevation_max() * DTOR),.5) -4./3.*REARTH+h_radar;//quota massima
-    LOG_DEBUG(" Range min maxL maxU  %7.3f %7.3f %7.3f  --  xmin %7.3f xmax %7.3f zmin %7.3f zmax %7.3f", range_min, range_maxLowestRay, range_maxUpperRay, xmin,xmax,zmin,zmax);
+    double zmax=volume.back().sample_height(volume.back().beam_size - 1) / 1000. + h_radar;//quota massima
+    //LOG_DEBUG(" Range min maxL maxU  %7.3f %7.3f %7.3f  --  xmin %7.3f xmax %7.3f zmin %7.3f zmax %7.3f", range_min, range_maxLowestRay, range_maxUpperRay, xmin,xmax,zmin,zmax);
 
     x_size=(xmax-xmin)/RES_HOR_CIL; //dimensione orizzontale
     // FIXME: usiamo volume.max_beam_size invece di MyMAX_BIN?
