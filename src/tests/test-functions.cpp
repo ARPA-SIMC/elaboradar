@@ -1,6 +1,7 @@
 #include <wibble/tests.h>
 #include "config.h"
-#include "cum_bac.h"
+#include "algo/utils.h"
+#include "volume.h"
 #include "logging.h"
 
 using namespace wibble::tests;
@@ -29,8 +30,6 @@ template<> template<>
 void to::test<2>()
 {
     // Test BeamBlockingCorrection
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "SPC");
-    wassert(actual((unsigned)DBtoBYTE(cb->BeamBlockingCorrection(BYTEtoDB(128),50))) == 138);
+    wassert(actual((unsigned)DBtoBYTE(algo::beam_blocking_correction(BYTEtoDB(128),50))) == 138);
 }
 }

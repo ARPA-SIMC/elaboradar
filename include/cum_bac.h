@@ -22,6 +22,7 @@
 #include "volume.h"
 #include "volume/loader.h"
 #include "volume/elev_fin.h"
+#include "algo/anaprop.h"
 #include "matrix.h"
 #include <stdexcept>
 #include <cmath>
@@ -43,64 +44,6 @@ struct CalcoloSteiner;
 struct CalcoloVIZ;
 }
 
-// Matrici per statistiche
-struct GridStats
-{
-    // dim azim griglia per stat anap
-    const unsigned step_stat_az = 25;
-    // dim range griglia per stat anap
-    const unsigned step_stat_range = 40;
-
-    // Number of cells in the azimut direction
-    unsigned size_az = 0;
-    // Number of cells in the beam direction
-    unsigned size_beam = 0;
-
-    // statistica anaprop
-    unsigned* stat_anap = 0;
-    // contatore punti dentro ogni box per statistica
-    unsigned* stat_tot = 0;
-    // statistica beam blocking
-    unsigned* stat_bloc = 0;
-    // statistica cambio elevazione rispetto mappa statica
-    unsigned* stat_elev = 0;
-
-    GridStats();
-    ~GridStats();
-
-    void init(const Volume<double>& volume);
-
-    inline unsigned idx(unsigned az, unsigned beam) const
-    {
-        return az / step_stat_az * size_beam + beam / step_stat_range;
-    }
-
-    void incr_anap(unsigned az, unsigned beam) { stat_anap[idx(az, beam)]++; }
-    void incr_tot(unsigned az, unsigned beam) { stat_tot[idx(az, beam)]++; }
-    void incr_elev(unsigned az, unsigned beam) { stat_elev[idx(az, beam)]++; }
-    void incr_bloc(unsigned az, unsigned beam, unsigned amount) { stat_bloc[idx(az, beam)]++; }
-
-    unsigned count(unsigned az, unsigned beam) const
-    {
-        return stat_tot[idx(az, beam)];
-    }
-
-    unsigned char perc_anap(unsigned az, unsigned beam) const
-    {
-        return stat_anap[idx(az, beam)] * 100 / stat_tot[idx(az, beam)];
-    }
-
-    unsigned char perc_elev(unsigned az, unsigned beam) const
-    {
-        return stat_elev[idx(az, beam)] * 100 / stat_tot[idx(az, beam)];
-    }
-
-    unsigned char perc_bloc(unsigned az, unsigned beam) const
-    {
-        return stat_bloc[idx(az, beam)] * 100 / stat_tot[idx(az, beam)];
-    }
-};
-
 struct CalcoloVPR;
 struct Cart;
 struct CartLowris;
@@ -118,11 +61,11 @@ public:
     bool do_medium;
 
     /// Feature set required for this run
-    bool do_clean = false;        // Clean and truncate input volume
     bool do_quality = false;
     bool do_beamblocking = false;
-    bool do_declutter = false;
     bool do_bloccorr = false;
+    bool do_clean = false;        // Clean and truncate input volume
+    bool do_declutter = false;
     bool do_vpr = false;
     bool do_class = false;
     bool do_zlr_media = false;
@@ -131,7 +74,6 @@ public:
     bool do_anaprop=false;
 
     Volume<double> volume;
-    volume::ElevFin<double> elev_fin;
     Volume<double> SD_Z6;
 
     CalcoloVPR* calcolo_vpr;
@@ -146,8 +88,6 @@ public:
     //coeff a e b relazione Z-R
     float aMP, bMP;   /*  coeff a e b relazione Z-R  */
 
-    GridStats grid_stats;
-
     //matrici first_level e first level da beam blocking e valore beam blocking
     PolarScan<unsigned char> first_level; //mappa dinamica complessiva
     PolarScan<unsigned char> first_level_static;//mappa statica
@@ -155,12 +95,11 @@ public:
     PolarScan<unsigned char> bb_first_level;  /* mappa di elevazioni da beam blocking (input)*/
     PolarScan<unsigned char> beam_blocking;   /* mappa di beam blocking (input)*/
 
+    algo::Anaprop<double> anaprop;
+
     //variabili legate a propagazione e beam blocking, da prog_bb
     PolarScan <float> dem; /*dem in coordinate azimut range*/
 
-    Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
-    //uscite anaprop
-    Matrix2D<unsigned char> dato_corrotto; /*uscita controllo anaprop in coordinate azimut range */
     // metrici qualita' come sopra
     Volume<unsigned char>* qual; // qualita volume polare
     // top, come sopra
@@ -230,7 +169,7 @@ public:
      *  @brief   funzione scrittura matrici statistica
      *  @details scrive le statistiche di beam blocking, anaprop, cambio di elevazione in un unsigined char DIM1_ST*DIM1_ST
      */
-    void ScrivoStatistica();
+    void ScrivoStatistica(const algo::anaprop::GridStats&);
 
     /**
      *
@@ -253,8 +192,6 @@ public:
     bool esegui_tutto(const char* nome_file, int file_type, bool isInputOdim = false);
 // added function to calculate beamblocking correction
 //
-    double BeamBlockingCorrection(double val_db, unsigned char beamblocking);
-
     // RtoDBZ calcolato su aMP e bMP
     float RtoDBZ(float rain) const;
 

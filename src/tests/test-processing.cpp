@@ -89,8 +89,8 @@ void to::test<1>()
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.49, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 3.67, 49));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(1, 1543.48, 5813));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 2, 3));
+    wassert(actual(cb->anaprop.quota).statsEqual(1, 1543.48, 5813));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 2, 3));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.69, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -204,8 +204,8 @@ void to::test<3>()
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.49, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 4.1, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(1, 1164.04, 5732));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 1.99, 3));
+    wassert(actual(cb->anaprop.quota).statsEqual(1, 1164.04, 5732));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 1.99, 3));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.74, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -297,8 +297,8 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.49, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 10.44, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(0, 0, 0));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.quota).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0, 0));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.7, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -398,8 +398,8 @@ unlink("LAST_VPR");
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.49, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 10.44, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(0, 0, 0));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.quota).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0, 0));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.7, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -505,38 +505,38 @@ void to::test<6>()
 
     wassert(actual(cb->beam_blocking).statsEqual(0, 5.09, 51));
 
-    unsigned stats_size = cb->grid_stats.size_az * cb->grid_stats.size_beam;
+    unsigned stats_size = cb->anaprop.grid_stats.size_az * cb->anaprop.grid_stats.size_beam;
 
     ArrayStats<unsigned> stat_anap_stats;
-    stat_anap_stats.fill(cb->grid_stats.stat_anap, stats_size);
+    stat_anap_stats.fill(cb->anaprop.grid_stats.stat_anap, stats_size);
     //stat_anap_stats.print();
     wassert(actual((unsigned)stat_anap_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
     wassert(actual((unsigned)stat_anap_stats.max) == 0);
 
     ArrayStats<unsigned> stat_anap_tot_stats;
-    stat_anap_tot_stats.fill(cb->grid_stats.stat_tot, stats_size);
+    stat_anap_tot_stats.fill(cb->anaprop.grid_stats.stat_tot, stats_size);
     //stat_anap_tot_stats.print();
     wassert(actual((unsigned)stat_anap_tot_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_tot_stats.min) ==  0);
     wassert(actual((unsigned)stat_anap_tot_stats.max) == 1000);
 
     ArrayStats<unsigned> stat_bloc_stats;
-    stat_bloc_stats.fill(cb->grid_stats.stat_bloc, stats_size);
+    stat_bloc_stats.fill(cb->anaprop.grid_stats.stat_bloc, stats_size);
     //stat_bloc_stats.print();
     wassert(actual((unsigned)stat_bloc_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_bloc_stats.min) == 0);
     wassert(actual((unsigned)stat_bloc_stats.max) == 0);
 
     ArrayStats<unsigned> stat_elev_stats;
-    stat_elev_stats.fill(cb->grid_stats.stat_elev, stats_size);
+    stat_elev_stats.fill(cb->anaprop.grid_stats.stat_elev, stats_size);
     //stat_elev_stats.print();
     wassert(actual((unsigned)stat_elev_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
     wassert(actual((unsigned)stat_elev_stats.max) == 0);
 
     ArrayStats<unsigned char> dato_corrotto_stats;
-    dato_corrotto_stats.fill(cb->dato_corrotto);
+    dato_corrotto_stats.fill(cb->anaprop.dato_corrotto);
     //dato_corrotto_stats.print();
     wassert(actual((unsigned)dato_corrotto_stats.all_missing).isfalse());
     wassert(actual((unsigned)dato_corrotto_stats.min) == 0);
@@ -553,8 +553,8 @@ void to::test<6>()
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.48, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 5.09, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(1, 2027.25, 5825));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 1.03, 3));
+    wassert(actual(cb->anaprop.quota).statsEqual(1, 2027.25, 5825));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 1.03, 3));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.85, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -655,8 +655,8 @@ void to::test<7>()
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.48, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 17.1, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(0, 0, 0));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.quota).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0, 0));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.73, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -755,8 +755,8 @@ void to::test<8>()
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.48, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 17.1, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(0, 0, 0));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.quota).statsEqual(0, 0, 0));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0, 0));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.73, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
@@ -921,37 +921,37 @@ void to::test<10>()
 
     wassert(actual(cb->beam_blocking).statsEqual(0, 1.25, 51));
 
-    unsigned stats_size = cb->grid_stats.size_az * cb->grid_stats.size_beam;
+    unsigned stats_size = cb->anaprop.grid_stats.size_az * cb->anaprop.grid_stats.size_beam;
 
     ArrayStats<unsigned> stat_anap_stats;
-    stat_anap_stats.fill(cb->grid_stats.stat_anap, stats_size);
+    stat_anap_stats.fill(cb->anaprop.grid_stats.stat_anap, stats_size);
     //stat_anap_stats.print();
     wassert(actual((unsigned)stat_anap_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_stats.min) == 0);
     wassert(actual((unsigned)stat_anap_stats.max) == 1);
 
     ArrayStats<unsigned> stat_anap_tot_stats;
-    stat_anap_tot_stats.fill(cb->grid_stats.stat_tot, stats_size);
+    stat_anap_tot_stats.fill(cb->anaprop.grid_stats.stat_tot, stats_size);
 //    stat_anap_tot_stats.print();
     wassert(actual((unsigned)stat_anap_tot_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_anap_tot_stats.min) ==  0);
     wassert(actual((unsigned)stat_anap_tot_stats.max) == 1000);
 
     ArrayStats<unsigned> stat_bloc_stats;
-    stat_bloc_stats.fill(cb->grid_stats.stat_bloc, stats_size);
+    stat_bloc_stats.fill(cb->anaprop.grid_stats.stat_bloc, stats_size);
 //    stat_bloc_stats.print();
     wassert(actual((unsigned)stat_bloc_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_bloc_stats.min) == 0);
     wassert(actual((unsigned)stat_bloc_stats.max) == 0);
 
     ArrayStats<unsigned> stat_elev_stats;
-    stat_elev_stats.fill(cb->grid_stats.stat_elev, stats_size);
+    stat_elev_stats.fill(cb->anaprop.grid_stats.stat_elev, stats_size);
 //    stat_elev_stats.print();
     wassert(actual((unsigned)stat_elev_stats.all_missing).isfalse());
     wassert(actual((unsigned)stat_elev_stats.min) == 0);
     wassert(actual((unsigned)stat_elev_stats.max) == 1);
 
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 1.6, 3));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 1.6, 3));
 
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -964,8 +964,8 @@ void to::test<10>()
     wassert(actual(cb->bb_first_level).statsEqual(0, 0.41, 2));
     wassert(actual(cb->beam_blocking).statsEqual(0, 1.25, 51));
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
-    wassert(actual(cb->quota).statsEqual(1, 1953.16, 5813));
-    wassert(actual(cb->dato_corrotto).statsEqual(0, 1.6, 3));
+    wassert(actual(cb->anaprop.quota).statsEqual(1, 1953.16, 5813));
+    wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 1.6, 3));
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.82, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
