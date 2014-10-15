@@ -11,8 +11,6 @@
 #include <memory>
 #include <Eigen/Core>
 
-#define ker 8494666.666667	// c'è qualcosa in geo_par.h
-
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
 
@@ -38,23 +36,57 @@ inline unsigned char DBtoBYTE(double dB)
         return 255;
 }
 
+struct PolarScanBase
+{
+    /**
+     * Nominal elevation of this PolarScan, which may be different from the
+     * effective elevation of each single beam
+     */
+    double elevation = 0;
+
+    /// Size of a beam cell in meters
+    double cell_size = 0;
+
+    // Height in kilometers (legacy)
+    double height(unsigned rg, double beam_half_width=0.0);
+    // Height difference in kilometers (legacy)
+    double diff_height(unsigned rg_start, unsigned rg_end);
+
+    /**
+     * Return the height (in meters) of the sample at the given range (in
+     * meters)
+     */
+    double sample_height(double range) const;
+
+    /**
+     * Return the height (in meters) of the sample at the given cell index
+     */
+    double sample_height(unsigned cell_idx) const;
+
+    /**
+     * Return the height of a sample (in meters) given center beam elevation
+     * (in degrees), range (in meters) and equivalent earth radius (in meters)
+     */
+    static double sample_height(double elevation, double range, double equiv_earth_radius);
+
+    /**
+     * Return the height of a sample (in meters) given center beam elevation
+     * (in degrees) and range (in meters), using the standard 4/3 equivalent
+     * earth radius (in meters)
+     */
+    static double sample_height(double elevation, double range);
+};
+
 template<typename T>
-class PolarScan : public Matrix2D<T>
+class PolarScan : public PolarScanBase, public Matrix2D<T>
 {
 public:
     /// Count of beams in this scan
     unsigned beam_count;
     /// Number of samples in each beam
     unsigned beam_size;
-    /**
-     * Nominal elevation of this PolarScan, which may be different from the
-     * effective elevation of each single beam
-     */
-    double elevation;
     /// Vector of actual elevations for each beam
     Eigen::VectorXd elevations_real;
-    /// Size of a beam cell in meters
-    double cell_size;
     T nodata = 0;    // Value used as 'no data' value
     T undetect = 0;  // Minimum amount that can be measured
     T gain = 1;
@@ -62,7 +94,7 @@ public:
 
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value)),
-          beam_count(beam_count), beam_size(beam_size), elevation(0), elevations_real(beam_count)
+          beam_count(beam_count), beam_size(beam_size), elevations_real(beam_count)
     {
     }
 
@@ -80,9 +112,9 @@ public:
 
     template<class OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
-        : Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, default_value)),
+        : PolarScanBase(s), Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, default_value)),
           beam_count(s.beam_count), beam_size(s.beam_size),
-          elevation(s.elevation), elevations_real(s.elevations_real),
+          elevations_real(s.elevations_real),
           nodata(default_value)
     {
     }
@@ -127,18 +159,6 @@ public:
         this->conservativeResize(Eigen::NoChange, new_beam_size);
         this->rightCols(new_beam_size - this->beam_size).colwise() = this->col(this->beam_size - 1);
         this->beam_size = new_beam_size;
-    }
-
-    double height(unsigned rg, double beam_half_width=0.0)
-    {
-	double range=(double)rg*cell_size;
-	double h=sqrt(range*range+ker*ker+2.*ker*range*sin((elevation+beam_half_width)*M_PI/180.))-ker;	//meters
-	return h/1000.;	//km
-    }
-
-    double diff_height(unsigned rg_start, unsigned rg_end)
-    {
-	return fabs(height(rg_end)-height(rg_start));
     }
 };
 
