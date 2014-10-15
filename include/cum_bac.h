@@ -249,16 +249,6 @@ public:
      */
     void creo_matrice_conv();
 
-    /**
-     * ingresso: elevazione e k di range bin
-     *
-     * @brief funzione  che calcola la quota in metri del centro del fascio
-     * @details distanza=k*dimensionecella +semidimensionecella in metri .quota=f(distinkm, rstinkm, elevazinrad) in metri 
-     * @param[in] elevaz elevazione
-     * @param[in] k distanza in n0 bin
-     * @return q_st quota standard
-     */
-    double quota_f(double elevaz, int k);
     void conversione_convettiva();
     bool esegui_tutto(const char* nome_file, int file_type, bool isInputOdim = false);
 // added function to calculate beamblocking correction
