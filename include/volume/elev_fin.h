@@ -11,18 +11,18 @@ namespace volume {
 template<typename T>
 struct ElevFin
 {
-    const Volume<T>& volume;
+    const Volume<T>* volume = 0;
 
     // elevazione finale in coordinate azimut range
     std::vector<unsigned char> elev_fin[NUM_AZ_X_PPI];
 
-    ElevFin(const Volume<T>& volume) : volume(volume) {}
-
     std::vector<unsigned char>& operator[](unsigned idx) { return elev_fin[idx]; }
     const std::vector<unsigned char>& operator[](unsigned idx) const { return elev_fin[idx]; }
 
-    void init()
+    void init(const Volume<T>& volume)
     {
+        this->volume = &volume;
+
         // FIXME: set to 0 to have the right size. We start from 512 (MAX_BIN)
         // to allocate enough memory for legacy code that iterates on MAX_BIN
         // to successfully read zeroes
@@ -47,12 +47,12 @@ struct ElevFin
     inline double elevation_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
         unsigned el = elev_fin[az_idx][ray_idx];
-        return volume.scan(el).elevations_real(az_idx);
+        return volume->scan(el).elevations_real(az_idx);
     }
 
     inline double db_at_elev_preci(unsigned az_idx, unsigned ray_idx) const
     {
-        const PolarScan<T>& s = volume.scan(elev_fin[az_idx][ray_idx]);
+        const PolarScan<T>& s = volume->scan(elev_fin[az_idx][ray_idx]);
         if (ray_idx < s.beam_size)
             return s.get(az_idx, ray_idx);
         else
