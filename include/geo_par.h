@@ -3,6 +3,3 @@
 
 # define GAT_LAT 44.7914
 # define GAT_LON 10.4992
-
-# define REARTH 6370.
-# define rst 4.0/3.0*REARTH
