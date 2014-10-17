@@ -284,10 +284,6 @@ void classifier::compute_lkdp()
 void classifier::correct_for_attenuation()
 {
 	for(unsigned el=0;el<vol_z.size();el++)
-	{
-		//TODO posso evitare che corregga l'attenuazione dove non c'è segnale applicando la maschera al campo di phi
-		//vol_z[el]+=0.06*vol_phidp_6km[el];
-		//vol_zdr[el]+=0.01*vol_phidp_6km[el];
 		for(unsigned az=0;az<vol_z[el].beam_count;az++)
 			for(unsigned rg=0;rg<vol_z[el].beam_size;rg++)
 			{
@@ -296,7 +292,6 @@ void classifier::correct_for_attenuation()
 				if((vol_zdr[el](az,rg)!=vol_zdr[el].nodata)&&(vol_zdr[el](az,rg)!=vol_zdr[el].undetect))
 					vol_zdr[el](az,rg)+=0.01*vol_phidp_6km[el](az,rg);
 			}
-	}
 }
 
 void classifier::correct_for_snr()
@@ -424,18 +419,97 @@ void classifier::melting_layer_classification(MeltingLayer& ML)
 	}
 }
 
-void classifier::class_designation()
+void classifier::class_designation(unsigned win_rg=0, unsigned win_az=0)
 {
-	for(unsigned el=0;el<vol_z.size();el++)
+	if(win_rg||win_az)
 	{
-		vol_hca.push_back(PolarScan<EchoClass>(vol_z.scan(el).beam_count,vol_z.scan(el).beam_size, NC));
-		vol_hca[el].elevation=vol_z[el].elevation;
-		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
+		std::vector< std::vector< std::vector<HCA_Park> > > vol_Ai_filtered;
+		vol_Ai_filtered=vol_Ai;
+		unsigned half_rg=0.5*(win_rg-1);
+		unsigned half_az=0.5*(win_az-1);
+		int pre_rg,post_rg,pre_az,post_az;
+		unsigned count=0;
+		//cout<<half_az<<"\t"<<half_rg<<endl;
+		for(unsigned el=0;el<vol_Ai.size();el++)
 		{
-			for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
-			{
-				vol_hca[el](az,rg)=vol_Ai[el][az][rg].echo(0.00001);
-			}
+			vol_hca.push_back(PolarScan<EchoClass>(vol_z.scan(el).beam_count,vol_z.scan(el).beam_size, NC));
+			vol_hca[el].elevation=vol_z[el].elevation;
+			for(unsigned az=0;az<vol_Ai[el].size();az++)
+				for(unsigned rg=0;rg<vol_Ai[el][az].size();rg++)
+				{
+					//cout<<el<<"\t"<<az<<"\t"<<rg<<endl;
+					vol_Ai_filtered[el][az][rg].clearAi();
+					vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][az][rg].Ai;
+					count++;
+					//cout<<"faccio gli az"<<endl;
+					for(unsigned j=1;j<half_az+1;j++)
+					{
+						pre_az=az-j;
+						post_az=az+j;
+						//cout<<pre_az<<"\t"<<post_az<<endl;
+						if(pre_az<0)pre_az+=vol_Ai[el].size();
+						if(post_az>=vol_Ai[el].size())post_az-=vol_Ai[el].size();
+						//cout<<pre_az<<"\t"<<post_az<<endl;
+						vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][pre_az][rg].Ai;
+						vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][post_az][rg].Ai;
+						count+=2;
+					}
+					//cout<<"faccio gli rg"<<flush;
+					for(unsigned i=1;i<half_rg+1;i++)
+					{
+						pre_rg=rg-i;
+						post_rg=rg+i;
+						if(pre_rg>=0)
+						{
+							vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][az][pre_rg].Ai;
+							count++;
+						}
+						if(post_rg<vol_Ai[el][az].size())
+						{
+							vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][az][post_rg].Ai;
+							count++;
+						}
+						//cout<<"faccio gli az "<<i<<flush;
+						for(unsigned j=1;j<half_az+1;j++)
+						{
+							pre_az=az-j;
+							post_az=az+j;
+							pre_az=az-j;
+							post_az=az+j;
+							if(pre_az<0)pre_az+=vol_Ai[el].size();
+							if(post_az>=vol_Ai[el].size())post_az-=vol_Ai[el].size();
+							if(pre_rg>=0)
+							{
+								vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][pre_az][pre_rg].Ai;
+								vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][pre_az][pre_rg].Ai;
+								count+=2;
+							}
+							if(post_rg<vol_Ai[el][az].size())
+							{
+								vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][post_az][post_rg].Ai;
+								vol_Ai_filtered[el][az][rg].Ai+=vol_Ai[el][post_az][post_rg].Ai;
+								count+=2;
+							}
+						}
+					}
+					//cout<<"   fatto"<<endl;
+					vol_Ai_filtered[el][az][rg].Ai.array()/=(double)count;
+					//cout<<"normalizzato"<<endl;
+					vol_hca[el](az,rg)=vol_Ai_filtered[el][az][rg].echo(0.00001);
+					//cout<<"azzero"<<endl;
+					count=0;
+				}
+		}
+	}
+	else
+	{
+		for(unsigned el=0;el<vol_z.size();el++)
+		{
+			vol_hca.push_back(PolarScan<EchoClass>(vol_z.scan(el).beam_count,vol_z.scan(el).beam_size, NC));
+			vol_hca[el].elevation=vol_z[el].elevation;
+			for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
+				for(unsigned rg=0;rg<vol_z.scan(el).beam_size;rg++)
+					vol_hca[el](az,rg)=vol_Ai[el][az][rg].echo(0.00001);
 		}
 	}
 }
@@ -483,10 +557,10 @@ void classifier::HCA_Park_2009()
 	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
 	cout<<"applico ML criteria ad HCA"<<endl;
 	melting_layer_classification(ML);
-	class_designation();
-	unsigned elev=1;
-	unsigned azim=200;
-/*	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
+	class_designation(5,5);
+/*	unsigned elev=1;
+	unsigned azim=140;
+	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
 	for(unsigned rg=0;rg<vol_Ai[elev][azim].size();rg++)
 	{
 		cout.precision(5);

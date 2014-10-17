@@ -175,7 +175,7 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 	{
 		cout<<"\t\t ML el ";
 		PolarScan<double>& rho=vol_rhohv_1km.scan(el);
-		if(rho.elevation>4.&&rho.elevation<10.)
+		if(rho.elevation>3.&&rho.elevation<10.)	//TODO abbasso la soglia minima di un'elevazione
 		{
 			cout<<el<<endl;
 			PolarScan<double>& z=vol_z_0_5km.scan(el);
@@ -186,10 +186,10 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 				double min_zdr=0.8;
 				for(unsigned rg=0;rg<rho.beam_size;rg++)
 				{
-					if(zdr(az,rg)>0.5)average.feed(zdr(az,rg));
+					if(zdr(az,rg)>0.2)average.feed(zdr(az,rg));
 				}
-				//min_zdr=average.compute_mean();
-				min_zdr=0.8;
+				if(average.N) min_zdr=average.compute_mean();
+				else min_zdr=0.8;
 				
 				for(unsigned rg=0;rg<rho.beam_size;rg++)
 				{
