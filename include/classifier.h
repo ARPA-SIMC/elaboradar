@@ -285,7 +285,9 @@ public:
 		if(idx==0||idx==1) return false;
 		else return true;
 	}
-
+/*!
+ * Return maximum probability meteo class
+ */
 	EchoClass echo(double minimum=0.)
 	{
 		unsigned idx;
@@ -294,6 +296,10 @@ public:
 		if(Ai(idx)>minimum) hca=(EchoClass)idx;
 		return hca;
 	}
+/*!
+ * Clear Ai content
+ */
+	void clearAi(){ Ai=Eigen::VectorXd::Zero(Ai.size()); }
 };
 
 /*
@@ -482,7 +488,7 @@ public:
  * \brief Designate class echo
  * Find the maximum of aggregation values
  */
-	void class_designation();
+	void class_designation(unsigned win_rg=0, unsigned win_az=0);
 /*!
  * \brief print PPI of EchoClass
  */
