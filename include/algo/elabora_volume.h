@@ -262,19 +262,19 @@ void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_ran
 	//this->quantity=raw.quantity.quantity_slope(); // TODO: è complesso ma si potrebbe
 	for(unsigned i=0;i<raw.size();i++)
 	{
-		window_size=1+2*std::floor(0.5*slope_range/raw.scan(i).cell_size);
-		vol.push_back(make_slope_scan(raw.scan(i),window_size));
+		window_size=1+2*std::floor(0.5*slope_range/raw[i].cell_size);
+		vol.push_back(make_slope_scan(raw[i],window_size));
 	}
 }
 
 template<typename T>
-void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
+void textureSD(const Scans<T>& raw, Scans<T>& vol, double filter_range, bool force_check_undetect=false)
 {
 	textureSD(raw,vol,filter_range,0.,force_check_undetect);
 }
 
 template<typename T>
-void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth, bool force_check_undetect=false)
+void textureSD(const Scans<T>& raw, Scans<T>& vol, double filter_range, double filter_azimuth=0. ,bool force_check_undetect=false)
 {
 	unsigned window_length;
 	unsigned window_width;
@@ -284,10 +284,9 @@ void textureSD(const Volume<T>& raw, Volume<T>& vol, double filter_range, double
 	vol.units=raw.units;
 	for(unsigned i=0;i<raw.size();i++)
 	{
-		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
-		//std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
-		vol.push_back(make_rms_scan(raw.scan(i), window_length, window_width));
+		window_length=1+2*std::floor(0.5*filter_range/raw[i].cell_size);
+		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw[i].beam_count));
+		vol.push_back(make_rms_scan(raw[i], window_length, window_width));
 	}
 }
 
@@ -308,10 +307,9 @@ void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double fi
 	vol.units=raw.units;
 	for(unsigned i=0;i<raw.size();i++)
 	{
-		window_length=1+2*std::floor(0.5*filter_range/raw.scan(i).cell_size);
-		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw.scan(i).beam_count));
-		//std::cout<<"length "<<window_length<<"   width "<<window_width<<std::endl;
-		vol.push_back(make_filter_scan(raw.scan(i), window_length, window_width));
+		window_length=1+2*std::floor(0.5*filter_range/raw[i].cell_size);
+		window_width=1+2*std::floor(0.5*filter_azimuth/(360./raw[i].beam_count));
+		vol.push_back(make_filter_scan(raw[i], window_length, window_width));
 	}
 }
 
@@ -323,10 +321,7 @@ void gradient_azimuth(const Volume<T>& raw, Volume<T>& vol, bool force_check_und
 	vol.quantity=raw.quantity;
 	vol.units=raw.units;
 	for(unsigned el=0;el<raw.size();el++)
-	{	//cout<<"grad azim el "<<el<<endl;
-		vol.push_back(make_gradient_azimuth_scan(raw.scan(el)));
-		//cout<<"grad azim el "<<el<<endl;
-	}
+		vol.push_back(make_gradient_azimuth_scan(raw[el]));
 }
 
 template<typename T>
@@ -336,12 +331,9 @@ void gradient_elevation(const Volume<T>& raw, Volume<T>& vol, bool force_check_u
 	check_undetect=force_check_undetect;
 	vol.quantity=raw.quantity;
 	vol.units=raw.units;
-	vol.push_back(make_gradient_elevation_scan(raw.scan(1),raw.scan(0)));
+	vol.push_back(make_gradient_elevation_scan(raw[1]),raw[0]);
 	for(unsigned el=1;el<raw.size();el++)
-	{	//cout<<"gradient el "<<el<<" low "<<el-1<<endl;
-		vol.push_back(make_gradient_elevation_scan(raw.scan(el-1),raw.scan(el)));
-		//cout<<"gradient el "<<el<<" low "<<el-1<<endl;
-	}
+		vol.push_back(make_gradient_elevation_scan(raw[el-1],raw[el]));
 }
 
 template<typename T>
@@ -351,10 +343,10 @@ void lin2dB(Volume<T>& lin, Volume<T>& dB)
 	dB.clear();
 	for(unsigned i=0;i<lin.size();i++)
 	{
-		dB.push_back(PolarScan<T>(lin.scan(i).beam_count,lin.scan(i).beam_size,0.));
+		dB.push_back(PolarScan<T>(lin[i].beam_count,lin[i].beam_size,0.));
 		dB[i].cell_size = lin[i].cell_size;
-		dB[i].elevation = lin.scan(i).elevation;
-		dB[i].block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();		
+		dB[i].elevation = lin[i].elevation;
+		dB[i].block(0,0,lin[i].beam_count,lin[i].beam_size)=lin[i].log10();		
 		dB[i].array()*=10.;
 	}
 }
@@ -366,11 +358,11 @@ void dB2lin(Volume<T>& dB, Volume<T>& lin)
 	lin.clear();
 	for(unsigned i=0;i<dB.size();i++)
 	{
-		lin.push_back(PolarScan<T>(dB.scan(i).beam_count,dB.scan(i).beam_size,0.));
+		lin.push_back(PolarScan<T>(dB[i].beam_count,dB[i].beam_size,0.));
 		lin[i].cell_size = dB[i].cell_size;
-		lin[i].elevation = dB.scan(i).elevation;
-		lin[i].block(0,0,dB.scan(i).beam_count,dB.scan(i).beam_size) = dB.scan(i)*0.1;
-		lin[i].block(0,0,dB.scan(i).beam_count,dB.scan(i).beam_size) = lin.scan(i).exp10();
+		lin[i].elevation = dB[i].elevation;
+		lin[i].block(0,0,dB[i].beam_count,dB[i].beam_size) = dB[i]*0.1;
+		lin[i].block(0,0,dB[i].beam_count,dB[i].beam_size) = lin[i].exp10();
 	}
 }
 
@@ -379,7 +371,7 @@ void lin2dB(Volume<T>& lin)
 {
 	//this->quantity=lin.quantity.lin2dB(); // TODO: not yet implemented
 	for(unsigned i=0;i<lin.size();i++)
-		lin[i].block(0,0,lin.scan(i).beam_count,lin.scan(i).beam_size)=lin.scan(i).log10();
+		lin[i].block(0,0,lin[i].beam_count,lin[i].beam_size)=lin[i].log10();
 	lin*=10.;
 }
 
@@ -389,7 +381,7 @@ void dB2lin(Volume<T>& dB)
 	//this->quantity=DB.quantity.dB2lin(); // TODO: not yet implemented
 	dB*=0.1;
 	for(unsigned i=0;i<dB.size();i++)
-		dB[i].block(0,0,dB.scan(i).beam_count,dB.scan(i).beam_size) = dB.scan(i).exp10();
+		dB[i].block(0,0,dB[i].beam_count,dB[i].beam_size) = dB.scan(i).exp10();
 }
 
 }	// namespace volume
