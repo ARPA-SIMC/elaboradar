@@ -488,20 +488,39 @@ void CUM_BAC::elabora_dato()
         textureSD(volume,SD_Z6,6000., false);
 
         // test to define the more appropriate value for textture_threshold for rainy and clutter data
-        int is_rainy = 0;
-        for (unsigned iaz=0; iaz<volume[2].beam_count; iaz++)
-            for (unsigned k=80; k < volume[2].beam_size; k ++)
-                if (volume[2].get(iaz,k) > 0.) is_rainy ++;
+        std::vector <double>  above_0  (3,0);
+        std::vector <double>  above_15 (3,0);
+        std::vector <double>  above_30 (3,0);
+        for( unsigned el =0; el <3; el++)
+	for (unsigned iaz=0; iaz<volume[el].beam_count; iaz++)
+            for (unsigned k=80; k < volume[el].beam_size; k ++)
+                if (volume[el].get(iaz,k) > 30.){
+			above_0[el]++;
+			above_15[el]++;
+			above_30[el]++;
+		} else if (volume[el].get(iaz,k) > 15.){
+			above_0[el]++;
+			above_15[el]++;
+		} else if (volume[el].get(iaz,k) > 0.){
+			above_0[el]++;
+		}
 
         anaprop.do_quality = do_quality;
         anaprop.do_beamblocking = do_beamblocking;
         anaprop.do_bloccorr = do_bloccorr;
-
-        if (is_rainy > 10000)
-            anaprop.conf_texture_threshold = 5.;
-        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- numero di pixel trovati %6d", anaprop.conf_texture_threshold, is_rainy);
-        anaprop.compute(volume, beam_blocking, first_level, first_level_static, SD_Z6);
-
+	if ( above_15[2]/above_15[0] >= 0.1){
+	   if (above_0[1]/above_0[0] >= 0.6){
+              anaprop.conf_texture_threshold = 5.;
+        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d -- 15. %6d %6d %6d -- 30. %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_30[0], (int)above_30[1], (int)above_30[2] );
+              anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
+           } else { 
+        LOG_WARN("THUNDERSTORM           %4.1f -- 0. %6d %6d %6d -- 15. %6d %6d %6d -- 30. %6d %6d %6d", -9.9, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_30[0], (int)above_30[1], (int)above_30[2] );
+             anaprop.remove(volume, beam_blocking, first_level, first_level_static);
+	   }
+        } else {
+        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d -- 15. %6d %6d %6d -- 30. %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_30[0], (int)above_30[1], (int)above_30[2] );
+ 	  anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
+	}
         LOG_INFO("elabora_dato completed with anaprop");
         ScrivoStatistica(anaprop.grid_stats);
     }
