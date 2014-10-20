@@ -116,8 +116,8 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
             if (corrected[ib])
             {
                 scan_z(i, ib) = cleaner.Z_missing;
-                scan_w(i, ib) = cleaner.W_threshold;
-                scan_v(i, ib) = cleaner.V_missing;
+  //              scan_w(i, ib) = cleaner.W_threshold;
+    //            scan_v(i, ib) = cleaner.V_missing;
             }
     }
 }
