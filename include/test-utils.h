@@ -92,9 +92,10 @@ struct ArrayStats
 
     void print()
     {
-        fprintf(stderr, "min %f max %f avg %f, zeros: %u, ones: %u\n",
-                (double)this->min, (double)this->max, this->avg(),
-                this->count_zeros, this->count_ones);
+//        fprintf(stderr, "min %f max %f avg  %f, zeros: %u, ones: %u\n",
+//                (double)this->min, (double)this->max, this->avg(),
+//                this->count_zeros, this->count_ones);
+        fprintf(stderr, "min %f max %f \n",(double)this->min, (double)this->max);
     }
 };
 
