@@ -105,13 +105,20 @@ public:
     // Initialise basic structures and copy first_level_static to elev_fin
     void init_elev_fin_static(const Volume<T>& volume, const PolarScan<unsigned char>& first_level_static);
 
-    // Initialise basic structures and compute anomalous propagation
-    void compute(
+    // Initialise basic structures and performe anomalous propagation using sd and testing vertical gradient
+    void remove(
             Volume<T>& volume,
             PolarScan<unsigned char>& beam_blocking,
             const PolarScan<unsigned char>& first_level,
             const PolarScan<unsigned char>& first_level_static,
             const Volume<double>& sd);
+
+    // Initialise basic structures and performe anomalous propagation testing vertical gradient
+    void remove(
+            Volume<T>& volume,
+            PolarScan<unsigned char>& beam_blocking,
+            const PolarScan<unsigned char>& first_level,
+            const PolarScan<unsigned char>& first_level_static);
 };
 
 }
