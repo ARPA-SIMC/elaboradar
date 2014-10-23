@@ -434,6 +434,10 @@ void classifier::class_designation(unsigned win_rg=0, unsigned win_az=0)
 		{
 			vol_hca.push_back(PolarScan<EchoClass>(vol_z.scan(el).beam_count,vol_z.scan(el).beam_size, NC));
 			vol_hca[el].elevation=vol_z[el].elevation;
+			vol_hca[el].gain=1;
+			vol_hca[el].offset=0;
+			vol_hca[el].undetect=NC;
+			vol_hca[el].nodata=255;			
 			for(unsigned az=0;az<vol_Ai[el].size();az++)
 				for(unsigned rg=0;rg<vol_Ai[el][az].size();rg++)
 				{
@@ -557,7 +561,7 @@ void classifier::HCA_Park_2009()
 	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
 	cout<<"applico ML criteria ad HCA"<<endl;
 	melting_layer_classification(ML);
-	class_designation(5,5);
+	class_designation(3,3);
 /*	unsigned elev=1;
 	unsigned azim=140;
 	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;
