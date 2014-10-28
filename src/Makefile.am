@@ -33,19 +33,19 @@ libelaboradar_la_SOURCES = \
   algo_steiner.cpp \
   algo_viz.cpp \
   algo_anaprop.cpp \
+  logging.cpp \
   config.cpp \
+  utils.cpp \
   cylindrical.cpp \
-  cum_bac.cpp \
   interpola_vpr.cpp \
   interpola_vpr_gsl.cpp \
   interpola_vpr_nr.cpp \
   setwork.cpp \
   func_Q3d.cpp \
   Q_components.cpp \
-  utils.cpp \
   site.cpp \
   assets.cpp \
-  logging.cpp \
+  cum_bac.cpp \
   cum_bac_clparser.cpp \
   image.cpp
 

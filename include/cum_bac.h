@@ -126,9 +126,6 @@ public:
 
     void setup_elaborazione(const char* nome_file);
 
-    /// Resize and fill the top matrix
-    void compute_top();
-
     /**
      *
      *  @brief funzione che elabora il dato radar rimuovendo anaprop e beam blocking

@@ -9,6 +9,7 @@
 #include "algo/viz.h"
 #include "algo/elabora_volume.h"
 #include "algo/anaprop.h"
+#include "algo/top.h"
 #include "algo/utils.h"
 #include "volume/resample.h"
 #include "cylindrical.h"
@@ -52,7 +53,7 @@ extern "C" {
 
 // Soglie algoritmi
 #define OVERBLOCKING 51 /* minimo BB non accettato*/
-#define SOGLIA_TOP 20 // soglia per trovare top
+#define SOGLIA_TOP 20.0 // soglia per trovare top
 #define THRES_ATT 0 /* minimo valore di Z in dBZ per calcolare att rate */
 #define MISSING 0 /*valore mancante*/
 
@@ -181,30 +182,11 @@ void CUM_BAC::setup_elaborazione(const char* nome_file)
 
     }
 
-    compute_top();
+    algo::compute_top(volume, SOGLIA_TOP, top);
 
     //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
     if (do_vpr) calcolo_vpr = new CalcoloVPR(*this);
     LOG_INFO(" End setup_elaborazione");
-}
-
-void CUM_BAC::compute_top()
-{
-    top.resize(400, volume.max_beam_size());
-    top.fill(0);
-    for (unsigned l=0; l<volume.size(); l++)
-    {
-        const auto& scan = volume[l];
-        for (int i=0; i<NUM_AZ_X_PPI; i++)
-        {
-            const double elevaz = scan.elevations_real(i); //--- elev reale in gradi
-            for (unsigned k = 0; k < scan.beam_size; ++k)
-                if (scan.get(i, k) > SOGLIA_TOP)
-                    //top in ettometri
-                    top(i, k) = (unsigned char)(PolarScanBase::sample_height(
-                                elevaz, (k + 0.5) * scan.cell_size) / 100.);
-        }
-    }
 }
 
 bool CUM_BAC::test_file(int file_type)
