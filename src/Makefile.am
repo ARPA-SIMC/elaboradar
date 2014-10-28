@@ -125,8 +125,8 @@ EXTRA_DIST += $(addsuffix .xz,$(TESTFILES)) $(addsuffix .xz,$(TESTFILES_ESPLOSIO
 BUILT_SOURCES = $(TESTFILES) $(TESTFILES_ESPLOSIONE)
 
 clean-local:
-	cd testdata && rm -f $(TESTFILES)
-	cd esplosione && rm -f $(TESTFILES_ESPLOSIONE)
+	rm -f $(TESTFILES)
+	rm -f $(TESTFILES_ESPLOSIONE)
 
 endif
 
