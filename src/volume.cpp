@@ -46,6 +46,7 @@ void VolumeStats::print(FILE* out)
     }
 }
 
+template class PolarScan<double>;
 template class Volume<double>;
 
 }
