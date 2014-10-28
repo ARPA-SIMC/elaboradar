@@ -34,7 +34,24 @@ dnl Mandatory librarires
 AC_PATH_PROG(LOG4C_CONFIG, [log4c-config])
 AC_PATH_PROG(GSL_CONFIG, [gsl-config])
 AC_PATH_PROG(GDAL_CONFIG, [gdal-config])
-PKG_CHECK_MODULES([HDF5], [hdf5-serial])
+PKG_CHECK_MODULES([HDF5], [hdf5], [have_hdf5=yes], [have_hdf5=no])
+if test $have_hdf5 = yes
+then
+        PKG_CHECK_MODULES([HDF5], [hdf5])
+else
+	AC_CHECK_LIB([hdf5], [H5Fis_hdf5], [have_hdf5=yes], [have_hdf5=no])
+	AC_CHECK_HEADER([hdf5.h], [have_hdf5=yes], [have_hdf5=no])
+	if test x"$have_hdf5" = x"no"; then
+		AC_MSG_ERROR("*** missing hdf5")
+	else
+		HDF5_CFLAGS=""
+		HDF5_LIBS="-lhdf5"
+		AC_SUBST(HDF5_CFLAGS)
+		AC_SUBST(HDF5_LIBS)
+	fi
+
+        AC_MSG_WARN([compiling without libhdf5])
+fi
 PKG_CHECK_MODULES([RADARLIB], [radarlib])
 PKG_CHECK_MODULES([EIGEN3], [eigen3])
 
