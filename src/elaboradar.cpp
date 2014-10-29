@@ -109,6 +109,22 @@ void commandline_error(const char* progname, const char* msg)
     exit(1);
 }
 
+/*
+void CUM_BAC::StampoFlag(){
+    std::cout<<" Flag do_medium       :"<< (this->do_medium?" true":" false")<<std::endl;
+    std::cout<<" Flag do_clean        :"<< (this->do_clean?" true":" false")<<std::endl;  
+    std::cout<<" Flag do_quality      :"<< (this->do_quality?" true":" false")<<std::endl;
+    std::cout<<" Flag do_beamblocking :"<< (this->do_beamblocking?" true":" false")<<std::endl;
+    std::cout<<" Flag do_declutter    :"<< (this->do_declutter?" true":" false")<<std::endl;
+    std::cout<<" Flag do_bloccorr     :"<< (this->do_bloccorr?" true":" false")<<std::endl;
+    std::cout<<" Flag do_vpr          :"<< (this->do_vpr?" true":" false")<<std::endl;
+    std::cout<<" Flag do_class        :"<< (this->do_class?" true":" false")<<std::endl;
+    std::cout<<" Flag do_zlr_media    :"<< (this->do_zlr_media?" true":" false")<<std::endl;
+    std::cout<<" Flag do_devel        :"<< (this->do_devel?" true":" false")<<std::endl;
+    std::cout<<" Flag do_readStaticMap:"<< (this->do_readStaticMap?" true":" false")<<std::endl;  
+}
+*/
+
 /* ================================ */
 int main (int argc, char **argv)
     /* ================================ */
@@ -162,7 +178,6 @@ int main (int argc, char **argv)
 
     unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
-    cb->do_clean 	= CL_opt.do_clean;
     cb->do_quality 	= CL_opt.do_quality;
     cb->do_beamblocking = CL_opt.do_beamblocking;
     cb->do_declutter 	= CL_opt.do_declut;
