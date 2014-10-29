@@ -51,6 +51,13 @@ struct CartLowris;
 class CUM_BAC
 {
 public:
+    /**
+     * @param tipofile puo' essere 0(corto senza declutter) 1(corto con
+     *                 declutter) 2(short hail) o 3(medio)
+     */
+    static void read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean=false, bool do_medium=false, unsigned max_bin=512);
+    static void read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false, unsigned max_bin=512);
+
     log4c_category_t* logging_category;
 
     unsigned MyMAX_BIN;
@@ -73,7 +80,7 @@ public:
     bool do_readStaticMap = false;
     bool do_anaprop=false;
 
-    Volume<double> volume;
+    Volume<double>& volume;
     Volume<double> SD_Z6;
 
     CalcoloVPR* calcolo_vpr;
@@ -110,19 +117,8 @@ public:
        T_time, T_data, T_ora..*/
 
 
-    CUM_BAC(const Config& cfg, const char* site_name, bool medium=false, unsigned max_bin=512);
+    CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium=false, unsigned max_bin=512);
     ~CUM_BAC();
-
-    bool read_sp20_volume(const char* nome_file, int file_type);
-    bool read_odim_volume(const char* nome_file, int file_type);
-
-    /**
-     *  @brief funzione che verifica se il volume dati in input e' consistente con le esigenze del programma 
-     *  @details  TESTA: A) risoluzione B) numero raggi per elevazione
-     *  @param    tipofile  puo' essere 0(corto senza declutter) 1(corto con declutter) 2(short hail) o 3(medio)
-     *  @return    0  in caso di errore   1  in caso di successo  .
-     */
-    bool test_file(int tipofile);
 
     void setup_elaborazione();
 

@@ -6,6 +6,7 @@
 #include "cum_bac.h"
 #include "logging.h"
 #include "config.h"
+#include "site.h"
 #include "cum_bac_clparser.h"
 
 #include <memory>
@@ -15,6 +16,7 @@
 #include <setwork.h>
 
 using namespace std;
+using namespace elaboradar;
 
 /*----------------------------------------------------------------------------*/
 /*      FINE SEZIONE    INCLUDE                   */
@@ -143,10 +145,22 @@ int main (int argc, char **argv)
 
     startup_banner(&CL_opt);
 
+    const Site& site(Site::get(sito));
+    Volume<double> volume;
 
-    unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(cfg, sito, CL_opt.do_medium,MyMAX_BIN));
+    try {
+        if (CL_opt.data_in_odim)
+            // Legge e controlla il volume dal file ODIM
+            CUM_BAC::read_odim_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium, MyMAX_BIN);
+        else
+            // Legge e controlla il volume dal file SP20
+            CUM_BAC::read_sp20_volume(volume, site, nome_file, file_type, CL_opt.do_clean, CL_opt.do_medium, MyMAX_BIN);
+    } catch (std::exception& e) {
+        LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
+        return 2;
+    }
 
-
+    unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
     cb->do_clean 	= CL_opt.do_clean;
     cb->do_quality 	= CL_opt.do_quality;
@@ -159,23 +173,6 @@ int main (int argc, char **argv)
     cb->do_readStaticMap= CL_opt.do_readStaticMap;
     cb->do_zlr_media	= true;
     cb->do_anaprop	= CL_opt.do_anaprop;
-
-    try {
-        if (CL_opt.data_in_odim){
-            // Legge e controlla il volume dal file ODIM
-            if (!cb->read_odim_volume(nome_file, file_type))
-                ier_main = 2;
-        }else { 
-            // Legge e controlla il volume dal file SP20
-            if (!cb->read_sp20_volume(nome_file, file_type))
-                ier_main = 2;
-        }
-    } catch (std::exception& e) {
-        LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
-        ier_main = 2;
-    }
-    if (ier_main)
-        goto end;
 
     try {
    //    cb->StampoFlag(); 

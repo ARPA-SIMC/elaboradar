@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include "site.h"
 #include "setwork.h"
 #include "test-utils.h"
 #include <unistd.h>
@@ -21,6 +22,39 @@ struct process_shar {
 };
 TESTGRP(process);
 
+namespace {
+
+struct CBTest
+{
+    Config cfg;
+    const Site& site;
+    Volume<double> volume;
+    bool do_medium;
+    unsigned max_bin;
+
+    CBTest(const char* site_name, bool do_medium, unsigned max_bin=512):
+        site(Site::get(site_name)), do_medium(do_medium), max_bin(max_bin)
+    {
+    }
+
+    void read_sp20(const char* fname, unsigned file_type, bool do_clean)
+    {
+        CUM_BAC::read_sp20_volume(volume, site, fname, file_type, do_clean, do_medium, max_bin);
+    }
+
+    void read_odim(const char* fname, bool do_clean)
+    {
+        CUM_BAC::read_odim_volume(volume, site, fname, do_clean, do_medium, max_bin);
+    }
+
+    unique_ptr<CUM_BAC> make_cumbac()
+    {
+        return unique_ptr<CUM_BAC>(new CUM_BAC(volume, cfg, site, do_medium, max_bin));
+    }
+};
+
+}
+
 template<> template<>
 void to::test<1>()
 {
@@ -34,8 +68,9 @@ void to::test<1>()
     setenv("LAST_VPR","testdata/last_vpr",1);
     setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -44,7 +79,6 @@ void to::test<1>()
     cb->do_class = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
 
     wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
@@ -94,8 +128,6 @@ void to::test<1>()
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.99, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -108,8 +140,9 @@ void to::test<2>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "testdata", 1);
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -117,7 +150,6 @@ void to::test<2>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
 
     cb->elabora_dato();
@@ -150,7 +182,6 @@ void to::test<2>()
     wassert(actual(stats.sum_others[3]) ==   52204);
     wassert(actual(stats.sum_others[4]) ==  100286);
     wassert(actual(stats.sum_others[5]) ==  101241);
-    delete cb;
 }
 
 template<> template<>
@@ -165,8 +196,9 @@ void to::test<3>()
     unlink("testdata/vpr_heat_GAT");
     setenv("FILE_T", "testdata/temperature.txt", 1);
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter =false ;
@@ -175,7 +207,6 @@ void to::test<3>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
 
     cb->elabora_dato();
@@ -229,8 +260,6 @@ void to::test<3>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -249,8 +278,10 @@ void to::test<4>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
     setenv("LAST_VPR","testdata/last_vpr",1);
     printwork();
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -258,7 +289,6 @@ void to::test<4>()
     cb->do_bloccorr = false;
     cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
 LOG_INFO ("Chiamo elabora_dato");
     cb->elabora_dato();
@@ -324,8 +354,6 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -346,8 +374,10 @@ void to::test<5>()
 unlink("LAST_VPR");
     setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
     printwork();
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -356,7 +386,6 @@ unlink("LAST_VPR");
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
 
     cb->elabora_dato();
@@ -425,8 +454,6 @@ unlink("LAST_VPR");
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
     // TODO: scrivo_out_file_bin
-
-    delete cb;
 }
 
 template<> template<>
@@ -448,8 +475,9 @@ void to::test<6>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
 	printwork();
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -458,7 +486,6 @@ void to::test<6>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
@@ -575,8 +602,6 @@ void to::test<6>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -602,8 +627,9 @@ void to::test<7>()
     setenv("TEST_VPR", "testdata/test_vpr", 1);
 	printwork();
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -612,7 +638,6 @@ void to::test<7>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
 
     cb->elabora_dato();
@@ -678,8 +703,6 @@ void to::test<7>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -700,8 +723,9 @@ void to::test<8>()
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_sp20(fname, 0, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
@@ -710,7 +734,6 @@ void to::test<8>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_sp20_volume(fname, 0);
 
     cb->setup_elaborazione();
     cb->elabora_dato();
@@ -779,8 +802,6 @@ void to::test<8>()
     wassert(actual(clow.conv_1x1).statsEqual(0, 59430, 100, 100, 100));
 
     // TODO: scrivo_out_file_bin
-
-    delete cb;
 }
 
 template<> template<>
@@ -795,12 +816,12 @@ void to::test<9>()
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_INV_2011", 1);
     printwork();
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT",true,1024);
+    CBTest test("GAT", true, 1024);
+    test.read_sp20(fname, 0, false);
+    auto cb = test.make_cumbac();
     cb->do_medium= true;
     cb->do_readStaticMap=true;
 //    cb->do_zlr_media=true; 
-    cb->read_sp20_volume(fname, 0);
     cb->setup_elaborazione();
     cb->assets.write_vpr_heating(0);
 
@@ -861,8 +882,6 @@ void to::test<9>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 262144, 0, 0, 0));
     wassert(actual(clow.corr_1x1).statsEqual(0, 262144, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 262144, 0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -884,8 +903,9 @@ void to::test<10>()
     setenv("FILE_T", "testdata/temperature.txt", 1);
 	printwork();
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+    CBTest test("GAT", false);
+    test.read_odim(fname, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -894,7 +914,6 @@ void to::test<10>()
     cb->do_vpr = true;
     cb->do_clean= true;
     cb->do_readStaticMap=true;
-    cb->read_odim_volume(fname, 0);
     cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
@@ -986,8 +1005,6 @@ void to::test<10>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
-
-    delete cb;
 }
 
 template<> template<>
@@ -1012,8 +1029,9 @@ void to::test<11>()
     setenv("VPR_ARCH"           , "esplosione/201403010915_vpr_GAT",1);
 	printwork();
 
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT",false, 512);
+    CBTest test("GAT", false);
+    test.read_odim(fname, true);
+    auto cb = test.make_cumbac();
     cb->do_readStaticMap=true;
     cb->do_clean= true;
     cb->do_devel=true;
@@ -1022,7 +1040,6 @@ void to::test<11>()
     cb->do_bloccorr = true;
     cb->do_class = true;
     cb->do_vpr = true;
-    cb->read_odim_volume(fname, 0);
 
     cb->setup_elaborazione();
     cb->elabora_dato();
@@ -1032,8 +1049,6 @@ void to::test<11>()
     cb->calcolo_vpr->esegui_tutto();
     VolumeStats stats;
     cb->volume.compute_stats(stats);
-
-    delete cb;
 }
 
 
@@ -1062,9 +1077,10 @@ void to::test<12>()
     setenv("DIR_DEBUG","vpr",1);
 
 	printwork();
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "GAT", false,1024);
-    //CUM_BAC* cb = new CUM_BAC(cfg, "GAT");
+
+    CBTest test("GAT", false);
+    test.read_odim(fname, true);
+    auto cb = test.make_cumbac();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
@@ -1074,7 +1090,6 @@ void to::test<12>()
     cb->do_clean= true;
     cb->do_devel= true;
     cb->do_readStaticMap=true;
-    cb->read_odim_volume(fname, 0);
     
     cb->setup_elaborazione();
     cb->elabora_dato();
@@ -1115,8 +1130,6 @@ void to::test<12>()
     LOG_INFO("Scrittura File Precipitazione 1X1\n");
     cart_low.write_out(*cb,cb->assets);
     cb->assets.write_gdal_image(cart_low.z_out,"DIR_DEBUG","ZLR","PNG" );
-
-    delete cb;
 }
 
 }
