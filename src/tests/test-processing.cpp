@@ -1095,17 +1095,6 @@ void to::test<12>()
     CartLowris cart_low(cb->do_medium ? 512: 256, *cb, cart_maker);
     cart_low.creo_cart_z_lowris();
 
-    unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
-    MP_coeff[0]=(unsigned char)(cb->aMP/10);
-    MP_coeff[1]=(unsigned char)(cb->bMP*10);
-
-    char nome_file_output[512];
-    sprintf(nome_file_output,"%s/MP_coeff",getenv("OUTPUT_Z_LOWRIS_DIR"));
-    FILE* output=controllo_apertura(nome_file_output,"file coeff MP","w");
-    fwrite(MP_coeff,sizeof(MP_coeff),1,output);
-    fclose(output);
-    printf(" dopo scrivo_z_lowris %s \n", nome_file_output);
-
     LOG_INFO("Scrittura File Precipitazione 1X1\n");
     cart_low.write_out(*cb,cb->assets);
     cb->assets.write_gdal_image(cart_low.z_out,"DIR_DEBUG","ZLR","PNG" );

@@ -6,6 +6,7 @@
 #include "matrix.h"
 #include "site.h"
 #include "image.h"
+#include "algo/dbz.h"
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
@@ -351,6 +352,22 @@ void Assets::write_vpr0(std::vector<float>& vpr, std::vector<long int>& area)
             throw std::runtime_error("cannot write to $VPR0_FILE");
         }
     fclose(out);
+}
+
+void Assets::write_dbz_coefficients(const algo::DBZ& dbz)
+{
+    const char* dirname = getenv("OUTPUT_Z_LOWRIS_DIR");
+    if (!dirname) throw runtime_error("OUTPUT_Z_LOWRIS_DIR is not set");
+    string fname(dirname);
+    fname += "/MP_coeff";
+    File out(logging_category);
+    out.open(fname, "wb", "MP coefficients");
+
+    unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
+    MP_coeff[0]=(unsigned char)(dbz.aMP/10);
+    MP_coeff[1]=(unsigned char)(dbz.bMP*10);
+
+    fwrite(MP_coeff, sizeof(MP_coeff), 1, out);
 }
 
 H5::H5File Assets::get_devel_data_output() const
