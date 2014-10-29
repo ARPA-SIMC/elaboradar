@@ -575,32 +575,6 @@ void CUM_BAC::ScrivoStatistica(const algo::anaprop::GridStats& grid_stats)
     return ;
 }
 
-FILE *controllo_apertura (const char *nome_file, const char *content, const char *mode)
-{
-    LOG_CATEGORY("radar.io");
-    FILE *file;
-    int ier_ap=0;
-
-    if (strcmp(mode,"r") == 0)
-        ier_ap=access(nome_file,R_OK);
-    else ier_ap=0;
-
-    if (!ier_ap) {
-        if (strcmp(mode,"r") == 0) file = fopen(nome_file,"r");
-        else file=fopen(nome_file,"w");
-    }
-    else
-    {
-        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
-        throw std::runtime_error("errore apertura");
-    }
-    if (file == NULL) {
-        LOG_ERROR("Errore Apertura %s %s", content, nome_file);
-        throw std::runtime_error("errore apertura");
-    }
-    return(file);
-}
-
 /*
    comstart caratterizzo_volume
    idx calcola qualita' volume polare
@@ -911,7 +885,6 @@ LOG_DEBUG (" modalita %d",mode);
 	for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0[i]);
 
         //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
-        //--------qui dentro c'è la funzione controllo_apertura, per la quale rimandiamo a dopo qualsiasi commento--------
 
         if (gap <= MEMORY)
         {
@@ -1099,9 +1072,10 @@ int CalcoloVPR::stampa_vpr()
 {
     float vpr_dbz;
     int ilay;
-    FILE *file;
 
-    file=controllo_apertura(getenv("VPR_ARCH")," ultimo vpr in dBZ per il plot","w");
+    File file(logging_category);
+    file.open_from_env("VPR_ARCH", "wt", "ultimo vpr in dBZ per il plot");
+
     fprintf(file," QUOTA   DBZ    AREA PRECI(KM^2/1000)\n" );
     for (ilay=0;  ilay<NMAXLAYER; ilay++){
         if (vpr[ilay]> 0.001 ) {
@@ -1111,7 +1085,7 @@ int CalcoloVPR::stampa_vpr()
         else
             fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, NODATAVPR, area_vpr[ilay]);
     }
-    fclose(file);
+
     return 0;
 }
 /*=======================================================================================*/
@@ -1453,12 +1427,14 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                     LOG_INFO(" interpolazione eseguita con successo");
                     //
                     // stampa del profilo interpolato
-                    char file_vprint[200];
-                    sprintf(file_vprint,"%s_int",getenv("VPR_ARCH"));
-                    FILE* file=controllo_apertura(file_vprint," vpr interpolato ","w");
+                    const char* vpr_arch = getenv("VPR_ARCH");
+                    if (!vpr_arch) throw runtime_error("VPR_ARCH is not defined");
+                    string fname(vpr_arch);
+                    fname += "_int";
+                    File file(logging_category);
+                    file.open(fname, "wt", "vpr interpolato");
                     for (unsigned i = 0; i < NMAXLAYER; ++i)
                         fprintf(file," %f \n", cum_bac.dbz.RtoDBZ(iv.vpr_int[i]));
-                    fclose(file);
 
                     /*calcolo valore di riferimento di vpr_liq per l'acqua liquida nell'ipotesi che a[2]=quota_bright_band e a[2]-1.5*a[3]=quota acqua liquida*/
                     if (tipo_profilo == 2 ) {
