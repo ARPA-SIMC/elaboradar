@@ -23,12 +23,12 @@
 #include "volume/loader.h"
 #include "volume/elev_fin.h"
 #include "algo/anaprop.h"
+#include "algo/dbz.h"
 #include "matrix.h"
 #include <stdexcept>
 #include <cmath>
 
 //algoritmo
-#include <MP_par.h>
 #include <vpr_par.h>
 #include <geo_par.h>
 
@@ -81,6 +81,8 @@ public:
     Volume<double>& volume;
     Volume<double> SD_Z6;
 
+    algo::DBZ dbz;
+
     CalcoloVPR* calcolo_vpr = 0;
 
     /*-----------------------------------------------------------
@@ -89,9 +91,6 @@ public:
 
     // Data del volume che abbiamo letto
     char date[20];
-
-    //coeff a e b relazione Z-R
-    float aMP, bMP;   /*  coeff a e b relazione Z-R  */
 
     //matrici first_level e first level da beam blocking e valore beam blocking
     PolarScan<unsigned char> first_level; //mappa dinamica complessiva
@@ -149,18 +148,6 @@ public:
     void caratterizzo_volume();
 
     /**
-     *  ingresso:dbz in quel punto e attenuazione fin lì
-     *  Doviak,Zrnic,1984 for rain as reported in cost 717 final document
-     *
-     *  @brief   funzione che calcola l'att enuazione totale 
-     *  @details Ricevuto in ingresso il dato di Z in byte e l'attenuazione complessiva sul raggio fino al punto in considerazione, calcola l'attenuazione totale 
-     *  @param[in]  DBZbyte valore in byte della Z nel pixel
-     *  @param[in]  PIA attenuazione totale fino al punto
-     *  @return att_tot attenuazione incrementata del contributo nel pixel corrente
-     */
-    double attenuation(unsigned char DBZbyte, double  PIA);
-
-    /**
      *  @brief   funzione scrittura matrici statistica
      *  @details scrive le statistiche di beam blocking, anaprop, cambio di elevazione in un unsigined char DIM1_ST*DIM1_ST
      */
@@ -186,10 +173,6 @@ public:
     void conversione_convettiva();
     bool esegui_tutto();
 // added function to calculate beamblocking correction
-//
-    // RtoDBZ calcolato su aMP e bMP
-    float RtoDBZ(float rain) const;
-
 
     /**
      *  @brief funzione che a partire dal tempo in secondi arrotonda al NMIN-esimo minuto precedente o successivo

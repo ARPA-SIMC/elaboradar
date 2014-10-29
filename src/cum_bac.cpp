@@ -54,7 +54,6 @@ extern "C" {
 // Soglie algoritmi
 #define OVERBLOCKING 51 /* minimo BB non accettato*/
 #define SOGLIA_TOP 20.0 // soglia per trovare top
-#define THRES_ATT 0 /* minimo valore di Z in dBZ per calcolare att rate */
 #define MISSING 0 /*valore mancante*/
 
 //Definizioni geometriche
@@ -137,20 +136,13 @@ CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bo
     struct tm* tempo = gmtime(&Time);
     int month=tempo->tm_mon+1;
 
+    dbz.setup(month, volume[0].cell_size);
+
     // scrivo la variabile char date con la data in formato aaaammgghhmm
     sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
 
     // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
-    if ( month > 4 && month < 10 )  {
-        aMP=aMP_conv;
-        bMP=bMP_conv;
-    }
-    else {
-        aMP=aMP_strat;
-        bMP=bMP_strat;
-    }
-
     algo::compute_top(volume, SOGLIA_TOP, top);
 }
 
@@ -683,7 +675,7 @@ void CUM_BAC::caratterizzo_volume()
 
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                PIA=attenuation(DBtoBYTE(sample),PIA);
+                PIA=dbz.attenuation(DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
                 dhst = PolarScanBase::sample_height(elevaz + 0.45, dist)
@@ -739,28 +731,6 @@ void CUM_BAC::caratterizzo_volume()
 
     LOG_DEBUG("End caratterizzo_volume");
     return;
-}
-
-double CUM_BAC::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic,1984 for rain as reported in cost 717 final document*/
-{
-    double Zhh,att_rate,R;/* PIA diventa att_tot devo decidere infatti se PIA sarà 3d percio' temp. uso  nomi diversi*/
-    double att_tot;
-
-    //---ricevo in ingresso il dato e l'attenuazione fino  quel punto
-    //---la formula recita che l'attenuazione è pari una funzione di Z reale (quindi corretta dell'attenuazione precedente). ovviamente devo avere un segnale per correggere.
-    //--------- CALCOL
-    att_tot=PIA;
-    Zhh=(double)(BYTEtoZ(DBZbyte));
-    if (10*log10(Zhh) > THRES_ATT )
-    {
-        Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
-        R=pow((Zhh/aMP),(1.0/bMP));
-        att_rate=0.0018*pow(R,1.05);
-        // TODO: to compute scan by scan?
-        att_tot=att_tot+2.*att_rate*0.001 * volume[0].cell_size;
-        if (att_tot>BYTEtoDB(254)) att_tot=BYTEtoDB(254);
-    }
-    return att_tot;
 }
 
 void CalcoloVPR::classifica_rain()
@@ -979,7 +949,7 @@ LOG_DEBUG (" modalita %d",mode);
                         //---- converto in R il profilo vecchio--
                         if (vpr0[ilay]>0){
                             vpr_dbz=vpr0[ilay];
-                            vpr0[ilay] = DBZtoR(vpr_dbz,cum_bac.aMP,cum_bac.bMP);
+                            vpr0[ilay] = cum_bac.dbz.DBZtoR(vpr_dbz);
                             area[ilay]=ar;
                         }
                         else
@@ -1135,7 +1105,7 @@ int CalcoloVPR::stampa_vpr()
     fprintf(file," QUOTA   DBZ    AREA PRECI(KM^2/1000)\n" );
     for (ilay=0;  ilay<NMAXLAYER; ilay++){
         if (vpr[ilay]> 0.001 ) {
-            vpr_dbz=cum_bac.RtoDBZ(vpr[ilay]);
+            vpr_dbz=cum_bac.dbz.RtoDBZ(vpr[ilay]);
             fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, vpr_dbz, area_vpr[ilay]);
         }
         else
@@ -1255,17 +1225,13 @@ int CalcoloVPR::corr_vpr()
 
                         //volpol[0][i][k]=RtoBYTE(passaggio)
 
-                        corr=cum_bac.RtoDBZ(vpr[ilref])-cum_bac.RtoDBZ(vpr_hray);
+                        corr=cum_bac.dbz.RtoDBZ(vpr[ilref])-cum_bac.dbz.RtoDBZ(vpr_hray);
 
-                        cum_bac.volume[0].set(i, k, RtoDBZ(
-                                        DBZtoR(cum_bac.volume[0].get(i, k),aMP_SNOW,bMP_SNOW),
-                                        aMP_class,
-                                        bMP_class));
-
+                        cum_bac.volume[0].set(i, k, cum_bac.dbz.DBZ_snow(cum_bac.volume[0].get(i, k)));
                     }
                     else{
                         // -- altrimenti correggo comunque a livello liquido :
-                        corr=RtoDBZ(vpr_liq,aMP_class,bMP_class)-RtoDBZ(vpr_hray,aMP_class,bMP_class);/*riporto comunque al valore liquido anche se sono sopra la bright band*/
+                        corr = cum_bac.dbz.RtoDBZ_class(vpr_liq) - cum_bac.dbz.RtoDBZ_class(vpr_hray);/*riporto comunque al valore liquido anche se sono sopra la bright band*/
 	            }
                     // --  controllo qualità su valore correzione
                     if (corr>MAX_CORR) corr=MAX_CORR; /*soglia sulla massima correzione*/
@@ -1491,7 +1457,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                     sprintf(file_vprint,"%s_int",getenv("VPR_ARCH"));
                     FILE* file=controllo_apertura(file_vprint," vpr interpolato ","w");
                     for (unsigned i = 0; i < NMAXLAYER; ++i)
-                        fprintf(file," %f \n", cum_bac.RtoDBZ(iv.vpr_int[i]));
+                        fprintf(file," %f \n", cum_bac.dbz.RtoDBZ(iv.vpr_int[i]));
                     fclose(file);
 
                     /*calcolo valore di riferimento di vpr_liq per l'acqua liquida nell'ipotesi che a[2]=quota_bright_band e a[2]-1.5*a[3]=quota acqua liquida*/
@@ -1537,17 +1503,17 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
     if (! ier ) {
         if(*hliq > livmin +200 )
-            vhliquid=cum_bac.RtoDBZ(vpr[(int)(*hliq)/TCK_VPR]);
-        vliq=cum_bac.RtoDBZ(*vpr_liq);
+            vhliquid=cum_bac.dbz.RtoDBZ(vpr[(int)(*hliq)/TCK_VPR]);
+        vliq=cum_bac.dbz.RtoDBZ(*vpr_liq);
     }
     if (ier_max) {
         if ( hvprmax-600 >= livmin )
-            v600sottobb=cum_bac.RtoDBZ(vpr[(hvprmax-600)/TCK_VPR]);
+            v600sottobb=cum_bac.dbz.RtoDBZ(vpr[(hvprmax-600)/TCK_VPR]);
         if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
-            v1000=cum_bac.RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR]);
+            v1000=cum_bac.dbz.RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR]);
         if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
-            v1500=cum_bac.RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR]);
-        vprmax=cum_bac.RtoDBZ(vpr[(hvprmax/TCK_VPR)]);
+            v1500=cum_bac.dbz.RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR]);
+        vprmax=cum_bac.dbz.RtoDBZ(vpr[(hvprmax/TCK_VPR)]);
     }
 
     fprintf(test_vpr,"%s %i %i %f %f %f  %f %f %f %f %f %f %f %f  %f %f %f  %f \n",date,hvprmax,tipo_profilo,stdev,iv.chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,vprmax,iv.rmsefin,iv.B,iv.E,iv.G,iv.C,iv.F);
@@ -1679,7 +1645,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 if (sample > THR_VPR &&  flag_vpr->scan(l).get(i, k) > 0 )
                 {
                     //-------incremento il volume di pioggia = pioggia x area
-                    vol_rain=(long int)(BYTE_to_mp_func(DBtoBYTE(sample),cum_bac.aMP,cum_bac.bMP)*area);//peso ogni cella con la sua area
+                    vol_rain=(long int)(cum_bac.dbz.DBZ_to_mp_func(sample)*area);//peso ogni cella con la sua area
 
                     //-------incremento l'area precipitante totale ct,aggiungendo però,cosa che avevo messo male una THR solo per ct, cioè per il peso
                     if (sample > THR_PDF)
@@ -1796,21 +1762,10 @@ float comp_levels(float v0, float v1, float nodata, float peso)
 
 void CUM_BAC::conversione_convettiva()
 {
-    for (unsigned i=0; i<NUM_AZ_X_PPI; i++){
-        for (unsigned k=0; k<volume[0].beam_size; k++){
-            if (calcolo_vpr->conv(i,k) > 0){
-                volume[0].set(i, k,
-                        ::RtoDBZ(
-                            BYTE_to_mp_func(
-                                DBtoBYTE(volume[0].get(i, k)),
-                                aMP_conv,
-                                bMP_conv),
-                            aMP_class,
-                            bMP_class));
-
-            }
-        }
-    }
+    for (unsigned i=0; i<NUM_AZ_X_PPI; i++)
+        for (unsigned k=0; k<volume[0].beam_size; k++)
+            if (calcolo_vpr->conv(i,k) > 0)
+                volume[0].set(i, k, dbz.DBZ_conv(volume[0].get(i, k)));
 }
 
 bool CUM_BAC::esegui_tutto()
@@ -1903,16 +1858,8 @@ bool CUM_BAC::esegui_tutto()
     CartLowris cart_low(do_medium ? 512: 256, *this, cart_maker);
     cart_low.creo_cart_z_lowris();
 
-    unsigned char MP_coeff[2]; /* a/10 e b*10 per scrivere come 2 byte */
-    MP_coeff[0]=(unsigned char)(aMP/10);
-    MP_coeff[1]=(unsigned char)(bMP*10);
-
-    char nome_file_output[512];
-    sprintf(nome_file_output,"%s/MP_coeff",getenv("OUTPUT_Z_LOWRIS_DIR"));
-    FILE* output=controllo_apertura(nome_file_output,"file coeff MP","w");
-    fwrite(MP_coeff,sizeof(MP_coeff),1,output);
-    fclose(output);
-    printf(" dopo scrivo_z_lowris\n");
+    assets.write_dbz_coefficients(dbz);
+    LOG_INFO("dopo scrivo_z_lowris");
 
     if (do_quality && do_devel)
     {
@@ -2017,11 +1964,6 @@ void CalcoloVPR::esegui_tutto()
         if ( ! ier && ! ier_vpr)
             ier_stampa_vpr=stampa_vpr();
     }
-}
-
-float CUM_BAC::RtoDBZ(float rain) const
-{
-    return ::RtoDBZ(rain, aMP, bMP);
 }
 
 Cart::Cart(unsigned max_bin)

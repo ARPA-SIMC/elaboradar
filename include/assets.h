@@ -11,6 +11,10 @@
 
 namespace elaboradar {
 
+namespace algo {
+class DBZ;
+}
+
 struct Config;
 template<typename T> struct Matrix2D;
 
@@ -165,6 +169,8 @@ public:
 
     bool read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area);
     void write_vpr0(std::vector<float>& vpr, std::vector<long int>& area);
+
+    void write_dbz_coefficients(const algo::DBZ& dbz);
 
     /**
      * Return an open HDF5 File to which we can write datasets used to debug

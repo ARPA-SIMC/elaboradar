@@ -33,6 +33,7 @@ libelaboradar_la_SOURCES = \
   algo_steiner.cpp \
   algo_viz.cpp \
   algo_anaprop.cpp \
+  algo_dbz.cpp \
   logging.cpp \
   config.cpp \
   utils.cpp \
