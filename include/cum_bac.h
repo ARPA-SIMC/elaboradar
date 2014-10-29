@@ -72,7 +72,6 @@ public:
     bool do_beamblocking = false;
     bool do_bloccorr = false;
     bool do_declutter = false;
-    bool do_vpr = false;
     bool do_class = false;
     bool do_zlr_media = false;
     bool do_devel = false;
@@ -82,7 +81,7 @@ public:
     Volume<double>& volume;
     Volume<double> SD_Z6;
 
-    CalcoloVPR* calcolo_vpr;
+    CalcoloVPR* calcolo_vpr = 0;
 
     /*-----------------------------------------------------------
       Variabili globali
@@ -119,7 +118,11 @@ public:
     CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium=false, unsigned max_bin=512);
     ~CUM_BAC();
 
-    void setup_elaborazione();
+    /**
+     * Call this just after creating the CUM_BAC object, to signal that VPR
+     * should also be computed
+     */
+    void want_vpr();
 
     /**
      *

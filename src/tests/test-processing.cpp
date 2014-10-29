@@ -71,14 +71,13 @@ void to::test<1>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_bloccorr = true;
-    cb->do_vpr = true;
     cb->do_class = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
 
     wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
 
@@ -142,13 +141,12 @@ void to::test<2>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_bloccorr = true;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -197,14 +195,13 @@ void to::test<3>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter =false ;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -279,14 +276,13 @@ void to::test<4>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
 LOG_INFO ("Chiamo elabora_dato");
     cb->elabora_dato();
 LOG_INFO("Chiamo caratterizzo volumi");
@@ -375,14 +371,13 @@ unlink("LAST_VPR");
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
     cb->do_class = true;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -474,14 +469,13 @@ void to::test<6>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     cb->elabora_dato();
@@ -625,14 +619,13 @@ void to::test<7>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -720,15 +713,14 @@ void to::test<8>()
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = true;
     cb->do_class = true;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
 
-    cb->setup_elaborazione();
     cb->elabora_dato();
     cb->caratterizzo_volume();
     cb->calcolo_vpr->classifica_rain();
@@ -815,7 +807,7 @@ void to::test<9>()
     cb->do_medium= true;
     cb->do_readStaticMap=true;
 //    cb->do_zlr_media=true; 
-    cb->setup_elaborazione();
+    // FIXME: we don't compute VPR here, does it make sense to write vpr heating?
     cb->assets.write_vpr_heating(0);
 
     cb->elabora_dato();
@@ -899,14 +891,13 @@ void to::test<10>()
     CBTest test("GAT", false);
     test.read_odim(fname, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_class = false;
     cb->do_bloccorr = false;
-    cb->do_vpr = true;
     cb->do_readStaticMap=true;
-    cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     cb->elabora_dato();
@@ -1024,15 +1015,14 @@ void to::test<11>()
     CBTest test("GAT", false);
     test.read_odim(fname, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_readStaticMap=true;
     cb->do_devel=true;
     cb->do_beamblocking = true;
     cb->do_quality = true;
     cb->do_bloccorr = true;
     cb->do_class = true;
-    cb->do_vpr = true;
 
-    cb->setup_elaborazione();
     cb->elabora_dato();
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -1072,22 +1062,21 @@ void to::test<12>()
     CBTest test("GAT", false);
     test.read_odim(fname, true);
     auto cb = test.make_cumbac();
+    cb->want_vpr();
     cb->do_quality = true;
     cb->do_beamblocking = true;
     cb->do_declutter = false;
     cb->do_class = true;
     cb->do_bloccorr = true;
-    cb->do_vpr = true;
     cb->do_devel= true;
     cb->do_readStaticMap=true;
     
-    cb->setup_elaborazione();
     cb->elabora_dato();
     if (cb->do_quality){
        cb->caratterizzo_volume();
        wassert(actual(cb->calcolo_vpr) != (void*)0);
        if (cb->do_class) cb->calcolo_vpr->classifica_rain();
-       if (cb->do_vpr)   cb->calcolo_vpr->esegui_tutto();
+       cb->calcolo_vpr->esegui_tutto();
     }
  //   if (cb->do_class)
  //       cb->conversione_convettiva();

@@ -124,27 +124,11 @@ struct HRay : public Matrix2D<double>
 CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), cfg(cfg), site(site), assets(cfg),
       do_medium(medium), volume(volume),
-      calcolo_vpr(0),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024), dem(NUM_AZ_X_PPI, 1024),
       qual(0)
 {
     logging_category = log4c_category_get("radar.cum_bac");
-}
-
-CUM_BAC::~CUM_BAC()
-{
-    if (qual) delete qual;
-    if (calcolo_vpr) delete calcolo_vpr;
-}
-
-void CUM_BAC::setup_elaborazione()
-{
-    /*------------------------------------------
-      | rimozione propagazione anomala e clutter |
-      ------------------------------------------*/
-    LOG_INFO("Cancellazione Clutter e Propagazione Anomala");
-
     assets.configure(site, volume.load_info->acq_date);
 
     // --- ricavo il mese x definizione first_level e  aMP bMP ---------
@@ -165,14 +149,20 @@ void CUM_BAC::setup_elaborazione()
     else {
         aMP=aMP_strat;
         bMP=bMP_strat;
-
     }
 
     algo::compute_top(volume, SOGLIA_TOP, top);
+}
 
-    //--------------se definito VPR procedo con ricerca t_ground che mi serve per classificazione per cui la metto prima-----------------//
-    if (do_vpr) calcolo_vpr = new CalcoloVPR(*this);
-    LOG_INFO(" End setup_elaborazione");
+CUM_BAC::~CUM_BAC()
+{
+    if (qual) delete qual;
+    if (calcolo_vpr) delete calcolo_vpr;
+}
+
+void CUM_BAC::want_vpr()
+{
+    calcolo_vpr = new CalcoloVPR(*this);
 }
 
 void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean, bool do_medium, unsigned max_bin)
@@ -737,7 +727,7 @@ void CUM_BAC::caratterizzo_volume()
                 }
 
                 if (qual->scan(l).get(i, k) ==0) qual->scan(l).set(i, k, 1);//????a che serve???
-                if (do_vpr)
+                if (calcolo_vpr)
                 {
                     /* sezione PREPARAZIONE DATI VPR*/
                     if(cl==0 && bb<BBMAX_VPR )   /*pongo le condizioni per individuare l'area visibile per calcolo VPR, riduco il bb ammesso (BBMAX_VPR=20)*/ //riveder.....?????
@@ -1846,8 +1836,7 @@ bool CUM_BAC::esegui_tutto()
     /*       ier=write_dbp(nome_file);  */
     /* #endif */
 
-    setup_elaborazione();
-	printwork();
+    printwork();
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
     LOG_INFO("inizio rimozione anaprop e beam blocking");
@@ -1872,7 +1861,7 @@ bool CUM_BAC::esegui_tutto()
 
         //--------------se definito VPR procedo con calcolo VPR -----------------//
 
-        if (do_vpr)
+        if (calcolo_vpr)
             calcolo_vpr->esegui_tutto();
     }
 
@@ -1982,8 +1971,7 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
 
     flag_vpr = new Volume<unsigned char>(cum_bac.volume, 0);
 
-    if (cum_bac.do_vpr)
-        t_ground = cum_bac.assets.read_t_ground();
+    t_ground = cum_bac.assets.read_t_ground();
 }
 
 CalcoloVPR::~CalcoloVPR()
@@ -2149,7 +2137,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                             beam_blocking_xy(y, x)=cb.beam_blocking(iaz%NUM_AZ_X_PPI, irange);
                             elev_fin_xy(y, x)=cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange];
                             /*neve_cart(y, x)=qual_Z_cart(y, x);*/
-                            if (cb.do_vpr)
+                            if (cb.calcolo_vpr)
                             {
                                 neve_cart(y, x)=(cb.calcolo_vpr->neve(iaz%NUM_AZ_X_PPI, irange))?0:1;
                                 corr_cart(y, x)=cb.calcolo_vpr->corr_polar(iaz%NUM_AZ_X_PPI, irange);
@@ -2203,7 +2191,7 @@ void Cart::write_out(const CUM_BAC& cb, Assets& assets)
             assets.write_gdal_image(qual_Z_cart, "DIR_DEBUG", "qual_Z", "PNG");
         }
 
-        if (cb.do_vpr)
+        if (cb.calcolo_vpr)
         {
             assets.write_gdal_image(corr_cart, "DIR_DEBUG", "corr", "PNG");
         }
@@ -2356,7 +2344,7 @@ void CartLowris::creo_cart_z_lowris()
                                 el1x1=c.elev_fin_xy(src_y, src_x);
                                 bl1x1=c.beam_blocking_xy(src_y, src_x);
 
-                                if (cb.do_vpr)
+                                if (cb.calcolo_vpr)
                                 {
                                     c1x1=c.corr_cart(src_y, src_x);
                                     nv= c.neve_cart(src_y, src_x);
@@ -2388,7 +2376,7 @@ void CartLowris::creo_cart_z_lowris()
                     }
                     top_1x1(j, i)=traw;
 
-                    if (cb.do_vpr)
+                    if (cb.calcolo_vpr)
                     {
                         neve_1x1(j, i)=nv;
                         corr_1x1(j, i)=c1x1;
@@ -2518,7 +2506,7 @@ void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
         }
 
         //------------------ stampe correzioni da profili verticali in formato ZLR
-        if (cb.do_vpr)
+        if (cb.calcolo_vpr)
         {
             assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
             //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
@@ -2541,7 +2529,7 @@ void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
             assets.write_gdal_image(elev_fin_1x1, "DIR_DEBUG", "elev_fin_1x1", "PNG");
             assets.write_gdal_image(top_1x1, "DIR_DEBUG", "top_1x1", "PNG");
     	    assets.write_gdal_image(z_out, "DIR_DEBUG", "zlr", "PNG");
-            if (cb.do_vpr)
+            if (cb.calcolo_vpr)
             {
                 assets.write_gdal_image(corr_1x1, "DIR_DEBUG", "corr_1x1", "PNG");
             }
