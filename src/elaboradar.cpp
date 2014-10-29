@@ -8,11 +8,13 @@
 #include "config.h"
 #include "cum_bac_clparser.h"
 
-// libreria c
-#include <stdlib.h>
-#include <math.h>
+#include <memory>
+#include <cstdlib>
+#include <cmath>
 
 #include <setwork.h>
+
+using namespace std;
 
 /*----------------------------------------------------------------------------*/
 /*      FINE SEZIONE    INCLUDE                   */
@@ -142,7 +144,7 @@ int main (int argc, char **argv)
     startup_banner(&CL_opt);
 
 
-    elaboradar::CUM_BAC *cb = new elaboradar::CUM_BAC(cfg, sito, CL_opt.do_medium,MyMAX_BIN);
+    unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(cfg, sito, CL_opt.do_medium,MyMAX_BIN));
 
 
     // Set feature flags
@@ -173,7 +175,6 @@ int main (int argc, char **argv)
         LOG_ERROR("Errore nella processazione: %s", e.what());
         ier_main = 1;
     }
-    delete cb;
 
     // è stato tolto il loop sui volumi
 
