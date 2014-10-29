@@ -178,11 +178,11 @@ int main (int argc, char **argv)
 
     unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
+    if (CL_opt.do_vpr) cb->want_vpr();
     cb->do_quality 	= CL_opt.do_quality;
     cb->do_beamblocking = CL_opt.do_beamblocking;
     cb->do_declutter 	= CL_opt.do_declut;
     cb->do_bloccorr 	= CL_opt.do_bloccor;
-    cb->do_vpr 		= CL_opt.do_vpr;
     cb->do_class 	= CL_opt.do_class;
     cb->do_devel 	= CL_opt.do_devel;
     cb->do_readStaticMap= CL_opt.do_readStaticMap;
