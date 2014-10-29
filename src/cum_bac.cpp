@@ -121,9 +121,9 @@ struct HRay : public Matrix2D<double>
 };
 }
 
-CUM_BAC::CUM_BAC(const Config& cfg, const char* site_name, bool medium, unsigned max_bin)
-    : MyMAX_BIN(max_bin), cfg(cfg), site(Site::get(site_name)), assets(cfg),
-      do_medium(medium),
+CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium, unsigned max_bin)
+    : MyMAX_BIN(max_bin), cfg(cfg), site(site), assets(cfg),
+      do_medium(medium), volume(volume),
       calcolo_vpr(0),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024), dem(NUM_AZ_X_PPI, 1024),
@@ -189,100 +189,15 @@ void CUM_BAC::setup_elaborazione()
     LOG_INFO(" End setup_elaborazione");
 }
 
-bool CUM_BAC::test_file(int file_type)
-{
-    unsigned n_elev = 0;
-    int expected_size_cell = 0;// != volume.resolution?
-
-    //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
-
-    switch (file_type)
-    {
-        case SHORT_DEC:
-            if (!volume.load_info->declutter_rsp)
-            {
-                LOG_WARN("File Senza Declutter Dinamico--cos' è???");
-                return false;
-            }
-            expected_size_cell = 250;
-            n_elev=4;
-            break;
-            //------------se tipo =1 esco
-        case SHORT_FULL_VOLUME://-----??? DUBBIO
-            if (volume.load_info->declutter_rsp)
-            {
-                LOG_WARN("File con Declutter Dinamico");
-                return false;
-            }
-            expected_size_cell = 250;
-            n_elev=4;
-            break;
-        case SHORT_HAIL://-----??? DA BUTTARE NON ESISTE PIÙ
-            expected_size_cell = 250;
-            n_elev=3;
-            LOG_INFO("CASO SHORT_HAIL");
-            break;
-        case MEDIUM_PULSE:
-            expected_size_cell = 1000;
-            n_elev=4;
-            LOG_INFO("CASO MEDIO OLD");
-            break;
-        case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
-            if (!volume.load_info->declutter_rsp)
-            {
-                LOG_WARN("File senza Declutter Dinamico");
-                return false;
-            }
-            expected_size_cell = 250;
-            n_elev=4;
-            LOG_INFO("CASO SHORT_212");
-            break;
-    }
-
-    //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
-    if (volume[0].cell_size != expected_size_cell)
-    {
-        LOG_ERROR("File Risoluzione/size_cell Sbagliata %f", volume[0].cell_size);
-        return false;
-    }
-    //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
-
-    if (volume.size() < n_elev)
-    {
-        LOG_ERROR("Volume has %zd elevations, but we are expecting at least %d", volume.size(), n_elev);
-        return false;
-    }
-
-    for (unsigned k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
-    {
-        LOG_INFO("Numero beam presenti: %4u -- elevazione %d", volume[k].beam_count, k);
-
-        if (volume[k].beam_count < NUM_MIN_BEAM)
-            // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
-        {
-            //---Scrivolog!!!!!!!!!!!!!!!!!!!
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d", k, volume[k].beam_count);
-            return false;
-        }
-    }                                                             /*end for*/
-
-    //--------verifico la presenza del file contenente l'ultima data processata-------
-    bool is_new = assets.save_acq_time();
-    if (!is_new)
-        LOG_WARN("File Vecchio");
-
-    // ------- se ok status di uscita:1
-    return true;
-}
-
-bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
+void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean, bool do_medium, unsigned max_bin)
 {
     using namespace elaboradar::volume;
+    LOG_CATEGORY("radar.io");
     LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
 
     bool use_new_cleaner = true;
 
-    SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean, MyMAX_BIN);
+    SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean, max_bin);
 
     Scans<double> z_volume;
     Scans<double> w_volume;
@@ -311,23 +226,79 @@ bool CUM_BAC::read_sp20_volume(const char* nome_file, int file_type)
     printf("\n");
     */
 
-    //  ----- Test sul volume test_file.......  --------
-    if (!test_file(file_type))
+    unsigned n_elev = 0;
+    int expected_size_cell = 0;// != volume.resolution?
+
+    //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
+    switch (file_type)
     {
-        LOG_ERROR("test_file failed");
-        return false;
+        case SHORT_DEC:
+            if (!volume.load_info->declutter_rsp)
+                throw runtime_error("File Senza Declutter Dinamico--cos' è???");
+            expected_size_cell = 250;
+            n_elev=4;
+            break;
+            //------------se tipo =1 esco
+        case SHORT_FULL_VOLUME://-----??? DUBBIO
+            if (volume.load_info->declutter_rsp)
+                throw runtime_error("File con Declutter Dinamico");
+            expected_size_cell = 250;
+            n_elev=4;
+            break;
+        case SHORT_HAIL://-----??? DA BUTTARE NON ESISTE PIÙ
+            expected_size_cell = 250;
+            n_elev=3;
+            LOG_INFO("CASO SHORT_HAIL");
+            break;
+        case MEDIUM_PULSE:
+            expected_size_cell = 1000;
+            n_elev=4;
+            LOG_INFO("CASO MEDIO OLD");
+            break;
+        case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
+            if (!volume.load_info->declutter_rsp)
+                throw runtime_error("File senza Declutter Dinamico");
+            expected_size_cell = 250;
+            n_elev=4;
+            LOG_INFO("CASO SHORT_212");
+            break;
     }
 
-    return true;
+    //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
+    if (volume[0].cell_size != expected_size_cell)
+    {
+        LOG_ERROR("File Risoluzione/size_cell Sbagliata %f", volume[0].cell_size);
+        throw runtime_error("File Risoluzione/size_cell Sbagliata");
+    }
+    //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
+
+    if (volume.size() < n_elev)
+    {
+        LOG_ERROR("Volume has %zd elevations, but we are expecting at least %d", volume.size(), n_elev);
+        throw runtime_error("Insufficient elevation count");
+    }
+
+    for (unsigned k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
+    {
+        LOG_INFO("Numero beam presenti: %4u -- elevazione %d", volume[k].beam_count, k);
+
+        if (volume[k].beam_count < NUM_MIN_BEAM)
+            // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
+        {
+            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d", k, volume[k].beam_count);
+            throw runtime_error("Insufficient beam count");
+        }
+    }
 }
 
-bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
+void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium, unsigned max_bin)
 {
     using namespace elaboradar::volume;
+    LOG_CATEGORY("radar.io");
     namespace odim = OdimH5v21;
-    LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
+    LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
-    volume::ODIMLoader loader(site, do_medium, MyMAX_BIN);
+    volume::ODIMLoader loader(site, do_medium, max_bin);
 
     Scans<double> dbzh_volume;
     Scans<double> th_volume;
@@ -346,7 +317,7 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     if (dbzh_volume.empty() && th_volume.empty())
     {
         LOG_ERROR("neither DBZH nor TH were found in %s", nome_file);
-        return false;
+        throw runtime_error("neither DBZH nor TH were found");
     }
 
     Scans<double>* z_volume;
@@ -400,19 +371,16 @@ bool CUM_BAC::read_odim_volume(const char* nome_file, int file_type)
     if (ier != OK)
         LOG_ERROR("Reading %s returned error code %d", nome_file, ier);
 
-    //  ----- Test sul volume test_file.......  --------
-    if (!test_file(file_type))
+    //  ----- Test sul volume test_volume.......  --------
+    if (!test_volume(file_type))
     {
-        LOG_ERROR("test_file failed");
+        LOG_ERROR("test_volume failed");
         return false;
     }
     */
 
     // TODO: look for the equivalent of declutter_rsp and check its consistency
-    // like in test_file
-
-    //return ier == OK;
-    return true;
+    // like in test_volume
 }
 
 void CUM_BAC::elabora_dato()
