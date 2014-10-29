@@ -152,12 +152,12 @@ CUM_BAC::~CUM_BAC()
     if (calcolo_vpr) delete calcolo_vpr;
 }
 
-void CUM_BAC::setup_elaborazione(const char* nome_file)
+void CUM_BAC::setup_elaborazione()
 {
     /*------------------------------------------
       | rimozione propagazione anomala e clutter |
       ------------------------------------------*/
-    LOG_INFO("%s -- Cancellazione Clutter e Propagazione Anomala", nome_file);
+    LOG_INFO("Cancellazione Clutter e Propagazione Anomala");
 
     assets.configure(site, volume.load_info->acq_date);
 
@@ -1869,17 +1869,8 @@ void CUM_BAC::conversione_convettiva()
     }
 }
 
-bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdim)
+bool CUM_BAC::esegui_tutto()
 {
-  if (isInputOdim){
-    // Legge e controlla il volume dal file ODIM
-    if (!read_odim_volume(nome_file, file_type))
-        return false;
-  }else { 
-    // Legge e controlla il volume dal file SP20
-   if (!read_sp20_volume(nome_file, file_type))
-        return false;
-  }
 /* 
   {
       unsigned irange=60000/volume.scan(0).cell_size;
@@ -1901,7 +1892,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
     /*       ier=write_dbp(nome_file);  */
     /* #endif */
 
-    setup_elaborazione(nome_file);
+    setup_elaborazione();
 	printwork();
 
     //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
@@ -1996,7 +1987,7 @@ bool CUM_BAC::esegui_tutto(const char* nome_file, int file_type, bool isInputOdi
         cart_maker.write_out(*this, assets);
     }
 
-    LOG_INFO("Scrittura File Precipitazione 1X1 %s\n", nome_file);
+    LOG_INFO("Scrittura File Precipitazione 1X1\n");
     cart_low.write_out(*this, assets);
 
 
