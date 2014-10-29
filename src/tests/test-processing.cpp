@@ -77,7 +77,6 @@ void to::test<1>()
     cb->do_bloccorr = true;
     cb->do_vpr = true;
     cb->do_class = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
 
@@ -148,7 +147,6 @@ void to::test<2>()
     cb->do_declutter = false;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
 
@@ -205,7 +203,6 @@ void to::test<3>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
 
@@ -384,7 +381,6 @@ unlink("LAST_VPR");
     cb->do_class = true;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
 
@@ -484,7 +480,6 @@ void to::test<6>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -636,7 +631,6 @@ void to::test<7>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
 
@@ -732,7 +726,6 @@ void to::test<8>()
     cb->do_class = true;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
 
     cb->setup_elaborazione();
@@ -912,7 +905,6 @@ void to::test<10>()
     cb->do_class = false;
     cb->do_bloccorr = false;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -1033,7 +1025,6 @@ void to::test<11>()
     test.read_odim(fname, true);
     auto cb = test.make_cumbac();
     cb->do_readStaticMap=true;
-    cb->do_clean= true;
     cb->do_devel=true;
     cb->do_beamblocking = true;
     cb->do_quality = true;
@@ -1087,7 +1078,6 @@ void to::test<12>()
     cb->do_class = true;
     cb->do_bloccorr = true;
     cb->do_vpr = true;
-    cb->do_clean= true;
     cb->do_devel= true;
     cb->do_readStaticMap=true;
     

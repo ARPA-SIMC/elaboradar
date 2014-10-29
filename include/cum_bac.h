@@ -71,7 +71,6 @@ public:
     bool do_quality = false;
     bool do_beamblocking = false;
     bool do_bloccorr = false;
-    bool do_clean = false;        // Clean and truncate input volume
     bool do_declutter = false;
     bool do_vpr = false;
     bool do_class = false;
@@ -199,8 +198,6 @@ public:
      * reviewed to see if it is still needed.
      */
     time_t NormalizzoData(time_t time);
-
-    void StampoFlag();
 };
 
 struct CalcoloVPR
