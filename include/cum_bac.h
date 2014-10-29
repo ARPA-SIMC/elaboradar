@@ -414,18 +414,6 @@ struct CartLowris
 */ 
 float comp_levels(float v0, float v1, float nodata, float peso);
 
-/**
- * funzione di controllo esistenza file e restituisce puntatore a file+messaggio ev errore o info su status apertura, utile? 
- *
- *  @brief funzione che restituisce un puntatore a file in lettura o scrittura dopo aver controllato esistenza e permessi 
- *  @details scrive un messaggio sul log in caso di errore durante l'apertura e l'accesso col permesso richiesto ed esce
- *  @param[in]  nome_file nome del file da aprire
- *  @param[in]  content contenuto del file (stringa esplicativa)
- *  @param[in]  mode modalita' di apertura (scrittura , lettura)
- *  @return file ritorna un puntatore a file
- */
-FILE *controllo_apertura(const char *nome_file, const char *content, const char *mode);
-
 }
 
 #endif

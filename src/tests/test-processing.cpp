@@ -614,6 +614,7 @@ void to::test<7>()
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
     setenv("TEST_VPR", "testdata/test_vpr", 1);
+    setenv("VPR_ARCH", "testdata/vpr_arch",1);
 	printwork();
 
     CBTest test("GAT", false);
@@ -709,6 +710,7 @@ void to::test<8>()
     setenv("LAST_VPR", "testdata/last_vpr", 1);
     unlink("testdata/last_vpr");
     setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
+    setenv("VPR_ARCH", "testdata/vpr_arch",1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
