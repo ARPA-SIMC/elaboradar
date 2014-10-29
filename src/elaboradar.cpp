@@ -159,9 +159,27 @@ int main (int argc, char **argv)
     cb->do_readStaticMap= CL_opt.do_readStaticMap;
     cb->do_zlr_media	= true;
     cb->do_anaprop	= CL_opt.do_anaprop;
+
+    try {
+        if (CL_opt.data_in_odim){
+            // Legge e controlla il volume dal file ODIM
+            if (!cb->read_odim_volume(nome_file, file_type))
+                ier_main = 2;
+        }else { 
+            // Legge e controlla il volume dal file SP20
+            if (!cb->read_sp20_volume(nome_file, file_type))
+                ier_main = 2;
+        }
+    } catch (std::exception& e) {
+        LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
+        ier_main = 2;
+    }
+    if (ier_main)
+        goto end;
+
     try {
    //    cb->StampoFlag(); 
-       if (cb->esegui_tutto(nome_file, file_type,  CL_opt.data_in_odim)){
+       if (cb->esegui_tutto()){
             ier_main = 0;
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
@@ -178,6 +196,7 @@ int main (int argc, char **argv)
 
     // è stato tolto il loop sui volumi
 
+end:
     LOG_INFO("End of processing, result: %d", ier_main);
 
     return ier_main;

@@ -45,7 +45,7 @@ void to::test<1>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
 
     wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
 
@@ -118,7 +118,7 @@ void to::test<2>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -176,7 +176,7 @@ void to::test<3>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -259,7 +259,7 @@ void to::test<4>()
     cb->do_vpr = true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
 LOG_INFO ("Chiamo elabora_dato");
     cb->elabora_dato();
 LOG_INFO("Chiamo caratterizzo volumi");
@@ -357,7 +357,7 @@ unlink("LAST_VPR");
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -459,7 +459,7 @@ void to::test<6>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     cb->elabora_dato();
@@ -613,7 +613,7 @@ void to::test<7>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
 
     cb->elabora_dato();
 
@@ -712,7 +712,7 @@ void to::test<8>()
     cb->do_readStaticMap=true;
     cb->read_sp20_volume(fname, 0);
 
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
     cb->elabora_dato();
     cb->caratterizzo_volume();
     cb->calcolo_vpr->classifica_rain();
@@ -801,7 +801,7 @@ void to::test<9>()
     cb->do_readStaticMap=true;
 //    cb->do_zlr_media=true; 
     cb->read_sp20_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
     cb->assets.write_vpr_heating(0);
 
     cb->elabora_dato();
@@ -895,7 +895,7 @@ void to::test<10>()
     cb->do_clean= true;
     cb->do_readStaticMap=true;
     cb->read_odim_volume(fname, 0);
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
     cb->elabora_dato();
@@ -1024,7 +1024,7 @@ void to::test<11>()
     cb->do_vpr = true;
     cb->read_odim_volume(fname, 0);
 
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
     cb->elabora_dato();
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
@@ -1076,7 +1076,7 @@ void to::test<12>()
     cb->do_readStaticMap=true;
     cb->read_odim_volume(fname, 0);
     
-    cb->setup_elaborazione(fname);
+    cb->setup_elaborazione();
     cb->elabora_dato();
     if (cb->do_quality){
        cb->caratterizzo_volume();

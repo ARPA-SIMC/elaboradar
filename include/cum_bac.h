@@ -124,7 +124,7 @@ public:
      */
     bool test_file(int tipofile);
 
-    void setup_elaborazione(const char* nome_file);
+    void setup_elaborazione();
 
     /**
      *
@@ -186,7 +186,7 @@ public:
     void creo_matrice_conv();
 
     void conversione_convettiva();
-    bool esegui_tutto(const char* nome_file, int file_type, bool isInputOdim = false);
+    bool esegui_tutto();
 // added function to calculate beamblocking correction
 //
     // RtoDBZ calcolato su aMP e bMP
