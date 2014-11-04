@@ -15,7 +15,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include \
 	      $(shell $(GDAL_CONFIG) --cflags) \
 	      -I$(top_srcdir)/../libSP20/include \
               -I$(top_srcdir)/../util_Z-R/include \
-		-fpermissive
+		-fpermissive 
 
 AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 	  $(shell $(LOG4C_CONFIG) --libs) \
