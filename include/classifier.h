@@ -1,6 +1,6 @@
 /*!
- * \file
- * \brief Class to compute hydrometeor classification
+ * \file classifier.h
+ * \brief Classes to compute hydrometeor classification
  */
 
 #include"volume.h"
@@ -23,13 +23,12 @@ namespace volume {
  * Description: classes of radar echoes
  * ==================================================================
  */
-/*!
+/*!	\enum EchoClass
  * 	\brief List classes of radar echoes
  * 	Classes defined in Park et al. (2009)
  * 	Overload << operator to print class names
  *
- * 	TODO: manage how to print odim volume of classes
- * 	TODO: This declarations deserve their own file
+ * 	TODO: This declarations deserve their own file?
  */
 
 enum EchoClass {

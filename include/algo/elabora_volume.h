@@ -7,6 +7,14 @@ namespace elaboradar {
 
 namespace {bool check_undetect=false;}
 
+/*! \fn good
+ *  \brief Check if data in a PolarScan is good
+ *  @param[in] scan reference to a valid PolarScan
+ *  @param[in] row index of the row in the PolarScan (azimuth) to be checked
+ *  @param[in] col index of the col in the PolarScan (range) to be checked
+ *  \return boolean flag of goodness. Depending on the value of semi-global check_undetect flag return false
+ *  if data is nodata or undetect
+ */
 template<typename T>
 inline bool good(const PolarScan<T>& scan, unsigned row, unsigned col)
 {
@@ -22,6 +30,12 @@ inline bool good(const PolarScan<T>& scan, unsigned row, unsigned col)
 
 //===========================PolarScan manipulators==========================//
 
+/*! \fn make_slope_scan
+ *  \brief Create a PolarScan of window averaged in range least-square linear fit slopes
+ *  @param[in] raw reference to a valid PolarScan
+ *  @param[in] win width in range (number of gates) of the moving average window
+ *  \return A PolarScan that can be push_backed in a Volume object
+ */
 template<typename T>
 PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 {
@@ -55,6 +69,13 @@ PolarScan<T> make_slope_scan(const PolarScan<T>& raw, unsigned win)
 	return scan;
 }
 
+/*! \fn make_rms_scan
+ *  \brief Create a PolarScan of window averaged in range and azimuth root mean square of data in a PolarScan
+ *  @param[in] raw reference to a valid PolarScan
+ *  @param[in] len width in range (number of gates) of the moving average window
+ *  @param[in] wid width in azimuth (number of rays) of the moving average window
+ *  \return A PolarScan that can be push_backed in a Volume object
+ */
 template<typename T>
 PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 {
@@ -133,6 +154,13 @@ PolarScan<T> make_rms_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 	return scan;
 }
 
+/*! \fn make_filter_scan
+ *  \brief Create a PolarScan of window averaged in range and azimuth mean of data in a PolarScan
+ *  @param[in] raw reference to a valid PolarScan
+ *  @param[in] len width in range (number of gates) of the moving average window
+ *  @param[in] wid width in azimuth (number of rays) of the moving average window
+ *  \return A PolarScan that can be push_backed in a Volume object
+ */
 template<typename T>
 PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wid)
 {
@@ -210,6 +238,13 @@ PolarScan<T> make_filter_scan(const PolarScan<T>& raw, unsigned len, unsigned wi
 	}
 	return scan;
 }
+
+/*! \fn make_gradient_azimuth_scan
+ *  \brief Create a PolarScan of azimuthal gradients of data in a PolarScan
+ *  The method calculate a finite difference with the nearest rays in the azimuth
+ *  @param[in] raw reference to a valid PolarScan
+ *  \return A PolarScan that can be push_backed in a Volume object
+ */
 template<typename T>
 PolarScan<T> make_gradient_azimuth_scan(const PolarScan<T>& raw)
 {
@@ -234,6 +269,13 @@ PolarScan<T> make_gradient_azimuth_scan(const PolarScan<T>& raw)
 	return scan;
 }
 
+/*! \fn make_gradient_elevation_scan
+ *  \brief Create a PolarScan of elevation gradients of data in a PolarScan
+ *  The method calculate a finite difference with the nearest elevations
+ *  @param[in] low reference to a valid PolarScan
+ *  @param[in] up reference to the valid PolarScan in the next elevation respect to low
+ *  \return A PolarScan that can be push_backed in a Volume object
+ */
 template<typename T>
 PolarScan<T> make_gradient_elevation_scan(const PolarScan<T>& low, const PolarScan<T>& up)
 {
@@ -253,6 +295,13 @@ PolarScan<T> make_gradient_elevation_scan(const PolarScan<T>& low, const PolarSc
 
 namespace volume {
 
+/*! \fn moving_average_slope
+ *  \brief Create a Volume of least square linear fit of a provided raw Volume
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with slope data
+ *  @param[in] slope_range range width (in meters) of the moving average window
+ *  @param[in] force_check_undetect force to take into account undetect values in the statistic
+ */
 template<typename T>
 void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_range, bool force_check_undetect=false)
 {
@@ -267,12 +316,27 @@ void moving_average_slope(const Volume<T>& raw, Volume<T>& vol, double slope_ran
 	}
 }
 
+/*! \fn textureSD
+ *  \brief Create a Volume of least root mean square of a provided raw Volume using a moving window in range
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with rms data
+ *  @param[in] filter_range range width (in meters) of the moving average window
+ *  @param[in] force_check_undetect force to take into account undetect values in the statistic
+ */
 template<typename T>
 void textureSD(const Scans<T>& raw, Scans<T>& vol, double filter_range, bool force_check_undetect=false)
 {
 	textureSD(raw,vol,filter_range,0.,force_check_undetect);
 }
 
+/*! \fn textureSD
+ *  \brief Create a Volume of least root mean square of a provided raw Volume using a moving window in both range and azimuth
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with rms data
+ *  @param[in] filter_range range width (in meters) of the moving average window
+ *  @param[in] filter_azimuth azimuth width (in degrees) of the moving window 
+ *  @param[in] force_check_undetect force to take into account undetect values in the statistic
+ */
 template<typename T>
 void textureSD(const Scans<T>& raw, Scans<T>& vol, double filter_range, double filter_azimuth=0. ,bool force_check_undetect=false)
 {
@@ -290,12 +354,27 @@ void textureSD(const Scans<T>& raw, Scans<T>& vol, double filter_range, double f
 	}
 }
 
+/*! \fn filter
+ *  \brief Create a filtered Volume (mean value) of a provided raw Volume using a moving window in range
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with filtered data
+ *  @param[in] filter_range range width (in meters) of the moving average window
+ *  @param[in] force_check_undetect force to take into account undetect values in the statistic
+ */
 template<typename T>
 void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, bool force_check_undetect=false)
 {
 	filter(raw,vol,filter_range,0.,force_check_undetect);
 }
 
+/*! \fn filter
+ *  \brief Create a filtered Volume (mean value) of a provided raw Volume using a moving window in both range and azimuth
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with filtered data
+ *  @param[in] filter_range range width (in meters) of the moving average window
+ *  @param[in] filter_azimuth azimuth width (in degrees) of the moving window 
+ *  @param[in] force_check_undetect force to take into account undetect values in the statistic
+ */
 template<typename T>
 void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double filter_azimuth=0., bool force_check_undetect=false)
 {
@@ -313,6 +392,11 @@ void filter(const Volume<T>& raw, Volume<T>& vol, double filter_range, double fi
 	}
 }
 
+/*! \fn gradient_azimuth
+ *  \brief Create a Volume of azimuthal gradients of a provided raw Volume
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with gradient data
+ */
 template<typename T>
 void gradient_azimuth(const Volume<T>& raw, Volume<T>& vol, bool force_check_undetect=false)
 {
@@ -324,6 +408,11 @@ void gradient_azimuth(const Volume<T>& raw, Volume<T>& vol, bool force_check_und
 		vol.push_back(make_gradient_azimuth_scan(raw[el]));
 }
 
+/*! \fn gradient_elevation
+ *  \brief Create a Volume of elevation gradients of a provided raw Volume
+ *  @param[in] raw reference to a valid Volume
+ *  @param[out] vol reference to the valid Volume that will be filled with gradient data
+ */
 template<typename T>
 void gradient_elevation(const Volume<T>& raw, Volume<T>& vol, bool force_check_undetect=false)
 {
@@ -336,6 +425,11 @@ void gradient_elevation(const Volume<T>& raw, Volume<T>& vol, bool force_check_u
 		vol.push_back(make_gradient_elevation_scan(raw[el-1],raw[el]));
 }
 
+/*! \fn lin2dB
+ *  \brief Converts a data volume from linear scale to dB
+ *  @param[in] lin reference to a valid Volume supposed to be expressed as linear values
+ *  @param[out] dB reference to the valid Volume that will be filled with dB values
+ */
 template<typename T>
 void lin2dB(Volume<T>& lin, Volume<T>& dB)
 {
@@ -351,6 +445,11 @@ void lin2dB(Volume<T>& lin, Volume<T>& dB)
 	}
 }
 
+/*! \fn dB2lin
+ *  \brief Converts a data volume from dB to linear scale
+ *  @param[in] dB reference to a valid Volume
+ *  @param[out] lin reference to the valid Volume that will be filled with linear data
+ */
 template<typename T>
 void dB2lin(Volume<T>& dB, Volume<T>& lin)
 {
@@ -366,6 +465,10 @@ void dB2lin(Volume<T>& dB, Volume<T>& lin)
 	}
 }
 
+/*! \fn lin2dB
+ *  \brief Inplace self-convert a data volume from linear scale to dB
+ *  @param lin reference to a valid Volume that will be converted to dB
+ */
 template<typename T>
 void lin2dB(Volume<T>& lin)
 {
@@ -375,6 +478,10 @@ void lin2dB(Volume<T>& lin)
 	lin*=10.;
 }
 
+/*! \fn lin2dB
+ *  \brief Inplace self-convert a data volume from dB to linear scale
+ *  @param dB reference to a valid Volume that will be converted to linear scale
+ */
 template<typename T>
 void dB2lin(Volume<T>& dB)
 {
