@@ -4,6 +4,8 @@ EXTRA_DIST =
 
 lib_LTLIBRARIES = libelaboradar.la
 
+AM_CXXFLAGS=-std=c++11
+
 AM_CPPFLAGS = -I$(top_srcdir)/include \
 	      $(RADARLIB_CFLAGS) \
 	      $(HDF5_CFLAGS) \
@@ -12,7 +14,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/include \
 	      $(shell $(GSL_CONFIG) --cflags) \
 	      $(shell $(GDAL_CONFIG) --cflags) \
 	      -I$(top_srcdir)/../libSP20/include \
-              -I$(top_srcdir)/../util_Z-R/include
+              -I$(top_srcdir)/../util_Z-R/include \
+		-fpermissive
 
 AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 	  $(shell $(LOG4C_CONFIG) --libs) \
@@ -50,11 +53,18 @@ libelaboradar_la_SOURCES = \
   cum_bac_clparser.cpp \
   image.cpp
 
-bin_PROGRAMS = elaboradar
+bin_PROGRAMS = elaboradar classificatore
 
 elaboradar_SOURCES = \
   elaboradar.cpp
 elaboradar_LDADD = libelaboradar.la
+
+classificatore_SOURCES = \
+  classificatore.cpp \
+  classifier.cpp \
+  melting_layer.cpp
+classificatore_LDADD = libelaboradar.la
+  
 
 if DO_TESTS
 

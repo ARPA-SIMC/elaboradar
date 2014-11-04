@@ -419,7 +419,7 @@ void classifier::melting_layer_classification(MeltingLayer& ML)
 	}
 }
 
-void classifier::class_designation(unsigned win_rg=0, unsigned win_az=0)
+void classifier::class_designation(unsigned win_rg=1, unsigned win_az=1)
 {
 	if(win_rg||win_az)
 	{
@@ -550,6 +550,7 @@ void classifier::HCA_Park_2009()
 				gradZphi=vol_grad_z_phi[el](az,rg);
 				gradZdrtheta=vol_grad_zdr_theta[el](az,rg);
 				gradZdrphi=vol_grad_zdr_phi[el](az,rg);
+				
 				HCA_Park hca(Z,Zdr,rhohv,lkdp,sdz,sdphidp,vrad,phidp,snr,gradphitheta,gradphiphi,gradZtheta,gradZphi,gradZdrtheta,gradZdrphi);
 				BEAM[rg]=hca;
 			}
@@ -561,7 +562,7 @@ void classifier::HCA_Park_2009()
 	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
 	cout<<"applico ML criteria ad HCA"<<endl;
 	melting_layer_classification(ML);
-	class_designation(3,3);
+	class_designation(1,1);
 /*	unsigned elev=1;
 	unsigned azim=140;
 	cout<<"GC\tBS\tDS\tWS\tCR\tGR\tBD\tRA\tHR\tRH"<<endl;

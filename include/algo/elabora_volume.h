@@ -331,7 +331,7 @@ void gradient_elevation(const Volume<T>& raw, Volume<T>& vol, bool force_check_u
 	check_undetect=force_check_undetect;
 	vol.quantity=raw.quantity;
 	vol.units=raw.units;
-	vol.push_back(make_gradient_elevation_scan(raw[1]),raw[0]);
+	vol.push_back(make_gradient_elevation_scan(raw[1],raw[0]));
 	for(unsigned el=1;el<raw.size();el++)
 		vol.push_back(make_gradient_elevation_scan(raw[el-1],raw[el]));
 }
