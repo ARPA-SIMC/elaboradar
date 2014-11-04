@@ -488,7 +488,7 @@ public:
  * \brief Designate class echo
  * Find the maximum of aggregation values
  */
-	void class_designation(unsigned win_rg=0, unsigned win_az=0);
+	void class_designation(unsigned win_rg=1, unsigned win_az=1);
 /*!
  * \brief print PPI of EchoClass
  */
