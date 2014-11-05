@@ -114,11 +114,12 @@ public:
             const Volume<double>& sd);
 
     // Initialise basic structures and performe anomalous propagation testing vertical gradient
-    void remove(
+    void remove_without_SD(
             Volume<T>& volume,
             PolarScan<unsigned char>& beam_blocking,
             const PolarScan<unsigned char>& first_level,
-            const PolarScan<unsigned char>& first_level_static);
+            const PolarScan<unsigned char>& first_level_static,
+            const Volume<double>& sd);
 };
 
 }

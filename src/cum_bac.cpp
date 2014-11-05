@@ -406,13 +406,19 @@ void CUM_BAC::elabora_dato()
         textureSD(volume,SD_Z6,6000., false);
 
         // test to define the more appropriate value for textture_threshold for rainy and clutter data
-        std::vector <double>  above_0  (3,0);
-        std::vector <double>  above_15 (3,0);
-        std::vector <double>  above_30 (3,0);
-        for( unsigned el =0; el <3; el++)
+        std::vector <double>  above_0  (4,0);
+        std::vector <double>  above_15 (4,0);
+        std::vector <double>  above_30 (4,0);
+        std::vector <double>  above_40 (4,0);
+        for( unsigned el =0; el <4; el++)
 	for (unsigned iaz=0; iaz<volume[el].beam_count; iaz++)
             for (unsigned k=80; k < volume[el].beam_size; k ++)
-                if (volume[el].get(iaz,k) > 30.){
+                if (volume[el].get(iaz,k) > 40.){
+			above_0[el]++;
+			above_15[el]++;
+			above_30[el]++;
+			above_40[el]++;
+                } else if (volume[el].get(iaz,k) > 30.){
 			above_0[el]++;
 			above_15[el]++;
 			above_30[el]++;
@@ -427,17 +433,18 @@ void CUM_BAC::elabora_dato()
         anaprop.do_beamblocking = do_beamblocking;
         anaprop.do_bloccorr = do_bloccorr;
 	if ( above_15[2]/above_15[0] >= 0.1){
-	   if (above_0[1]/above_0[0] >= 0.6){
+	   if (above_0[1]/above_0[0] >= 0.6 && above_30[2]/above_15[2] <0.15){
               anaprop.conf_texture_threshold = 5.;
-        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d -- 15. %6d %6d %6d -- 30. %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_30[0], (int)above_30[1], (int)above_30[2] );
+        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
               anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
            } else { 
-        LOG_WARN("THUNDERSTORM           %4.1f -- 0. %6d %6d %6d -- 15. %6d %6d %6d -- 30. %6d %6d %6d", -9.9, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_30[0], (int)above_30[1], (int)above_30[2] );
-             anaprop.remove(volume, beam_blocking, first_level, first_level_static);
+std::cout<<"chiamo without_sd"<<std::endl;
+              anaprop.remove_without_SD(volume, beam_blocking, first_level, first_level_static,SD_Z6);
+        LOG_WARN("THUNDERSTORM           %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", -9.9, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
 	   }
         } else {
-        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d -- 15. %6d %6d %6d -- 30. %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_30[0], (int)above_30[1], (int)above_30[2] );
- 	  anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
+              anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
+        LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
 	}
         LOG_INFO("elabora_dato completed with anaprop");
         ScrivoStatistica(anaprop.grid_stats);
@@ -455,6 +462,7 @@ void CUM_BAC::elabora_dato()
              toBePlotted(i,k)= DBtoBYTE(volume[0].get(i, k));
         }
             elaboradar::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");*/
+	LOG_INFO("elabora_Dato completata");
 }
 
 void CUM_BAC::leggo_first_level()
@@ -538,20 +546,19 @@ void CUM_BAC::ScrivoStatistica(const algo::anaprop::GridStats& grid_stats)
     unsigned char statistica_bl[DIM1_ST][DIM2_ST];
     unsigned char statistica_el[DIM1_ST][DIM2_ST];
 
-    LOG_INFO("scrivo statistica");
     memset(statistica,255,DIM1_ST*DIM2_ST);
     memset(statistica_bl,255,DIM1_ST*DIM2_ST);
     memset(statistica_el,255,DIM1_ST*DIM2_ST);
 
     for(az=0; az<DIM1_ST; az++)
-        for(ran=0; ran<DIM2_ST; ran++)
+        for(ran=0; ran<DIM2_ST; ran++){
             if (grid_stats.count(az, ran) >= N_MIN_BIN)
             {
                 statistica[az][ran] = grid_stats.perc_anap(az, ran);
                 statistica_bl[az][ran] = grid_stats.perc_bloc(az, ran);
                 statistica_el[az][ran] = grid_stats.perc_elev(az, ran);
             }
-
+	}
     File f_stat;
 
     if (f_stat.open_from_env("ANAP_STAT_FILE", "a"))
@@ -571,7 +578,6 @@ void CUM_BAC::ScrivoStatistica(const algo::anaprop::GridStats& grid_stats)
         fwrite(date,12,1,f_stat);
         fwrite(statistica_el,DIM1_ST*DIM2_ST,1,f_stat);
     }
-
     return ;
 }
 

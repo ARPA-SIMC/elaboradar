@@ -31,7 +31,6 @@ void GridStats::init(const Volume<double>& volume)
 {
     size_az = volume[0].beam_count / step_stat_az + 1;
     size_beam = volume[0].beam_size / step_stat_range + 1;
-
     stat_anap = new unsigned[size_az * size_beam];
     stat_tot = new unsigned[size_az * size_beam];
     stat_bloc = new unsigned[size_az * size_beam];
@@ -52,6 +51,7 @@ Anaprop<T>::Anaprop()
 template<class T>
 void Anaprop<T>::init(const Volume<T>& volume)
 {
+LOG_WARN("Anaprop init");
     elev_fin.init(volume);
     grid_stats.init(volume);
 
@@ -279,7 +279,6 @@ void Anaprop<T>::remove(
             {
                 for(unsigned l=0; l<el_up; l++)
                 {
-#warning Here the .get(i, k) on level el_up may find a smaller beam size than the one k can reach, causing a read out of bound
                     if (volume[l].beam_size > k && volume[el_up].beam_size > k)
                         volume[l].set(i, k, bin_high);
                     else if (volume[l].beam_size > k )
@@ -344,13 +343,15 @@ void Anaprop<T>::remove(
 }
 
 template<class T>
-void Anaprop<T>::remove(
+void Anaprop<T>::remove_without_SD(
         Volume<T>& volume,
         PolarScan<unsigned char>& beam_blocking,
         const PolarScan<unsigned char>& first_level,
-        const PolarScan<unsigned char>& first_level_static)
+        const PolarScan<unsigned char>& first_level_static,
+        const Volume<double>& SD)
 {
     const double fondo_scala = volume[0].undetect;
+LOG_WARN("Anaprop remove without SD");
 
     init(volume);
 
@@ -387,11 +388,12 @@ void Anaprop<T>::remove(
             }
 /* ---------------------------------
  * PER IL MOMENTO NON BUTTO ANCORA QUESTO CODICE CI DEVO PENSARE
- * while (loc_el_inf > 0 && SD_Z6[loc_el_inf-1].get(i,k) < conf_texture_threshold &&  SD_Z6[loc_el_inf-1].get(i,k)>=0.01 && volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
-                //  LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD_Z6[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
+ */
+	   while (loc_el_inf > 0 && SD[loc_el_inf-1].get(i,k) < conf_texture_threshold &&  SD[loc_el_inf-1].get(i,k)>=0.01 && volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
+//                  LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
                 loc_el_inf--;
             }
-*/   
+/*  */   
             const unsigned el_inf = loc_el_inf;
             if (el_inf == 0) count_first_elev++;
             if (do_quality)
@@ -411,7 +413,7 @@ void Anaprop<T>::remove(
             }
 
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
-            if(bin_high == fondo_scala )                     //-----------ANNULLO EFFETTO TEST ANAP
+            if(bin_high == fondo_scala  && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
             {
 		do_test_AP=false;
                 MAX_DIF_NEXT=BYTEtoDB(255);
@@ -452,13 +454,14 @@ void Anaprop<T>::remove(
                 }
 
                 if( do_test_AP &&
-                      bin_low-bin_high >= MAX_DIF_USED 
+                    (  bin_low-bin_high >= MAX_DIF_USED 
                            || 
                       (
                           bin_high <= MIN_VALUE_USED 
                                   && 
                           bin_low > MIN_VALUE + 5 
                       )
+		    )
                   )
                {
                    //--------ricopio valore a el_up su tutte elev inferiori--------------
@@ -514,7 +517,6 @@ void Anaprop<T>::remove(
             {
                 for(unsigned l=0; l<el_up; l++)
                 {
-#warning Here the .get(i, k) on level el_up may find a smaller beam size than the one k can reach, causing a read out of bound
                     if (volume[l].beam_size > k && volume[el_up].beam_size > k)
                         volume[l].set(i, k, bin_high);
                     else if (volume[l].beam_size > k )
@@ -545,6 +547,11 @@ void Anaprop<T>::remove(
 
             {
                 unsigned count =0;
+                for (unsigned ii=0; ii<7; ii++){
+                    int iaz=(i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
+                    if( SD[el_inf].get(iaz,k) < conf_texture_threshold && SD[el_inf].get(iaz,k) > 0.01) count++;
+                }
+                if ( !(SD[el_inf].get(i,k) < conf_texture_threshold && SD[el_inf].get(i,k) >0.01 && count >=5 )) 
                     bin_low = fondo_scala;
 
                 for(unsigned l=0; l<=el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
