@@ -20,8 +20,8 @@ struct SP20Loader : public Loader
     Scans<double>* vol_v;
     Scans<double>* vol_w;
 
-    SP20Loader(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0)
-        : Loader(site, medium, clean, max_bin), vol_z(0), vol_d(0), vol_v(0), vol_w(0)
+    SP20Loader(const Site& site, bool medium=false, bool clean=false)
+        : Loader(site, medium, clean), vol_z(0), vol_d(0), vol_v(0), vol_w(0)
     {
     }
 

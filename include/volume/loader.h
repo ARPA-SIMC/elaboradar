@@ -25,13 +25,7 @@ struct Loader
     bool clean;
     std::vector<double> elev_array;
 
-    /**
-     * If this is greater than zero, truncate each beam to this number of
-     * samples
-     */
-    unsigned max_bin;
-
-    Loader(const Site& site, bool medium=false, bool clean=false, unsigned max_bin=0);
+    Loader(const Site& site, bool medium=false, bool clean=false);
 
     /**
      * Compute the vol_pol index of an elevation angle
