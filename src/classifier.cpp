@@ -170,7 +170,7 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
-	volume::ODIMLoader loader_all(site, false, 1024);
+	volume::ODIMLoader loader_all(site, false);
 
 	volume::Scans<double> full_volume_z;
 	volume::Scans<double> full_volume_zdr;

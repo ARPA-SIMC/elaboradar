@@ -39,12 +39,12 @@ struct CBTest
 
     void read_sp20(const char* fname, unsigned file_type, bool do_clean)
     {
-        CUM_BAC::read_sp20_volume(volume, site, fname, file_type, do_clean, do_medium, max_bin);
+        CUM_BAC::read_sp20_volume(volume, site, fname, file_type, do_clean, do_medium);
     }
 
     void read_odim(const char* fname, bool do_clean)
     {
-        CUM_BAC::read_odim_volume(volume, site, fname, do_clean, do_medium, max_bin);
+        CUM_BAC::read_odim_volume(volume, site, fname, do_clean, do_medium);
     }
 
     unique_ptr<CUM_BAC> make_cumbac()
