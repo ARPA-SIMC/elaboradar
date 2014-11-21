@@ -157,7 +157,7 @@ void CUM_BAC::want_vpr()
     calcolo_vpr = new CalcoloVPR(*this);
 }
 
-void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean, bool do_medium, unsigned max_bin)
+void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean, bool do_medium)
 {
     using namespace elaboradar::volume;
     LOG_CATEGORY("radar.io");
@@ -165,7 +165,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
     bool use_new_cleaner = true;
 
-    SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean, max_bin);
+    SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean);
 
     Scans<double> z_volume;
     Scans<double> w_volume;
@@ -259,14 +259,14 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     }
 }
 
-void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium, unsigned max_bin)
+void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)
 {
     using namespace elaboradar::volume;
     LOG_CATEGORY("radar.io");
     namespace odim = OdimH5v21;
     LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
-    volume::ODIMLoader loader(site, do_medium, max_bin);
+    volume::ODIMLoader loader(site, do_medium);
 
     Scans<double> dbzh_volume;
     Scans<double> th_volume;

@@ -167,10 +167,10 @@ int main (int argc, char **argv)
     try {
         if (CL_opt.data_in_odim)
             // Legge e controlla il volume dal file ODIM
-            CUM_BAC::read_odim_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium, MyMAX_BIN);
+            CUM_BAC::read_odim_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium);
         else
             // Legge e controlla il volume dal file SP20
-            CUM_BAC::read_sp20_volume(volume, site, nome_file, file_type, CL_opt.do_clean, CL_opt.do_medium, MyMAX_BIN);
+            CUM_BAC::read_sp20_volume(volume, site, nome_file, file_type, CL_opt.do_clean, CL_opt.do_medium);
     } catch (std::exception& e) {
         LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
         return 2;

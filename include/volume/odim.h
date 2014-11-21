@@ -16,8 +16,8 @@ struct ODIMLoader : public volume::Loader
     std::vector<NonuniformAzimuthMap> azimuth_maps;
     std::map<std::string, Scans<double>*> to_load;
 
-    ODIMLoader(const Site& site, bool medium=false, unsigned max_bin=0)
-        : Loader(site, medium, false, max_bin)
+    ODIMLoader(const Site& site, bool medium=false)
+        : Loader(site, medium, false)
     {
     }
 
@@ -40,8 +40,8 @@ union bit64
 class ODIMStorer : public volume::Loader
 {
 public:
-    ODIMStorer(const Site& site, bool medium=false, unsigned max_bin=0)
-        : Loader(site, medium, false, max_bin)
+    ODIMStorer(const Site& site, bool medium=false)
+        : Loader(site, medium, false)
     {
     }
     std::vector<Volume<double>*> to_store_fp;
