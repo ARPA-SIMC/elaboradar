@@ -26,7 +26,7 @@ int main(int argc,char* argv[])
 	classificatore.HCA_Park_2009();
 //	classificatore.print_ppi_class();
 
-	volume::ODIMStorer storer(sito, false, 1024);
+	volume::ODIMStorer storer(sito, false);
 	storer.store_quantity_int((Volume<int>*)(&classificatore.vol_hca));
 	storer.store(argv[1]);
 /*
