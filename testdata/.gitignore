@@ -1,0 +1,9 @@
+*.txt
+*.bin
+DBP*BOLOGNA
+DBP*GATTATICO
+*_mod
+*.Ngrad
+*.h5
+*_int
+test_vpr
