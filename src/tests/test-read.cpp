@@ -214,7 +214,7 @@ void to::test<1>()
     SP20Loader loader(gat, false, false);
     Scans<double> ssp20;
     loader.vol_z = &ssp20;
-    loader.load("testdata/DBP2_070120141530_GATTATICO");
+    loader.load("../testdata/DBP2_070120141530_GATTATICO");
     Volume<double> vsp20;
     volume_resample<double>(ssp20, loader.azimuth_maps, vsp20, merger_max_of_closest<double>);
     // Check the contents of what we read
@@ -225,7 +225,7 @@ template<> template<>
 void to::test<2>()
 {
     // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/MSG1400715300U.101.h5";
+    static const char* fname = "../testdata/MSG1400715300U.101.h5";
     const Site& site(Site::get("GAT"));
     Volume<double> volume;
     CUM_BAC::read_odim_volume(volume, site, fname, false);
@@ -249,11 +249,11 @@ void to::test<3>()
 
     SP20Loader lsp20(gat, false, false);
     lsp20.vol_z = &ssp20;
-    lsp20.load("testdata/DBP2_070120141530_GATTATICO");
+    lsp20.load("../testdata/DBP2_070120141530_GATTATICO");
 
     ODIMLoader lodim(gat, false);
     lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
-    lodim.load("testdata/MSG1400715300U.101.h5");
+    lodim.load("../testdata/MSG1400715300U.101.h5");
 
     volume_resample<double>(ssp20, lsp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
     volume_resample<double>(sodim, lodim.azimuth_maps, vodim, merger_max_of_closest<double>);
@@ -265,7 +265,7 @@ template<> template<>
 void to::test<4>()
 {
     // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
 
     const Site& site(Site::get("GAT"));
     Volume<double> volume;
@@ -288,11 +288,11 @@ void to::test<5>()
 
     SP20Loader sp20(gat, false, true);
     sp20.vol_z = &ssp20;
-    sp20.load("testdata/DBP2_060220140140_GATTATICO");
+    sp20.load("../testdata/DBP2_060220140140_GATTATICO");
 
     SP20Loader _mod(gat, false, false);
     _mod.vol_z = &s_mod;
-    _mod.load("testdata/DBP2_060220140140_GATTATICO_mod");
+    _mod.load("../testdata/DBP2_060220140140_GATTATICO_mod");
 
     volume_resample<double>(ssp20, sp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
     volume_resample<double>(s_mod, _mod.azimuth_maps, v_mod, merger_max_of_closest<double>);
@@ -306,7 +306,7 @@ void to::test<6>()
 {
 
     // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/DBP2_020520141110_BOLOGNA";
+    static const char* fname = "../testdata/DBP2_020520141110_BOLOGNA";
     const Site& site(Site::get("SPC"));
     Volume<double> volume;
     CUM_BAC::read_sp20_volume(volume, site, fname, 0, false);

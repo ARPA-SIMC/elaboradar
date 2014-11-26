@@ -19,12 +19,12 @@ template<> template<>
 void to::test<1>()
 {
     // Test loading of a radar volume via SP20
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
     volume::SP20Loader sp20(Site::get("GAT"), false, false);
     volume::Scans<double> vsp20;
     sp20.vol_z = &vsp20;
-    sp20.load("testdata/DBP2_070120141530_GATTATICO");
+    sp20.load("../testdata/DBP2_070120141530_GATTATICO");
 
     //wassert(actual(liSP20.scan(0).get_elevation_rad(0)) == liSP20.scan(0).get_elevation(0) * M_PI / 180);
 }

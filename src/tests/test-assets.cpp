@@ -61,7 +61,7 @@ void to::test<2>()
 template<> template<>
 void to::test<3>()
 {
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -72,7 +72,7 @@ void to::test<3>()
 template<> template<>
 void to::test<4>()
 {
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -101,7 +101,7 @@ void to::test<6>()
 template<> template<>
 void to::test<7>()
 {
-    setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -111,7 +111,7 @@ void to::test<7>()
 template<> template<>
 void to::test<8>()
 {
-    setenv("LAST_VPR", "testdata/last_vpr.tmp", 1);
+    setenv("LAST_VPR", "../testdata/last_vpr.tmp", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -133,7 +133,7 @@ void to::test<9>()
 template<> template<>
 void to::test<10>()
 {
-    static const char* fname = "testdata/test_last_file";
+    static const char* fname = "../testdata/test_last_file";
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -168,7 +168,7 @@ void to::test<11>()
     wassert(actual(assets.read_vpr_heating()) == 0);
 
     // Unfortunately, our test file also contains 0
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
     wassert(actual(assets.read_vpr_heating()) == 0);
 }
 

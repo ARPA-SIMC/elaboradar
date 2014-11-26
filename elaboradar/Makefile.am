@@ -2,12 +2,11 @@
 
 EXTRA_DIST =
 
-noinst_LTLIBRARIES = libtmp.la
+lib_LTLIBRARIES = libelaboradar.la
 
 AM_CXXFLAGS=-std=c++11
 
-AM_CPPFLAGS = -I$(top_srcdir)/elaboradar \
-              -I$(top_srcdir)/include \
+AM_CPPFLAGS = -I$(top_srcdir)/include \
 	      $(RADARLIB_CFLAGS) \
 	      $(HDF5_CFLAGS) \
 	      $(EIGEN3_CFLAGS) \
@@ -25,69 +24,27 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
           -L$(top_srcdir)/../libSP20/lib/ -lSP20_utility \
           -L$(top_srcdir)/../util_Z-R/lib/ -lfunc_Z_R
 
+elaboradarincludedir = $(includedir)/elaboradar
 
-libtmp_la_SOURCES = \
-  volume_azimuthmap.cpp \
-  volume_loader.cpp \
-  volume_sp20.cpp \
-  volume_odim.cpp \
-  volume_resample.cpp \
-  algo_cleaner.cpp \
-  algo_steiner.cpp \
-  algo_viz.cpp \
-  algo_anaprop.cpp \
-  algo_dbz.cpp \
-  logging.cpp \
-  config.cpp \
-  utils.cpp \
-  cylindrical.cpp \
-  interpola_vpr.cpp \
-  interpola_vpr_gsl.cpp \
-  interpola_vpr_nr.cpp \
-  setwork.cpp \
-  func_Q3d.cpp \
-  Q_components.cpp \
-  site.cpp \
-  assets.cpp \
-  cum_bac.cpp \
-  cum_bac_clparser.cpp \
-  image.cpp
-libtmp_la_LIBADD = ../elaboradar/libelaboradar.la
+nobase_dist_elaboradarinclude_HEADERS = \
+  volume.h
 
-bin_PROGRAMS = elaboradar classificatore
-
-elaboradar_SOURCES = \
-  elaboradar.cpp
-elaboradar_LDADD = ../elaboradar/libelaboradar.la libtmp.la
-
-classificatore_SOURCES = \
-  classificatore.cpp \
-  classifier.cpp \
-  melting_layer.cpp
-classificatore_LDADD = ../elaboradar/libelaboradar.la libtmp.la
-  
+libelaboradar_la_SOURCES = \
+  volume.cpp
 
 if DO_TESTS
 
-check_PROGRAMS = ertest
+check_PROGRAMS = testsuite
 
-ertest_SOURCES = \
-  tests/test-assets.cpp \
-  tests/test-azimutmap.cpp \
-  tests/test-functions.cpp \
-  tests/test-interpola-vpr.cpp \
-  tests/test-processing.cpp \
-  tests/test-read.cpp \
-  tests/test-utils.cpp \
-  tests/test-volume.cpp \
+testsuite_SOURCES = \
   tests/tut-main.cpp
-ertest_LDADD = ../elaboradar/libelaboradar.la libtmp.la $(WIBBLE_LIBS)
+testsuite_LDADD = libelaboradar.la $(WIBBLE_LIBS)
 
 check-local:
 	if [ -z "$(VERBOSE)" ]; then \
-		$(DEBUGGER) ./ertest $(TEST_ARGS) ; \
+		$(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
 	else \
-		LOG4C_RCPATH=testdata/log4c_verbose $(DEBUGGER) ./ertest $(TEST_ARGS) ; \
+		LOG4C_RCPATH=testdata/log4c_verbose $(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
 	fi
 
 endif

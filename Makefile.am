@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src
+SUBDIRS = testdata esplosione elaboradar src
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = elaboradar.pc

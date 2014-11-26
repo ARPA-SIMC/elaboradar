@@ -59,14 +59,14 @@ template<> template<>
 void to::test<1>()
 {
     // Test elabora_dato, con tutti i do_* a true
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("FILE_T", "testdata/temperature.txt", 1);
-    setenv("LAST_VPR","testdata/last_vpr",1);
-    setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("LAST_VPR","../testdata/last_vpr",1);
+    setenv("FILE_ZERO_TERMICO","../testdata/zero_termico.txt",1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
@@ -132,11 +132,11 @@ template<> template<>
 void to::test<2>()
 {
     // Test elabora_dato, con tutti i do_* a true
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
@@ -184,13 +184,13 @@ template<> template<>
 void to::test<3>()
 {
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
@@ -223,7 +223,7 @@ void to::test<3>()
     Cart cart(cb->volume.max_beam_size());
     wassert(actual(cart.max_bin) == 494);
     cart.creo_cart(*cb);
-    //setenv("DIR_DEBUG", "testdata/", 1);
+    //setenv("DIR_DEBUG", "../testdata/", 1);
     //cart.write_out(*cb, cb->assets);
 //     print_stats("cart", cart, cout);
     wassert(actual(cart.cart).statsEqual(0, 213127, 1, 27.13, 251));
@@ -262,15 +262,15 @@ void to::test<4>()
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
 	LOG_CATEGORY("Test");
 
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
-    setenv("LAST_VPR","testdata/last_vpr",1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("LAST_VPR","../testdata/last_vpr",1);
     printwork();
 
     CBTest test("GAT", false);
@@ -356,16 +356,16 @@ void to::test<5>()
 	LOG_CATEGORY("Test");
 	LOG_INFO ("Start test 5");
 
-    static const char* fname = "testdata/DBP2_070120141530_GATTATICO";
+    static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
-    setenv("LAST_VPR","testdata/last_vpr",1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("LAST_VPR","../testdata/last_vpr",1);
 unlink("LAST_VPR");
-    setenv("FILE_ZERO_TERMICO","testdata/zero_termico.txt",1);
+    setenv("FILE_ZERO_TERMICO","../testdata/zero_termico.txt",1);
     printwork();
 
     CBTest test("GAT", false);
@@ -454,16 +454,16 @@ void to::test<6>()
 	LOG_INFO ("Start test 6");
 
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    setenv("FILE_ZERO_TERMICO", "testdata/20140206/0termico.prev", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
-    unlink("testdata/ultimo_vpr");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    setenv("FILE_ZERO_TERMICO", "../testdata/20140206/0termico.prev", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
+    unlink("../testdata/ultimo_vpr");
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
 	printwork();
 
     CBTest test("GAT", false);
@@ -600,21 +600,21 @@ void to::test<7>()
 	LOG_INFO ("Start test 7");
 
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("FILE_T", "testdata/temperature.txt", 1);
-    setenv("FILE_ZERO_TERMICO", "testdata/20140206/0termico.prev", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
-    unlink("testdata/ultimo_vpr");
-    setenv("LAST_VPR", "testdata/last_vpr", 1);
-    unlink("testdata/last_vpr");
-    setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
-    setenv("TEST_VPR", "testdata/test_vpr", 1);
-    setenv("VPR_ARCH", "testdata/vpr_arch",1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("FILE_ZERO_TERMICO", "../testdata/20140206/0termico.prev", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
+    unlink("../testdata/ultimo_vpr");
+    setenv("LAST_VPR", "../testdata/last_vpr", 1);
+    unlink("../testdata/last_vpr");
+    setenv("VPR_HMAX", "../testdata/vpr_hmax", 1);
+    setenv("TEST_VPR", "../testdata/test_vpr", 1);
+    setenv("VPR_ARCH", "../testdata/vpr_arch",1);
 	printwork();
 
     CBTest test("GAT", false);
@@ -634,7 +634,7 @@ void to::test<7>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-   cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
+   cb->calcolo_vpr->test_vpr=fopen("../testdata/test_vpr","a+");
 
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
@@ -697,20 +697,20 @@ template<> template<>
 void to::test<8>()
 {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("FILE_T", "testdata/temperature.txt", 1);
-    setenv("FILE_ZERO_TERMICO", "testdata/20140206/0termico.prev", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
-    unlink("testdata/ultimo_vpr");
-    setenv("LAST_VPR", "testdata/last_vpr", 1);
-    unlink("testdata/last_vpr");
-    setenv("VPR_HMAX", "testdata/vpr_hmax", 1);
-    setenv("VPR_ARCH", "testdata/vpr_arch",1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("FILE_ZERO_TERMICO", "../testdata/20140206/0termico.prev", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
+    unlink("../testdata/ultimo_vpr");
+    setenv("LAST_VPR", "../testdata/last_vpr", 1);
+    unlink("../testdata/last_vpr");
+    setenv("VPR_HMAX", "../testdata/vpr_hmax", 1);
+    setenv("VPR_ARCH", "../testdata/vpr_arch",1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, 0, true);
@@ -729,7 +729,7 @@ void to::test<8>()
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    cb->calcolo_vpr->test_vpr=fopen("testdata/test_vpr","a+");
+    cb->calcolo_vpr->test_vpr=fopen("../testdata/test_vpr","a+");
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
@@ -798,7 +798,7 @@ void to::test<9>()
 	LOG_INFO ("Start test 9");
 
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "testdata/DBP2_060220140140_GATTATICO";
+    static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_INV_2011", 1);
     printwork();
@@ -878,16 +878,16 @@ void to::test<10>()
 	LOG_INFO ("Start test 6");
 
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "testdata/2014-05-09-12-40-00.itgat.PVOL.0.h5";
+    static const char* fname = "../testdata/2014-05-09-12-40-00.itgat.PVOL.0.h5";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
-    setenv("DIR_OUT_PP_BLOC", "testdata", 1);
-    setenv("VPR_HEATING", "testdata/vpr_heat_GAT", 1);
-    setenv("FILE_ZERO_TERMICO", "testdata/20140206/0termico.prev", 1);
-    unlink("testdata/vpr_heat_GAT");
-    setenv("VPR0_FILE", "testdata/ultimo_vpr", 1);
-    unlink("testdata/ultimo_vpr");
-    setenv("FILE_T", "testdata/temperature.txt", 1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
+    setenv("FILE_ZERO_TERMICO", "../testdata/20140206/0termico.prev", 1);
+    unlink("../testdata/vpr_heat_GAT");
+    setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
+    unlink("../testdata/ultimo_vpr");
+    setenv("FILE_T", "../testdata/temperature.txt", 1);
 	printwork();
 
     CBTest test("GAT", false);
@@ -999,19 +999,19 @@ void to::test<11>()
 	LOG_INFO ("Start test 6");
 
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "esplosione/2014-03-01-09-15-00.itgat.PVOL.0.h5";
+    static const char* fname = "../esplosione/2014-03-01-09-15-00.itgat.PVOL.0.h5";
     unsetwork();
-    setenv("DIR_OUT_PP_BLOC", "esplosione", 1);
-    setenv("VPR0_FILE"		, "esplosione/vpr_GAT", 1);
-    setenv("LAST_VPR"    	, "esplosione/last_vpr_GAT", 1);
-    setenv("VPR_HMAX"    	, "esplosione/vpr_hmax_GAT",1); 
-    setenv("VPR_HEATING" 	, "esplosione/vpr_heat_GAT",1);
-    setenv("LOG_VPR"		, "esplosione/log_VPR_${SITO}",1);
-    setenv("TEST_VPR"		, "esplosione/test_vpr",1);
-    setenv("FILE_T"		, "esplosione/temperature.txt",1);
+    setenv("DIR_OUT_PP_BLOC", "../esplosione", 1);
+    setenv("VPR0_FILE"		, "../esplosione/vpr_GAT", 1);
+    setenv("LAST_VPR"    	, "../esplosione/last_vpr_GAT", 1);
+    setenv("VPR_HMAX"    	, "../esplosione/vpr_hmax_GAT",1); 
+    setenv("VPR_HEATING" 	, "../esplosione/vpr_heat_GAT",1);
+    setenv("LOG_VPR"		, "../esplosione/log_VPR_${SITO}",1);
+    setenv("TEST_VPR"		, "../esplosione/test_vpr",1);
+    setenv("FILE_T"		, "../esplosione/temperature.txt",1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_PRI-EST_2011", 1);
-    setenv("FILE_ZERO_TERMICO"	, "esplosione/0termico.prev", 1);
-    setenv("VPR_ARCH"           , "esplosione/201403010915_vpr_GAT",1);
+    setenv("FILE_ZERO_TERMICO"	, "../esplosione/0termico.prev", 1);
+    setenv("VPR_ARCH"           , "../esplosione/201403010915_vpr_GAT",1);
 	printwork();
 
     CBTest test("GAT", false);
