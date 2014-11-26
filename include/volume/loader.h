@@ -21,11 +21,9 @@ static const double FATT_MOLT_AZ = (double) 360./(double)4096.;
 struct Loader
 {
     const Site& site;
-    bool medium;
-    bool clean;
     std::vector<double> elev_array;
 
-    Loader(const Site& site, bool medium=false, bool clean=false);
+    Loader(const Site& site, bool medium=false);
 
     /**
      * Compute the vol_pol index of an elevation angle

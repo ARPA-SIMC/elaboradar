@@ -2,8 +2,8 @@
 #include <radarlib/radar.hpp>
 #include "logging.h"
 #include "utils.h"
-#include "volume_cleaner.h"
 #include "site.h"
+#include "volume_cleaner.h"
 #include <memory>
 #include <cerrno>
 #include <cstring>
@@ -145,6 +145,10 @@ void SP20Loader::load(const std::string& pathname)
     HD_DBP_SP20_DECOD hd_file;
     decode_header_DBP_SP20(&hd_char, &hd_file);
 
+    // TODO for (int i = 0; i < hd_file.num_ele; ++i)
+    // TODO     fprintf(stderr, "%d: %f\n", i, (double)hd_file.ele[i]);
+
+
     /*--------
       ATTENZIONE PRENDO LA DATA DAL NOME DEL FILE
       -------*/
@@ -154,9 +158,6 @@ void SP20Loader::load(const std::string& pathname)
     load_info->declutter_rsp = (bool)hd_file.filtro_clutter;
     double size_cell = size_cell_by_resolution[(int)hd_file.cell_size];
     bool has_dual_prf = hd_file.Dual_PRF;
-
-    BeamCleaner<unsigned char> cleaner(site.get_bin_wind_magic_number(acq_date), 0,0);
-//    cleaner.bin_wind_magic_number = site.get_bin_wind_magic_number(acq_date);
 
     // Read all beams from the file
     Elevations elevations;
@@ -170,14 +171,6 @@ void SP20Loader::load(const std::string& pathname)
 
         int el_num = elevation_index(beam->beam_info.elevation);
         if (el_num < 0) continue;
-
-        // Calcola la nuova dimensione dei raggi
-//        if (max_bin)
-//            beam->beam_size = min(beam->beam_size, max_bin);
-
-        vector<bool> cleaned(beam->beam_size, false);
-        if (clean)
-            cleaner.clean_beams(beam->beams, beam->beam_size, cleaned);
 
         while ((unsigned)el_num >= elevations.size())
         {

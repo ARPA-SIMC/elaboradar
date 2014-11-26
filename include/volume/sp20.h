@@ -15,13 +15,13 @@ struct Beam;
 struct SP20Loader : public Loader
 {
     std::vector<NonuniformAzimuthMap> azimuth_maps;
-    Scans<double>* vol_z;
-    Scans<double>* vol_d;
-    Scans<double>* vol_v;
-    Scans<double>* vol_w;
+    bool clean;
+    Scans<double>* vol_z = 0;
+    Scans<double>* vol_d = 0;
+    Scans<double>* vol_v = 0;
+    Scans<double>* vol_w = 0;
 
-    SP20Loader(const Site& site, bool medium=false, bool clean=false)
-        : Loader(site, medium, clean), vol_z(0), vol_d(0), vol_v(0), vol_w(0)
+    SP20Loader(const Site& site, bool medium=false) : Loader(site, medium)
     {
     }
 

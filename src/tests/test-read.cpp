@@ -211,7 +211,7 @@ void to::test<1>()
     using namespace elaboradar::volume;
     // Test loading of a radar volume via SP20
     const Site& gat = Site::get("GAT");
-    SP20Loader loader(gat, false, false);
+    SP20Loader loader(gat);
     Scans<double> ssp20;
     loader.vol_z = &ssp20;
     loader.load("../testdata/DBP2_070120141530_GATTATICO");
@@ -247,11 +247,11 @@ void to::test<3>()
     // FIXME: get rid of the static elev_array as soon as it is convenient to do so
     const Site& gat = Site::get("GAT");
 
-    SP20Loader lsp20(gat, false, false);
+    SP20Loader lsp20(gat);
     lsp20.vol_z = &ssp20;
     lsp20.load("../testdata/DBP2_070120141530_GATTATICO");
 
-    ODIMLoader lodim(gat, false);
+    ODIMLoader lodim(gat);
     lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
     lodim.load("../testdata/MSG1400715300U.101.h5");
 
@@ -286,11 +286,11 @@ void to::test<5>()
 
     const Site& gat = Site::get("GAT");
 
-    SP20Loader sp20(gat, false, true);
+    SP20Loader sp20(gat);
     sp20.vol_z = &ssp20;
     sp20.load("../testdata/DBP2_060220140140_GATTATICO");
 
-    SP20Loader _mod(gat, false, false);
+    SP20Loader _mod(gat);
     _mod.vol_z = &s_mod;
     _mod.load("../testdata/DBP2_060220140140_GATTATICO_mod");
 
