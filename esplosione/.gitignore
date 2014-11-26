@@ -1,0 +1,8 @@
+*.txt
+*.bin
+*_mod
+*_GAT
+*.Ngrad
+*.h5
+*_int
+test_vpr
