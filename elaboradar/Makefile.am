@@ -27,9 +27,16 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 elaboradarincludedir = $(includedir)/elaboradar
 
 nobase_dist_elaboradarinclude_HEADERS = \
+  logging.h \
+  utils.h \
+  matrix.h \
+  image.h \
   volume.h
 
 libelaboradar_la_SOURCES = \
+  logging.cpp \
+  utils.cpp \
+  image.cpp \
   volume.cpp
 
 if DO_TESTS

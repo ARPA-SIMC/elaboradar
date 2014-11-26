@@ -37,9 +37,7 @@ libtmp_la_SOURCES = \
   algo_viz.cpp \
   algo_anaprop.cpp \
   algo_dbz.cpp \
-  logging.cpp \
   config.cpp \
-  utils.cpp \
   cylindrical.cpp \
   interpola_vpr.cpp \
   interpola_vpr_gsl.cpp \
@@ -50,8 +48,7 @@ libtmp_la_SOURCES = \
   site.cpp \
   assets.cpp \
   cum_bac.cpp \
-  cum_bac_clparser.cpp \
-  image.cpp
+  cum_bac_clparser.cpp
 libtmp_la_LIBADD = ../elaboradar/libelaboradar.la
 
 bin_PROGRAMS = elaboradar classificatore
