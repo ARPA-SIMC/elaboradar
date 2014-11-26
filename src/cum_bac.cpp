@@ -155,9 +155,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     LOG_CATEGORY("radar.io");
     LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
-    bool use_new_cleaner = true;
-
-    SP20Loader loader(site, do_medium, use_new_cleaner ? false : do_clean);
+    SP20Loader loader(site, do_medium);
 
     Scans<double> z_volume;
     Scans<double> w_volume;
@@ -167,9 +165,8 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     loader.vol_v = &v_volume;
     loader.load(nome_file);
 
-    if (use_new_cleaner && do_clean)
+    if (do_clean)
     {
-    //    volume::Cleaner cleaner(z_volume.quantity, w_volume.quantity, v_volume.quantity);
         for (unsigned i = 0; i < z_volume.size(); ++i)  {
             double bin_wind_magic_number = site.get_bin_wind_magic_number(v_volume.load_info->acq_date)
                 * v_volume.at(i).gain + v_volume.at(i).offset;

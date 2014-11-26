@@ -5,8 +5,8 @@
 namespace elaboradar {
 namespace volume {
 
-Loader::Loader(const Site& site, bool medium, bool clean)
-    : site(site), medium(medium), clean(clean), elev_array(site.get_elev_array(medium))
+Loader::Loader(const Site& site, bool medium)
+    : site(site), elev_array(site.get_elev_array(medium))
 {
 }
 
