@@ -76,8 +76,11 @@ void ODIMLoader::load(const std::string& pathname)
     {
         unique_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
+        // FIXME: please add a comment on why this is needed: are there faulty
+        // ODIM files out there which repeat elevations? Is it correct that
+        // only the first elevation is used and not, say, the last one?
         if( elevation == old_elevation ) continue;
-	old_elevation=elevation;
+        old_elevation=elevation;
         // Read and and validate resolution information
         if (src_elev == 0)
             range_scale = scan->getRangeScale();
