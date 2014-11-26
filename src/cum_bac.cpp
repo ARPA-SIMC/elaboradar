@@ -43,14 +43,6 @@ extern "C" {
 #undef NEL
 #endif
 
-//Definizioni per test_file
-#define NUM_MIN_BEAM 200
-#define SHORT_DEC         0
-#define SHORT_FULL_VOLUME 1
-#define SHORT_HAIL        2
-#define MEDIUM_PULSE      3
-#define SHORT_212	  4
-
 // Soglie algoritmi
 #define OVERBLOCKING 51 /* minimo BB non accettato*/
 #define SOGLIA_TOP 20.0 // soglia per trovare top
@@ -157,11 +149,11 @@ void CUM_BAC::want_vpr()
     calcolo_vpr = new CalcoloVPR(*this);
 }
 
-void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean, bool do_medium)
+void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)
 {
     using namespace elaboradar::volume;
     LOG_CATEGORY("radar.io");
-    LOG_INFO("Reading %s for site %s and file type %d", nome_file, site.name.c_str(), file_type);
+    LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
     bool use_new_cleaner = true;
 
@@ -194,69 +186,6 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     printf("\n");
     */
 
-    unsigned n_elev = 0;
-    int expected_size_cell = 0;// != volume.resolution?
-
-    //--- switch tra tipo di file per definire nelev = elevazioni da testare e la risoluzione
-    switch (file_type)
-    {
-        case SHORT_DEC:
-            if (!volume.load_info->declutter_rsp)
-                throw runtime_error("File Senza Declutter Dinamico--cos' è???");
-            expected_size_cell = 250;
-            n_elev=4;
-            break;
-            //------------se tipo =1 esco
-        case SHORT_FULL_VOLUME://-----??? DUBBIO
-            if (volume.load_info->declutter_rsp)
-                throw runtime_error("File con Declutter Dinamico");
-            expected_size_cell = 250;
-            n_elev=4;
-            break;
-        case SHORT_HAIL://-----??? DA BUTTARE NON ESISTE PIÙ
-            expected_size_cell = 250;
-            n_elev=3;
-            LOG_INFO("CASO SHORT_HAIL");
-            break;
-        case MEDIUM_PULSE:
-            expected_size_cell = 1000;
-            n_elev=4;
-            LOG_INFO("CASO MEDIO OLD");
-            break;
-        case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
-            if (!volume.load_info->declutter_rsp)
-                throw runtime_error("File senza Declutter Dinamico");
-            expected_size_cell = 250;
-            n_elev=4;
-            LOG_INFO("CASO SHORT_212");
-            break;
-    }
-
-    //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
-    if (volume[0].cell_size != expected_size_cell)
-    {
-        LOG_ERROR("File Risoluzione/size_cell Sbagliata %f", volume[0].cell_size);
-        throw runtime_error("File Risoluzione/size_cell Sbagliata");
-    }
-    //------eseguo test su n0 beam  sulle prime 4 elevazioni, se fallisce  esco ------------
-
-    if (volume.size() < n_elev)
-    {
-        LOG_ERROR("Volume has %zd elevations, but we are expecting at least %d", volume.size(), n_elev);
-        throw runtime_error("Insufficient elevation count");
-    }
-
-    for (unsigned k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
-    {
-        LOG_INFO("Numero beam presenti: %4u -- elevazione %d", volume[k].beam_count, k);
-
-        if (volume[k].beam_count < NUM_MIN_BEAM)
-            // se numero beam < numero minimo---Scrivolog ed esco !!!!!!!!!!!!!!!!!!!
-        {
-            LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d", k, volume[k].beam_count);
-            throw runtime_error("Insufficient beam count");
-        }
-    }
 }
 
 void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)

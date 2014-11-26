@@ -37,9 +37,9 @@ struct CBTest
     {
     }
 
-    void read_sp20(const char* fname, unsigned file_type, bool do_clean)
+    void read_sp20(const char* fname, bool do_clean)
     {
-        CUM_BAC::read_sp20_volume(volume, site, fname, file_type, do_clean, do_medium);
+        CUM_BAC::read_sp20_volume(volume, site, fname, do_clean, do_medium);
     }
 
     void read_odim(const char* fname, bool do_clean)
@@ -69,7 +69,7 @@ void to::test<1>()
     setenv("FILE_ZERO_TERMICO","../testdata/zero_termico.txt",1);
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -139,7 +139,7 @@ void to::test<2>()
     setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -193,7 +193,7 @@ void to::test<3>()
     setenv("FILE_T", "../testdata/temperature.txt", 1);
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -274,7 +274,7 @@ void to::test<4>()
     printwork();
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -369,7 +369,7 @@ unlink("LAST_VPR");
     printwork();
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -467,7 +467,7 @@ void to::test<6>()
 	printwork();
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -618,7 +618,7 @@ void to::test<7>()
 	printwork();
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -713,7 +713,7 @@ void to::test<8>()
     setenv("VPR_ARCH", "../testdata/vpr_arch",1);
 
     CBTest test("GAT", false);
-    test.read_sp20(fname, 0, true);
+    test.read_sp20(fname, true);
     auto cb = test.make_cumbac();
     cb->want_vpr();
     cb->do_quality = true;
@@ -804,7 +804,7 @@ void to::test<9>()
     printwork();
 
     CBTest test("GAT", true, 1024);
-    test.read_sp20(fname, 0, false);
+    test.read_sp20(fname, false);
     auto cb = test.make_cumbac();
     cb->do_medium= true;
     cb->do_readStaticMap=true;

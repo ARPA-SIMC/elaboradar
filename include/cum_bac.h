@@ -55,7 +55,7 @@ public:
      * @param tipofile puo' essere 0(corto senza declutter) 1(corto con
      *                 declutter) 2(short hail) o 3(medio)
      */
-    static void read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, int file_type, bool do_clean=false, bool do_medium=false);
+    static void read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
     static void read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
 
     log4c_category_t* logging_category;
