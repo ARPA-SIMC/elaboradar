@@ -1863,14 +1863,17 @@ bool CUM_BAC::esegui_tutto()
     cart_low.write_out(*this, assets);
 
 
-    SD_Z6 *= 10.;
+    if (do_devel)
+    {
+        SD_Z6 *= 10.;
 
-    SingleCart SC_SD(SD_Z6.max_beam_size());
-    for (unsigned int i=0; i<SD_Z6.size(); i++){    
-       SC_SD.creo_cart(SD_Z6, i);
-       std::ostringstream oss;
-       oss<<"SD_"<<i;
-       SC_SD.write_out(assets,oss.str());
+        SingleCart SC_SD(SD_Z6.max_beam_size());
+        for (unsigned int i=0; i<SD_Z6.size(); i++){
+           SC_SD.creo_cart(SD_Z6, i);
+           std::ostringstream oss;
+           oss<<"SD_"<<i;
+           SC_SD.write_out(assets,oss.str());
+        }
     }
 
     return true;
