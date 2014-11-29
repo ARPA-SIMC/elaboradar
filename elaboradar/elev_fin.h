@@ -1,5 +1,5 @@
-#ifndef ARCHIVIATORE_VOLUME_ELEV_FIN_CLASS_H
-#define ARCHIVIATORE_VOLUME_ELEV_FIN_CLASS_H
+#ifndef ELABORADAR_ELEV_FIN_H
+#define ELABORADAR_ELEV_FIN_H
 
 #include <elaboradar/volume.h>
 #include <H5Cpp.h>

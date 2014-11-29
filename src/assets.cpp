@@ -3,10 +3,10 @@
 #include <elaboradar/utils.h>
 #include <elaboradar/matrix.h>
 #include <elaboradar/image.h>
+#include <elaboradar/algo/dbz.h>
 #include "geo_par.h"
 #include "vpr_par.h"
 #include "site.h"
-#include "algo/dbz.h"
 #include <cstring>
 #include <cstdlib>
 #include <cmath>

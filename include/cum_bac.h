@@ -19,10 +19,10 @@
 
 #include <elaboradar/logging.h>
 #include <elaboradar/volume.h>
+#include <elaboradar/elev_fin.h>
+#include <elaboradar/algo/anaprop.h>
+#include <elaboradar/algo/dbz.h>
 #include "assets.h"
-#include "volume/elev_fin.h"
-#include "algo/anaprop.h"
-#include "algo/dbz.h"
 #include <stdexcept>
 #include <cmath>
 

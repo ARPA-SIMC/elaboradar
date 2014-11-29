@@ -27,11 +27,8 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 
 
 libtmp_la_SOURCES = \
-  algo_cleaner.cpp \
   algo_steiner.cpp \
   algo_viz.cpp \
-  algo_anaprop.cpp \
-  algo_dbz.cpp \
   config.cpp \
   cylindrical.cpp \
   interpola_vpr.cpp \
@@ -65,7 +62,6 @@ check_PROGRAMS = ertest
 
 ertest_SOURCES = \
   tests/test-assets.cpp \
-  tests/test-functions.cpp \
   tests/test-interpola-vpr.cpp \
   tests/test-processing.cpp \
   tests/test-read.cpp \
