@@ -11,21 +11,14 @@
 namespace elaboradar {
 namespace volume {
 
-struct ODIMLoader : public volume::Loader
+struct ODIMLoader
 {
     std::vector<NonuniformAzimuthMap> azimuth_maps;
     std::map<std::string, Scans<double>*> to_load;
 
-    ODIMLoader(const Site& site, bool medium=false) : Loader(site, medium)
-    {
-    }
-
     void request_quantity(const std::string& name, Scans<double>* volume);
 
     void load(const std::string& pathname);
-
-    // Create or reuse a scan at position idx, with the given beam size
-    void make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell);
 };
 
 /*

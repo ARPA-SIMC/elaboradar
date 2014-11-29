@@ -192,7 +192,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     namespace odim = OdimH5v21;
     LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
-    volume::ODIMLoader loader(site, do_medium);
+    volume::ODIMLoader loader;
 
     Scans<double> dbzh_volume;
     Scans<double> th_volume;
@@ -213,6 +213,11 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
         LOG_ERROR("neither DBZH nor TH were found in %s", nome_file);
         throw runtime_error("neither DBZH nor TH were found");
     }
+
+    // Normalise the scan elevations to match the elevations requested in Site
+    auto elev_array = site.get_elev_array(do_medium);
+    for (auto i: loader.to_load)
+        i.second->normalize_elevations(elev_array);
 
     Scans<double>* z_volume;
     if (!dbzh_volume.empty())
