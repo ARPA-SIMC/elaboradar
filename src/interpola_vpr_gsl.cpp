@@ -1,6 +1,6 @@
 #include "interpola_vpr.h"
 #include "cum_bac.h"
-#include "logging.h"
+#include <elaboradar/logging.h>
 #include <vpr_par.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_blas.h>

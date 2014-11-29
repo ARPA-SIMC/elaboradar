@@ -1,11 +1,11 @@
 #include <wibble/tests.h>
 #include <cmath>
-#include "volume/azimuthmap.h"
-#include "logging.h"
+#include <elaboradar/azimuthmap.h>
+#include <elaboradar/logging.h>
 
 using namespace std;
 using namespace wibble::tests;
-using namespace elaboradar::volume;
+using namespace elaboradar;
 
 namespace tut {
 

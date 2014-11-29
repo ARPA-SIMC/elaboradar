@@ -1,13 +1,12 @@
-#ifndef ARCHIVIATORE_VOLUME_AZIMUTHMAP_H
-#define ARCHIVIATORE_VOLUME_AZIMUTHMAP_H
+#ifndef ELABORADAR_AZIMUTHMAP_H
+#define ELABORADAR_AZIMUTHMAP_H
 
 #include <map>
 #include <vector>
 #include <ostream>
-#include <volume.h>
+#include <elaboradar/volume.h>
 
 namespace elaboradar {
-namespace volume {
 namespace azimuthmap {
 
 struct Position
@@ -46,6 +45,7 @@ struct AzimuthMap
     virtual std::vector<azimuthmap::Position> intersecting(double azimuth, double amplitude) const = 0;
 };
 
+/// Azimuth map that assumes equally spaced beams
 struct UniformAzimuthMap : public AzimuthMap
 {
     unsigned beam_count;
@@ -58,6 +58,7 @@ struct UniformAzimuthMap : public AzimuthMap
     std::vector<azimuthmap::Position> intersecting(double azimuth, double amplitude) const override;
 };
 
+/// Azimuth map that assumes that each beam has its own arbitrary angle
 class NonuniformAzimuthMap : public AzimuthMap
 {
 protected:
@@ -76,7 +77,6 @@ public:
     std::vector<azimuthmap::Position> intersecting(double azimuth, double amplitude) const override;
 };
 
-}
 }
 
 #endif

@@ -1,6 +1,6 @@
 #include <wibble/tests.h>
 #include <vector>
-#include "utils.h"
+#include <elaboradar/utils.h>
 
 using namespace wibble::tests;
 using namespace elaboradar;

@@ -1,8 +1,8 @@
-#ifndef ARCHIVIATORE_VOLUME_CLASS_H
-#define ARCHIVIATORE_VOLUME_CLASS_H
+#ifndef ELABORADAR_VOLUME_H
+#define ELABORADAR_VOLUME_H
 
-#include <logging.h>
-#include <matrix.h>
+#include <elaboradar/logging.h>
+#include <elaboradar/matrix.h>
 #include <string>
 #include <vector>
 #include <cstdio>

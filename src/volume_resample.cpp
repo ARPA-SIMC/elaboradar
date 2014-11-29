@@ -3,7 +3,7 @@
 #include<iostream>
 
 using namespace std;
-using namespace elaboradar::volume::azimuthmap;
+using namespace elaboradar::azimuthmap;
 
 namespace elaboradar {
 namespace volume {

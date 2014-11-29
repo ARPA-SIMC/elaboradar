@@ -1,6 +1,7 @@
 #include "cum_bac.h"
-#include "logging.h"
-#include "utils.h"
+#include <elaboradar/logging.h>
+#include <elaboradar/utils.h>
+#include <elaboradar/image.h>
 #include "site.h"
 #include "volume/sp20.h"
 #include "volume/odim.h"
@@ -23,8 +24,6 @@
 #include <unistd.h>
 #include "setwork.h"
 #include <sstream>
-
-#include "image.h"
 
 #ifdef __cplusplus
 extern "C" {
