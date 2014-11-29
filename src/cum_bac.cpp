@@ -2,9 +2,9 @@
 #include <elaboradar/logging.h>
 #include <elaboradar/utils.h>
 #include <elaboradar/image.h>
+#include <elaboradar/sp20.h>
+#include <elaboradar/odim.h>
 #include "site.h"
-#include "volume/sp20.h"
-#include "volume/odim.h"
 #include "algo/cleaner.h"
 #include "algo/steiner.h"
 #include "algo/viz.h"

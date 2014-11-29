@@ -32,6 +32,8 @@ nobase_dist_elaboradarinclude_HEADERS = \
   matrix.h \
   image.h \
   volume.h \
+  sp20.h \
+  odim.h \
   azimuthmap.h
 
 libelaboradar_la_SOURCES = \
@@ -39,6 +41,8 @@ libelaboradar_la_SOURCES = \
   utils.cpp \
   image.cpp \
   volume.cpp \
+  sp20.cpp \
+  odim.cpp \
   azimuthmap.cpp
 
 if DO_TESTS
@@ -47,6 +51,7 @@ check_PROGRAMS = testsuite
 
 testsuite_SOURCES = \
   tests/test-azimutmap.cpp \
+  tests/test-volume.cpp \
   tests/tut-main.cpp
 testsuite_LDADD = libelaboradar.la $(WIBBLE_LIBS)
 
