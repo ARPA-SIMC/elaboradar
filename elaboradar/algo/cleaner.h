@@ -1,5 +1,5 @@
-#ifndef ARCHIVIATORE_VOLUME_CLEANER_H
-#define ARCHIVIATORE_VOLUME_CLEANER_H
+#ifndef ELABORADAR_ALGO_CLEANER_H
+#define ELABORADAR_ALGO_CLEANER_H
 
 #include <elaboradar/volume.h>
 
@@ -24,19 +24,6 @@ struct Cleaner
     static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V);
     static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, double bin_wind_magic_number);
 };
-
-
-//  void print_config(FILE* out) const;
-
-//  void clean_beams(Beams<TB>& b, unsigned beam_size, std::vector<bool>& corrected) const;
-
-#if 0
-	void print_config(FILE* out) const
-	{
-	    fprintf(out, "bin_wind_magic_number: %u, min_segment_length: %u, max_segment_length: %u\n",
-	      (unsigned)bin_wind_magic_number, min_segment_length, max_segment_length);
-	}
-#endif
 
 }
 }

@@ -1,5 +1,5 @@
-#include "algo/dbz.h"
-#include "algo/utils.h"
+#include "dbz.h"
+#include "utils.h"
 
 #ifdef __cplusplus
 extern "C" {

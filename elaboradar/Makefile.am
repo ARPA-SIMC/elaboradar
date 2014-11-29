@@ -34,7 +34,12 @@ nobase_dist_elaboradarinclude_HEADERS = \
   volume.h \
   sp20.h \
   odim.h \
-  azimuthmap.h
+  azimuthmap.h \
+  elev_fin.h \
+  algo/cleaner.h \
+  algo/dbz.h \
+  algo/top.h \
+  algo/utils.h
 
 libelaboradar_la_SOURCES = \
   logging.cpp \
@@ -43,7 +48,10 @@ libelaboradar_la_SOURCES = \
   volume.cpp \
   sp20.cpp \
   odim.cpp \
-  azimuthmap.cpp
+  azimuthmap.cpp \
+  algo/anaprop.cpp \
+  algo/cleaner.cpp \
+  algo/dbz.cpp
 
 if DO_TESTS
 
@@ -51,6 +59,7 @@ check_PROGRAMS = testsuite
 
 testsuite_SOURCES = \
   tests/test-azimutmap.cpp \
+  tests/test-functions.cpp \
   tests/test-volume.cpp \
   tests/tut-main.cpp
 testsuite_LDADD = libelaboradar.la $(WIBBLE_LIBS)

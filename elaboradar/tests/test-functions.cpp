@@ -1,6 +1,5 @@
 #include <wibble/tests.h>
-#include "config.h"
-#include "algo/utils.h"
+#include <elaboradar/algo/utils.h>
 #include <elaboradar/volume.h>
 #include <elaboradar/logging.h>
 
