@@ -17,6 +17,7 @@
  */
 
 #include "classifier.h"
+#include <elaboradar/odim.h>
 #include <radarlib/radar.hpp>
 #include <sstream>
 #include "algo/elabora_volume.h"

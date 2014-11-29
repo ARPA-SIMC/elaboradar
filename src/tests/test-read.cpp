@@ -1,8 +1,8 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
 #include "config.h"
-#include "volume/sp20.h"
-#include "volume/odim.h"
+#include <elaboradar/sp20.h>
+#include <elaboradar/odim.h>
 #include "volume/resample.h"
 #include "site.h"
 #include <elaboradar/logging.h>

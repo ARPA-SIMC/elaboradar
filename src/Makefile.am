@@ -27,8 +27,6 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 
 
 libtmp_la_SOURCES = \
-  volume_sp20.cpp \
-  volume_odim.cpp \
   volume_resample.cpp \
   algo_cleaner.cpp \
   algo_steiner.cpp \
@@ -73,7 +71,6 @@ ertest_SOURCES = \
   tests/test-processing.cpp \
   tests/test-read.cpp \
   tests/test-utils.cpp \
-  tests/test-volume.cpp \
   tests/tut-main.cpp
 ertest_LDADD = ../elaboradar/libelaboradar.la libtmp.la $(WIBBLE_LIBS)
 

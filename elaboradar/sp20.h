@@ -1,8 +1,8 @@
-#ifndef ARCHIVIATORE_VOLUME_SP20_CLASS_H
-#define ARCHIVIATORE_VOLUME_SP20_CLASS_H
+#ifndef ELABORADAR_SP20_H
+#define ELABORADAR_SP20_H
 
-#include "elaboradar/volume.h"
-#include "elaboradar/azimuthmap.h"
+#include <elaboradar/volume.h>
+#include <elaboradar/azimuthmap.h>
 
 namespace elaboradar {
 namespace volume {

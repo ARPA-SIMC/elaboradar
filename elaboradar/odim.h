@@ -1,5 +1,5 @@
-#ifndef ARCHIVIATORE_VOLUME_ODIM_CLASS_H
-#define ARCHIVIATORE_VOLUME_ODIM_CLASS_H
+#ifndef ELABORADAR_ODIM_H
+#define ELABORADAR_ODIM_H
 
 #include <elaboradar/volume.h>
 #include <elaboradar/azimuthmap.h>
