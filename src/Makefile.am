@@ -84,7 +84,7 @@ check-local:
 	if [ -z "$(VERBOSE)" ]; then \
 		$(DEBUGGER) ./ertest $(TEST_ARGS) ; \
 	else \
-		LOG4C_RCPATH=testdata/log4c_verbose $(DEBUGGER) ./ertest $(TEST_ARGS) ; \
+		LOG4C_RCPATH=../testdata/log4c_verbose $(DEBUGGER) ./ertest $(TEST_ARGS) ; \
 	fi
 
 endif
