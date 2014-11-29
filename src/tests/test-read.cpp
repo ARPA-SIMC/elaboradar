@@ -3,7 +3,6 @@
 #include "config.h"
 #include <elaboradar/sp20.h>
 #include <elaboradar/odim.h>
-#include "volume/resample.h"
 #include "site.h"
 #include <elaboradar/logging.h>
 #include <radarlib/radar.hpp>
@@ -216,7 +215,7 @@ void to::test<1>()
     loader.vol_z = &ssp20;
     loader.load("../testdata/DBP2_070120141530_GATTATICO");
     Volume<double> vsp20;
-    volume_resample<double>(ssp20, loader.azimuth_maps, vsp20, merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(ssp20, loader.azimuth_maps, vsp20, AzimuthMap::merger_max_of_closest<double>);
     // Check the contents of what we read
     wruntest(test_0120141530gat_SP20, vsp20);
 }
@@ -255,8 +254,8 @@ void to::test<3>()
     lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
     lodim.load("../testdata/MSG1400715300U.101.h5");
 
-    volume_resample<double>(ssp20, lsp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
-    volume_resample<double>(sodim, lodim.azimuth_maps, vodim, merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(ssp20, lsp20.azimuth_maps, vsp20, AzimuthMap::merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(sodim, lodim.azimuth_maps, vodim, AzimuthMap::merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, vodim);
 }
@@ -294,8 +293,8 @@ void to::test<5>()
     _mod.vol_z = &s_mod;
     _mod.load("../testdata/DBP2_060220140140_GATTATICO_mod");
 
-    volume_resample<double>(ssp20, sp20.azimuth_maps, vsp20, merger_max_of_closest<double>);
-    volume_resample<double>(s_mod, _mod.azimuth_maps, v_mod, merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(ssp20, sp20.azimuth_maps, vsp20, AzimuthMap::merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(s_mod, _mod.azimuth_maps, v_mod, AzimuthMap::merger_max_of_closest<double>);
 
     wruntest(test_volumes_equal, vsp20, v_mod);
 }

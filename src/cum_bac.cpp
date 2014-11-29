@@ -12,7 +12,6 @@
 #include "algo/anaprop.h"
 #include "algo/top.h"
 #include "algo/utils.h"
-#include "volume/resample.h"
 #include "cylindrical.h"
 #include "interpola_vpr.h"
 #include <radarlib/radar.hpp>
@@ -179,7 +178,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         }
     }
 
-    volume_resample<double>(z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(z_volume, loader.azimuth_maps, volume, AzimuthMap::merger_max_of_closest<double>);
 
     /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
@@ -238,7 +237,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
             algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
     }
 
-    volume_resample<double>(*z_volume, loader.azimuth_maps, volume, merger_max_of_closest<double>);
+    AzimuthMap::volume_resample<double>(*z_volume, loader.azimuth_maps, volume, AzimuthMap::merger_max_of_closest<double>);
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);
