@@ -195,12 +195,12 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 
 	printf("Non so se è andato tutto bene, ma almeno sono arrivato in fondo\n");
 
-	volume::volume_resample<double>(full_volume_z, loader_all.azimuth_maps, vol_z, volume::merger_closest<double>);
-	volume::volume_resample<double>(full_volume_zdr, loader_all.azimuth_maps, vol_zdr, volume::merger_closest<double>);
-	volume::volume_resample<double>(full_volume_rhohv, loader_all.azimuth_maps, vol_rhohv, volume::merger_closest<double>);
-	volume::volume_resample<double>(full_volume_phidp, loader_all.azimuth_maps, vol_phidp, volume::merger_closest<double>);
-	volume::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, volume::merger_closest<double>);
-	volume::volume_resample<double>(full_volume_snr, loader_all.azimuth_maps, vol_snr, volume::merger_closest<double>);
+	AzimuthMap::volume_resample<double>(full_volume_z, loader_all.azimuth_maps, vol_z, AzimuthMap::merger_closest<double>);
+	AzimuthMap::volume_resample<double>(full_volume_zdr, loader_all.azimuth_maps, vol_zdr, AzimuthMap::merger_closest<double>);
+	AzimuthMap::volume_resample<double>(full_volume_rhohv, loader_all.azimuth_maps, vol_rhohv, AzimuthMap::merger_closest<double>);
+	AzimuthMap::volume_resample<double>(full_volume_phidp, loader_all.azimuth_maps, vol_phidp, AzimuthMap::merger_closest<double>);
+	AzimuthMap::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, AzimuthMap::merger_closest<double>);
+	AzimuthMap::volume_resample<double>(full_volume_snr, loader_all.azimuth_maps, vol_snr, AzimuthMap::merger_closest<double>);
 	vol_hca.quantity="CLASS";
 
 	cout<<vol_z.load_info->acq_date<<endl;

@@ -27,7 +27,6 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 
 
 libtmp_la_SOURCES = \
-  volume_resample.cpp \
   algo_cleaner.cpp \
   algo_steiner.cpp \
   algo_viz.cpp \

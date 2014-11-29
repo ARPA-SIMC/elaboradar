@@ -2,7 +2,6 @@
 #include <elaboradar/volume.h>
 #include <elaboradar/odim.h>
 #include "site.h"
-#include  "volume/resample.h"
 
 #include "classifier.h"
 #include "algo/elabora_volume.h"
