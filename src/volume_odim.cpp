@@ -2,7 +2,6 @@
 #include "logging.h"
 #include <radarlib/radar.hpp>
 #include "utils.h"
-#include "volume_cleaner.h"
 #include <memory>
 
 using namespace std;

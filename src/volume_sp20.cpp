@@ -3,7 +3,6 @@
 #include "logging.h"
 #include "utils.h"
 #include "site.h"
-#include "volume_cleaner.h"
 #include <memory>
 #include <cerrno>
 #include <cstring>
@@ -30,6 +29,15 @@ namespace elaboradar {
 namespace volume {
 
 namespace sp20 {
+
+template <class TB>
+struct Beams
+{
+  TB data_z[1024];
+  TB data_d[1024];
+  TB data_v[1024];
+  TB data_w[1024];
+};
 
 struct Beam
 {
