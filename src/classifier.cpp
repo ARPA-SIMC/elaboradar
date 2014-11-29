@@ -424,7 +424,7 @@ void classifier::melting_layer_classification(MeltingLayer& ML)
 	}
 }
 
-void classifier::class_designation(unsigned win_rg=1, unsigned win_az=1)
+void classifier::class_designation(unsigned win_rg, unsigned win_az)
 {
 	if(win_rg||win_az)
 	{

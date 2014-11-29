@@ -155,7 +155,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     LOG_CATEGORY("radar.io");
     LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
-    SP20Loader loader(site, do_medium);
+    SP20Loader loader;
 
     Scans<double> z_volume;
     Scans<double> w_volume;
