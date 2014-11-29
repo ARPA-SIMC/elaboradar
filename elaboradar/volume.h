@@ -301,7 +301,7 @@ public:
         // with another
         for (size_t i = 0; i < this->size() - 1; ++i)
         {
-            if (abs(elevations[i] - this->at(i).elevation) < abs(elevations[i] - this->at(i + 1).elevation))
+            if (abs(elevations[i] - this->at(i).elevation) > abs(elevations[i] - this->at(i + 1).elevation))
             {
                 LOG_CATEGORY("radar.io");
                 LOG_ERROR("normalize_elevations: elevation %zd (%f) should be set to %f but it would make it closer to the next elevation %f", i, this->at(i).elevation, elevations[i], this->at(i + 1).elevation);

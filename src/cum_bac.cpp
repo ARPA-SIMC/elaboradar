@@ -165,6 +165,12 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     loader.vol_v = &v_volume;
     loader.load(nome_file);
 
+    // Normalise the scan elevations to match the elevations requested in Site
+    auto elev_array = site.get_elev_array(do_medium);
+    z_volume.normalize_elevations(elev_array);
+    w_volume.normalize_elevations(elev_array);
+    v_volume.normalize_elevations(elev_array);
+
     if (do_clean)
     {
         for (unsigned i = 0; i < z_volume.size(); ++i)  {

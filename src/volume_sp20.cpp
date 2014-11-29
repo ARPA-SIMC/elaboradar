@@ -30,19 +30,13 @@ namespace volume {
 
 namespace sp20 {
 
-template <class TB>
-struct Beams
-{
-  TB data_z[1024];
-  TB data_d[1024];
-  TB data_v[1024];
-  TB data_w[1024];
-};
-
 struct Beam
 {
     BEAM_HD_SP20_INFO beam_info;
-    Beams<unsigned char> beams;
+    unsigned char data_z[1024];
+    unsigned char data_d[1024];
+    unsigned char data_v[1024];
+    unsigned char data_w[1024];
     unsigned beam_size = 0;
 
     // Read the next beam in the file. Returns false on end of file.
@@ -67,10 +61,10 @@ struct Beam
 
         beam_size = beam_info.cell_num;
 
-        if (has_z()) in.fread(beams.data_z, beam_info.cell_num);
-        if (has_d()) in.fread(beams.data_d, beam_info.cell_num);
-        if (has_v()) in.fread(beams.data_v, beam_info.cell_num);
-        if (has_w()) in.fread(beams.data_w, beam_info.cell_num);
+        if (has_z()) in.fread(data_z, beam_info.cell_num);
+        if (has_d()) in.fread(data_d, beam_info.cell_num);
+        if (has_v()) in.fread(data_v, beam_info.cell_num);
+        if (has_w()) in.fread(data_w, beam_info.cell_num);
 
         return true;
     }
@@ -83,25 +77,16 @@ struct Beam
 
 }
 
-void SP20Loader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double cell_size)
-{
-    if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
-    if (vol_z) vol_z->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
-    if (vol_d) vol_d->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
-    if (vol_v) vol_v->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
-    if (vol_w) vol_w->make_scan(idx, beam_count, beam_size, elev_array[idx], cell_size);
-}
-
 namespace {
 
 struct Beams : public std::vector<sp20::Beam*>
 {
-    // Elevation number
-    unsigned el_num;
+    // Elevation
+    double elevation;
     // Beam size for the polar scan
     unsigned beam_size = 0;
 
-    Beams(unsigned el_num) : el_num(el_num) {}
+    Beams(double elevation) : elevation(elevation) {}
     Beams(const Beams&) = delete;
     Beams(const Beams&&) = delete;
     ~Beams()
@@ -124,6 +109,26 @@ struct Beams : public std::vector<sp20::Beam*>
 
 struct Elevations : public std::vector<unique_ptr<Beams>>
 {
+    Elevations(float* elevations, unsigned el_count)
+    {
+        // Create a sorted vector of elevations
+        vector<double> els;
+        for (unsigned i = 0; i < el_count; ++i)
+            els.push_back(elevations[i]);
+        std::sort(els.begin(), els.end());
+
+        // Use it to initialize our Beams structures
+        for (double el: els)
+            emplace_back(new Beams(el));
+    }
+
+    Beams* get_closest(double elevation)
+    {
+        for (unsigned i=0; i < size(); ++i)
+            if (elevation >= (at(i)->elevation-0.5) && elevation < (at(i)->elevation+0.5))
+                return at(i).get();
+        return nullptr;
+    }
 };
 
 }
@@ -153,10 +158,6 @@ void SP20Loader::load(const std::string& pathname)
     HD_DBP_SP20_DECOD hd_file;
     decode_header_DBP_SP20(&hd_char, &hd_file);
 
-    // TODO for (int i = 0; i < hd_file.num_ele; ++i)
-    // TODO     fprintf(stderr, "%d: %f\n", i, (double)hd_file.ele[i]);
-
-
     /*--------
       ATTENZIONE PRENDO LA DATA DAL NOME DEL FILE
       -------*/
@@ -168,7 +169,11 @@ void SP20Loader::load(const std::string& pathname)
     bool has_dual_prf = hd_file.Dual_PRF;
 
     // Read all beams from the file
-    Elevations elevations;
+    Elevations elevations(hd_file.ele, hd_file.num_ele);
+    // TODO for (int i = 0; i < hd_file.num_ele; ++i)
+    // TODO     fprintf(stderr, "%d: %f\n", i, (double)hd_file.ele[i]);
+
+
 
     while (true)
     {
@@ -177,15 +182,10 @@ void SP20Loader::load(const std::string& pathname)
         if (!beam->read(sp20_in))
             break;
 
-        int el_num = elevation_index(beam->beam_info.elevation);
-        if (el_num < 0) continue;
+        Beams* beams = elevations.get_closest(beam->beam_info.elevation);
+        if (!beams) continue;
 
-        while ((unsigned)el_num >= elevations.size())
-        {
-            elevations.push_back(unique_ptr<Beams>(new Beams(elevations.size())));
-        }
-
-        elevations[el_num]->push_back(beam.release());
+        beams->push_back(beam.release());
     }
 
     if (elevations.empty())
@@ -211,11 +211,20 @@ void SP20Loader::load(const std::string& pathname)
     }
 
     // Create the polarscans and fill them with data
-    for (auto& beams: elevations)
+    for (unsigned idx = 0; idx < elevations.size(); ++idx)
     {
-        make_scan(beams->el_num, beams->size(), beams->beam_size, size_cell);
-        for (unsigned i = 0; i < beams->size(); ++i)
-            beam_to_volumes(*beams->at(i), i, beams->beam_size, beams->el_num);
+        const Beams& beams = *elevations[idx];
+
+        // Create structures for a new PolarScan
+        azimuth_maps.resize(azimuth_maps.size() + 1);
+        if (vol_z) vol_z->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
+        if (vol_d) vol_d->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
+        if (vol_v) vol_v->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
+        if (vol_w) vol_w->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
+
+        // Fill the new scan with data
+        for (unsigned i = 0; i < beams.size(); ++i)
+            beam_to_volumes(*beams.at(i), i, beams.beam_size, idx);
     }
 
     if (vol_z)
@@ -297,7 +306,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         // Convert to DB
  	Eigen::VectorXd dbs(max_range);
  	for (unsigned i = 0; i < max_range; ++i)
-            dbs(i) = BYTEtoDB(beam.beams.data_z[i]);
+            dbs(i) = BYTEtoDB(beam.data_z[i]);
         PolarScan<double>& scan = vol_z->at(el_num);
         scan.row(az_idx) = dbs;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;
@@ -312,7 +321,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         // Convert to DB 
         Eigen::VectorXd dbs(max_range);
         for (unsigned i = 0; i < max_range; ++i)
-            dbs(i) = beam.beams.data_d[i] * range_zdr / 255. + min_zdr;
+            dbs(i) = beam.data_d[i] * range_zdr / 255. + min_zdr;
 
         PolarScan<double>& scan = vol_d->at(el_num);
         scan.row(az_idx) = dbs;
@@ -328,18 +337,18 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
             // range variabilita V - velocità radiale
             const double range_v = 33.;
             for (unsigned i = 0; i < max_range; ++i)
-                if (beam.beams.data_v[i] == -128)
+                if (beam.data_v[i] == -128)
                     ms(i) = -range_v / 2;
                 else
-                    ms(i) = beam.beams.data_v[i] * range_v / 254.;
+                    ms(i) = beam.data_v[i] * range_v / 254.;
         } else {
             // range variabilita V - velocità radiale
             const double range_v = 99.;
             for (unsigned i = 0; i < max_range; ++i)
-                if (beam.beams.data_v[i] == -128)
+                if (beam.data_v[i] == -128)
                     ms(i) = -range_v / 2;
                 else
-                    ms(i) = beam.beams.data_v[i] * range_v / 254.;
+                    ms(i) = beam.data_v[i] * range_v / 254.;
         }
         // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
         // if ( beam_info->PRF == 'S')
@@ -358,7 +367,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         // Convert to m/s 
         Eigen::VectorXd ms(max_range);
         for (unsigned i = 0; i < max_range; ++i)
-            ms[i] = beam.beams.data_w[i] * range_sig_v / 255.0;
+            ms[i] = beam.data_w[i] * range_sig_v / 255.0;
 
         PolarScan<double>& scan = vol_w->at(el_num);
         scan.row(az_idx) = ms;
