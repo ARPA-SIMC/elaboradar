@@ -2,7 +2,6 @@
 #define ARCHIVIATORE_VOLUME_SP20_CLASS_H
 
 #include "volume.h"
-#include "volume/loader.h"
 #include "volume/azimuthmap.h"
 
 namespace elaboradar {
@@ -12,7 +11,7 @@ namespace sp20 {
 struct Beam;
 }
 
-struct SP20Loader : public Loader
+struct SP20Loader
 {
     std::vector<NonuniformAzimuthMap> azimuth_maps;
     bool clean;
@@ -20,10 +19,6 @@ struct SP20Loader : public Loader
     Scans<double>* vol_d = 0;
     Scans<double>* vol_v = 0;
     Scans<double>* vol_w = 0;
-
-    SP20Loader(const Site& site, bool medium=false) : Loader(site, medium)
-    {
-    }
 
     void load(const std::string& pathname);
 

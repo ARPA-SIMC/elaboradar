@@ -1,7 +1,6 @@
 #include<iostream>
 #include"volume.h"
 #include"volume/odim.h"
-#include"volume/loader.h"
 #include"site.h"
 #include "volume/resample.h"
 
@@ -26,7 +25,7 @@ int main(int argc,char* argv[])
 	classificatore.HCA_Park_2009();
 //	classificatore.print_ppi_class();
 
-	volume::ODIMStorer storer(sito);
+	volume::ODIMStorer storer;
 	storer.store_quantity_int((Volume<int>*)(&classificatore.vol_hca));
 	storer.store(argv[1]);
 /*

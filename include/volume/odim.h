@@ -2,7 +2,6 @@
 #define ARCHIVIATORE_VOLUME_ODIM_CLASS_H
 
 #include "volume.h"
-#include "volume/loader.h"
 #include "volume/azimuthmap.h"
 #include <string>
 #include <map>
@@ -29,13 +28,9 @@ union bit64
 };
 */
 
-class ODIMStorer : public volume::Loader
+class ODIMStorer
 {
 public:
-    ODIMStorer(const Site& site)
-        : Loader(site, false)
-    {
-    }
     std::vector<Volume<double>*> to_store_fp;
     std::vector<Volume<int>*> to_store_int;
     void store_quantity_fp(Volume<double>* vol_fp) {to_store_fp.push_back(vol_fp);}

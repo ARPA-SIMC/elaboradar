@@ -2,7 +2,6 @@
 #define ARCHIVIATORE_VOLUME_RESAMPLE_H
 
 #include "volume.h"
-#include "volume/loader.h"
 #include "volume/azimuthmap.h"
 #include <functional>
 #include <cmath>

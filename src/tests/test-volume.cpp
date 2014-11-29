@@ -21,7 +21,7 @@ void to::test<1>()
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
-    volume::SP20Loader sp20(Site::get("GAT"));
+    volume::SP20Loader sp20;
     volume::Scans<double> vsp20;
     sp20.vol_z = &vsp20;
     sp20.load("../testdata/DBP2_070120141530_GATTATICO");

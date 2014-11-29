@@ -20,7 +20,6 @@
 #include "logging.h"
 #include "assets.h"
 #include "volume.h"
-#include "volume/loader.h"
 #include "volume/elev_fin.h"
 #include "algo/anaprop.h"
 #include "algo/dbz.h"

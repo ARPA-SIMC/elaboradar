@@ -28,7 +28,6 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 
 libtmp_la_SOURCES = \
   volume_azimuthmap.cpp \
-  volume_loader.cpp \
   volume_sp20.cpp \
   volume_odim.cpp \
   volume_resample.cpp \
