@@ -220,6 +220,32 @@ public:
             this->push_back(PolarScan<T>(src_scan, default_value));
     }
 
+    /**
+     * Append a scan to this volume.
+     *
+     * It is required that scans are added in increasing elevation order,
+     * because higher scan indices need to correspond to higher elevation
+     * angles.
+     *
+     * It is required that beam_size is lower than 
+     */
+    PolarScan<T>& append_scan(unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
+    {
+        // Ensure elevations grow as scan indices grow
+        if (!this->empty() && elevation <= this->back().elevation)
+        {
+            LOG_CATEGORY("radar.io");
+            LOG_ERROR("append_scan(beam_count=%u, beam_size=%u, elevation=%f, cell_size=%f) called with an elevation that is not above the last one (%f)", beam_count, beam_size, elevation, cell_size, this->back().elevation);
+            throw std::runtime_error("elevation not greather than the last one");
+        }
+
+        // Add the new polar scan
+        this->push_back(PolarScan<T>(beam_count, beam_size));
+        this->back().elevation = elevation;
+        this->back().cell_size = cell_size;
+        return this->back();
+    }
+
     // Create or reuse a scan at position idx, with the given beam size
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
     {
@@ -255,6 +281,36 @@ public:
 
         // Return it
         return (*this)[idx];
+    }
+
+    /**
+     * Change the elevations in the PolarScans to match the given elevation
+     * vector
+     */
+    void normalize_elevations(const std::vector<double>& elevations)
+    {
+        // Ensure that we have enough standard elevations
+        if (elevations.size() < this->size())
+        {
+            LOG_CATEGORY("radar.io");
+            LOG_ERROR("normalize_elevations: standard elevation array has %zd elements, but we have %zd scans", 
+                    elevations.size(), this->size());
+            throw std::runtime_error("not enough standard elevations");
+        }
+        // Ensure that the nudging that we do do not confuse a scan
+        // with another
+        for (size_t i = 0; i < this->size() - 1; ++i)
+        {
+            if (abs(elevations[i] - this->at(i).elevation) < abs(elevations[i] - this->at(i + 1).elevation))
+            {
+                LOG_CATEGORY("radar.io");
+                LOG_ERROR("normalize_elevations: elevation %zd (%f) should be set to %f but it would make it closer to the next elevation %f", i, this->at(i).elevation, elevations[i], this->at(i + 1).elevation);
+                throw std::runtime_error("real elevation is too different than standard elevations");
+            }
+        }
+        // Assign the new elevations
+        for (size_t i = 0; i < this->size(); ++i)
+            this->at(i).elevation = elevations[i];
     }
 };
 

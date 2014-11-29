@@ -170,7 +170,7 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
-	volume::ODIMLoader loader_all(site, false);
+	volume::ODIMLoader loader_all;
 
 	volume::Scans<double> full_volume_z;
 	volume::Scans<double> full_volume_zdr;
@@ -187,6 +187,11 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
 
 	loader_all.load(pathname);
+
+    auto elev_array = site.get_elev_array();
+    for (auto i: loader_all.to_load)
+        i.second->normalize_elevations(elev_array);
+
 	printf("Non so se è andato tutto bene, ma almeno sono arrivato in fondo\n");
 
 	volume::volume_resample<double>(full_volume_z, loader_all.azimuth_maps, vol_z, volume::merger_closest<double>);

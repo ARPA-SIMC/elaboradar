@@ -251,7 +251,7 @@ void to::test<3>()
     lsp20.vol_z = &ssp20;
     lsp20.load("../testdata/DBP2_070120141530_GATTATICO");
 
-    ODIMLoader lodim(gat);
+    ODIMLoader lodim;
     lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
     lodim.load("../testdata/MSG1400715300U.101.h5");
 

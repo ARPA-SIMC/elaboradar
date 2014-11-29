@@ -31,13 +31,6 @@ void ODIMLoader::request_quantity(const std::string& name, Scans<double>* volume
     to_load.insert(make_pair(name, volume));
 }
 
-void ODIMLoader::make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double size_cell)
-{
-    if (azimuth_maps.size() <= idx) azimuth_maps.resize(idx + 1);
-    for (auto& i: to_load)
-        i.second->make_scan(idx, beam_count, beam_size, elev_array[idx], size_cell);
-}
-
 void ODIMLoader::load(const std::string& pathname)
 {
     LOG_CATEGORY("radar.io");
@@ -53,19 +46,6 @@ void ODIMLoader::load(const std::string& pathname)
     unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
     load_info->acq_date = volume->getDateTime();
-
-    std::vector<double> elevationAngles = volume->getElevationAngles();
-
-    // Check that the levels match what we want
-    for (unsigned i = 0; i < elevationAngles.size(); ++i)
-    {
-        double v = elevationAngles[i];
-        if (v <= elev_array[i] - 0.5 || elev_array[i] + 0.5 <= v)
-        {
-            LOG_ERROR("elevation %d does not match our expectation: we want %f but we got %f", i, elev_array[i], v);
-            throw runtime_error("elevation mismatch");
-        }
-    }
 
     double range_scale = 0;
 
@@ -109,22 +89,22 @@ void ODIMLoader::load(const std::string& pathname)
 
         unsigned beam_size = int_to_unsigned(scan->getNumBins(), "beam size");
 
-        int el_num = elevation_index(elevation);
-        if (el_num < 0) continue;
-
-        // Create PolarScan objects for this elevation
-        make_scan(el_num, beam_count, beam_size, range_scale);
+        //int el_num = elevation_index(elevation);
+        //if (el_num < 0) continue;
+        unsigned el_num = src_elev;
 
         // Fill in the azimuth map for this elevation
+        azimuth_maps.resize(azimuth_maps.size() + 1);
         for (unsigned src_az = 0; src_az < beam_count; ++src_az)
             azimuth_maps[el_num].add(azangles[src_az].averagedAngle(rpm_sign), src_az);
 
         // Read all quantities that have been requested
         for (auto& todo : to_load)
         {
+            // Create azimuth maps and PolarScan objects for this elevation
             const string& name = todo.first;
             Scans<double>& target = *todo.second;
-            PolarScan<double>& vol_pol_scan = target.at(el_num);
+            PolarScan<double>& vol_pol_scan = target.append_scan(beam_count, beam_size, elevation, range_scale);
 
             // Pick the best quantity among the ones available
             if (!scan->hasQuantityData(name))
