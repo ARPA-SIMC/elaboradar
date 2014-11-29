@@ -6,7 +6,7 @@ noinst_LTLIBRARIES = libtmp.la
 
 AM_CXXFLAGS=-std=c++11
 
-AM_CPPFLAGS = -I$(top_srcdir)/elaboradar \
+AM_CPPFLAGS = -I$(top_srcdir) \
               -I$(top_srcdir)/include \
 	      $(RADARLIB_CFLAGS) \
 	      $(HDF5_CFLAGS) \
@@ -27,7 +27,6 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
 
 
 libtmp_la_SOURCES = \
-  volume_azimuthmap.cpp \
   volume_sp20.cpp \
   volume_odim.cpp \
   volume_resample.cpp \
@@ -69,7 +68,6 @@ check_PROGRAMS = ertest
 
 ertest_SOURCES = \
   tests/test-assets.cpp \
-  tests/test-azimutmap.cpp \
   tests/test-functions.cpp \
   tests/test-interpola-vpr.cpp \
   tests/test-processing.cpp \

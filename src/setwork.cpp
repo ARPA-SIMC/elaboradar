@@ -1,10 +1,10 @@
 #include <setwork.h>
 
-#include <stdlib.h> 
-#include <errno.h> 
-#include <string.h> 
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 #include <stdio.h>
-#include "logging.h"
+#include <elaboradar/logging.h>
 
 int setwork(char *sito)
 {  

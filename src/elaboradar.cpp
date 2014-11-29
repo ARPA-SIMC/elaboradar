@@ -4,7 +4,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "cum_bac.h"
-#include "logging.h"
+#include <elaboradar/logging.h>
 #include "config.h"
 #include "site.h"
 #include "cum_bac_clparser.h"

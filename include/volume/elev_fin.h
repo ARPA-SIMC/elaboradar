@@ -1,7 +1,7 @@
 #ifndef ARCHIVIATORE_VOLUME_ELEV_FIN_CLASS_H
 #define ARCHIVIATORE_VOLUME_ELEV_FIN_CLASS_H
 
-#include "volume.h"
+#include <elaboradar/volume.h>
 #include <H5Cpp.h>
 
 namespace elaboradar {

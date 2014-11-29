@@ -1,7 +1,7 @@
-#ifndef ARCHIVIATORE_IMAGE_H
-#define ARCHIVIATORE_IMAGE_H
+#ifndef ELABORADAR_IMAGE_H
+#define ELABORADAR_IMAGE_H
 
-#include <matrix.h>
+#include <elaboradar/matrix.h>
 #include <stdexcept>
 #include <string>
 

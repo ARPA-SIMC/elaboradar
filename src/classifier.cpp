@@ -20,7 +20,7 @@
 #include <radarlib/radar.hpp>
 #include <sstream>
 #include "algo/elabora_volume.h"
-#include"image.h"
+#include <elaboradar/image.h>
 
 using namespace elaboradar;
 using namespace volume;

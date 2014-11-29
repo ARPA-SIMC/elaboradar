@@ -2,7 +2,7 @@
 #define ARCHIVIATORE_TEST_UTILS_CLASS_H
 
 #include <wibble/tests.h>
-#include <volume.h>
+#include <elaboradar/volume.h>
 
 namespace elaboradar {
 struct Cart;

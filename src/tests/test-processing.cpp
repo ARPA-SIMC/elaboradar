@@ -1,7 +1,7 @@
 #include <wibble/tests.h>
 #include "cum_bac.h"
 #include "config.h"
-#include "logging.h"
+#include <elaboradar/logging.h>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>

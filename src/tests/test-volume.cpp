@@ -1,9 +1,9 @@
 #include <wibble/tests.h>
 #include <cmath>
-#include "volume.h"
+#include <elaboradar/volume.h>
 #include "volume/sp20.h"
 #include "site.h"
-#include "logging.h"
+#include <elaboradar/logging.h>
 
 using namespace wibble::tests;
 using namespace elaboradar;

@@ -1,9 +1,8 @@
-#include <volume/azimuthmap.h>
+#include "azimuthmap.h"
 
-using namespace elaboradar::volume::azimuthmap;
+using namespace elaboradar::azimuthmap;
 
 namespace elaboradar {
-namespace volume {
 
 namespace azimuthmap {
 std::ostream& operator<<(std::ostream& o, const Position& pos)
@@ -109,5 +108,4 @@ std::vector<azimuthmap::Position> NonuniformAzimuthMap::intersecting(double azim
     return res;
 }
 
-}
 }

@@ -1,8 +1,8 @@
 #include <wibble/tests.h>
 #include "config.h"
 #include "algo/utils.h"
-#include "volume.h"
-#include "logging.h"
+#include <elaboradar/volume.h>
+#include <elaboradar/logging.h>
 
 using namespace wibble::tests;
 using namespace elaboradar;

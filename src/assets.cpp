@@ -1,11 +1,11 @@
 #include "assets.h"
 #include "config.h"
-#include "utils.h"
+#include <elaboradar/utils.h>
+#include <elaboradar/matrix.h>
+#include <elaboradar/image.h>
 #include "geo_par.h"
 #include "vpr_par.h"
-#include "matrix.h"
 #include "site.h"
-#include "image.h"
 #include "algo/dbz.h"
 #include <cstring>
 #include <cstdlib>

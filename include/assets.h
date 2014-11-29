@@ -4,7 +4,7 @@
 #include <string>
 #include <ctime>
 #include <cstdio>
-#include <logging.h>
+#include <elaboradar/logging.h>
 #include <functional>
 #include <vector>
 #include <H5Cpp.h>

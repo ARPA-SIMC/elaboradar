@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include "assets.h"
 #include "config.h"
-#include "utils.h"
-#include "logging.h"
+#include <elaboradar/utils.h>
+#include <elaboradar/logging.h>
 
 using namespace wibble::tests;
 using namespace std;

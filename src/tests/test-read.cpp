@@ -5,7 +5,7 @@
 #include "volume/odim.h"
 #include "volume/resample.h"
 #include "site.h"
-#include "logging.h"
+#include <elaboradar/logging.h>
 #include <radarlib/radar.hpp>
 #include <stdio.h>
 #include <vector>

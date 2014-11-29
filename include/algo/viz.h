@@ -1,8 +1,8 @@
 #ifndef ARCHIVIATORE_VIZ_CLASS_H
 #define ARCHIVIATORE_VIZ_CLASS_H
 
-#include "logging.h"
-#include "matrix.h"
+#include <elaboradar/logging.h>
+#include <elaboradar/matrix.h>
 
 namespace elaboradar {
 struct CylindricalVolume;

@@ -1,8 +1,8 @@
 #ifndef ARCHIVIATORE_VOLUME_RESAMPLE_H
 #define ARCHIVIATORE_VOLUME_RESAMPLE_H
 
-#include "volume.h"
-#include "volume/azimuthmap.h"
+#include <elaboradar/volume.h>
+#include <elaboradar/azimuthmap.h>
 #include <functional>
 #include <cmath>
 
