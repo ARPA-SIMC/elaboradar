@@ -22,6 +22,7 @@
 #include <sstream>
 #include "algo/elabora_volume.h"
 #include <elaboradar/image.h>
+#include <elaboradar/algo/azimuth_resample.h>
 
 using namespace elaboradar;
 using namespace volume;
@@ -195,12 +196,13 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 
 	printf("Non so se è andato tutto bene, ma almeno sono arrivato in fondo\n");
 
-	AzimuthMap::volume_resample<double>(full_volume_z, loader_all.azimuth_maps, vol_z, AzimuthMap::merger_closest<double>);
-	AzimuthMap::volume_resample<double>(full_volume_zdr, loader_all.azimuth_maps, vol_zdr, AzimuthMap::merger_closest<double>);
-	AzimuthMap::volume_resample<double>(full_volume_rhohv, loader_all.azimuth_maps, vol_rhohv, AzimuthMap::merger_closest<double>);
-	AzimuthMap::volume_resample<double>(full_volume_phidp, loader_all.azimuth_maps, vol_phidp, AzimuthMap::merger_closest<double>);
-	AzimuthMap::volume_resample<double>(full_volume_vrad, loader_all.azimuth_maps, vol_vrad, AzimuthMap::merger_closest<double>);
-	AzimuthMap::volume_resample<double>(full_volume_snr, loader_all.azimuth_maps, vol_snr, AzimuthMap::merger_closest<double>);
+    algo::azimuthresample::Closest<double> resampler;
+	resampler.resample_volume(full_volume_z, vol_z);
+	resampler.resample_volume(full_volume_zdr, vol_zdr);
+	resampler.resample_volume(full_volume_rhohv, vol_rhohv);
+	resampler.resample_volume(full_volume_phidp, vol_phidp);
+	resampler.resample_volume(full_volume_vrad, vol_vrad);
+	resampler.resample_volume(full_volume_snr, vol_snr);
 	vol_hca.quantity="CLASS";
 
 	cout<<vol_z.load_info->acq_date<<endl;

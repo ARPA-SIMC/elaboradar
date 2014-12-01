@@ -2,7 +2,6 @@
 #define ELABORADAR_ODIM_H
 
 #include <elaboradar/volume.h>
-#include <elaboradar/azimuthmap.h>
 #include <string>
 #include <map>
 #include <vector>
@@ -12,7 +11,6 @@ namespace volume {
 
 struct ODIMLoader
 {
-    std::vector<NonuniformAzimuthMap> azimuth_maps;
     std::map<std::string, Scans<double>*> to_load;
 
     void request_quantity(const std::string& name, Scans<double>* volume);

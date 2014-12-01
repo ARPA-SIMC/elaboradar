@@ -7,6 +7,7 @@
 #include <elaboradar/algo/cleaner.h>
 #include <elaboradar/algo/anaprop.h>
 #include <elaboradar/algo/utils.h>
+#include <elaboradar/algo/azimuth_resample.h>
 #include "site.h"
 #include "algo/steiner.h"
 #include "algo/viz.h"
@@ -178,7 +179,8 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         }
     }
 
-    AzimuthMap::volume_resample<double>(z_volume, loader.azimuth_maps, volume, AzimuthMap::merger_max_of_closest<double>);
+    algo::azimuthresample::MaxOfClosest<double> resampler;
+    resampler.resample_volume(z_volume, volume);
 
     /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
@@ -237,7 +239,8 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
             algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i));
     }
 
-    AzimuthMap::volume_resample<double>(*z_volume, loader.azimuth_maps, volume, AzimuthMap::merger_max_of_closest<double>);
+    algo::azimuthresample::MaxOfClosest<double> resampler;
+    resampler.resample_volume(*z_volume, volume);
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);

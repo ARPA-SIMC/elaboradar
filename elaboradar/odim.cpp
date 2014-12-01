@@ -92,11 +92,6 @@ void ODIMLoader::load(const std::string& pathname)
         //if (el_num < 0) continue;
         unsigned el_num = src_elev;
 
-        // Fill in the azimuth map for this elevation
-        azimuth_maps.resize(azimuth_maps.size() + 1);
-        for (unsigned src_az = 0; src_az < beam_count; ++src_az)
-            azimuth_maps[el_num].add(azangles[src_az].averagedAngle(rpm_sign), src_az);
-
         // Read all quantities that have been requested
         for (auto& todo : to_load)
         {
@@ -136,8 +131,8 @@ void ODIMLoader::load(const std::string& pathname)
 
                 vol_pol_scan.row(src_az) = beam;
                 vol_pol_scan.elevations_real(src_az) = elevation_angles[src_az];
+                vol_pol_scan.azimuths_real(src_az) = azangles[src_az].averagedAngle(rpm_sign);
            }
-
         }
     }
 

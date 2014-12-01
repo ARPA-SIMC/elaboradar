@@ -9,6 +9,21 @@ using namespace std;
 
 namespace elaboradar {
 
+PolarScanBase::PolarScanBase(unsigned beam_count, unsigned beam_size)
+    : beam_count(beam_count), beam_size(beam_size),
+      azimuths_real(beam_count), elevations_real(beam_count)
+{
+}
+
+PolarScanBase::PolarScanBase(const PolarScanBase& s)
+    : beam_count(s.beam_count), beam_size(s.beam_size),
+      azimuths_real(s.azimuths_real),
+      elevation(s.elevation),
+      elevations_real(s.elevations_real),
+      cell_size(s.cell_size)
+{
+}
+
 double PolarScanBase::height(unsigned rg, double beam_half_width)
 {
     return sample_height(elevation + beam_half_width, (double)rg*cell_size) / 1000.; // km
