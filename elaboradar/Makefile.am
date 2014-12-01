@@ -34,8 +34,9 @@ nobase_dist_elaboradarinclude_HEADERS = \
   volume.h \
   sp20.h \
   odim.h \
-  azimuthmap.h \
   elev_fin.h \
+  algo/anaprop.h \
+  algo/azimuth_resample.h \
   algo/cleaner.h \
   algo/dbz.h \
   algo/top.h \
@@ -48,8 +49,8 @@ libelaboradar_la_SOURCES = \
   volume.cpp \
   sp20.cpp \
   odim.cpp \
-  azimuthmap.cpp \
   algo/anaprop.cpp \
+  algo/azimuth_resample.cpp \
   algo/cleaner.cpp \
   algo/dbz.cpp
 

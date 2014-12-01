@@ -1,11 +1,25 @@
 #include <wibble/tests.h>
 #include <cmath>
-#include <elaboradar/azimuthmap.h>
+#include <elaboradar/algo/azimuth_resample.h>
 #include <elaboradar/logging.h>
 
 using namespace std;
 using namespace wibble::tests;
 using namespace elaboradar;
+using namespace elaboradar::algo::azimuthresample;
+
+namespace elaboradar {
+namespace algo {
+namespace azimuthresample {
+
+ostream& operator<<(ostream& out, const pair<double, unsigned>& p)
+{
+    return out << "(" << p.first << "," << p.second << ")";
+}
+
+}
+}
+}
 
 namespace tut {
 
@@ -17,95 +31,50 @@ TESTGRP(azimuthmap);
 template<> template<>
 void to::test<1>()
 {
-    typedef azimuthmap::Position Pos;
-    UniformAzimuthMap am(360);
-
-    wassert(actual(am.closest(0.0)) == Pos(0, 0));
-    wassert(actual(am.closest(0.4)) == Pos(0, 0));
-    wassert(actual(am.closest(0.5)) == Pos(1, 1));
-    wassert(actual(am.closest(0.6)) == Pos(1, 1));
-    wassert(actual(am.closest(359.0)) == Pos(359, 359));
-    wassert(actual(am.closest(359.4)) == Pos(359, 359));
-    wassert(actual(am.closest(359.5)) == Pos(0, 0));
-    wassert(actual(am.closest(360.0)) == Pos(0, 0));
-}
-
-template<> template<>
-void to::test<2>()
-{
-    typedef azimuthmap::Position Pos;
-    UniformAzimuthMap am(360);
-
-    vector<Pos> res = am.intersecting(0, 2);
-    wassert(actual(res.size()) == 3);
-    wassert(actual(res[0]) == Pos(359, 359));
-    wassert(actual(res[1]) == Pos(0, 0));
-    wassert(actual(res[2]) == Pos(1, 1));
-
-    res = am.intersecting(180, 2.1);
-    wassert(actual(res.size()) == 5);
-    wassert(actual(res[0]) == Pos(178, 178));
-    wassert(actual(res[1]) == Pos(179, 179));
-    wassert(actual(res[2]) == Pos(180, 180));
-    wassert(actual(res[3]) == Pos(181, 181));
-    wassert(actual(res[4]) == Pos(182, 182));
-
-    res = am.intersecting(360, 2.1);
-    wassert(actual(res.size()) == 5);
-    wassert(actual(res[0]) == Pos(358, 358));
-    wassert(actual(res[1]) == Pos(359, 359));
-    wassert(actual(res[2]) == Pos(0, 0));
-    wassert(actual(res[3]) == Pos(1, 1));
-    wassert(actual(res[4]) == Pos(2, 2));
-}
-
-template<> template<>
-void to::test<3>()
-{
-    typedef azimuthmap::Position Pos;
-    NonuniformAzimuthMap am;
+    Eigen::VectorXd azimuths(360);
     for (unsigned i = 0; i < 360; ++i)
-        am.add(i, i);
+        azimuths(i) = (double)i;
+    AzimuthIndex am(azimuths);
 
-    wassert(actual(am.closest(0.0)) == Pos(0, 0));
-    wassert(actual(am.closest(0.4)) == Pos(0, 0));
-    wassert(actual(am.closest(0.5)) == Pos(1, 1));
-    wassert(actual(am.closest(0.6)) == Pos(1, 1));
-    wassert(actual(am.closest(359.0)) == Pos(359, 359));
-    wassert(actual(am.closest(359.4)) == Pos(359, 359));
-    wassert(actual(am.closest(359.5)) == Pos(0, 0));
-    wassert(actual(am.closest(360.0)) == Pos(0, 0));
+    wassert(actual(am.closest(0.0)) == make_pair(0.0, 0u));
+    wassert(actual(am.closest(0.4)) == make_pair(0.0, 0u));
+    wassert(actual(am.closest(0.5)) == make_pair(1.0, 1u));
+    wassert(actual(am.closest(0.6)) == make_pair(1.0, 1u));
+    wassert(actual(am.closest(359.0)) == make_pair(359.0, 359u));
+    wassert(actual(am.closest(359.4)) == make_pair(359.0, 359u));
+    wassert(actual(am.closest(359.5)) == make_pair(0.0, 0u));
+    wassert(actual(am.closest(360.0)) == make_pair(0.0, 0u));
 }
 
 template<> template<>
 void to::test<4>()
 {
-    typedef azimuthmap::Position Pos;
-    NonuniformAzimuthMap am;
+    Eigen::VectorXd azimuths(360);
     for (unsigned i = 0; i < 360; ++i)
-        am.add(i, i);
+        azimuths(i) = (double)i;
+    AzimuthIndex am(azimuths);
 
-    vector<Pos> res = am.intersecting(0, 2);
+    auto res = am.intersecting(0, 2);
     wassert(actual(res.size()) == 3);
-    wassert(actual(res[0]) == Pos(359, 359));
-    wassert(actual(res[1]) == Pos(0, 0));
-    wassert(actual(res[2]) == Pos(1, 1));
+    wassert(actual(res[0]) == make_pair(359.0, 359u));
+    wassert(actual(res[1]) == make_pair(0.0, 0u));
+    wassert(actual(res[2]) == make_pair(1.0, 1u));
 
     res = am.intersecting(180, 2.1);
     wassert(actual(res.size()) == 5);
-    wassert(actual(res[0]) == Pos(178, 178));
-    wassert(actual(res[1]) == Pos(179, 179));
-    wassert(actual(res[2]) == Pos(180, 180));
-    wassert(actual(res[3]) == Pos(181, 181));
-    wassert(actual(res[4]) == Pos(182, 182));
+    wassert(actual(res[0]) == make_pair(178.0, 178u));
+    wassert(actual(res[1]) == make_pair(179.0, 179u));
+    wassert(actual(res[2]) == make_pair(180.0, 180u));
+    wassert(actual(res[3]) == make_pair(181.0, 181u));
+    wassert(actual(res[4]) == make_pair(182.0, 182u));
 
     res = am.intersecting(360, 2.1);
     wassert(actual(res.size()) == 5);
-    wassert(actual(res[0]) == Pos(358, 358));
-    wassert(actual(res[1]) == Pos(359, 359));
-    wassert(actual(res[2]) == Pos(0, 0));
-    wassert(actual(res[3]) == Pos(1, 1));
-    wassert(actual(res[4]) == Pos(2, 2));
+    wassert(actual(res[0]) == make_pair(358.0, 358u));
+    wassert(actual(res[1]) == make_pair(359.0, 359u));
+    wassert(actual(res[2]) == make_pair(0.0, 0u));
+    wassert(actual(res[3]) == make_pair(1.0, 1u));
+    wassert(actual(res[4]) == make_pair(2.0, 2u));
 }
 
 }

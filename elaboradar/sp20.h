@@ -2,7 +2,6 @@
 #define ELABORADAR_SP20_H
 
 #include <elaboradar/volume.h>
-#include <elaboradar/azimuthmap.h>
 
 namespace elaboradar {
 namespace volume {
@@ -13,7 +12,6 @@ struct Beam;
 
 struct SP20Loader
 {
-    std::vector<NonuniformAzimuthMap> azimuth_maps;
     bool clean;
     Scans<double>* vol_z = 0;
     Scans<double>* vol_d = 0;

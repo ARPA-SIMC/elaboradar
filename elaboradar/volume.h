@@ -38,17 +38,34 @@ inline unsigned char DBtoBYTE(double dB)
 
 struct PolarScanBase
 {
+    /// Count of beams in this scan
+    unsigned beam_count;
+
+    /// Number of samples in each beam
+    unsigned beam_size;
+
+    /// Vector of actual azimuths for each beam
+    Eigen::VectorXd azimuths_real;
+
     /**
      * Nominal elevation of this PolarScan, which may be different from the
      * effective elevation of each single beam
      */
     double elevation = 0;
 
+    /// Vector of actual elevations for each beam
+    Eigen::VectorXd elevations_real;
+
     /// Size of a beam cell in meters
     double cell_size = 0;
 
+    PolarScanBase(unsigned beam_count, unsigned beam_size);
+
+    PolarScanBase(const PolarScanBase& s);
+
     // Height in kilometers (legacy)
     double height(unsigned rg, double beam_half_width=0.0);
+
     // Height difference in kilometers (legacy)
     double diff_height(unsigned rg_start, unsigned rg_end);
 
@@ -75,40 +92,22 @@ template<typename T>
 class PolarScan : public PolarScanBase, public Matrix2D<T>
 {
 public:
-    /// Count of beams in this scan
-    unsigned beam_count;
-    /// Number of samples in each beam
-    unsigned beam_size;
-    /// Vector of actual elevations for each beam
-    Eigen::VectorXd elevations_real;
     T nodata = 0;    // Value used as 'no data' value
     T undetect = 0;  // Minimum amount that can be measured
     T gain = 1;
     T offset = 0;
 
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
-        : Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value)),
-          beam_count(beam_count), beam_size(beam_size), elevations_real(beam_count)
+        : PolarScanBase(beam_count, beam_size),
+          Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value))
     {
     }
 
     PolarScan(const PolarScan& s) = default;
-#if 0
-    // PolarScan(PolarScan&& s) = default;
-    PolarScan(const PolarScan& s)
-        : Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, s.nodata)),
-          beam_count(s.beam_count), beam_size(s.beam_size),
-          elevation(s.elevation), elevations_real(s.elevations_real),
-          nodata(s.nodata), undetect(s.undetect), gain(s.gain), offset(s.offset)
-    {
-    }
-#endif
 
     template<class OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
         : PolarScanBase(s), Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, default_value)),
-          beam_count(s.beam_count), beam_size(s.beam_size),
-          elevations_real(s.elevations_real),
           nodata(default_value)
     {
     }
@@ -220,6 +219,10 @@ public:
             this->push_back(PolarScan<T>(src_scan, default_value));
     }
 
+    // Access a polar scan
+    PolarScan<T>& scan(unsigned idx) { return (*this)[idx]; }
+    const PolarScan<T>& scan(unsigned idx) const { return (*this)[idx]; }
+
     /**
      * Append a scan to this volume.
      *
@@ -325,10 +328,6 @@ class Volume : public volume::Scans<T>
 public:
     const unsigned beam_count;
 
-    // Access a polar scan
-    PolarScan<T>& scan(unsigned idx) { return (*this)[idx]; }
-    const PolarScan<T>& scan(unsigned idx) const { return (*this)[idx]; }
-
     Volume(unsigned beam_count=NUM_AZ_X_PPI)
         : beam_count(beam_count)
     {
@@ -367,7 +366,7 @@ public:
     {
         unsigned size_z = std::max(this->size(), (size_t)slice.rows());
         for (unsigned el = 0; el < size_z; ++el)
-            scan(el).read_beam(az, slice.row_ptr(el), slice.cols(), missing_value);
+            this->scan(el).read_beam(az, slice.row_ptr(el), slice.cols(), missing_value);
     }
 
     void compute_stats(VolumeStats& stats) const
@@ -384,11 +383,11 @@ public:
             stats.count_others[iel] = 0;
             stats.sum_others[iel] = 0;
 
-            for (unsigned iaz = 0; iaz < scan(iel).beam_count; ++iaz)
+            for (unsigned iaz = 0; iaz < this->scan(iel).beam_count; ++iaz)
             {
-                for (size_t i = 0; i < scan(iel).beam_size; ++i)
+                for (size_t i = 0; i < this->scan(iel).beam_size; ++i)
                 {
-                    int val = DBtoBYTE(scan(iel).get(iaz, i));
+                    int val = DBtoBYTE(this->scan(iel).get(iaz, i));
                     switch (val)
                     {
                         case 0: stats.count_zeros[iel]++; break;
@@ -401,6 +400,18 @@ public:
                 }
             }
         }
+    }
+
+    /**
+     * Append a scan to this volume.
+     *
+     * It is required that scans are added in increasing elevation order,
+     * because higher scan indices need to correspond to higher elevation
+     * angles.
+     */
+    PolarScan<T>& append_scan(unsigned beam_size, double elevation, double cell_size)
+    {
+        return volume::Scans<T>::append_scan(beam_count, beam_size, elevation, cell_size);
     }
 
     // Create or reuse a scan at position idx, with the given beam size

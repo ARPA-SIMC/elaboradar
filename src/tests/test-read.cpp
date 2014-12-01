@@ -1,10 +1,11 @@
 #include <wibble/tests.h>
-#include "cum_bac.h"
-#include "config.h"
 #include <elaboradar/sp20.h>
 #include <elaboradar/odim.h>
-#include "site.h"
 #include <elaboradar/logging.h>
+#include <elaboradar/algo/azimuth_resample.h>
+#include "cum_bac.h"
+#include "config.h"
+#include "site.h"
 #include <radarlib/radar.hpp>
 #include <stdio.h>
 #include <vector>
@@ -214,8 +215,18 @@ void to::test<1>()
     Scans<double> ssp20;
     loader.vol_z = &ssp20;
     loader.load("../testdata/DBP2_070120141530_GATTATICO");
+
+    wassert(actual(ssp20.size()) == 6);
+    wassert(actual(round(ssp20.scan(0).elevation * 10000)) ==  5274);
+    wassert(actual(round(ssp20.scan(1).elevation * 10000)) == 14064);
+    wassert(actual(round(ssp20.scan(2).elevation * 10000)) == 22854);
+    wassert(actual(round(ssp20.scan(3).elevation * 10000)) == 31644);
+    wassert(actual(round(ssp20.scan(4).elevation * 10000)) == 41313);
+    wassert(actual(round(ssp20.scan(5).elevation * 10000)) == 50103);
+
     Volume<double> vsp20;
-    AzimuthMap::volume_resample<double>(ssp20, loader.azimuth_maps, vsp20, AzimuthMap::merger_max_of_closest<double>);
+    algo::azimuthresample::MaxOfClosest<double> resampler;
+    resampler.resample_volume(ssp20, vsp20);
     // Check the contents of what we read
     wruntest(test_0120141530gat_SP20, vsp20);
 }
@@ -254,8 +265,9 @@ void to::test<3>()
     lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
     lodim.load("../testdata/MSG1400715300U.101.h5");
 
-    AzimuthMap::volume_resample<double>(ssp20, lsp20.azimuth_maps, vsp20, AzimuthMap::merger_max_of_closest<double>);
-    AzimuthMap::volume_resample<double>(sodim, lodim.azimuth_maps, vodim, AzimuthMap::merger_max_of_closest<double>);
+    algo::azimuthresample::MaxOfClosest<double> resampler;
+    resampler.resample_volume(ssp20, vsp20);
+    resampler.resample_volume(sodim, vodim);
 
     wruntest(test_volumes_equal, vsp20, vodim);
 }
@@ -293,8 +305,9 @@ void to::test<5>()
     _mod.vol_z = &s_mod;
     _mod.load("../testdata/DBP2_060220140140_GATTATICO_mod");
 
-    AzimuthMap::volume_resample<double>(ssp20, sp20.azimuth_maps, vsp20, AzimuthMap::merger_max_of_closest<double>);
-    AzimuthMap::volume_resample<double>(s_mod, _mod.azimuth_maps, v_mod, AzimuthMap::merger_max_of_closest<double>);
+    algo::azimuthresample::MaxOfClosest<double> resampler;
+    resampler.resample_volume(ssp20, vsp20);
+    resampler.resample_volume(s_mod, v_mod);
 
     wruntest(test_volumes_equal, vsp20, v_mod);
 }

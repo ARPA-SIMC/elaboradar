@@ -215,7 +215,6 @@ void SP20Loader::load(const std::string& pathname)
         const Beams& beams = *elevations[idx];
 
         // Create structures for a new PolarScan
-        azimuth_maps.resize(azimuth_maps.size() + 1);
         if (vol_z) vol_z->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
         if (vol_d) vol_d->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
         if (vol_v) vol_v->append_scan(beams.size(), beams.beam_size, beams.elevation, size_cell);
@@ -298,17 +297,16 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
 {
     const unsigned max_range = min(beam_size, beam.beam_size);
 
-    azimuth_maps[el_num].add(beam.beam_info.azimuth, az_idx);
-
     if (vol_z && beam.has_z()) // Riflettività Z
     {
         // Convert to DB
- 	Eigen::VectorXd dbs(max_range);
- 	for (unsigned i = 0; i < max_range; ++i)
+        Eigen::VectorXd dbs(max_range);
+        for (unsigned i = 0; i < max_range; ++i)
             dbs(i) = BYTEtoDB(beam.data_z[i]);
         PolarScan<double>& scan = vol_z->at(el_num);
         scan.row(az_idx) = dbs;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;
+        scan.azimuths_real(az_idx) = beam.beam_info.azimuth;
     }
 
     if (vol_d && beam.has_d()) // Riflettività differenziale ZDR
@@ -325,6 +323,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         PolarScan<double>& scan = vol_d->at(el_num);
         scan.row(az_idx) = dbs;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;
+        scan.azimuths_real(az_idx) = beam.beam_info.azimuth;
     }
 
     if (vol_v && beam.has_v()) // Velocità V
@@ -357,6 +356,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         PolarScan<double>& scan = vol_v->at(el_num);
         scan.row(az_idx) = ms;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;
+        scan.azimuths_real(az_idx) = beam.beam_info.azimuth;
     }
 
     if (vol_w && beam.has_w()) // Spread - Sigma V
@@ -371,6 +371,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         PolarScan<double>& scan = vol_w->at(el_num);
         scan.row(az_idx) = ms;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;
+        scan.azimuths_real(az_idx) = beam.beam_info.azimuth;
     }
 }
 
