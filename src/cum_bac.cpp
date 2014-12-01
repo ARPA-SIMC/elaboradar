@@ -609,7 +609,7 @@ void CUM_BAC::caratterizzo_volume()
                 }
 
                 if (l < anaprop.elev_fin[i][k]) {
-                    cl=ANAP_YES;
+                    cl=algo::ANAP_YES;
                     bb=BBMAX;
                 } else if (l == anaprop.elev_fin[i][k]) {
                     cl=anaprop.dato_corrotto(i, k);  /*cl al livello della mappa dinamica*/

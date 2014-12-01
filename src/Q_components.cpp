@@ -16,6 +16,7 @@
 */
 
 #include <Q_components.h>
+#include <elaboradar/algo/anaprop.h>
 #include <stdlib.h>
 #include <math.h> //file di sistema definisce costanti matematiche e richiama funzioni mat
 #include <qual_par.h> //file creato da me, parametri qualita'
@@ -86,20 +87,20 @@ float fcErrpt; /* comp. qual. corr. da errore puntamento antenna*/
  omend
 */
 
-   float qCl( unsigned char  clc)
-   //  unsigned char  clc;
+float qCl( unsigned char  clc)
 {
+    using namespace elaboradar::algo;
     switch(clc)
-       {
-	 case ANAP_OK:
-	   return (1.);     //  ok
-	 case ANAP_YES:
-	   return (0.5);    // anaprop
-	 case ANAP_NODAT:
-	   return (0.);     // no  data
-	 case ANAP_NOCONTROL:
-	   return (0.8);   //  no control
-       }
+    {
+        case ANAP_OK:
+            return (1.);     //  ok
+        case ANAP_YES:
+            return (0.5);    // anaprop
+        case ANAP_NODAT:
+            return (0.);     // no  data
+        case ANAP_NOCONTROL:
+            return (0.8);   //  no control
+    }
    
  }
 /*--------------------------------------*/

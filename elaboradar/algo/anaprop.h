@@ -67,15 +67,15 @@ struct GridStats
 };
 }
 
+static const int ANAP_OK        = 0;
+static const int ANAP_YES       = 1;
+static const int ANAP_NODAT     = 2;
+static const int ANAP_NOCONTROL = 3;
+
 template<class T>
 class Anaprop
 {
 public:
-    static const int ANAP_OK        = 0;
-    static const int ANAP_YES       = 1;
-    static const int ANAP_NODAT     = 2;
-    static const int ANAP_NOCONTROL = 3;
-
     log4c_category_t* logging_category;
 
     // Anaprop configuration
