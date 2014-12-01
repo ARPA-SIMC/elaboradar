@@ -1,5 +1,4 @@
 #include "cylindrical.h"
-#include "geo_par.h"
 #include "par_class.h"
 #include <cmath>
 

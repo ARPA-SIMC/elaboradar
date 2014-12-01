@@ -4,7 +4,6 @@
 #include <elaboradar/matrix.h>
 #include <elaboradar/image.h>
 #include <elaboradar/algo/dbz.h>
-#include "geo_par.h"
 #include "vpr_par.h"
 #include "site.h"
 #include <cstring>

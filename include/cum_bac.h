@@ -28,7 +28,6 @@
 
 //algoritmo
 #include <vpr_par.h>
-#include <geo_par.h>
 
 
 #define MAX_BIN 512
