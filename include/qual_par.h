@@ -1,7 +1,3 @@
-#define  ANAP_OK  0
-#define  ANAP_YES 1
-#define  ANAP_NODAT  2
-#define  ANAP_NOCONTROL  3
 #define  BBMAX 50
 #define  DTLIM 4.0
 #define  DTMAX 6.0
