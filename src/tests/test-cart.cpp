@@ -19,7 +19,7 @@ namespace tut {
 
 struct cart_shar {
     Logging logging;
-    static const auto mis = CartFullRes::missing;
+    static const auto mis = IndexMapping::missing;
 
 };
 TESTGRP(cart);
@@ -56,138 +56,137 @@ struct CBTest
 template<> template<>
 void to::test<1>()
 {
-    PolarScan<double> scan(400, 494);
-    CartFullRes fullres(scan, true);
+    CoordinateMapping mapping(494);
 
     // Write out images in /tmp
     //setenv("DIR_DEBUG", "/tmp", 1);
     //Config cfg;
     //Assets assets(cfg);
     //assets.configure(Site::get("GAT"), time(NULL));
-    //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
-    //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "png");
+    //assets.write_gdal_image(mapping.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
+    //assets.write_gdal_image(mapping.map_range, "DIR_DEBUG", "map_range", "png");
 
-    wassert(actual(scan.beam_count) == 400);
-    wassert(actual(fullres.beam_size) == 494);
+    wassert(actual(mapping.beam_size) == 494);
 
     // Check range
 
     // Range in the middle (on top of the radar) should be 0
-    wassert(actual(fullres.map_range(493, 493)) == 0);
-    wassert(actual(fullres.map_range(493, 494)) == 0);
-    wassert(actual(fullres.map_range(494, 493)) == 0);
-    wassert(actual(fullres.map_range(494, 494)) == 0);
+    wassert(actual(floor(mapping.map_range(493, 493))) == 0);
+    wassert(actual(floor(mapping.map_range(493, 494))) == 0);
+    wassert(actual(floor(mapping.map_range(494, 493))) == 0);
+    wassert(actual(floor(mapping.map_range(494, 494))) == 0);
 
     // Range at map edges at 90° angles should be beam_size
-    wassert(actual(fullres.map_range(  0, 493)) == 493); // Middle left
-    wassert(actual(fullres.map_range(  0, 494)) == 493); // Middle left
-    wassert(actual(fullres.map_range(987, 493)) == 493); // Middle right
-    wassert(actual(fullres.map_range(987, 494)) == 493); // Middle right
-    wassert(actual(fullres.map_range(493,   0)) == 493); // Top middle
-    wassert(actual(fullres.map_range(494,   0)) == 493); // Top middle
-    wassert(actual(fullres.map_range(493, 987)) == 493); // Bottom middle
-    wassert(actual(fullres.map_range(494, 987)) == 493); // Bottom middle
+    wassert(actual(floor(mapping.map_range(  0, 493))) == 493); // Middle left
+    wassert(actual(floor(mapping.map_range(  0, 494))) == 493); // Middle left
+    wassert(actual(floor(mapping.map_range(987, 493))) == 493); // Middle right
+    wassert(actual(floor(mapping.map_range(987, 494))) == 493); // Middle right
+    wassert(actual(floor(mapping.map_range(493,   0))) == 493); // Top middle
+    wassert(actual(floor(mapping.map_range(494,   0))) == 493); // Top middle
+    wassert(actual(floor(mapping.map_range(493, 987))) == 493); // Bottom middle
+    wassert(actual(floor(mapping.map_range(494, 987))) == 493); // Bottom middle
 
     // Range at map corners should be missing (out of range)
-    wassert(actual(fullres.map_range(  0,   0)) == 697);
-    wassert(actual(fullres.map_range(  0, 987)) == 697);
-    wassert(actual(fullres.map_range(987, 987)) == 697);
-    wassert(actual(fullres.map_range(987,   0)) == 697);
+    wassert(actual(floor(mapping.map_range(  0,   0))) == 697);
+    wassert(actual(floor(mapping.map_range(  0, 987))) == 697);
+    wassert(actual(floor(mapping.map_range(987, 987))) == 697);
+    wassert(actual(floor(mapping.map_range(987,   0))) == 697);
 
 
     // Check azimuth
 
     // Azimuth at the map corners and edge middle points
-    wassert(actual(fullres.map_azimuth(  0,   0)) == 350); // Top left
-    wassert(actual(fullres.map_azimuth(  0, 493)) == 399); // Top middle
-    wassert(actual(fullres.map_azimuth(  0, 494)) ==   0); // Top middle
-    wassert(actual(fullres.map_azimuth(  0, 987)) ==  50); // Top right
-    wassert(actual(fullres.map_azimuth(493, 987)) ==  99); // Middle right
-    wassert(actual(fullres.map_azimuth(494, 987)) == 100); // Middle right
-    wassert(actual(fullres.map_azimuth(987, 987)) == 150); // Bottom right
-    wassert(actual(fullres.map_azimuth(987, 494)) == 199); // Bottom middle
-    wassert(actual(fullres.map_azimuth(987, 493)) == 200); // Bottom middle
-    wassert(actual(fullres.map_azimuth(987,   0)) == 250); // Bottom left
-    wassert(actual(fullres.map_azimuth(494,   0)) == 299); // Middle left
-    wassert(actual(fullres.map_azimuth(493,   0)) == 300); // Middle left
+    wassert(actual(floor(mapping.map_azimuth(  0,   0) * 400/360)) == 350); // Top left
+    wassert(actual(floor(mapping.map_azimuth(  0, 493) * 400/360)) == 399); // Top middle
+    wassert(actual(floor(mapping.map_azimuth(  0, 494) * 400/360)) ==   0); // Top middle
+    wassert(actual(floor(mapping.map_azimuth(  0, 987) * 400/360)) ==  50); // Top right
+    wassert(actual(floor(mapping.map_azimuth(493, 987) * 400/360)) ==  99); // Middle right
+    wassert(actual(floor(mapping.map_azimuth(494, 987) * 400/360)) == 100); // Middle right
+    wassert(actual(floor(mapping.map_azimuth(987, 987) * 400/360)) == 150); // Bottom right
+    wassert(actual(floor(mapping.map_azimuth(987, 494) * 400/360)) == 199); // Bottom middle
+    wassert(actual(floor(mapping.map_azimuth(987, 493) * 400/360)) == 200); // Bottom middle
+    wassert(actual(floor(mapping.map_azimuth(987,   0) * 400/360)) == 250); // Bottom left
+    wassert(actual(floor(mapping.map_azimuth(494,   0) * 400/360)) == 299); // Middle left
+    wassert(actual(floor(mapping.map_azimuth(493,   0) * 400/360)) == 300); // Middle left
 
     // Azimuth at the 4 corners around the centre should be at 45° angles
-    wassert(actual(fullres.map_azimuth(493, 493)) == 350);
-    wassert(actual(fullres.map_azimuth(493, 494)) ==  50);
-    wassert(actual(fullres.map_azimuth(494, 494)) == 150);
-    wassert(actual(fullres.map_azimuth(494, 493)) == 250);
+    wassert(actual(floor(mapping.map_azimuth(493, 493) * 400/360)) == 350);
+    wassert(actual(floor(mapping.map_azimuth(493, 494) * 400/360)) ==  50);
+    wassert(actual(floor(mapping.map_azimuth(494, 494) * 400/360)) == 150);
+    wassert(actual(floor(mapping.map_azimuth(494, 493) * 400/360)) == 250);
 }
 
 /// Check the actual mapping calculations on an image
 template<> template<>
 void to::test<2>()
 {
-    // Test elabora_dato, con tutti i do_* a true
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
 
-    CartFullRes fullres(test.volume[0]);
+    // Create the mapping
+    IndexMapping mapping(test.volume[0].beam_size);
+    mapping.map_max_sample(test.volume[0]);
 
     // Write out images in /tmp
     //setenv("DIR_DEBUG", "/tmp", 1);
     //Assets assets(test.cfg);
     //assets.configure(test.site, test.volume.load_info->acq_date);
-    //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
-    //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "png");
+    //assets.write_gdal_image(mapping.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
+    //assets.write_gdal_image(mapping.map_range, "DIR_DEBUG", "map_range", "png");
 
     wassert(actual(test.volume.beam_count) == 400);
-    wassert(actual(fullres.beam_size) == 494);
+    wassert(actual(mapping.beam_size) == 494);
 
-    const auto mis = CartFullRes::missing;
+    const auto mis = IndexMapping::missing;
 
     // Check range
 
     // Range in the middle (on top of the radar) should be 0
-    wassert(actual(fullres.map_range(493, 493)) == 0);
-    wassert(actual(fullres.map_range(493, 494)) == 0);
-    wassert(actual(fullres.map_range(494, 493)) == 0);
-    wassert(actual(fullres.map_range(494, 494)) == 0);
+    wassert(actual(mapping.map_range(493, 493)) == 0);
+    wassert(actual(mapping.map_range(493, 494)) == 0);
+    wassert(actual(mapping.map_range(494, 493)) == 0);
+    wassert(actual(mapping.map_range(494, 494)) == 0);
 
     // Range at map edges at 90° angles should be beam_size
-    wassert(actual(fullres.map_range(  0, 493)) == 493); // Middle left
-    wassert(actual(fullres.map_range(  0, 494)) == 493); // Middle left
-    wassert(actual(fullres.map_range(987, 493)) == 493); // Middle right
-    wassert(actual(fullres.map_range(987, 494)) == 493); // Middle right
-    wassert(actual(fullres.map_range(493,   0)) == 493); // Top middle
-    wassert(actual(fullres.map_range(494,   0)) == 493); // Top middle
-    wassert(actual(fullres.map_range(493, 987)) == 493); // Bottom middle
-    wassert(actual(fullres.map_range(494, 987)) == 493); // Bottom middle
+    wassert(actual(mapping.map_range(  0, 493)) == 493); // Middle left
+    wassert(actual(mapping.map_range(  0, 494)) == 493); // Middle left
+    wassert(actual(mapping.map_range(987, 493)) == 493); // Middle right
+    wassert(actual(mapping.map_range(987, 494)) == 493); // Middle right
+    wassert(actual(mapping.map_range(493,   0)) == 493); // Top middle
+    wassert(actual(mapping.map_range(494,   0)) == 493); // Top middle
+    wassert(actual(mapping.map_range(493, 987)) == 493); // Bottom middle
+    wassert(actual(mapping.map_range(494, 987)) == 493); // Bottom middle
 
     // Range at map corners should be missing (out of range)
-    wassert(actual(fullres.map_range(  0,   0)) == mis);
-    wassert(actual(fullres.map_range(  0, 987)) == mis);
-    wassert(actual(fullres.map_range(987, 987)) == mis);
-    wassert(actual(fullres.map_range(987,   0)) == mis);
+    wassert(actual(mapping.map_range(  0,   0)) == mis);
+    wassert(actual(mapping.map_range(  0, 987)) == mis);
+    wassert(actual(mapping.map_range(987, 987)) == mis);
+    wassert(actual(mapping.map_range(987,   0)) == mis);
 
 
     // Check azimuth
 
     // Azimuth at the map corners and edge middle points
-    wassert(actual(fullres.map_azimuth(  0,   0)) == mis); // Top left
-    wassert(actual(fullres.map_azimuth(  0, 493)) == 399); // Top middle
-    wassert(actual(fullres.map_azimuth(  0, 494)) == 399); // Top middle
-    wassert(actual(fullres.map_azimuth(  0, 987)) == mis); // Top right
-    wassert(actual(fullres.map_azimuth(493, 987)) ==  99); // Middle right
-    wassert(actual(fullres.map_azimuth(494, 987)) ==  99); // Middle right
-    wassert(actual(fullres.map_azimuth(987, 987)) == mis); // Bottom right
-    wassert(actual(fullres.map_azimuth(987, 494)) == 199); // Bottom middle
-    wassert(actual(fullres.map_azimuth(987, 493)) == 199); // Bottom middle
-    wassert(actual(fullres.map_azimuth(987,   0)) == mis); // Bottom left
-    wassert(actual(fullres.map_azimuth(494,   0)) == 299); // Middle left
-    wassert(actual(fullres.map_azimuth(493,   0)) == 299); // Middle left
+    wassert(actual(mapping.map_azimuth(  0,   0)) == mis); // Top left
+    wassert(actual(mapping.map_azimuth(  0, 493)) == 399); // Top middle
+    wassert(actual(mapping.map_azimuth(  0, 494)) == 399); // Top middle
+    wassert(actual(mapping.map_azimuth(  0, 987)) == mis); // Top right
+    wassert(actual(mapping.map_azimuth(493, 987)) ==  99); // Middle right
+    wassert(actual(mapping.map_azimuth(494, 987)) ==  99); // Middle right
+    wassert(actual(mapping.map_azimuth(987, 987)) == mis); // Bottom right
+    wassert(actual(mapping.map_azimuth(987, 494)) == 199); // Bottom middle
+    wassert(actual(mapping.map_azimuth(987, 493)) == 199); // Bottom middle
+    wassert(actual(mapping.map_azimuth(987,   0)) == mis); // Bottom left
+    wassert(actual(mapping.map_azimuth(494,   0)) == 299); // Middle left
+    wassert(actual(mapping.map_azimuth(493,   0)) == 299); // Middle left
 
     // Azimuth at the 4 corners around the centre should be at 45° angles
-    wassert(actual(fullres.map_azimuth(493, 493)) == 349);
-    wassert(actual(fullres.map_azimuth(493, 494)) ==  49);
-    wassert(actual(fullres.map_azimuth(494, 494)) == 149);
-    wassert(actual(fullres.map_azimuth(494, 493)) == 249);
+    wassert(actual(mapping.map_azimuth(493, 493)) == 349);
+    wassert(actual(mapping.map_azimuth(493, 494)) ==  49);
+    wassert(actual(mapping.map_azimuth(494, 494)) == 149);
+    wassert(actual(mapping.map_azimuth(494, 493)) == 249);
 }
 
 }

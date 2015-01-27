@@ -3,10 +3,37 @@
 
 #include <elaboradar/matrix.h>
 #include <elaboradar/volume.h>
+#include <limits>
 
 namespace elaboradar {
 
-class CartFullRes
+/**
+ * Mapping of cartesian coordinates to raw azimuth angles and range distances.
+ */
+struct CoordinateMapping
+{
+    const unsigned beam_size;
+    /// Azimuth indices to use to lookup a map point in a volume
+    /// -1 means no mapping
+    Matrix2D<double> map_azimuth;
+    /// Range indices to use to lookup a map point in a volume
+    /// -1 means no mapping
+    Matrix2D<double> map_range;
+
+    /**
+     * Build a cartography mapping cartesian coordinates to volume polar
+     * indices.
+     *
+     * The mapping is a 1 to 1 mapping, without scaling.
+     */
+    CoordinateMapping(unsigned beam_size);
+};
+
+
+/**
+ * Mapping of cartesian coordinates to specific azimuth and range volume indices
+ */
+class IndexMapping
 {
 public:
     /// Missing value in the azimuth and range index mappings
@@ -20,20 +47,22 @@ public:
     /// -1 means no mapping
     Matrix2D<unsigned> map_range;
 
+    IndexMapping(unsigned beam_size);
+
     /**
-     * Build a cartography mapping cartesian coordinates to volume polar
-     * indices.
-     *
-     * The mapping is a 1 to 1 mapping, without scaling.
-     *
-     * ignore_data is only used for tests: when true, the data in the scan will
-     * be ignored, so that tests can test the correctness of the spatial
-     * mapping functions regardless of the actual data in the volume.
+     * Map cartesian cardinates to polar volume indices. When a cartesian
+     * coordinate maps to more than one polar value, take the one with the
+     * maximum data value.
      */
-    CartFullRes(const PolarScan<double>& scan, bool ignore_data=false);
+    void map_max_sample(const PolarScan<double>& scan);
 
+    /**
+     * Same as map_max_sample(PolarScan), but reuse an existing
+     * CoordinateMapping.
+     */
+    void map_max_sample(const PolarScan<double>& scan, const CoordinateMapping& mapping);
 
-    /// Create a map using the current mapping, copying data from src to dst
+    /// Copy data from the polar scan src to the cartesian map dst
     template<typename T>
     void to_cart(const PolarScan<T>& src, Matrix2D<T>& dst)
     {
@@ -59,8 +88,22 @@ public:
             }
         }
     }
+};
 
 #if 0
+/**
+ * Scaled version of CartFullres
+ */
+class CartScaled
+{
+    const unsigned beam_size;
+    /// Azimuth indices to use to lookup a map point in a volume
+    /// -1 means no mapping
+    Matrix2D<unsigned> map_azimuth;
+    /// Range indices to use to lookup a map point in a volume
+    /// -1 means no mapping
+    Matrix2D<unsigned> map_range;
+
         for(unsigned quad = 0; quad < 4; ++quad)
             for(unsigned qy = 0; qy < beam_size; ++qy)
                 for(unsigned qx = 0; qx < beam_size; ++qx)
@@ -163,8 +206,8 @@ public:
                      dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange); */
                 }
     }
-#endif
 };
+#endif
 
 }
 
