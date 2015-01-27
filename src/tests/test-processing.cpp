@@ -81,7 +81,7 @@ void to::test<1>()
 
     wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     // Check results
     VolumeStats stats;
@@ -148,7 +148,7 @@ void to::test<2>()
     cb->do_bloccorr = true;
     cb->do_readStaticMap=true;
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     // Check results
     VolumeStats stats;
@@ -203,7 +203,7 @@ void to::test<3>()
     cb->do_bloccorr = false;
     cb->do_readStaticMap=true;
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     cb->caratterizzo_volume();
 //    print_stats("cb", *cb, cerr);
@@ -284,7 +284,7 @@ void to::test<4>()
     cb->do_bloccorr = false;
     cb->do_readStaticMap=true;
 LOG_INFO ("Chiamo elabora_dato");
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 LOG_INFO("Chiamo caratterizzo volumi");
 
     cb->caratterizzo_volume();
@@ -379,7 +379,7 @@ unlink("LAST_VPR");
     cb->do_bloccorr = false;
     cb->do_readStaticMap=true;
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     cb->caratterizzo_volume();
     cb->calcolo_vpr->classifica_rain();
@@ -478,7 +478,7 @@ void to::test<6>()
     cb->do_readStaticMap=true;
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     VolumeStats stats;
     cb->volume.compute_stats(stats);
@@ -628,7 +628,7 @@ void to::test<7>()
     cb->do_bloccorr = false;
     cb->do_readStaticMap=true;
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     cb->caratterizzo_volume();
 
@@ -723,7 +723,7 @@ void to::test<8>()
     cb->do_bloccorr = false;
     cb->do_readStaticMap=true;
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
     cb->caratterizzo_volume();
     cb->calcolo_vpr->classifica_rain();
 
@@ -812,7 +812,7 @@ void to::test<9>()
     // FIXME: we don't compute VPR here, does it make sense to write vpr heating?
     cb->assets.write_vpr_heating(0);
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
     VolumeStats stats;
     cb->volume.compute_stats(stats);
 //    stats.print(stdout);
@@ -902,7 +902,7 @@ void to::test<10>()
     cb->do_readStaticMap=true;
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
 
     VolumeStats stats;
     cb->volume.compute_stats(stats);
@@ -1025,7 +1025,7 @@ void to::test<11>()
     cb->do_bloccorr = true;
     cb->do_class = true;
 
-    cb->elabora_dato();
+    cb->declutter_anaprop();
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
     cb->calcolo_vpr->classifica_rain();
@@ -1073,7 +1073,7 @@ void to::test<12>()
     cb->do_devel= true;
     cb->do_readStaticMap=true;
     
-    cb->elabora_dato();
+    cb->declutter_anaprop();
     if (cb->do_quality){
        cb->caratterizzo_volume();
        wassert(actual(cb->calcolo_vpr) != (void*)0);
