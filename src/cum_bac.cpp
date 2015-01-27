@@ -15,6 +15,7 @@
 #include <elaboradar/algo/top.h>
 #include "cylindrical.h"
 #include "interpola_vpr.h"
+#include "cart.h"
 #include <radarlib/radar.hpp>
 #include <cstring>
 #include <cstdlib>
@@ -1742,6 +1743,11 @@ bool CUM_BAC::esegui_tutto()
     // caricamento di SP20 vecchi
 
     //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
+
+    CartFullRes fullres(volume[0]);
+    assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
+    assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
+
 
     /*--------------------------------------------------
       | conversione di coordinate da polare a cartesiana |

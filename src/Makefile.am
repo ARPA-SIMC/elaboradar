@@ -37,6 +37,7 @@ libtmp_la_SOURCES = \
   setwork.cpp \
   func_Q3d.cpp \
   Q_components.cpp \
+  cart.cpp \
   site.cpp \
   assets.cpp \
   cum_bac.cpp \
@@ -63,6 +64,7 @@ check_PROGRAMS = ertest
 ertest_SOURCES = \
   tests/test-assets.cpp \
   tests/test-interpola-vpr.cpp \
+  tests/test-cart.cpp \
   tests/test-processing.cpp \
   tests/test-read.cpp \
   tests/test-utils.cpp \
