@@ -18,7 +18,9 @@ void gdal_init_once()
 template<typename T> GDALDataType get_gdal_datatype() { throw std::runtime_error("get_gdal_datatype called for unsupported type"); }
 template<> GDALDataType get_gdal_datatype<unsigned char>() { return GDT_Byte; }
 template<> GDALDataType get_gdal_datatype<unsigned short>() { return GDT_UInt16; }
+template<> GDALDataType get_gdal_datatype<short>() { return GDT_Int16; }
 template<> GDALDataType get_gdal_datatype<double>() { return GDT_Float64; }
+template<> GDALDataType get_gdal_datatype<int>() { return GDT_Int32; }
 
 
 template<typename T>
@@ -103,6 +105,8 @@ void write_image(const Matrix2D<T>& image, const std::string& fname, const std::
 template void write_image(const Matrix2D<unsigned char>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<unsigned short>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<double>&, const std::string&, const std::string&);
+template void write_image(const Matrix2D<int>&, const std::string&, const std::string&);
+template void write_image(const Matrix2D<short>&, const std::string&, const std::string&);
 
 std::string gdal_extension_for_format(const std::string& format)
 {
