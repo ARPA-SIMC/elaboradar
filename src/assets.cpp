@@ -494,6 +494,7 @@ void Assets::write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var,
 template void Assets::write_gdal_image(const Matrix2D<unsigned char>&, const char*, const char*, const char*);
 template void Assets::write_gdal_image(const Matrix2D<unsigned short>&, const char*, const char*, const char*);
 template void Assets::write_gdal_image(const Matrix2D<int>&, const char*, const char*, const char*);
+template void Assets::write_gdal_image(const Matrix2D<unsigned>&, const char*, const char*, const char*);
 template void Assets::write_gdal_image(const Matrix2D<short>&, const char*, const char*, const char*);
 template void Assets::write_gdal_image(const Matrix2D<double>&, const char*, const char*, const char*);
 

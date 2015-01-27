@@ -3,13 +3,13 @@
 
 namespace elaboradar {
 
-static const unsigned short CartFullRes::missing;
+const unsigned CartFullRes::missing;
 
 
 CartFullRes::CartFullRes(const PolarScan<double>& scan, bool ignore_data)
     : beam_size(scan.beam_size),
-      map_azimuth(Matrix2D<unsigned short>::Constant(beam_size * 2, beam_size * 2, missing)),
-      map_range(Matrix2D<unsigned short>::Constant(beam_size * 2, beam_size * 2, missing))
+      map_azimuth(Matrix2D<unsigned>::Constant(beam_size * 2, beam_size * 2, missing)),
+      map_range(Matrix2D<unsigned>::Constant(beam_size * 2, beam_size * 2, missing))
 {
     for (unsigned y = 0; y < beam_size * 2; ++y)
         for (unsigned x = 0; x < beam_size * 2; ++x)
@@ -56,7 +56,7 @@ CartFullRes::CartFullRes(const PolarScan<double>& scan, bool ignore_data)
             bool first = true;
             double maxval;
             unsigned maxval_idx;
-            for (unsigned iaz = az_min; iaz < az_max; iaz++)
+            for (unsigned iaz = az_min; iaz < (unsigned)az_max; ++iaz)
             {
                 unsigned azidx = iaz % scan.beam_count;
                 unsigned char sample = scan.get(azidx, range);

@@ -21,6 +21,7 @@ template<> GDALDataType get_gdal_datatype<unsigned short>() { return GDT_UInt16;
 template<> GDALDataType get_gdal_datatype<short>() { return GDT_Int16; }
 template<> GDALDataType get_gdal_datatype<double>() { return GDT_Float64; }
 template<> GDALDataType get_gdal_datatype<int>() { return GDT_Int32; }
+template<> GDALDataType get_gdal_datatype<unsigned>() { return GDT_UInt32; }
 
 
 template<typename T>
@@ -106,6 +107,7 @@ template void write_image(const Matrix2D<unsigned char>&, const std::string&, co
 template void write_image(const Matrix2D<unsigned short>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<double>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<int>&, const std::string&, const std::string&);
+template void write_image(const Matrix2D<unsigned>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<short>&, const std::string&, const std::string&);
 
 std::string gdal_extension_for_format(const std::string& format)

@@ -60,11 +60,12 @@ void to::test<1>()
     CartFullRes fullres(scan, true);
 
     // Write out images in /tmp
-    setenv("DIR_DEBUG", "/tmp", 1);
-    Config cfg;
-    Assets assets(cfg);
-    assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
-    assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "png");
+    //setenv("DIR_DEBUG", "/tmp", 1);
+    //Config cfg;
+    //Assets assets(cfg);
+    //assets.configure(Site::get("GAT"), time(NULL));
+    //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
+    //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "png");
 
     wassert(actual(scan.beam_count) == 400);
     wassert(actual(fullres.beam_size) == 494);
@@ -130,10 +131,11 @@ void to::test<2>()
     CartFullRes fullres(test.volume[0]);
 
     // Write out images in /tmp
-    setenv("DIR_DEBUG", "/tmp", 1);
-    Assets assets(test.cfg);
-    assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
-    assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "png");
+    //setenv("DIR_DEBUG", "/tmp", 1);
+    //Assets assets(test.cfg);
+    //assets.configure(test.site, test.volume.load_info->acq_date);
+    //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
+    //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "png");
 
     wassert(actual(test.volume.beam_count) == 400);
     wassert(actual(fullres.beam_size) == 494);
