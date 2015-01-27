@@ -267,9 +267,16 @@ int main (int argc, char **argv)
     cb->do_zlr_media	= true;
     cb->do_anaprop	= CL_opt.do_anaprop;
 
+    printwork();
+
     try {
+        //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
+        LOG_INFO("inizio rimozione anaprop e beam blocking");
+        for(unsigned k=0; k<volume.size(); k++) LOG_INFO(" SCAN # %2d - BeamSIZE %4d",k,volume[k].beam_size);
+        cb->declutter_anaprop();
+
    //    cb->StampoFlag(); 
-       if (cb->esegui_tutto()){
+        if (cb->esegui_tutto()){
             ier_main = 0;
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;

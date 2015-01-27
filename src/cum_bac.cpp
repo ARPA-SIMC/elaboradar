@@ -289,7 +289,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     // like in test_volume
 }
 
-void CUM_BAC::elabora_dato()
+void CUM_BAC::declutter_anaprop()
 {
     //-------------leggo mappa statica ovvero first_level (funzione leggo_first_level)------------
     leggo_first_level();
@@ -326,7 +326,7 @@ void CUM_BAC::elabora_dato()
             }
 
         anaprop.init_elev_fin_static(volume, first_level_static);
-        LOG_INFO("elabora_dato completed with static declutter");
+        LOG_INFO("declutter_anaprop completed with static declutter");
     }
 
     //------------se non definito DECLUTTER inizio rimozione propagazione anomala al livello mappa dinamica e elaborazioni accessorie
@@ -384,13 +384,13 @@ std::cout<<"chiamo without_sd"<<std::endl;
               anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
         LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
 	}
-        LOG_INFO("elabora_dato completed with anaprop");
+        LOG_INFO("declutter_anaprop completed with anaprop");
         ScrivoStatistica(anaprop.grid_stats);
     }
     else
     {
         anaprop.init(volume);
-        LOG_WARN("elabora_dato completed without doing anything");
+        LOG_WARN("declutter_anaprop completed without doing anything");
     }
 
     //---------------------------- Code to plot data from polarMatrix
@@ -1688,36 +1688,8 @@ void CUM_BAC::conversione_convettiva()
                 volume[0].set(i, k, dbz.DBZ_conv(volume[0].get(i, k)));
 }
 
-bool CUM_BAC::esegui_tutto()
+void CUM_BAC::vpr_class()
 {
-/* 
-  {
-      unsigned irange=60000/volume.scan(0).cell_size;
-      for (unsigned beam=130; beam <=170; beam ++){
-               LOG_WARN(" Raggio %3d bin %4d -- db@60Km %f",beam,irange,volume.scan(0)(beam,irange)); 
-      }
-   }
-*/
-    ///-------------------------ELABORAZIONE -------------------------
-
-    //  ----- da buttare : eventuale scrittura del volume polare ad azimut e range fissi
-    /* #ifdef WRITE_DBP_REORDER  */
-
-    /*       /\*------------------------------------------------------------------  */
-    /*    | eventuale scrittura del volume polare ad azimut e range fissi  |  */
-    /*    -----------------------------------------------------------------*\/   */
-    /*       strcat(nome_file,"_reorder");        */
-    /*       ScrivoLog(6,nome_file);  */
-    /*       ier=write_dbp(nome_file);  */
-    /* #endif */
-
-    printwork();
-
-    //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
-    LOG_INFO("inizio rimozione anaprop e beam blocking");
-    for(unsigned k=0; k<volume.size(); k++) LOG_INFO(" SCAN # %2d - BeamSIZE %4d",k,volume[k].beam_size);
-    elabora_dato();
-
     //--------------se definita la qualita procedo con il calcolo qualita e del VPR (perchè prendo solo i punti con qual > soglia?)-----------------//
     if (do_quality)
     {
@@ -1742,25 +1714,32 @@ bool CUM_BAC::esegui_tutto()
 
     if (do_class)
         conversione_convettiva();
+}
 
-    //--------------------da rimuovere eventuale scrittura volume ripulito
+bool CUM_BAC::esegui_tutto()
+{
+    // TODO: scrivere cartesiani: (solo al km, lowris)
+    //  - anaprop assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
+    //  - beam blocking assets.write_image(beam_blocking_1x1, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
+    //  - Z (media o massima a seconda di do_zlr_media assets.write_image(z_out, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
+    //  - qualità assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
+    //  - top assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
+    //  - assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
+    //  - assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
 
-    /* #ifdef WRITE_DBP  */
-    /*      /\*-------------------------------------------------  */
-    /*        | eventuale scrittura del volume polare ripulito e |  */
-    /*        -------------------------------------------------*\/   */
-    /* #ifdef DECLUTTER  */
-    /*      strcat(nome_file,"_decl");  */
-    /* #else  */
-    /*      strcat(nome_file,"_anap");  */
-    /* #endif  */
-    /*      /\*exit (1);*\/  */
-    /*      ScrivoLog(8,nome_file);  */
-    /*      ier=write_dbp(nome_file);  */
-    /* #endif  */
+    // Calcolo VPR e classificatore
+    vpr_class();
 
+    // TODO: scrivere cartesiani: (solo al km, lowris)
+    //  - conv
+    //  - corr_vpr
+    //  - neve1x1
+    //  - assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+    //  - assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
 
-
+    // TODO: tutti i prodotti scriverli a 512 e/o a 256, a seconda della richiesta
+    // dell'utente. Non usare piú do_medium qui, lasciarlo solo per il
+    // caricamento di SP20 vecchi
 
     //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
 
@@ -2018,7 +1997,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                     {
                         //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
                         if (sample > 0)
-                    {
+                        {
                             cartm(y, x)=cartm(y, x)+BYTEtoZ(sample);
                             cont=cont+1;
                         }
@@ -2187,6 +2166,7 @@ void CartLowris::creo_cart_z_lowris()
             unsigned char c1x1=0;
             unsigned char bl1x1=0;
             unsigned char traw=0;
+            // Load each sample with a value from a 4x4 window on the original image
             for(unsigned x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
                 for(unsigned y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
                     //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
@@ -2195,9 +2175,8 @@ void CartLowris::creo_cart_z_lowris()
                     unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
                     if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && src_x >= 0 && src_y>=0 && c.cart(src_y, src_x) != MISSING)
                     {
-                    //if (src_x >= cb.MyMAX_BIN*2) printf("X è fuori\n");
-                    //if (src_y >= cb.MyMAX_BIN*2) printf("Y è fuori %d %d\n",src_y, CART_DIM_ZLR);
-                    //if(c.cart(src_y, src_x) != MISSING)
+                        // Use the values at the location where the volume has
+                        // the maxumum sample
                         if(c.cart(src_y, src_x) > z){
                             z= c.cart(src_y, src_x);
                             traw=c.topxy(src_y, src_x);
@@ -2221,15 +2200,16 @@ void CartLowris::creo_cart_z_lowris()
                                 conv_1x1(j, i)=c.conv_cart(src_y, src_x);
                             }
 
-                            if (cb.do_zlr_media)
-                            {
-                                if (c.cartm(src_y, src_x) > 0) {
-                                    zm = zm + c.cartm(src_y, src_x);
-                                    cont=cont+1;
-                                }
+                        }
+                        if (cb.do_zlr_media)
+                        {
+                            if (c.cartm(src_y, src_x) > 0) {
+                                zm = zm + c.cartm(src_y, src_x);
+                                cont=cont+1;
                             }
                         }
                     }
+                    // Set the maximum value of Z
                     z_out(j, i)=z;
                     if (cb.do_quality)
                     {
@@ -2246,15 +2226,16 @@ void CartLowris::creo_cart_z_lowris()
                         neve_1x1(j, i)=nv;
                         corr_1x1(j, i)=c1x1;
                     }
-
-                    if (cb.do_zlr_media)
-                    {
-                        if (cont >0 ) {
-                            z_out(j, i)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
-                        }
-                        if (cont == 0 ) z_out(j, i)=MISSING;
-                    }
                 }
+            if (cb.do_zlr_media)
+            {
+                if (cont >0 ) {
+                    // If average ZLR has been requested, overwrite the maximum
+                    // with the average
+                    z_out(j, i)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
+                }
+                if (cont == 0 ) z_out(j, i)=MISSING;
+            }
         }
 #if 0
 //---------------------------- INIZIO 

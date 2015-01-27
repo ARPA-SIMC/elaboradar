@@ -132,7 +132,9 @@ public:
      *  rimozione della propagazione anomala e quota al livello scelto per la
      *  stima di R.
      */
-    void elabora_dato();
+    void declutter_anaprop();
+
+    void vpr_class();
 
     /**
      *  @brief funzione che caratterizza i volumi polari tramite la qualita'
@@ -309,8 +311,12 @@ struct Cart
 {
     const unsigned max_bin;
 
-    // vol_pol riportato in cartesiano
+    // vol_pol interpolated in a cartesian map, taking the max of all candidate
+    // samples
     Image<unsigned char> cart;
+    // vol_pol interpolated in a cartesian map, taking the average of all
+    // candidate samples
+    Image<double> cartm;
     Image<unsigned char> beam_blocking_xy; //beamblocking cartesiano max resol
     Image<unsigned char> dato_corr_xy; //uscite anap  cartesiano max resol
     Image<unsigned char> elev_fin_xy;
@@ -320,7 +326,6 @@ struct Cart
     Image<unsigned char> neve_cart;/* neve formato 1024*1024, risoluzione minima */
     Image<unsigned char> conv_cart;
     Image<unsigned short> quota_cart;/*quota fascio in coordinate cart 1024*1024, risoluzione minima*/
-    Image<double> cartm;  /* Z media dei bins adiacenti al punto */
 
     Cart(unsigned max_bin);
 
