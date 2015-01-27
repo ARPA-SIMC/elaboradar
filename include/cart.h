@@ -10,15 +10,15 @@ class CartFullRes
 {
 public:
     /// Missing value in the azimuth and range index mappings
-    static const unsigned short missing = 0xffff;
+    static const unsigned missing = 0xffffffff;
 
     const unsigned beam_size;
     /// Azimuth indices to use to lookup a map point in a volume
     /// -1 means no mapping
-    Matrix2D<unsigned short> map_azimuth;
+    Matrix2D<unsigned> map_azimuth;
     /// Range indices to use to lookup a map point in a volume
     /// -1 means no mapping
-    Matrix2D<unsigned short> map_range;
+    Matrix2D<unsigned> map_range;
 
     /**
      * Build a cartography mapping cartesian coordinates to volume polar
@@ -32,12 +32,35 @@ public:
      */
     CartFullRes(const PolarScan<double>& scan, bool ignore_data=false);
 
-#if 0
-    /// Get the value of a polar scan at the point corresponding to these x and
-    /// y values in the map
+
+    /// Create a map using the current mapping, copying data from src to dst
     template<typename T>
-    void to_cart(const Matrix2D<T>& src, Matrix2D<T>& dst)
+    void to_cart(const PolarScan<T>& src, Matrix2D<T>& dst)
     {
+        // In case dst is not a square with side beam_size*2, center it
+        int dx = (beam_size * 2 + dst.cols()) / 2;
+        int dy = (beam_size * 2 + dst.rows()) / 2;
+
+        for (unsigned y = 0; y < dst.rows(); ++y)
+        {
+            if (y + dy < 0 || y + dy >= beam_size * 2) continue;
+
+            for (unsigned x = 0; x < dst.cols(); ++x)
+            {
+                if (x + dx < 0 || x + dx >= beam_size * 2) continue;
+
+                auto azimuth = map_azimuth(y + dy, x + dx);
+                auto range = map_range(y + dy, x + dx);
+
+                if (azimuth == missing || range == missing) continue;
+                if (azimuth >= src.beam_count || range >= src.beam_size) continue;
+
+                dst(y, x) = src(azimuth, range);
+            }
+        }
+    }
+
+#if 0
         for(unsigned quad = 0; quad < 4; ++quad)
             for(unsigned qy = 0; qy < beam_size; ++qy)
                 for(unsigned qx = 0; qx < beam_size; ++qx)

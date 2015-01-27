@@ -1717,7 +1717,7 @@ void CUM_BAC::vpr_class()
         conversione_convettiva();
 }
 
-bool CUM_BAC::esegui_tutto()
+void CUM_BAC::generate_maps()
 {
     // TODO: scrivere cartesiani: (solo al km, lowris)
     //  - anaprop assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
@@ -1727,9 +1727,6 @@ bool CUM_BAC::esegui_tutto()
     //  - top assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
     //  - assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
     //  - assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
-
-    // Calcolo VPR e classificatore
-    vpr_class();
 
     // TODO: scrivere cartesiani: (solo al km, lowris)
     //  - conv
@@ -1745,8 +1742,8 @@ bool CUM_BAC::esegui_tutto()
     //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
 
     CartFullRes fullres(volume[0]);
-    assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
-    assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
+    //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
+    //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
 
 
     /*--------------------------------------------------

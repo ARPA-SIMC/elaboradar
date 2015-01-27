@@ -274,18 +274,15 @@ int main (int argc, char **argv)
         LOG_INFO("inizio rimozione anaprop e beam blocking");
         for(unsigned k=0; k<volume.size(); k++) LOG_INFO(" SCAN # %2d - BeamSIZE %4d",k,volume[k].beam_size);
         cb->declutter_anaprop();
+        // cb->StampoFlag();
+        cb->vpr_class();
 
-   //    cb->StampoFlag(); 
-        if (cb->esegui_tutto()){
-            ier_main = 0;
+        cb->generate_maps();
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
 //            for (unsigned beam=130; beam <=170; beam ++) 
 //               LOG_WARN(" Raggio %3d bin %4d -- db@60Km %3f",beam,irange,cb->volume.scan(0)(beam,irange)); 
-//           
-        }
-        else
-            ier_main = 1;
+//
     } catch (std::exception& e) {
         LOG_ERROR("Errore nella processazione: %s", e.what());
         ier_main = 1;

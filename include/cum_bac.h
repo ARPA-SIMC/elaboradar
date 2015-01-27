@@ -170,7 +170,7 @@ public:
     void creo_matrice_conv();
 
     void conversione_convettiva();
-    bool esegui_tutto();
+    void generate_maps();
 // added function to calculate beamblocking correction
 
     /**
