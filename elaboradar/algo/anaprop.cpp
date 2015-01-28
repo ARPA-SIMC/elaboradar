@@ -43,28 +43,19 @@ void GridStats::init(const Volume<double>& volume)
 }
 
 template<class T>
-Anaprop<T>::Anaprop()
+Anaprop<T>::Anaprop(const Volume<T>& volume)
+    : dato_corrotto(volume.beam_count, volume.max_beam_size(), 0),
+      quota(volume.beam_count, volume.max_beam_size(), 0)
 {
     logging_category = log4c_category_get("radar.anaprop");
-}
-
-template<class T>
-void Anaprop<T>::init(const Volume<T>& volume)
-{
-LOG_WARN("Anaprop init");
+    LOG_WARN("Anaprop init");
     elev_fin.init(volume);
     grid_stats.init(volume);
-
-    dato_corrotto.resize(400, volume.max_beam_size());
-    dato_corrotto.fill(0);
-    quota.resize(400, volume.max_beam_size());
-    quota.fill(0);
 }
 
 template<class T>
 void Anaprop<T>::init_elev_fin_static(const Volume<T>& volume, const PolarScan<unsigned char>& first_level_static)
 {
-    init(volume);
     for(unsigned i=0; i < volume[0].beam_count; ++i)
         for(unsigned k=0; k < volume[0].beam_size; ++k)
             //---assegno el_inf a mappa statica
@@ -80,8 +71,6 @@ void Anaprop<T>::remove(
         const Volume<double>& SD)
 {
     const double fondo_scala = volume[0].undetect;
-
-    init(volume);
 
     //for(unsigned i=200; i<201; i++)
     for(unsigned i=0; i<NUM_AZ_X_PPI; i++) 
@@ -352,8 +341,6 @@ void Anaprop<T>::remove_without_SD(
 {
     const double fondo_scala = volume[0].undetect;
 LOG_WARN("Anaprop remove without SD");
-
-    init(volume);
 
     //for(unsigned i=200; i<201; i++)
     for(unsigned i=0; i<volume[0].beam_count; i++) 

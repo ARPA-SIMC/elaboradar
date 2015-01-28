@@ -94,13 +94,10 @@ public:
 
     anaprop::GridStats grid_stats;
     volume::ElevFin<T> elev_fin;
-    Matrix2D<unsigned char> dato_corrotto; // uscita controllo anaprop in coordinate azimut range
-    Matrix2D<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
+    PolarScan<unsigned char> dato_corrotto; // uscita controllo anaprop in coordinate azimut range
+    PolarScan<unsigned short> quota; /*quota fascio in prop standard e elev reali in coordinate azimut range*/
 
-    Anaprop();
-
-    // Initialise basic structures
-    void init(const Volume<T>& volume);
+    Anaprop(const Volume<T>& volume);
 
     // Initialise basic structures and copy first_level_static to elev_fin
     void init_elev_fin_static(const Volume<T>& volume, const PolarScan<unsigned char>& first_level_static);

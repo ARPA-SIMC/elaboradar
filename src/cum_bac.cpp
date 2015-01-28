@@ -116,8 +116,9 @@ CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bo
     : MyMAX_BIN(max_bin), cfg(cfg), site(site), assets(cfg),
       do_medium(medium), volume(volume),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
-      bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024), dem(NUM_AZ_X_PPI, 1024),
-      qual(0)
+      bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024),
+      anaprop(volume), dem(NUM_AZ_X_PPI, 1024),
+      qual(0), top(volume.beam_count, volume.max_beam_size())
 {
     logging_category = log4c_category_get("radar.cum_bac");
     assets.configure(site, volume.load_info->acq_date);
@@ -390,7 +391,6 @@ std::cout<<"chiamo without_sd"<<std::endl;
     }
     else
     {
-        anaprop.init(volume);
         LOG_WARN("declutter_anaprop completed without doing anything");
     }
 
@@ -1719,70 +1719,132 @@ void CUM_BAC::vpr_class()
 
 void CUM_BAC::generate_maps()
 {
-    // TODO: scrivere cartesiani: (solo al km, lowris)
-    //  - anaprop assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
-    //  - beam blocking assets.write_image(beam_blocking_1x1, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
-    //  - Z (media o massima a seconda di do_zlr_media assets.write_image(z_out, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
-    //  - qualità assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
-    //  - top assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
-    //  - assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
-    //  - assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
-
-    // TODO: scrivere cartesiani: (solo al km, lowris)
-    //  - conv
-    //  - corr_vpr
-    //  - neve1x1
-    //  - assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
-    //  - assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
-
-    // TODO: tutti i prodotti scriverli a 512 e/o a 256, a seconda della richiesta
-    // dell'utente. Non usare piú do_medium qui, lasciarlo solo per il
-    // caricamento di SP20 vecchi
-
-    //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
-
-    FullsizeIndexMapping fullres(volume[0].beam_size);
-    fullres.map_max_sample(volume[0]);
-    //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
-    //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
-
-
-    /*--------------------------------------------------
-      | conversione di coordinate da polare a cartesiana |
-      --------------------------------------------------*/
-    LOG_INFO("Creazione Matrice Cartesiana");
-    Cart cart_maker(volume.max_beam_size());
-    cart_maker.creo_cart(*this);
-
-
-    //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
-
-    LOG_INFO("Estrazione Precipitazione 1X1");
-    CartLowris cart_low(do_medium ? 512: 256, *this, cart_maker);
-    cart_low.creo_cart_z_lowris();
-
-    assets.write_dbz_coefficients(dbz);
-    LOG_INFO("dopo scrivo_z_lowris");
-
-    if (do_quality && do_devel)
+    bool nuova_implementazione = false;
+    if (nuova_implementazione)
     {
-        H5::H5File outfile = assets.get_devel_data_output();
-        //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-        //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
-        //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-        //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
-        anaprop.elev_fin.write_info_to_debug_file(outfile);
+        // TODO: tutti i prodotti scriverli a 512 e/o a 256, a seconda della richiesta
+        // dell'utente. Non usare piú do_medium qui, lasciarlo solo per il
+        // caricamento di SP20 vecchi
+        unsigned CART_DIM_ZLR = do_medium ? 512 : 256;
+        unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium && volume.max_beam_size() < 260 ? 1 : 4;
+
+        // Coordinate mapping for full size images, selecting the point where the
+        // volume has max dBZ
+        LOG_INFO("Creazione Matrice Cartesiana");
+        FullsizeIndexMapping fullres(volume[0].beam_size);
+        fullres.map_max_sample(volume[0]);
+        //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
+        //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
+
+        // Coordinate mapping for scaled images, selecting the point where the
+        // volume has max dBZ
+        LOG_INFO("Creazione Matrice Cartesiana ridimensionata");
+        ScaledIndexMapping scaled(volume[0].beam_size, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
+        scaled.map_max_sample(volume[0], fullres);
+
+        // Generate products and write them out
+        LOG_INFO("Scrittura File Precipitazione 1X1\n");
+        Image<unsigned char> z_out(CART_DIM_ZLR);
+        if (do_zlr_media)
+        {
+            // TODO
+            throw runtime_error("do_zlr_media not yet implemented");
+        } else {
+            scaled.to_cart(volume[0], z_out);
+        }
+        assets.write_image(z_out, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
+
+        Image<unsigned char> top_1x1(CART_DIM_ZLR);
+        scaled.to_cart(top, top_1x1);
+        assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
+
+        if (do_quality)
+        {
+            // TODO: if (irange < cb.volume[cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange]].beam_size)
+            // TODO:     qual_Z_cart(y, x) = cb.qual->scan(cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
+            // TODO: else
+            // TODO:     qual_Z_cart(y, x) = 0;
+            // TODO:     q=c.qual_Z_cart(src_y, src_x);
+            // TODO: qual_Z_1x1(j, i)=q;
+            //  - qualità assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
+            // TODO: quota_1x1(j, i)=128+(unsigned char)(q1x1/100);
+            //  - assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
+
+            Image<unsigned char> dato_corr_1x1(CART_DIM_ZLR);
+            scaled.to_cart(anaprop.dato_corrotto, dato_corr_1x1);
+            assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
+
+            Image<unsigned char> elev_fin_1x1(CART_DIM_ZLR);
+            const auto& elev_fin = anaprop.elev_fin;
+            std::function<unsigned char(unsigned, unsigned)> assign = [&elev_fin](unsigned azimuth, unsigned range) {
+                    return elev_fin[azimuth][range];
+            };
+            scaled.to_cart(assign, elev_fin_1x1);
+            assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
+
+            Image<unsigned char> beam_blocking_1x1(CART_DIM_ZLR);
+            scaled.to_cart(beam_blocking, beam_blocking_1x1);
+            assets.write_image(beam_blocking_1x1, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
+        }
+
+        if (calcolo_vpr)
+        {
+            Image<unsigned char> neve_1x1(CART_DIM_ZLR);
+            const auto& neve = calcolo_vpr->neve;
+            std::function<unsigned char(unsigned, unsigned)> assign = [&neve](unsigned azimuth, unsigned range) {
+                return neve(azimuth, range) ? 0 : 1;
+            };
+            scaled.to_cart(assign, neve_1x1);
+            assets.write_image(neve_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+
+            Image<unsigned char> corr_1x1(CART_DIM_ZLR);
+            scaled.to_cart(calcolo_vpr->corr_polar, corr_1x1);
+            assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+
+            if (do_class)
+            {
+                Image<unsigned char> conv_1x1(CART_DIM_ZLR);
+                scaled.to_cart(calcolo_vpr->conv, conv_1x1);
+                assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
+            }
+        }
+    } else {
+        /*--------------------------------------------------
+          | conversione di coordinate da polare a cartesiana |
+          --------------------------------------------------*/
+        LOG_INFO("Creazione Matrice Cartesiana");
+        Cart cart_maker(volume.max_beam_size());
+        cart_maker.creo_cart(*this);
+
+
+        //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
+
+        LOG_INFO("Estrazione Precipitazione 1X1");
+        CartLowris cart_low(do_medium ? 512: 256, *this, cart_maker);
+        cart_low.creo_cart_z_lowris();
+
+        assets.write_dbz_coefficients(dbz);
+        LOG_INFO("dopo scrivo_z_lowris");
+
+        if (do_quality && do_devel)
+        {
+            H5::H5File outfile = assets.get_devel_data_output();
+            //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
+            //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
+            //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
+            //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
+            anaprop.elev_fin.write_info_to_debug_file(outfile);
+        }
+
+        if (do_devel)
+        {
+            LOG_INFO("Scrittura riproiezioni cartesiane intermedie\n");
+            cart_maker.write_out(*this, assets);
+        }
+
+        LOG_INFO("Scrittura File Precipitazione 1X1\n");
+        cart_low.write_out(*this, assets);
     }
-
-    if (do_devel)
-    {
-        LOG_INFO("Scrittura riproiezioni cartesiane intermedie\n");
-        cart_maker.write_out(*this, assets);
-    }
-
-    LOG_INFO("Scrittura File Precipitazione 1X1\n");
-    cart_low.write_out(*this, assets);
-
 
     if (do_devel)
     {

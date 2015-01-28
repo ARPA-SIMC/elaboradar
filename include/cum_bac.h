@@ -99,12 +99,12 @@ public:
     algo::Anaprop<double> anaprop;
 
     //variabili legate a propagazione e beam blocking, da prog_bb
-    PolarScan <float> dem; /*dem in coordinate azimut range*/
+    PolarScan<float> dem; /*dem in coordinate azimut range*/
 
     // metrici qualita' come sopra
     Volume<unsigned char>* qual; // qualita volume polare
     // top, come sopra
-    Matrix2D<unsigned char> top;
+    PolarScan<unsigned char> top;
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
