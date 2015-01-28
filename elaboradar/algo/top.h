@@ -9,7 +9,6 @@ namespace algo {
 template<typename T>
 void compute_top(const Volume<T>& volume, T threshold, Matrix2D<unsigned char>& top)
 {
-    top.resize(400, volume.max_beam_size());
     top.fill(0);
     for (unsigned l=0; l < volume.size(); ++l)
     {

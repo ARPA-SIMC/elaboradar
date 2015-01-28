@@ -52,8 +52,8 @@ public:
     IndexMapping(unsigned height, unsigned width);
 
     /// Copy data from the polar scan src to the cartesian map dst
-    template<typename T>
-    void to_cart(const PolarScan<T>& src, Matrix2D<T>& dst)
+    template<typename SRC, typename DST>
+    void to_cart(const PolarScan<SRC>& src, Matrix2D<DST>& dst)
     {
         // In case dst is not a square with side beam_size*2, center it
         int dx = (width + dst.cols()) / 2;
@@ -73,6 +73,31 @@ public:
                 if (azimuth == missing || range == missing) continue;
                 if (azimuth >= src.beam_count || range >= src.beam_size) continue;
 
+                dst(y, x) = src(azimuth, range);
+            }
+        }
+    }
+
+    /// Fill the cartesian map dst with the output of the function src(azimuth, range)
+    template<typename T>
+    void to_cart(const std::function<T(unsigned, unsigned)>& src, Matrix2D<T>& dst)
+    {
+        // In case dst is not a square with side beam_size*2, center it
+        int dx = (width + dst.cols()) / 2;
+        int dy = (height + dst.rows()) / 2;
+
+        for (unsigned y = 0; y < dst.rows(); ++y)
+        {
+            if (y + dy < 0 || y + dy >= height) continue;
+
+            for (unsigned x = 0; x < dst.cols(); ++x)
+            {
+                if (x + dx < 0 || x + dx >= width) continue;
+
+                auto azimuth = map_azimuth(y + dy, x + dx);
+                auto range = map_range(y + dy, x + dx);
+
+                if (azimuth == missing || range == missing) continue;
                 dst(y, x) = src(azimuth, range);
             }
         }
