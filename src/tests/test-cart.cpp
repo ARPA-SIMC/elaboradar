@@ -126,7 +126,7 @@ void to::test<2>()
     test.read_sp20(fname, true);
 
     // Create the mapping
-    IndexMapping mapping(test.volume[0].beam_size);
+    FullsizeIndexMapping mapping(test.volume[0].beam_size);
     mapping.map_max_sample(test.volume[0]);
 
     // Write out images in /tmp
@@ -137,7 +137,8 @@ void to::test<2>()
     //assets.write_gdal_image(mapping.map_range, "DIR_DEBUG", "map_range", "png");
 
     wassert(actual(test.volume.beam_count) == 400);
-    wassert(actual(mapping.beam_size) == 494);
+    wassert(actual(mapping.width) == 988);
+    wassert(actual(mapping.height) == 988);
 
     const auto mis = IndexMapping::missing;
 
@@ -165,7 +166,6 @@ void to::test<2>()
     wassert(actual(mapping.map_range(987, 987)) == mis);
     wassert(actual(mapping.map_range(987,   0)) == mis);
 
-
     // Check azimuth
 
     // Azimuth at the map corners and edge middle points
@@ -187,6 +187,57 @@ void to::test<2>()
     wassert(actual(mapping.map_azimuth(493, 494)) ==  49);
     wassert(actual(mapping.map_azimuth(494, 494)) == 149);
     wassert(actual(mapping.map_azimuth(494, 493)) == 249);
+
+
+    // 1:4 scaled mapping, perfectly fitting
+    ScaledIndexMapping smapping(test.volume[0].beam_size, 247, 4);
+    smapping.map_max_sample(test.volume[0], mapping);
+    wassert(actual(smapping.width) == 247);
+    wassert(actual(smapping.height) == 247);
+    wassert(actual(smapping.image_offset) == 0);
+
+    // Write out images in /tmp
+    //setenv("DIR_DEBUG", "/tmp", 1);
+    //Assets assets(test.cfg);
+    //assets.configure(test.site, test.volume.load_info->acq_date);
+    //assets.write_gdal_image(smapping.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
+    //assets.write_gdal_image(smapping.map_range, "DIR_DEBUG", "map_range", "png");
+
+    // Check range
+
+    // Range in the middle (on top of the radar) should be 0
+    wassert(actual(smapping.map_range(123, 123)) == 2);
+
+    // Range at map edges at 90° angles should be beam_size
+    wassert(actual(smapping.map_range(  0, 123)) == 493); // Middle left
+    wassert(actual(smapping.map_range(246, 123)) == 490); // Middle right
+    wassert(actual(smapping.map_range(123,   0)) == 493); // Top middle
+    wassert(actual(smapping.map_range(123, 246)) == 490); // Bottom middle
+
+    // Range at map corners should be missing (out of range)
+    wassert(actual(smapping.map_range(  0,   0)) == mis);
+    wassert(actual(smapping.map_range(  0, 246)) == mis);
+    wassert(actual(smapping.map_range(246, 246)) == mis);
+    wassert(actual(smapping.map_range(246,   0)) == mis);
+
+    // Check azimuth
+
+    // Azimuth at the map corners and edge middle points
+    wassert(actual(smapping.map_azimuth(  0,   0)) == mis); // Top left
+    wassert(actual(smapping.map_azimuth(  0, 123)) == 399); // Top middle
+    wassert(actual(smapping.map_azimuth(  0, 246)) == mis); // Top right
+    wassert(actual(smapping.map_azimuth(123, 246)) ==  99); // Middle right
+    wassert(actual(smapping.map_azimuth(246, 246)) == mis); // Bottom right
+    wassert(actual(smapping.map_azimuth(246, 123)) == 199); // Bottom middle
+    wassert(actual(smapping.map_azimuth(246,   0)) == mis); // Bottom left
+    wassert(actual(smapping.map_azimuth(123,   0)) == 299); // Middle left
+
+    // Azimuth at the 4 corners around the centre should be at roughly 45°
+    // angles
+    wassert(actual(smapping.map_azimuth(122, 122)) == 335);
+    wassert(actual(smapping.map_azimuth(122, 124)) ==  26);
+    wassert(actual(smapping.map_azimuth(124, 124)) == 144);
+    wassert(actual(smapping.map_azimuth(124, 122)) == 241);
 }
 
 }

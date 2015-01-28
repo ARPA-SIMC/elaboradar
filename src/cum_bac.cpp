@@ -1741,7 +1741,7 @@ void CUM_BAC::generate_maps()
 
     //------------------- conversione di coordinate da polare a cartesiana se ndef  WRITE_DBP -----------------------
 
-    IndexMapping fullres(volume[0].beam_size);
+    FullsizeIndexMapping fullres(volume[0].beam_size);
     fullres.map_max_sample(volume[0]);
     //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
     //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
