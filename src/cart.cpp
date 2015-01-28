@@ -107,7 +107,7 @@ void FullsizeIndexMapping::map_max_sample(const PolarScan<double>& scan, const C
 ScaledIndexMapping::ScaledIndexMapping(unsigned beam_size, unsigned image_side, unsigned fullsize_pixels_per_scaled_pixel)
     : IndexMapping(image_side, image_side),
       fullsize_pixels_per_scaled_pixel(fullsize_pixels_per_scaled_pixel),
-      image_offset((beam_size * 2 - image_side * fullsize_pixels_per_scaled_pixel) / 2)
+      image_offset(((int)beam_size * 2 - (int)image_side * (int)fullsize_pixels_per_scaled_pixel) / 2)
 {
     if ((image_side * fullsize_pixels_per_scaled_pixel) % 2 != 0)
         throw std::runtime_error("the image cannot be properly centered on the full size image");
@@ -129,8 +129,9 @@ void ScaledIndexMapping::map_max_sample(const PolarScan<double>& scan, const Ful
                 for(unsigned sx = 0; sx < fullsize_pixels_per_scaled_pixel; ++sx)
                 {
                     // Use the full size mapping to get the volume value at this point
-                    unsigned src_x = x * fullsize_pixels_per_scaled_pixel + sx + image_offset;
-                    unsigned src_y = y * fullsize_pixels_per_scaled_pixel + sy + image_offset;
+                    int src_x = x * fullsize_pixels_per_scaled_pixel + sx + image_offset;
+                    int src_y = y * fullsize_pixels_per_scaled_pixel + sy + image_offset;
+                    if (src_x < 0 || src_x >= mapping.width || src_y < 0 || src_y >= mapping.height) continue;
                     unsigned range = mapping.map_range(src_y, src_x);
                     if (range == missing) continue;
                     unsigned az = mapping.map_azimuth(src_y, src_x);

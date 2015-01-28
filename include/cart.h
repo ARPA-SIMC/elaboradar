@@ -56,8 +56,8 @@ public:
     void to_cart(const PolarScan<SRC>& src, Matrix2D<DST>& dst)
     {
         // In case dst is not a square with side beam_size*2, center it
-        int dx = (width + dst.cols()) / 2;
-        int dy = (height + dst.rows()) / 2;
+        int dx = ((int)width - dst.cols()) / 2;
+        int dy = ((int)height - dst.rows()) / 2;
 
         for (unsigned y = 0; y < dst.rows(); ++y)
         {
@@ -136,7 +136,7 @@ struct FullsizeIndexMapping : public IndexMapping
 struct ScaledIndexMapping : public IndexMapping
 {
     unsigned fullsize_pixels_per_scaled_pixel;
-    unsigned image_offset;
+    int image_offset;
 
     ScaledIndexMapping(unsigned beam_size, unsigned image_side, unsigned fullsize_pixels_per_scaled_pixel);
 
