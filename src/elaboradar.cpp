@@ -7,6 +7,7 @@
 #include <elaboradar/logging.h>
 #include "config.h"
 #include "site.h"
+#include "cartproducts.h"
 #include "cum_bac_clparser.h"
 
 #include <memory>
@@ -277,7 +278,14 @@ int main (int argc, char **argv)
         // cb->StampoFlag();
         cb->vpr_class();
 
-        cb->generate_maps();
+        // TODO: tutti i prodotti scriverli a 512 e/o a 256, a seconda della richiesta
+        // dell'utente. Non usare piú do_medium qui, lasciarlo solo per il
+        // caricamento di SP20 vecchi
+        unsigned CART_DIM_ZLR = CL_opt.do_medium ? 512 : 256;
+        unsigned ZLR_N_ELEMENTARY_PIXEL = CL_opt.do_medium && volume.max_beam_size() < 260 ? 1 : 4;
+        CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
+        cb->generate_maps(products);
+        // TODO: abilitare quando il nuovo algoritmo di cartografia funziona: products.write_out(cb->assets);
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
 //            for (unsigned beam=130; beam <=170; beam ++) 

@@ -44,6 +44,7 @@ struct CalcoloVIZ;
 struct CalcoloVPR;
 struct Cart;
 struct CartLowris;
+struct CartProducts;
 
 class CUM_BAC
 {
@@ -170,7 +171,7 @@ public:
     void creo_matrice_conv();
 
     void conversione_convettiva();
-    void generate_maps();
+    void generate_maps(CartProducts& products, bool new_algo=false);
 // added function to calculate beamblocking correction
 
     /**
@@ -400,6 +401,7 @@ struct CartLowris
 
     void write_out(const CUM_BAC& cb, Assets& assets);
 };
+
 
 // Utility functions
 

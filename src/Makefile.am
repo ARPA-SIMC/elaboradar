@@ -38,6 +38,7 @@ libtmp_la_SOURCES = \
   func_Q3d.cpp \
   Q_components.cpp \
   cart.cpp \
+  cartproducts.cpp \
   site.cpp \
   assets.cpp \
   cum_bac.cpp \

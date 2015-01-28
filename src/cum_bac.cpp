@@ -12,6 +12,7 @@
 #include "algo/steiner.h"
 #include "algo/viz.h"
 #include "algo/elabora_volume.h"
+#include "cartproducts.h"
 #include <elaboradar/algo/top.h>
 #include "cylindrical.h"
 #include "interpola_vpr.h"
@@ -1717,96 +1718,64 @@ void CUM_BAC::vpr_class()
         conversione_convettiva();
 }
 
-void CUM_BAC::generate_maps()
+void CUM_BAC::generate_maps(CartProducts& products, bool new_algo)
 {
-    bool nuova_implementazione = false;
-    if (nuova_implementazione)
+    if (new_algo)
     {
-        // TODO: tutti i prodotti scriverli a 512 e/o a 256, a seconda della richiesta
-        // dell'utente. Non usare piú do_medium qui, lasciarlo solo per il
-        // caricamento di SP20 vecchi
-        unsigned CART_DIM_ZLR = do_medium ? 512 : 256;
-        unsigned ZLR_N_ELEMENTARY_PIXEL = do_medium && volume.max_beam_size() < 260 ? 1 : 4;
-
-        // Coordinate mapping for full size images, selecting the point where the
-        // volume has max dBZ
-        LOG_INFO("Creazione Matrice Cartesiana");
-        FullsizeIndexMapping fullres(volume[0].beam_size);
-        fullres.map_max_sample(volume[0]);
-        //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
-        //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
-
-        // Coordinate mapping for scaled images, selecting the point where the
-        // volume has max dBZ
-        LOG_INFO("Creazione Matrice Cartesiana ridimensionata");
-        ScaledIndexMapping scaled(volume[0].beam_size, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
-        scaled.map_max_sample(volume[0], fullres);
-
         // Generate products and write them out
         LOG_INFO("Scrittura File Precipitazione 1X1\n");
-        Image<unsigned char> z_out(CART_DIM_ZLR);
         if (do_zlr_media)
         {
             // TODO
             throw runtime_error("do_zlr_media not yet implemented");
         } else {
-            scaled.to_cart(volume[0], z_out);
+            products.scaled.to_cart(volume[0], products.z_out);
         }
-        assets.write_image(z_out, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
 
-        Image<unsigned char> top_1x1(CART_DIM_ZLR);
-        scaled.to_cart(top, top_1x1);
-        assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
+        products.scaled.to_cart(top, products.top_1x1);
 
         if (do_quality)
         {
-            // TODO: if (irange < cb.volume[cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange]].beam_size)
-            // TODO:     qual_Z_cart(y, x) = cb.qual->scan(cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
-            // TODO: else
-            // TODO:     qual_Z_cart(y, x) = 0;
-            // TODO:     q=c.qual_Z_cart(src_y, src_x);
-            // TODO: qual_Z_1x1(j, i)=q;
-            //  - qualità assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
-            // TODO: quota_1x1(j, i)=128+(unsigned char)(q1x1/100);
-            //  - assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
-
-            Image<unsigned char> dato_corr_1x1(CART_DIM_ZLR);
-            scaled.to_cart(anaprop.dato_corrotto, dato_corr_1x1);
-            assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
-
-            Image<unsigned char> elev_fin_1x1(CART_DIM_ZLR);
             const auto& elev_fin = anaprop.elev_fin;
-            std::function<unsigned char(unsigned, unsigned)> assign = [&elev_fin](unsigned azimuth, unsigned range) {
+            const auto& quota = anaprop.quota;
+
+            std::function<unsigned char(unsigned, unsigned)> assign_qual =
+                [this, &elev_fin](unsigned azimuth, unsigned range) {
+                    const auto& el = elev_fin[azimuth][range];
+                    if (range >= volume[el].beam_size)
+                        return (unsigned char)0;
+                    return qual->scan(el).get(azimuth, range);
+                };
+            products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
+
+            std::function<unsigned char(unsigned, unsigned)> assign_quota =
+                [&quota](unsigned azimuth, unsigned range) {
+                    return 128 + (unsigned char)(quota(azimuth, range) / 100);
+                };
+            products.scaled.to_cart(assign_quota, products.quota_1x1);
+
+            products.scaled.to_cart(anaprop.dato_corrotto, products.dato_corr_1x1);
+
+            std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
                     return elev_fin[azimuth][range];
             };
-            scaled.to_cart(assign, elev_fin_1x1);
-            assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
+            products.scaled.to_cart(assign_elev_fin, products.elev_fin_1x1);
 
-            Image<unsigned char> beam_blocking_1x1(CART_DIM_ZLR);
-            scaled.to_cart(beam_blocking, beam_blocking_1x1);
-            assets.write_image(beam_blocking_1x1, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
+            products.scaled.to_cart(beam_blocking, products.beam_blocking_1x1);
         }
 
         if (calcolo_vpr)
         {
-            Image<unsigned char> neve_1x1(CART_DIM_ZLR);
             const auto& neve = calcolo_vpr->neve;
             std::function<unsigned char(unsigned, unsigned)> assign = [&neve](unsigned azimuth, unsigned range) {
                 return neve(azimuth, range) ? 0 : 1;
             };
-            scaled.to_cart(assign, neve_1x1);
-            assets.write_image(neve_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+            products.scaled.to_cart(assign, products.neve_1x1);
 
-            Image<unsigned char> corr_1x1(CART_DIM_ZLR);
-            scaled.to_cart(calcolo_vpr->corr_polar, corr_1x1);
-            assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+            products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
 
             if (do_class)
-            {
-                Image<unsigned char> conv_1x1(CART_DIM_ZLR);
-                scaled.to_cart(calcolo_vpr->conv, conv_1x1);
-                assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
-            }
+                products.scaled.to_cart(calcolo_vpr->conv, products.conv_1x1);
         }
     } else {
         /*--------------------------------------------------

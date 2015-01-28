@@ -2,11 +2,13 @@
 #include "cum_bac.h"
 #include "config.h"
 #include <elaboradar/logging.h>
+#include <elaboradar/image.h>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
 #include "site.h"
 #include "setwork.h"
+#include "cartproducts.h"
 #include "test-utils.h"
 #include <unistd.h>
 
@@ -254,6 +256,23 @@ void to::test<3>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
+
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products, true);
+    wassert(actual(products.scaled.image_offset) == -18);
+    write_image(clow.z_out, "/tmp/zout-old.png", "png");
+    write_image(products.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 17489, 1, 40.13, 251));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 17489, 1, 37.21, 97));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 65536, 0, 0, 0));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 48079, 1, 47.09, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 60383, 1, 10.71, 36));
+    wassert(actual(products.neve_1x1).statsEqual(0, 17489, 1, 1, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
 }
 
 template<> template<>
