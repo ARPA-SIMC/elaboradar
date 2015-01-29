@@ -34,7 +34,7 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
         }
 }
 
-void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f)
+void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f) const
 {
     // Map cartesian coordinates to angles and distances
     unsigned range_idx = floor(map_range(y, x));
@@ -108,13 +108,33 @@ void FullsizeIndexMapping::map_max_sample(const PolarScan<double>& scan, const C
 }
 
 
-ScaledIndexMapping::ScaledIndexMapping(unsigned beam_size, unsigned image_side, unsigned fullsize_pixels_per_scaled_pixel)
-    : IndexMapping(image_side, image_side),
+ScaledIndexMapping::ScaledIndexMapping(const CoordinateMapping& mapping, unsigned image_side, unsigned fullsize_pixels_per_scaled_pixel)
+    : IndexMapping(image_side, image_side), mapping(mapping),
       fullsize_pixels_per_scaled_pixel(fullsize_pixels_per_scaled_pixel),
-      image_offset(((int)beam_size * 2 - (int)image_side * (int)fullsize_pixels_per_scaled_pixel) / 2)
+      image_offset(((int)mapping.beam_size * 2 - (int)image_side * (int)fullsize_pixels_per_scaled_pixel) / 2)
 {
     if ((image_side * fullsize_pixels_per_scaled_pixel) % 2 != 0)
         throw std::runtime_error("the image cannot be properly centered on the full size image");
+}
+
+void ScaledIndexMapping::sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f)
+{
+    // Load each sample with a value from a 4x4 window on the original image
+    for(unsigned sy = 0; sy < fullsize_pixels_per_scaled_pixel; ++sy)
+        for(unsigned sx = 0; sx < fullsize_pixels_per_scaled_pixel; ++sx)
+        {
+            // Use the full size mapping to get the volume value at this point
+            int src_x = x * fullsize_pixels_per_scaled_pixel + sx + image_offset;
+            int src_y = y * fullsize_pixels_per_scaled_pixel + sy + image_offset;
+            if (src_x < 0 || src_x >= mapping.beam_size || src_y < 0 || src_y >= mapping.beam_size) continue;
+
+            // Generate all the azimuth/range elements for this point in the
+            // full size map
+            std::function<void(unsigned, unsigned)> fullsize_sample = [&f](unsigned azimuth, unsigned range) {
+                f(azimuth, range);
+            };
+            mapping.sample(beam_count, src_x, src_y, fullsize_sample);
+        }
 }
 
 void ScaledIndexMapping::map_max_sample(const PolarScan<double>& scan, const FullsizeIndexMapping& mapping)

@@ -315,17 +315,17 @@ void to::test<3>()
     cb->generate_maps(products1, true);
     wassert(actual(products1.scaled.image_offset) == -18);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
-    // write_image(clow.z_out, "/tmp/zout-old.png", "png");
-    // write_image(products.z_out, "/tmp/zout-new.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
     // print_stats("products", products, cerr);
-    wassert(actual(products1.z_out).statsEqual(0, 17489, 1, 40.13, 251));
-    wassert(actual(products1.qual_Z_1x1).statsEqual(0, 17489, 1, 37.21, 97));
+    wassert(actual(products1.z_out).statsEqual(0, 17240, 1, 22.48, 218));
+    wassert(actual(products1.qual_Z_1x1).statsEqual(0, 17240, 1, 37.14, 98));
     wassert(actual(products1.quota_1x1).statsEqual(0, 0, 128, 128, 128));
     wassert(actual(products1.dato_corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(products1.elev_fin_1x1).statsEqual(0, 65536, 0, 0, 0));
-    wassert(actual(products1.beam_blocking_1x1).statsEqual(0, 48079, 1, 47.09, 51));
-    wassert(actual(products1.top_1x1).statsEqual(0, 60383, 1, 10.71, 36));
-    wassert(actual(products1.neve_1x1).statsEqual(0, 17489, 1, 1, 1));
+    wassert(actual(products1.beam_blocking_1x1).statsEqual(0, 47936, 1, 47.24, 51));
+    wassert(actual(products1.top_1x1).statsEqual(0, 60304, 1, 10.73, 36));
+    wassert(actual(products1.neve_1x1).statsEqual(0, 17240, 1, 1, 1));
     wassert(actual(products1.corr_1x1).statsEqual(0, 65536, 0, 0, 0));
     wassert(actual(products1.conv_1x1).statsEqual(0, 65536, 0, 0, 0));
 }
