@@ -12,6 +12,7 @@ namespace elaboradar {
  */
 struct CoordinateMapping
 {
+    /// Beam size of the volume that we are mapping to cartesian coordinates
     const unsigned beam_size;
     /// Azimuth indices to use to lookup a map point in a volume
     /// -1 means no mapping
@@ -27,6 +28,9 @@ struct CoordinateMapping
      * The mapping is a 1 to 1 mapping, without scaling.
      */
     CoordinateMapping(unsigned beam_size);
+
+    /// Generate all the (azimuth, range) indices corresponding to a map point
+    void sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f);
 };
 
 
@@ -83,8 +87,8 @@ public:
     void to_cart(const std::function<T(unsigned, unsigned)>& src, Matrix2D<T>& dst)
     {
         // In case dst is not a square with side beam_size*2, center it
-        int dx = (width + dst.cols()) / 2;
-        int dy = (height + dst.rows()) / 2;
+        int dx = ((int)width - dst.cols()) / 2;
+        int dy = ((int)height - dst.rows()) / 2;
 
         for (unsigned y = 0; y < dst.rows(); ++y)
         {

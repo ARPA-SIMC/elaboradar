@@ -34,6 +34,28 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
         }
 }
 
+void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f)
+{
+    // Map cartesian coordinates to angles and distances
+    unsigned range_idx = floor(map_range(y, x));
+    if (range_idx >= beam_size) return;
+
+    // Exact angle
+    double az = map_azimuth(y, x);
+
+    // Iterate indices 0.45° before and after
+    int az_min = floor((az - .45) * beam_count / 360);
+    int az_max = ceil((az + .45) * beam_count / 360);
+    if (az_min < 0)
+    {
+        az_min += beam_count;
+        az_max += beam_count;
+    }
+
+    // Iterate all points between az_min and az_max
+    for (unsigned iaz = az_min; iaz < (unsigned)az_max; ++iaz)
+        f(iaz % beam_count, range_idx);
+}
 
 const unsigned IndexMapping::missing;
 
@@ -60,46 +82,28 @@ void FullsizeIndexMapping::map_max_sample(const PolarScan<double>& scan, const C
     for (unsigned y = 0; y < height; ++y)
         for (unsigned x = 0; x < width; ++x)
         {
-            // Map cartesian coordinates to angles and distances
-            unsigned range = floor(mapping.map_range(y, x));
-            if (range >= scan.beam_size) continue;
-
-            // Exact angle
-            double az = mapping.map_azimuth(y, x);
-
-            // Iterate indices 0.45° before and after
-            int az_min = floor((az - .45) * scan.beam_count / 360);
-            int az_max = ceil((az + .45) * scan.beam_count / 360);
-            if (az_min < 0)
-            {
-                az_min += scan.beam_count;
-                az_max += scan.beam_count;
-            }
-
-            // Look for the position of the maximum value of the scan in
-            // this range
             bool first = true;
             double maxval;
-            unsigned maxval_idx;
-            for (unsigned iaz = az_min; iaz < (unsigned)az_max; ++iaz)
-            {
-                unsigned azidx = iaz % scan.beam_count;
-                unsigned char sample = scan.get(azidx, range);
-
+            unsigned maxval_azimuth;
+            unsigned maxval_range;
+            std::function<void(unsigned, unsigned)> f = [&](unsigned azimuth, unsigned range) {
+                double sample = scan.get(azimuth, range);
                 if (first || sample > maxval)
                 {
                     maxval = sample;
-                    maxval_idx = azidx;
+                    maxval_azimuth = azimuth;
+                    maxval_range = range;
                     first = false;
                 }
-            }
+            };
+            mapping.sample(scan.beam_count, x, y, f);
 
             // If nothing has been found, skip this sample
             if (first) continue;
 
             // Store the indices for this mapping
-            map_azimuth(y, x) = maxval_idx;
-            map_range(y, x) = range;
+            map_azimuth(y, x) = maxval_azimuth;
+            map_range(y, x) = maxval_range;
         }
 }
 
@@ -135,7 +139,7 @@ void ScaledIndexMapping::map_max_sample(const PolarScan<double>& scan, const Ful
                     unsigned range = mapping.map_range(src_y, src_x);
                     if (range == missing) continue;
                     unsigned az = mapping.map_azimuth(src_y, src_x);
-                    unsigned char sample = scan.get(az, range);
+                    double sample = scan.get(az, range);
 
                     // Find the source point with the maximum sample
                     if (first || sample > maxval)

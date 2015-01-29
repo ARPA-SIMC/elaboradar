@@ -1729,7 +1729,13 @@ void CUM_BAC::generate_maps(CartProducts& products, bool new_algo)
             // TODO
             throw runtime_error("do_zlr_media not yet implemented");
         } else {
-            products.scaled.to_cart(volume[0], products.z_out);
+            std::function<unsigned char(unsigned, unsigned)> assign_cart =
+                [this](unsigned azimuth, unsigned range) {
+                    // il max serve perchè il valore di MISSING è 0
+                    unsigned char sample = DBtoBYTE(volume[0].get(azimuth, range));
+                    return max(sample, (unsigned char)1);
+                };
+            products.scaled.to_cart(assign_cart, products.z_out);
         }
 
         products.scaled.to_cart(top, products.top_1x1);
@@ -1750,7 +1756,7 @@ void CUM_BAC::generate_maps(CartProducts& products, bool new_algo)
 
             std::function<unsigned char(unsigned, unsigned)> assign_quota =
                 [&quota](unsigned azimuth, unsigned range) {
-                    return 128 + (unsigned char)(quota(azimuth, range) / 100);
+                    return 128 + round(quota(azimuth, range) / 100.0);
                 };
             products.scaled.to_cart(assign_quota, products.quota_1x1);
 
@@ -2268,8 +2274,8 @@ void CartLowris::creo_cart_z_lowris()
                     // If average ZLR has been requested, overwrite the maximum
                     // with the average
                     z_out(j, i)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
-                }
-                if (cont == 0 ) z_out(j, i)=MISSING;
+                } else
+                    z_out(j, i)=MISSING;
             }
         }
 #if 0
