@@ -11,6 +11,9 @@ struct CartProducts
 {
     log4c_category_t* logging_category;
 
+    // Main polar -> cartesian coordinate mapping
+    CoordinateMapping mapping;
+
     // Coordinate mapping for full size images, selecting the point where the
     // volume has max dBZ
     FullsizeIndexMapping fullres;

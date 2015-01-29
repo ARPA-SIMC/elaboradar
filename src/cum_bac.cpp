@@ -1726,8 +1726,12 @@ void CUM_BAC::generate_maps(CartProducts& products, bool new_algo)
         LOG_INFO("Scrittura File Precipitazione 1X1\n");
         if (do_zlr_media)
         {
-            // TODO
-            throw runtime_error("do_zlr_media not yet implemented");
+            std::function<unsigned char(double)> convert = [this](double average) {
+                    // il max serve perchè il valore di MISSING è 0
+                    unsigned char sample = DBtoBYTE(average);
+                    return max(sample, (unsigned char)1);
+                };
+            products.scaled.to_cart_average(volume[0], convert, products.z_out);
         } else {
             std::function<unsigned char(unsigned, unsigned)> assign_cart =
                 [this](unsigned azimuth, unsigned range) {

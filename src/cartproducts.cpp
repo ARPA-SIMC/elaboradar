@@ -4,7 +4,9 @@
 namespace elaboradar {
 
 CartProducts::CartProducts(const Volume<double>& volume, unsigned image_side, unsigned sample_square_size)
-    : fullres(volume[0].beam_size), scaled(volume[0].beam_size, image_side, sample_square_size),
+    : mapping(volume[0].beam_size),
+      fullres(volume[0].beam_size),
+      scaled(mapping, image_side, sample_square_size),
       z_out(image_side), top_1x1(image_side), qual_Z_1x1(image_side),
       quota_1x1(image_side), dato_corr_1x1(image_side),
       elev_fin_1x1(image_side), beam_blocking_1x1(image_side),
@@ -15,7 +17,7 @@ CartProducts::CartProducts(const Volume<double>& volume, unsigned image_side, un
     quota_1x1.fill(128);
 
     LOG_INFO("Creazione Matrice Cartesiana");
-    fullres.map_max_sample(volume[0]);
+    fullres.map_max_sample(volume[0], mapping);
     //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");
     //assets.write_gdal_image(fullres.map_range, "DIR_DEBUG", "map_range", "PNG");
 

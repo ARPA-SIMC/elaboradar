@@ -30,7 +30,7 @@ struct CoordinateMapping
     CoordinateMapping(unsigned beam_size);
 
     /// Generate all the (azimuth, range) indices corresponding to a map point
-    void sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f);
+    void sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f) const;
 };
 
 
@@ -57,7 +57,7 @@ public:
 
     /// Copy data from the polar scan src to the cartesian map dst
     template<typename SRC, typename DST>
-    void to_cart(const PolarScan<SRC>& src, Matrix2D<DST>& dst)
+    void to_cart(const PolarScan<SRC>& src, Matrix2D<DST>& dst) const
     {
         // In case dst is not a square with side beam_size*2, center it
         int dx = ((int)width - dst.cols()) / 2;
@@ -84,7 +84,7 @@ public:
 
     /// Fill the cartesian map dst with the output of the function src(azimuth, range)
     template<typename T>
-    void to_cart(const std::function<T(unsigned, unsigned)>& src, Matrix2D<T>& dst)
+    void to_cart(const std::function<T(unsigned, unsigned)>& src, Matrix2D<T>& dst) const
     {
         // In case dst is not a square with side beam_size*2, center it
         int dx = ((int)width - dst.cols()) / 2;
@@ -139,10 +139,15 @@ struct FullsizeIndexMapping : public IndexMapping
  */
 struct ScaledIndexMapping : public IndexMapping
 {
+    const CoordinateMapping& mapping;
     unsigned fullsize_pixels_per_scaled_pixel;
+    /// Image offset in full size pixels
     int image_offset;
 
-    ScaledIndexMapping(unsigned beam_size, unsigned image_side, unsigned fullsize_pixels_per_scaled_pixel);
+    ScaledIndexMapping(const CoordinateMapping& mapping, unsigned image_side, unsigned fullsize_pixels_per_scaled_pixel);
+
+    /// Generate all the (azimuth, range) indices corresponding to a map point
+    void sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f);
 
     /**
      * Map cartesian cardinates to polar volume indices. When a cartesian
@@ -153,6 +158,47 @@ struct ScaledIndexMapping : public IndexMapping
      * map_max_sample().
      */
     void map_max_sample(const PolarScan<double>& scan, const FullsizeIndexMapping& mapping);
+
+    /// Fill the cartesian map dst with the output of the function src(azimuth, range)
+    template<typename T>
+    void to_cart_average(const PolarScan<double>& src, std::function<T(double)>& convert, Matrix2D<T>& dst) const
+    {
+        // In case dst is not a square with side beam_size*2, center it
+        int dx = ((int)width - dst.cols()) / 2;
+        int dy = ((int)height - dst.rows()) / 2;
+
+        for (unsigned y = 0; y < dst.rows(); ++y)
+        {
+            if (y + dy < 0 || y + dy >= height) continue;
+
+            for (unsigned x = 0; x < dst.cols(); ++x)
+            {
+                if (x + dx < 0 || x + dx >= width) continue;
+
+                double sum = 0;
+                unsigned count = 0;
+                std::function<void(unsigned, unsigned)> compute_average = [&sum, &count, &src](unsigned azimuth, unsigned range) {
+                    if (azimuth < 0 || azimuth > src.beam_count) return;
+                    if (range < 0 || range > src.beam_size) return;
+                    sum += src(azimuth, range);
+                    ++count;
+                };
+
+                for(unsigned sy = 0; sy < fullsize_pixels_per_scaled_pixel; ++sy)
+                    for(unsigned sx = 0; sx < fullsize_pixels_per_scaled_pixel; ++sx)
+                    {
+                        int src_x = x * fullsize_pixels_per_scaled_pixel + sx + image_offset;
+                        int src_y = y * fullsize_pixels_per_scaled_pixel + sy + image_offset;
+                        if (src_x < 0 || src_x >= mapping.beam_size * 2 || src_y < 0 || src_y >= mapping.beam_size * 2)
+                            continue;
+                        mapping.sample(src.beam_count, src_x, src_y, compute_average);
+                    }
+
+                if (count > 0)
+                    dst(y + dy, x + dx) = convert(sum / count);
+            }
+        }
+    }
 };
 
 }
