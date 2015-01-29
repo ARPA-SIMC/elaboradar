@@ -12,6 +12,8 @@ CartProducts::CartProducts(const Volume<double>& volume, unsigned image_side, un
 {
     logging_category = log4c_category_get("radar.cart");
 
+    quota_1x1.fill(128);
+
     LOG_INFO("Creazione Matrice Cartesiana");
     fullres.map_max_sample(volume[0]);
     //assets.write_gdal_image(fullres.map_azimuth, "DIR_DEBUG", "map_azimuth", "PNG");

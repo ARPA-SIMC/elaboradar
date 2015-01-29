@@ -63,6 +63,7 @@ if DO_TESTS
 check_PROGRAMS = ertest
 
 ertest_SOURCES = \
+  test-utils.cpp \
   tests/test-assets.cpp \
   tests/test-interpola-vpr.cpp \
   tests/test-cart.cpp \

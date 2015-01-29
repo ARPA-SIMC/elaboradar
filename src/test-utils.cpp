@@ -1,5 +1,6 @@
 #include <test-utils.h>
 #include <cum_bac.h>
+#include <cartproducts.h>
 
 namespace testradar {
 
@@ -35,6 +36,20 @@ void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ost
 }
 
 void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out)
+{
+    print_stats(name + ".z_out", cart.z_out, 0, out);
+    print_stats(name + ".qual_Z_1x1", cart.qual_Z_1x1, 0, out);
+    print_stats(name + ".quota_1x1", cart.quota_1x1, 0, out);
+    print_stats(name + ".dato_corr_1x1", cart.dato_corr_1x1, 0, out);
+    print_stats(name + ".elev_fin_1x1", cart.elev_fin_1x1, 0, out);
+    print_stats(name + ".beam_blocking_1x1", cart.beam_blocking_1x1, 0, out);
+    print_stats(name + ".top_1x1", cart.top_1x1, 0, out);
+    print_stats(name + ".neve_1x1", cart.neve_1x1, 0, out);
+    print_stats(name + ".corr_1x1", cart.corr_1x1, 0, out);
+    print_stats(name + ".conv_1x1", cart.conv_1x1, 0, out);
+}
+
+void print_stats(const std::string& name, const elaboradar::CartProducts& cart, std::ostream& out)
 {
     print_stats(name + ".z_out", cart.z_out, 0, out);
     print_stats(name + ".qual_Z_1x1", cart.qual_Z_1x1, 0, out);

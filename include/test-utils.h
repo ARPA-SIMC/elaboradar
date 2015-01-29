@@ -7,6 +7,7 @@
 namespace elaboradar {
 struct Cart;
 struct CartLowris;
+struct CartProducts;
 struct CUM_BAC;
 }
 
@@ -100,7 +101,12 @@ struct ArrayStats
 };
 
 template<typename T> inline T to_num(const T& val) { return val; }
-inline double to_num(const double& val) { return round(val * 100.0) / 100.0; }
+inline std::string to_num(const double& val)
+{
+    char buf[30];
+    snprintf(buf, 30, "%.2f", val);
+    return buf;
+}
 inline float to_num(const float& val) { return round(val * 100.0) / 100.0; }
 inline unsigned to_num(const unsigned char& val) { return val; }
 inline int to_num(const char& val) { return val; }
@@ -135,7 +141,6 @@ struct TestStatsEqual
     {
         using namespace wibble::tests;
         using namespace std;
-
         ArrayStats<Scalar> stats;
         bool failed = false;
         if (has_missing)
@@ -237,6 +242,7 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
 void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out);
 void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out);
 void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::CartProducts& cart, std::ostream& out);
 
 }
 
