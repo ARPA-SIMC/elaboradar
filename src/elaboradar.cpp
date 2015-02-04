@@ -128,34 +128,36 @@ void check_volume(const Volume<double>& volume, int file_type)
     switch (file_type)
     {
         case SHORT_DEC:
-            if (!volume.load_info->declutter_rsp)
-                throw runtime_error("File Senza Declutter Dinamico--cos' è???");
+            LOG_INFO("CASO SHORT_DEC");
+//            if (!volume.load_info->declutter_rsp)
+//                throw runtime_error("File Senza Declutter Dinamico--cos' è???");
             expected_size_cell = 250;
             n_elev=4;
             break;
             //------------se tipo =1 esco
         case SHORT_FULL_VOLUME://-----??? DUBBIO
+            LOG_INFO("CASO SHORT_FULL_VOLUME");
             if (volume.load_info->declutter_rsp)
                 throw runtime_error("File con Declutter Dinamico");
             expected_size_cell = 250;
             n_elev=4;
             break;
         case SHORT_HAIL://-----??? DA BUTTARE NON ESISTE PIÙ
+            LOG_INFO("CASO SHORT_HAIL");
             expected_size_cell = 250;
             n_elev=3;
-            LOG_INFO("CASO SHORT_HAIL");
             break;
         case MEDIUM_PULSE:
+            LOG_INFO("CASO MEDIO OLD");
             expected_size_cell = 1000;
             n_elev=4;
-            LOG_INFO("CASO MEDIO OLD");
             break;
         case SHORT_212://----- CORRISPONDE A VOL_NEW - da questo si ottengono il corto e il medio
-            if (!volume.load_info->declutter_rsp)
-                throw runtime_error("File senza Declutter Dinamico");
+            LOG_INFO("CASO SHORT_212");
+//            if (!volume.load_info->declutter_rsp)
+//                throw runtime_error("File senza Declutter Dinamico");
             expected_size_cell = 250;
             n_elev=4;
-            LOG_INFO("CASO SHORT_212");
             break;
     }
 
@@ -213,6 +215,9 @@ int main (int argc, char **argv)
 
     CUM_BAC_CLOPT CL_opt;
     parseOptions(argc,argv,&CL_opt);
+std::cout<<"##################################################################################"<<std::endl;
+    PrintOptions(&CL_opt);
+
 
     // Initialize logging
     Logging logging;
