@@ -100,7 +100,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
     {
-//printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin), beam_sd2d(ibin));
+//printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin));
 //printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
 //(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
 //(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
@@ -164,12 +164,12 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
 
 
-void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v)
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, unsigned iel )
 {
-    return clean(scan_z, scan_w, scan_v, scan_v.undetect);
+    return clean(scan_z, scan_w, scan_v, scan_v.undetect,iel);
 }
 
-void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, double bin_wind_magic_number)
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, double bin_wind_magic_number, unsigned iel )
 {
     if (scan_z.beam_count != scan_w.beam_count)
         throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
@@ -193,30 +193,32 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
     Z_S.push_back(scan_z);
     elaboradar::volume::textureSD( Z_S,SD2D, 1000. , 3,false);
 
-//	elaboradar::gdal_init_once();
+	elaboradar::gdal_init_once();
+	
 //printf("scrivo Z ");
 //Matrix2D <double>img;
 //img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
 //Matrix2D <unsigned char>img_tmp, z_clean;
+//std::string ext;
+//char pippo[200];
+//sprintf(pippo, "_%02d.png",iel);
+//ext=pippo;
+
 //img_tmp=img.cast<unsigned char>();
 //z_clean=img_tmp;
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z.png",  "PNG");
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
 //printf("V ");
 //img = (scan_v.array()-scan_v.offset)/scan_v.gain/256 ;
 //img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_V.png","PNG");
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_V"+ext,"PNG");
 //printf("W ");
 //img = (scan_w.array()-scan_w.offset)/scan_w.gain/256 ;
 //img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_W.png","PNG");
-//printf("SD ");
-//img = (SD[0].array()-SD[0].offset)/SD[0].gain/256 ;
-//img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SD.png","PNG");
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_W"+ext,"PNG");
 //printf("SD2d ");
 //img = (SD2D[0].array()-SD2D[0].offset)/SD2D[0].gain/256 ;
 //img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SD2d.png","PNG");
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SD2d"+ext,"PNG");
 //printf("\n");
 
     for (unsigned i = 0; i < beam_count; ++i)
@@ -235,8 +237,8 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
             } //else img_tmp(i,ib)= 0 ;
 
     }
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean.png","PNG");
-//elaboradar::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean.png","PNG");
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
+//elaboradar::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean"+ext,"PNG");
 }
 
 }
