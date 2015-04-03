@@ -1,3 +1,8 @@
+/**
+ *  @file
+ *  @ingroup progetto_cum_bac
+ *  @brief Gestisce risorse usate dal programma.
+*/
 #ifndef ARCHIVIATORE_ASSETS_H
 #define ARCHIVIATORE_ASSETS_H
 
@@ -43,40 +48,46 @@ protected:
     mutable H5::H5File* outfile_devel_data;
 
 public:
+/**
+ * \brief  Constructor
+ * \param [in] cfg - objet used to pass configuration
+ *
+ */
+
     Assets(const Config& cfg);
     ~Assets();
 
     /**
      * Configure asset lookup with the given details.
      *
-     * sito: Site object for the radar site.
-     * time: the volume acquisition time
+     * @param [in] site -  Site object for the radar site.
+     * @param [in] acq_time - Volume acquisition time
      */
     void configure(const Site& site, time_t acq_time);
 
     /**
      * Configure asset lookup with the given details.
      *
-     * sito: "GAT" or "SPC" according to the radar site.
-     * time: the volume acquisition time
+     * @param [in] site - "GAT" or "SPC" according to the radar site.
+     * @param [in] acq_time - Volume acquisition time
      */
     void configure(const char* site, time_t acq_time);
 
     /**
      * Save acq_time in $LAST_FILE, comparing it with the previous value.
      *
-     * @returns
-     *  false, if acq_time is older than the previous file processed
-     *  true, if acq_time is newer, if $LAST_FILE does not exist or if
-     *  $LAST_FILE is not set.
+     * @param [in] acq_time - Volume acquisition time
+     * @return false, if acq_time is older than the previous file processed
+     * @return true, if acq_time is newer, if $LAST_FILE does not exist or if $LAST_FILE is not set.
      */
     bool save_acq_time(time_t acq_time=0);
 
     /**
      * Open the dem file.
      *
-     * The result is always a valid file: it throws an exception if something
-     * goes wrong.
+     * The result is always a valid file: it throws an exception if something goes wrong.
+     *
+     * @param matrix - Matrix  [float] where dem is loaded
      *
      * TODO: cos'è il dem?
      */
@@ -85,24 +96,24 @@ public:
     /**
      * Open the first level file.
      *
-     * The result is always a valid file: it throws an exception if something
-     * goes wrong.
+     * The result is always a valid file: it throws an exception if something goes wrong.
+     * @param matrix - Matrix  [unsigned char] where first_elev table  is loaded
      */
     void load_first_level(Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the first level elevation BB el file.
      *
-     * The result is always a valid file: it throws an exception if something
-     * goes wrong.
+     * The result is always a valid file: it throws an exception if something goes wrong.
+     * @param matrix - Matrix  [unsigned char] where first_elev_bb_el table  is loaded
      */
     void load_first_level_bb_el(Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the first level elevation BB bloc file.
      *
-     * The result is always a valid file: it throws an exception if something
-     * goes wrong.
+     * The result is always a valid file: it throws an exception if something goes wrong.
+     * @param matrix - Matrix  [unsigned char] where first_elev_bb_bloc table  is loaded
      */
     void load_first_level_bb_bloc(Matrix2D<unsigned char>& matrix);
 
@@ -126,66 +137,103 @@ public:
      *  @details  apre file temperature , legge lon lat e t, calcola differenze
      *  rispetto coordinate radar, se diff < soglia media il dato, stampa il nr
      *  di dati usati per la media e ritorna la temperatura
-     *  @param[out] t_gr temperatura al suolo
-     *  @return ierr codice di uscita (0=ok 1=fallito)
+     *  @return it_gr temperatura al suolo
      */
     float read_t_ground() const;
+     //*  @param[out] t_gr temperatura al suolo
+     //*  @return ierr codice di uscita (0=ok 1=fallito)
 
     /**
      * Read the gap between the time in $LAST_VPR and the current acquisition time
      *
-     *  @brief funzione che  calcola il no di quarti d'ora che intercorrono dall'ultimo profilo calcolato (combinato)  memorizzato in 'LAST_VPR'
-     *  @param[in] nomefile nome del file LAST_VPR dove c'e' la data cui si riferisce l'ultimo profilo prodotto in n0 di secondi a partire da istante di riferimento
-     *  @return gap1 ritorna il  no di quarti d'ora che intercorrono dall'ultimo profilo calcolato
+     *  @brief funzione che  calcola il numero di quarti d'ora che intercorrono dall'ultimo profilo calcolato (combinato)  memorizzato in 'LAST_VPR'
+     *  @return gap1 ritorna il numero di quarti d'ora che intercorrono dall'ultimo profilo calcolato
      */
     long int read_profile_gap() const;
+     //**  param[in] nomefile nome del file LAST_VPR dove c'e' la data cui si riferisce l'ultimo profilo prodotto in n0 di secondi a partire da istante di riferimento
 
     /**
-     * Read the value of $VPR_HEATING
+     * Read the value of $VPR_HEATING (counter of consecutive vpr calculated, see scientific documentation)
      *
-     * Returns 0 if the file does not exist or cannot be read
+     * @return 0 if the file does not exist or cannot be read
+     * @return The value of $VPR_HEATING
      */
     int read_vpr_heating() const;
 
     /**
-     * Write a new value to $VPR_HEATING
+     * Write a new value to $VPR_HEATING (counter of consecutive vpr calculated, see scientific documentation)
+     * @param [in] value - value to be written
      */
     void write_vpr_heating(int value) const;
 
     /**
      * Read $FILE_ZERO_TERMICO
      *
-     * @returns true if the file was found and read correctly, false if zeroterm was not set
+     * @param [out] zeroterm  - height of 0°C level [m]
+     * @return true if the file was found and read correctly, false if zeroterm was not set
      */
     bool read_0term(float& zeroterm);
 
-    /// Write the acquisition time in $LAST_VPR file
+    /** Write the acquisition time in $LAST_VPR file
+     */
     void write_last_vpr();
 
-    /// Read VPR_HMAX, returning -9999 if not found
+    /** Read in $VPR_HMAX the vpr peak's height.
+     * @return value or -9999 if not found [m]
+     */  
     int read_vpr_hmax();
 
+    /** write in $VPR_HMAX the vpr peak's height.
+     * @param [in] hvprmax -  value [m]
+     */  
     void write_vpr_hmax(int hvprmax);
 
+    /** Read in $VPR0_FILE the last vpr available.
+     * @param [out] vpr0 - vpr profile in mmh-1 [rain intensity]
+     * @param [out] area - areal coverage for each layer km^2/1000
+     * @return true if succesfull
+     * @return false if file does not exits 
+     */  
     bool read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area);
+
+    /** Write in $VPR0_FILE the vpr calculated.
+     * @param [in] vpr - vpr profile in mmh-1 [rain intensity]
+     * @param [in] area - areal coverage for each layer km^2/1000
+     */  
     void write_vpr0(std::vector<float>& vpr, std::vector<long int>& area);
 
+    /** Write in $OUTPUT_Z_LOWRIS_DIR/MP_coeff the MP coefficients.
+     * @param [in] dbz - DBZ object with MP coefficients 
+     */  
     void write_dbz_coefficients(const algo::DBZ& dbz);
 
     /**
-     * Return an open HDF5 File to which we can write datasets used to debug
+     * Return an open HDF5 File ( $DIR_QUALITY/devel-data.h5) to which we can write datasets used to debug
      * run information
+     * @ return H5FILE object
      */
     H5::H5File get_devel_data_output() const;
 
     /**
      * Write an image in a raw file in ${dir_env_var}, with the acquisition
      * date as file name and the given extension.
+     * Image matrix is tranformed in  out_image(x,image.cols()-1-y) = image(y, x);
      *
-     * desc is used to get better error messages.
+     * @param [in] image - Matrix2D to be written 
+     * @param [in] dir_env_var - file path
+     * @param [in] ext - file extension
+     * @param [out] desc - used to get better error messages.
      */
     void write_image(const Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
 
+    /**
+     * Write a graphic image with gdal.
+     *
+     * @param [in] image - Matrix2D to be written 
+     * @param [in] dir_env_var - file path
+     * @param [in] name - file name 
+     * @param [in] format  - file graphic format used.
+     */
     template<typename T>
     void write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
 

@@ -16,6 +16,7 @@ extern "C" {
 /**
  *  @brief funzione che setta ambiente lavoro nel caso non sia settato dall'esterno
  *  @param sito (gat o spc)
+ *  @return ier_code of the last putenv call (????)
 */
 int setwork(char *sito);
 
@@ -24,6 +25,9 @@ int setwork(char *sito);
 */
 void unsetwork();
 
+/**
+ *  @brief funzione che stampa l'ambiente lavoro con chiamata a LOG_INFO
+*/
 void printwork();
 
 #ifdef __cplusplus
