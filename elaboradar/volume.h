@@ -1,3 +1,8 @@
+/**
+ *  @file
+ *  @ingroup progetto_cum_bac
+ *  @brief Definisce le principali strutture che contengono i dati
+ */
 #ifndef ELABORADAR_VOLUME_H
 #define ELABORADAR_VOLUME_H
 
@@ -35,7 +40,9 @@ inline unsigned char DBtoBYTE(double dB)
     else
         return 255;
 }
-
+/**
+ * Basic structure to describe a polarScan 
+ */
 struct PolarScanBase
 {
     /// Count of beams in this scan
@@ -59,24 +66,50 @@ struct PolarScanBase
     /// Size of a beam cell in meters
     double cell_size = 0;
 
+/*
+ * Constructor
+ * Create a PolarScanBase defining beam_count and beam_size
+ * @param [in] beam_count
+ * @param [in] beam_size
+ */
     PolarScanBase(unsigned beam_count, unsigned beam_size);
 
+/*
+ * Constructor
+ * Create a copy of a PolarScanBase
+ * @param [in] s  - PolarScanBase to be copied
+ */
     PolarScanBase(const PolarScanBase& s);
 
-    // Height in kilometers (legacy)
+    /**
+     * Height in kilometers (legacy) at range gate for beam elevation  + beam_half_width
+     * @param [in] rg - index of range gate  
+     * @param [in] beam_half_width - semi-amplitude of the beam
+     */
     double height(unsigned rg, double beam_half_width=0.0);
 
-    // Height difference in kilometers (legacy)
+    /**
+     *  Height difference in kilometers (legacy) between two range gates
+     *  @param [in] rg_start - first range gate index
+     *  @param [in] rg_end - second range gate index
+     * @return Height difference [km]
+     */
     double diff_height(unsigned rg_start, unsigned rg_end);
 
     /**
-     * Return the height (in meters) of the sample at the given cell index
+     * Return the height (in meters) of the sample at the given cell indexa
+     * @param [in] cell_idx - index of range gatea
+     * @return - height of cell_idx at PolarScan elevation
      */
     double sample_height(unsigned cell_idx) const;
 
     /**
      * Return the height of a sample (in meters) given center beam elevation
      * (in degrees), range (in meters) and equivalent earth radius (in meters)
+     * @param [in] elevation - Elevation in degrees
+     * @param [in] range - range of range gate [m]
+     * @param [in] equiv_earth_radius - equivalent earth radius (in meters)
+     * @return - height of cell_idx at PolarScan elevation
      */
     static double sample_height(double elevation, double range, double equiv_earth_radius);
 
@@ -84,25 +117,45 @@ struct PolarScanBase
      * Return the height of a sample (in meters) given center beam elevation
      * (in degrees) and range (in meters), using the standard 4/3 equivalent
      * earth radius (in meters)
+     * @param [in] elevation - Elevation in degrees
+     * @param [in] range - range of range gate [m]
+     * @return - height of cell_idx at PolarScan elevation
      */
     static double sample_height(double elevation, double range);
 };
 
+/**
+ * PolarScan - structure to describe a polarScan containing a matrix of data and conversion factors
+ */
 template<typename T>
 class PolarScan : public PolarScanBase, public Matrix2D<T>
 {
 public:
-    T nodata = 0;    // Value used as 'no data' value
-    T undetect = 0;  // Minimum amount that can be measured
+/// Value used as 'no data' value
+    T nodata = 0;    
+/// Minimum amount that can be measured
+    T undetect = 0;  
+/// Conversion factor 
     T gain = 1;
+/// Conversion factor
     T offset = 0;
-
+/*!
+ * Constructor - Create a polarscan given beam_count, beam_size and the value to fill the Matrix
+ * @param [in] beam_count
+ * @param [in] beam_size
+ * @param[in] default_value
+ */
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
         : PolarScanBase(beam_count, beam_size),
           Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value))
     {
     }
 
+/**
+ * Constructor
+ * Create a copy of a PolarScan
+ * @param [in] s  - PolarScan to be copied
+ */
     PolarScan(const PolarScan& s) = default;
 
     template<class OT>
@@ -117,20 +170,29 @@ public:
     }
 
     /// Get a beam value
+    /// @param az - azimuth index [0-beam_count -1]
+    /// @param beam - cell index
+    /// @return - bin value
     T get(unsigned az, unsigned beam) const
     {
         return (*this)(az, beam);
     }
 
     /// Set a beam value
+    /// @param az - azimuth index [0-beam_count -1]
+    /// @param beam - cell index
+    /// @param [in] val - value to be set
     void set(unsigned az, unsigned beam, T val)
     {
         (*this)(az, beam) = val;
     }
 
     /**
-     * Return the hight (in meters) of a sample given its azimuth and cell
-     * indices
+     * Return the height (in meters) of a sample given its azimuth and cell indices
+     * use the real beam elevation (not the nominal of the PolarScan) and add half cell_size to the range
+     * @param [in] az - azimuth index
+     * @param [in] cell_idx - cell index
+     * @return height [m]
      */
     double sample_height_real(unsigned az, unsigned cell_idx) const
     {
@@ -138,8 +200,11 @@ public:
     }
 
     /**
-     * Riempie un array di float con i dati del raggio convertiti in DB
-     * Se l'array è più lungo del raggio, setta gli elementi extra a missing.
+     * Fill an array with beam data . If the array is longer than the beam fill the remaining with missing 
+     *  @param [in] az - azimuth index
+     *  @param [in,out] out - array to be filled
+     *  @param out_size - dimension of the array
+     *  @param [in] missing - Value to be used to fill the exceeding part 
      */
     void read_beam(unsigned az, T* out, unsigned out_size, T missing=0) const
     {
@@ -155,6 +220,10 @@ public:
             out[i] = missing;
     }
 
+/**
+ * Enlarges the PolarScan increasing beam_size and propagating the last bin value
+ * @param [in] new_beam_size 
+ */
     void resize_beams_and_propagate_last_bin(unsigned new_beam_size)
     {
         if (new_beam_size <= beam_size) return;
@@ -174,18 +243,27 @@ struct VolumeStats
     void print(FILE* out);
 };
 
+/**
+ * Namespace per volume dati
+ */
 namespace volume {
 
+/**
+ * LoadInfo structure - Contains generic volume information 
+ */
 struct LoadInfo
 {
+/// Original file name
     std::string filename;
+///  location
     std::string location;
 //    std::string date;
 //    std::string time;
 
-    // Acquisition date
+/// Acquisition date
     time_t acq_date;
-    bool declutter_rsp; // ?
+/// flag true if data have been decluttered with Doppler at rsp level
+    bool declutter_rsp; 
 
     LoadInfo()
         : declutter_rsp(false)
@@ -194,19 +272,28 @@ struct LoadInfo
 };
 
 /**
- * Volume of polarscans which can have a different beam count for each elevation
+ * Sequence of PolarScans which can have a different beam count for each elevation
  */
 template<typename T>
 class Scans : public std::vector<PolarScan<T>>
 {
 public:
     typedef T Scalar;
+/// Odim quantity name
     std::string quantity;
+/// Data units according to ODIM documentation
     std::string units;
+/// Polar volume information
     std::shared_ptr<LoadInfo> load_info;
 
     Scans() = default;
 
+/** 
+ *  Constructor
+ *  Copy from another Scans
+ *  @param [in] v - Scans object to be copied
+ *  @param[in] default_value - default to be used 
+ */  
     template<typename OT>
     Scans(const Scans<OT>& v, const T& default_value)
     {
@@ -219,8 +306,13 @@ public:
             this->push_back(PolarScan<T>(src_scan, default_value));
     }
 
-    // Access a polar scan
+    /// Access a polar scan
+    /// @param [in] idx - index of the PolarScan to be used
+    /// @return a pointer to the PolarScan
     PolarScan<T>& scan(unsigned idx) { return (*this)[idx]; }
+    /// Access a polar scan (const)
+    /// @param [in] idx - index of the PolarScan to be used
+    /// @return a pointer to the PolarScan (const)
     const PolarScan<T>& scan(unsigned idx) const { return (*this)[idx]; }
 
     /**
@@ -231,6 +323,10 @@ public:
      * angles.
      *
      * It is required that beam_size is lower than 
+     * @param [in] beam_count 
+     * @param [in] beam_size
+     * @param [in] elevation - PolarScan elevation (degrees)
+     * @param [in] cell_size - PolarScan cell size [m]
      */
     PolarScan<T>& append_scan(unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
     {
@@ -249,7 +345,15 @@ public:
         return this->back();
     }
 
-    // Create or reuse a scan at position idx, with the given beam size
+/**
+ * Create or reuse a scan at position idx, with the given beam size 
+ * @param [in] idx - index of the PolarScan 
+ * @param [in] beam_count 
+ * @param [in] beam_size
+ * @param [in] elevation
+ * @param [in] cell_size
+ * @return the idx PolarScan
+ */
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
     {
         if (idx < this->size())
@@ -287,8 +391,8 @@ public:
     }
 
     /**
-     * Change the elevations in the PolarScans to match the given elevation
-     * vector
+     * Change the elevations in the PolarScans to match the given elevation vector
+     * @param [in] elevations - values to be used
      */
     void normalize_elevations(const std::vector<double>& elevations)
     {
@@ -326,13 +430,23 @@ template<typename T>
 class Volume : public volume::Scans<T>
 {
 public:
+/// Number of beam_count used ast each elevations
     const unsigned beam_count;
 
+/**
+ * Constructor 
+ * @param [in] beam_count - number of beam_count to be used
+ */
     Volume(unsigned beam_count=NUM_AZ_X_PPI)
         : beam_count(beam_count)
     {
     }
 
+/**
+ * Copy constructor
+ * @param [in] v - Volume to be copied
+ * @param [in] default_value
+ */
     template<typename OT>
     Volume(const Volume<OT>& v, const T& default_value)
         : volume::Scans<T>(v, default_value), beam_count(v.beam_count)
@@ -348,19 +462,22 @@ public:
         return res;
     }
 
+/// Return the lowest elevation
     double elevation_min() const
     {
         return this->front().elevation;
     }
-
+/// Return the highest elevation
     double elevation_max() const
     {
         return this->back().elevation;
     }
 
     /**
-     * Fill a matrix elevations x beam_size with the vertical slice at a given
-     * azimuth
+     * Fill a matrix elevations x beam_size with the vertical slice at a given azimuth
+     * @param [in] az - azimuth index
+     * @param [in,out] slice - Matrix2D object containing the slice extracted
+     * @param [in] missing_value
      */
     void read_vertical_slice(unsigned az, Matrix2D<T>& slice, double missing_value) const
     {
@@ -369,6 +486,7 @@ public:
             this->scan(el).read_beam(az, slice.row_ptr(el), slice.cols(), missing_value);
     }
 
+/// Compute Volume statistics
     void compute_stats(VolumeStats& stats) const
     {
         stats.count_zeros.resize(this->size());
@@ -408,18 +526,33 @@ public:
      * It is required that scans are added in increasing elevation order,
      * because higher scan indices need to correspond to higher elevation
      * angles.
+     * @param [in] beam_size - beam_size dimension
+     * @param [in] elevation - PolarScan elevation [degrees]
+     * @param [in] cell_size - cell_size value [m]
+     * @return reference to the PolaScan added
      */
     PolarScan<T>& append_scan(unsigned beam_size, double elevation, double cell_size)
     {
         return volume::Scans<T>::append_scan(beam_count, beam_size, elevation, cell_size);
     }
 
-    // Create or reuse a scan at position idx, with the given beam size
+    /**
+     * Create or reuse a scan at position idx, with the given beam size
+     * @param [in] idx - PolarScan Index 
+     * @param [in] beam_size - beam_size dimension
+     * @param [in] elevation - PolarScan elevation [degrees]
+     * @param [in] cell_size - cell_size value [m]
+     * @return reference to the PolaScan added
+     */
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_size, double elevation, double cell_size)
     {
         return volume::Scans<T>::make_scan(idx, beam_count, beam_size, elevation, cell_size);
     }
 
+/**
+ * *= operator defined
+ * @param [in] coefficient  - multiplicative constant
+ */
     Volume& operator*=(const T coefficient)
     {
 	for(unsigned el=0;el<this->size();el++)
@@ -429,6 +562,10 @@ public:
 	return *this;
     }
 
+/**
+ * += operator defined
+ * @param [in] addend - additive constant
+ */
     Volume& operator+=(Volume& addend)
     {
 	for(unsigned el=0;el<this->size();el++)
