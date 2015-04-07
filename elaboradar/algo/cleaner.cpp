@@ -40,8 +40,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
         if (!in_a_segment)
         {
             /* cerco la prima cella segmento da pulire*/
-            //if (b.data_w[ibin] == 0 && b.data_v_w[ibin] == -125 )
-            //    std::cout<<ibin<<" "<<b.data_w[ibin]<<" "<< b.data_v[ibin]<<std::endl;
             if (beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number)
             {
                 in_a_segment = true;
@@ -51,7 +49,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
             }
         } else {
             /* cerco la fine segmento da pulire*/
-            //if (b.data_w[ibin] != 0 || b.data_v_w[ibin] != -125 || ibin == (beam_info.cell_num -1) )
             if (beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number || ibin == (beam_size - 1))
             {
                 in_a_segment = false;
@@ -100,7 +97,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
     {
-//printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin));
+// printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin));
 //printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
 //(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
 //(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
@@ -108,7 +105,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
         if (!in_a_segment)
         {
             /* cerco la prima cella segmento da pulire*/
-   //         if ( ((beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number) ||(beam_w(ibin) <= 0.5 && fabs(beam_v(ibin)) <= 0.5) )  && beam_z (ibin) != Z_missing  && beam_sd(ibin) > sd_threshold)
             if ( ((beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number) ||(beam_w(ibin) * fabs(beam_v(ibin)) <= 0.25) )  && beam_z (ibin) != Z_missing  && beam_sd(ibin) > sd_threshold)
             {
 //printf(" ----- START SEGMENT ------");
@@ -119,7 +115,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
             }
         } else {
             /* cerco la fine segmento da pulire*/
-            //if ( ( ( beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number) && (beam_w(ibin) > 0.5 || fabs(beam_v(ibin)) > 0.5) ) || ibin == (beam_size - 1) || beam_z(ibin) == Z_missing ||   beam_sd(ibin) <= sd_threshold) 
             if ( ( ( beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number) && (beam_w(ibin) * fabs(beam_v(ibin)) > 0.25) ) || ibin == (beam_size - 1) || beam_z(ibin) == Z_missing ||   beam_sd(ibin) <= sd_threshold) 
             {
                 in_a_segment = false;
@@ -129,23 +124,25 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
                 segment_length = end - start+1;
                 counter = counter + (unsigned)(segment_length);
 
-                /* Cerco dati validi in Z prima del segmento */
-//		int count=0;
-//                for (int ib = ibin - 12; ib < (signed)ibin; ++ib)
-//                    if (ib >= 0 && (beam_z(ib) > Z_missing && beam_w(ib) != W_threshold && ( beam_w(ib) > 0.5 || fabs(beam_v(ib)) > 0.5) ) )
-//                        count++;
-//                if (double(count)/double(min(int(ibin),12)) >=0.25) before = true;
+/* 	il segmento è corto allora cerco nei dintorni dei dati validi, se li trovo non pulisco */
+		if (segment_length <= 2*min_segment_length ){
+              /* Cerco dati validi in Z prima del segmento */
+	     	  int count=0;
+                  for (int ib = ibin - 2*min_segment_length; ib < (signed)ibin; ++ib)
+                    if (ib >= 0 && (beam_z(ib) > Z_missing && beam_w(ib) != W_threshold && ( beam_w(ib) > 0.5 || fabs(beam_v(ib)) > 0.5) ) )
+                       count++;
+                  if (double(count)/double(min(int(ibin),int(2*min_segment_length))) >=0.25) before = true;
 
-                /* Cerco dati validi in Z dopo il segmento */
-//                count = 0;
-//	        for (unsigned ia = ibin + 1; ia <= ibin + 12; ++ia)
-//                    if (ia < beam_size && (beam_z(ia) > Z_missing && (beam_w(ia) != W_threshold && ( beam_w(ia) > 0.5 || fabs(beam_v(ia)) > 0.5))  ))
-//                        count ++;
-//                if (double(count)/double(min(int(beam_size - ibin),12)) >=0.25) after = true;
-
+              /* Cerco dati validi in Z dopo il segmento */
+                  count = 0;
+	          for (unsigned ia = ibin + 1; ia <= ibin + 2*min_segment_length; ++ia)
+                   if (ia < beam_size && (beam_z(ia) > Z_missing && (beam_w(ia) != W_threshold && ( beam_w(ia) > 0.5 || fabs(beam_v(ia)) > 0.5))  ))
+                        count ++;
+                  if (double(count)/double(min(int(beam_size - ibin),int(2*min_segment_length))) >=0.25) after = true;
+		}
 //printf(" ----- STOP SEGMENT ------ %4d  --  %4d    before %d   after %d ",segment_length,counter, before,after);
-//                if ((segment_length >= min_segment_length && !before && !after) ||  segment_length >= max_segment_length)
-                if ((segment_length >= min_segment_length ) ||  segment_length >= max_segment_length)
+                if ((segment_length >= min_segment_length && (!before || !after) ) ||  segment_length >= max_segment_length)
+ //               if ((segment_length >= min_segment_length ) ||  segment_length >= max_segment_length)
                 {
                     /* qui pulisco */
                     //         printf (" pulisco %d %d %d \n",segment_length, min_segment_length, max_segment_length);
@@ -196,17 +193,17 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
 	elaboradar::gdal_init_once();
 	
 //printf("scrivo Z ");
-//Matrix2D <double>img;
-//img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
-//Matrix2D <unsigned char>img_tmp, z_clean;
-//std::string ext;
-//char pippo[200];
-//sprintf(pippo, "_%02d.png",iel);
-//ext=pippo;
+Matrix2D <double>img;
+img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
+Matrix2D <unsigned char>img_tmp, z_clean;
+std::string ext;
+char pippo[200];
+sprintf(pippo, "_%02d.png",iel);
+ext=pippo;
 
-//img_tmp=img.cast<unsigned char>();
-//z_clean=img_tmp;
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
+img_tmp=img.cast<unsigned char>();
+z_clean=img_tmp;
+elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
 //printf("V ");
 //img = (scan_v.array()-scan_v.offset)/scan_v.gain/256 ;
 //img_tmp=img.cast<unsigned char>();
@@ -232,13 +229,13 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
                 scan_z(i, ib) = cleaner.Z_missing;
   //              scan_w(i, ib) = cleaner.W_threshold;
     //            scan_v(i, ib) = cleaner.V_missing;
-//	       img_tmp(i,ib)=255;
-//	       z_clean(i,ib)=0;
-            } //else img_tmp(i,ib)= 0 ;
+	       img_tmp(i,ib)=255;
+	       z_clean(i,ib)=0;
+            } else img_tmp(i,ib)= 0 ;
 
     }
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
-//elaboradar::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean"+ext,"PNG");
+elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
+elaboradar::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean"+ext,"PNG");
 }
 
 }
