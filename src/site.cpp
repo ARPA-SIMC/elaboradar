@@ -1,3 +1,8 @@
+/**
+ *  @file
+ *  @ingroup progetto_cum_bac
+ *  @brief Questo file contiene le strutture site specifiche per GAT e SPC
+ */
 #include "site.h"
 #include <elaboradar/utils.h>
 #include "vpr_par.h"
@@ -13,6 +18,12 @@
 using namespace std;
 
 namespace {
+/*!
+ * @brief Construct an elevation array based on passed data
+ * @param data - array of elevation index (in 360/4096)
+ * @param count - Number of element in data
+ * @return Elev_array - Vector of elevation [double]
+ */
 vector<double> make_elev_array(const int* data, unsigned count)
 {
     vector<double> res;
@@ -24,11 +35,13 @@ vector<double> make_elev_array(const int* data, unsigned count)
 }
 
 namespace elaboradar {
-
 Site::~Site()
 {
 }
 
+/*!
+ *  @brief  struttura Site custom per GAT
+ */
 struct SiteGAT : public Site
 {
     SiteGAT()
@@ -75,6 +88,9 @@ struct SiteGAT : public Site
 
 
 
+/*!
+ *  @brief  struttura Site custom per SPC
+ */
 struct SiteSPC : public Site
 {
     SiteSPC()
