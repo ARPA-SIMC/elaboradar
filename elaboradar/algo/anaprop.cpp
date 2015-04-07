@@ -232,8 +232,8 @@ void Anaprop<T>::remove(
                    if ( !(SD[el_inf].get(i,k) < 1.3*conf_texture_threshold && SD[el_inf].get(i,k) > 0.01 && count_low >=5)) {
                        if ( k >= SD[el_up].beam_size || !(SD[el_up].get(i,k) < 1.7* conf_texture_threshold && SD[el_up].get(i,k) > 0.01 && count_high >=3)){
                            bin_low = fondo_scala;
-                           if ( k < SD[el_up].beam_size )  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_up].get(i,k),count_high );  
-                           else   LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  -- %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,count_high );
+                       //    if ( k < SD[el_up].beam_size )  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_up].get(i,k),count_high );  
+                       //    else   LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  -- %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,count_high );
                        }
                        else {
                            bin_low=bin_high;
@@ -277,7 +277,7 @@ void Anaprop<T>::remove(
                         volume[l].set(i, k, fondo_scala);
 		
                 }
-  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low <fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),SD[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low <fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),SD[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
                 //----------------controlli su bin_high nel caso in cui bin_low sia un no data per assegnare matrice anap  (dato_corrotto(i, k))
                 if (do_quality)
                 {
