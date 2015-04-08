@@ -193,17 +193,18 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
 	elaboradar::gdal_init_once();
 	
 //printf("scrivo Z ");
-Matrix2D <double>img;
-img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
-Matrix2D <unsigned char>img_tmp, z_clean;
-std::string ext;
-char pippo[200];
-sprintf(pippo, "_%02d.png",iel);
-ext=pippo;
+//Matrix2D <double>img;
+//img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
+//Matrix2D <unsigned char>img_tmp, z_clean;
+//std::string ext;
+//char pippo[200];
+//sprintf(pippo, "_%02d.png",iel);
+//ext=pippo;
 
-img_tmp=img.cast<unsigned char>();
-z_clean=img_tmp;
-elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
+//img_tmp=img.cast<unsigned char>();
+//z_clean=img_tmp;
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
+
 //printf("V ");
 //img = (scan_v.array()-scan_v.offset)/scan_v.gain/256 ;
 //img_tmp=img.cast<unsigned char>();
@@ -229,13 +230,13 @@ elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_act
                 scan_z(i, ib) = cleaner.Z_missing;
   //              scan_w(i, ib) = cleaner.W_threshold;
     //            scan_v(i, ib) = cleaner.V_missing;
-	       img_tmp(i,ib)=255;
-	       z_clean(i,ib)=0;
-            } else img_tmp(i,ib)= 0 ;
+//	       img_tmp(i,ib)=255;
+//	       z_clean(i,ib)=0;
+            } //else img_tmp(i,ib)= 0 ;
 
     }
-elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
-elaboradar::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean"+ext,"PNG");
+//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
+//elaboradar::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean"+ext,"PNG");
 }
 
 }
