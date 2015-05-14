@@ -1,13 +1,15 @@
 #include "algo/steiner.h"
 #include "par_class.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <func_Z_R.h>
-#ifdef __cplusplus
-}
-#endif
+#include "elaboradar/algo/utils.h"
+
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+//#include <func_Z_R.h>
+//#ifdef __cplusplus
+//}
+//#endif
 
 // valore mancante
 #define MISSING 0
@@ -28,7 +30,7 @@ namespace steiner {
 void Point::add_sample(double sample)
 {
     if (sample <= MINVAL_DB) return;
-    Z_bckgr += BYTEtoZ(DBtoBYTE(sample));
+    Z_bckgr += elaboradar::algo::BYTEtoZ(elaboradar::algo::DBtoBYTE(sample));
     bckgr += sample;
     ++npoints;
 }
