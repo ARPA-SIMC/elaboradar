@@ -98,7 +98,6 @@ void ODIMLoader::load(const std::string& pathname)
             // Create azimuth maps and PolarScan objects for this elevation
             const string& name = todo.first;
             Scans<double>& target = *todo.second;
-            PolarScan<double>& vol_pol_scan = target.append_scan(beam_count, beam_size, elevation, range_scale);
 
             // Pick the best quantity among the ones available
             if (!scan->hasQuantityData(name))
@@ -106,6 +105,7 @@ void ODIMLoader::load(const std::string& pathname)
                 LOG_WARN("no %s found for elevation angle %f: skipping", name.c_str(), elevation);
                 continue;
             }
+            PolarScan<double>& vol_pol_scan = target.append_scan(beam_count, beam_size, elevation, range_scale);
 
             unique_ptr<odim::PolarScanData> data(scan->getQuantityData(name));
 
@@ -135,9 +135,10 @@ void ODIMLoader::load(const std::string& pathname)
            }
         }
     }
-
     for (auto& i: to_load)
+	{ 
         i.second->load_info = load_info;
+	}
 }
 
 void ODIMStorer::store(const std::string& pathname)
