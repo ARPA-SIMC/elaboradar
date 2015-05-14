@@ -8,6 +8,7 @@
 #include <elaboradar/algo/anaprop.h>
 #include <elaboradar/algo/utils.h>
 #include <elaboradar/algo/azimuth_resample.h>
+#include <elaboradar/algo/dbz.h>
 #include "site.h"
 #include "algo/steiner.h"
 #include "algo/viz.h"
@@ -27,13 +28,13 @@
 #include "setwork.h"
 #include <sstream>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <func_Z_R.h>
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+//#include <func_Z_R.h>
+//#ifdef __cplusplus
+//}
+//#endif
 
 #include <func_Q3d.h>
 
@@ -207,12 +208,15 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     Scans<double> th_volume;
     Scans<double> v_volume;
     Scans<double> w_volume;
+    Scans<double> zdr_volume;
     loader.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &dbzh_volume);
     loader.request_quantity(odim::PRODUCT_QUANTITY_TH, &th_volume);
+
     if (do_clean)
     {
         loader.request_quantity(odim::PRODUCT_QUANTITY_VRAD, &v_volume);
         loader.request_quantity(odim::PRODUCT_QUANTITY_WRAD, &w_volume);
+        loader.request_quantity(odim::PRODUCT_QUANTITY_ZDR, &zdr_volume);
     }
     loader.load(nome_file);
 
@@ -225,9 +229,9 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
 
     // Normalise the scan elevations to match the elevations requested in Site
     auto elev_array = site.get_elev_array(do_medium);
-    for (auto i: loader.to_load)
-        i.second->normalize_elevations(elev_array);
-
+    for (auto i: loader.to_load){
+      if(!i.second->empty() ) i.second->normalize_elevations(elev_array);
+    }
     Scans<double>* z_volume;
     if (!dbzh_volume.empty())
         z_volume = &dbzh_volume;
@@ -238,11 +242,18 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
 
     if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
-        //for (unsigned i = 0; i < 1; ++i)
+      if (zdr_volume.empty())
+      {
+        //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i+100);
+            elaboradar::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
 	}
+      }else {
+        for (unsigned i = 0; i < z_volume->size(); ++i){
+            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i);
+            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100);
+	}
+      }
     }
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
@@ -377,7 +388,7 @@ void CUM_BAC::declutter_anaprop()
         anaprop.do_beamblocking = do_beamblocking;
         anaprop.do_bloccorr = do_bloccorr;
 	if ( above_15[2]/above_15[0] >= 0.025){
-	   if (above_0[1]/above_0[0] >= 0.6 && above_30[2]/above_15[2] <0.15 && above_0[1] >=20000){
+	   if (above_0[1]/above_0[0] >= 0.6 && above_30[2]/above_15[2] <0.15 && above_0[1] >=50000){
               anaprop.conf_texture_threshold = 5.;
         LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
               anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
@@ -1211,7 +1222,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     *hmax=INODATA;
     // Enrico vprmax=NODATAVPR;
     imax=INODATA;
-    soglia=DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
+    soglia=elaboradar::algo::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
         LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr[istart] , vpr[istart+4], soglia, peak, imax); 
@@ -2047,7 +2058,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                         //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
                         if (sample > 0)
                         {
-                            cartm(y, x)=cartm(y, x)+BYTEtoZ(sample);
+                            cartm(y, x)=cartm(y, x)+elaboradar::algo::BYTEtoZ(sample);
                             cont=cont+1;
                         }
                     }
