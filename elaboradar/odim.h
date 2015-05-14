@@ -5,13 +5,14 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <elaboradar/loader.h>
 
 namespace elaboradar {
 namespace volume {
 
-struct ODIMLoader
+struct ODIMLoader : Loader
 {
-    std::map<std::string, Scans<double>*> to_load;
+//    std::map<std::string, Scans<double>*> to_load;
 
     void request_quantity(const std::string& name, Scans<double>* volume);
 
