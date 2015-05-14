@@ -1,6 +1,8 @@
 #include "dbz.h"
 #include "utils.h"
+#include "algo/utils.h"
 
+/* 
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,7 +10,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
+*/
 //#define  aMP 316. 
 //#define  bMP 1.5
 #define  aMP_conv 500.0 
@@ -57,7 +59,7 @@ double DBZ::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic,198
     //---la formula recita che l'attenuazione è pari una funzione di Z reale (quindi corretta dell'attenuazione precedente). ovviamente devo avere un segnale per correggere.
     //--------- CALCOL
     att_tot=PIA;
-    Zhh=(double)(BYTEtoZ(DBZbyte));
+    Zhh= (BYTEtoZ(DBZbyte));
     if (10*log10(Zhh) > THRES_ATT )
     {
         Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
@@ -69,35 +71,57 @@ double DBZ::attenuation(unsigned char DBZbyte, double  PIA)  /* Doviak,Zrnic,198
     }
     return att_tot;
 }
+double DBZ::attenuation(double DBZvalue, double  PIA)  /* Doviak,Zrnic,1984 for rain as reported in cost 717 final document*/
+{
+    double Zhh,att_rate,R;/* PIA diventa att_tot devo decidere infatti se PIA sarà 3d percio' temp. uso  nomi diversi*/
+    double att_tot;
+
+    //---ricevo in ingresso il dato e l'attenuazione fino  quel punto
+    //---la formula recita che l'attenuazione è pari una funzione di Z reale (quindi corretta dell'attenuazione precedente). ovviamente devo avere un segnale per correggere.
+    //--------- CALCOL
+    att_tot=PIA;
+    Zhh=(DBZtoZ(DBZvalue));
+    if (DBZvalue > THRES_ATT )
+    {
+        //Zhh=pow(10., (log10(Zhh)+ 0.1*att_tot));
+        Zhh=DBZtoZ(DBZvalue+ att_tot);
+        R=pow((Zhh/aMP),(1.0/bMP));
+        att_rate=0.0018*pow(R,1.05);
+        // TODO: to compute scan by scan?
+        att_tot=att_tot+2.*att_rate*0.001 * base_cell_size;
+        if (att_tot>BYTEtoDB(254)) att_tot=BYTEtoDB(254);
+    }
+    return att_tot;
+}
 
 double DBZ::RtoDBZ(double rain) const
 {
-    return ::RtoDBZ(rain, aMP, bMP);
+    return elaboradar::algo::RtoDBZ(rain, aMP, bMP);
 }
 
 double DBZ::DBZtoR(double dbz) const
 {
-    return ::DBZtoR(dbz, aMP, bMP);
+    return elaboradar::algo::DBZtoR(dbz, aMP, bMP);
 }
 
 double DBZ::DBZ_snow(double dbz) const
 {
-    return ::RtoDBZ(::DBZtoR(dbz, aMP_SNOW, bMP_SNOW), aMP_class, bMP_class);
+    return elaboradar::algo::RtoDBZ(elaboradar::algo::DBZtoR(dbz, aMP_SNOW, bMP_SNOW), aMP_class, bMP_class);
 }
 
 double DBZ::DBZ_conv(double dbz) const
 {
-    return ::RtoDBZ(::BYTE_to_mp_func(DBtoBYTE(dbz), aMP_conv, bMP_conv), aMP_class, bMP_class);
+    return elaboradar::algo::RtoDBZ(elaboradar::algo::DBZtoR(dbz, aMP_conv, bMP_conv), aMP_class, bMP_class);
 }
 
 double DBZ::RtoDBZ_class(double R) const
 {
-    return ::RtoDBZ(R, aMP_class, bMP_class);
+    return elaboradar::algo::RtoDBZ(R, aMP_class, bMP_class);
 }
 
 double DBZ::DBZ_to_mp_func(double sample) const
 {
-    return ::BYTE_to_mp_func(DBtoBYTE(sample), aMP, bMP);
+    return elaboradar::algo::DBZtoR(sample, aMP, bMP);
 }
 
 }
