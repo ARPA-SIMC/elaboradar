@@ -96,7 +96,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
 
 
-
+// Con ZDR
 std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdzdr, PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& SD, int iray) const
 {
     const unsigned beam_size = beam_z.rows();
@@ -109,7 +109,41 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
     {
-// printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
+	bool is_clutter = false;
+	bool is_trash = false;
+	unsigned flag = 0 ;
+//  In our systems (ARPA ER) interferences and other non meteo echo are characterised by the following steps
+//
+//  1)  Wind is not defined ad spectrumWidth is 0. with Z defined.
+        if ( beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number && beam_z (ibin) != Z_missing ) {
+//  2)  Std<Dev of ZDR coulb be close to 0
+           if( beam_sdzdr(ibin) <= 0.01 ){
+		is_trash = true;
+		flag=2;
+           } else {
+//  2) inside thunderstorms (Z > 45) StdDev of Zdr and StdDev of Z are quite high) 
+	     if (beam_z (ibin) >= 45. ){
+	       if (beam_sdzdr(ibin) >4.0 && beam_sd (ibin) > 20. ) {
+	         is_trash = true;
+	         flag=2;
+               } else {
+		 is_trash = false;
+		 flag=0;
+               }
+           } else if ( beam_sd (ibin) >2. && (beam_sdzdr(ibin) >2.0 || beam_sd (ibin) > 10. ) ) {
+//  2) outside thunderstorms (Z > 45) StdDev of Zdr and StdDev of Z are lower  
+	        is_trash = true;
+	        flag=2;
+             }
+           }
+         } else { 
+//  3) Clutter is characterised by low value of VRAD and WRAD
+	    if  ((beam_w(ibin) * fabs(beam_v(ibin)))  <= 0.25 && beam_z (ibin) != Z_missing ) {
+	        is_clutter = true;
+                flag = 1;	  
+	    }
+	 }
+//printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
 //printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
 //(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
 //(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
@@ -117,18 +151,20 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
         if (!in_a_segment)
         {
             /* cerco la prima cella segmento da pulire*/
-            if ( ((beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number) ||(beam_w(ibin) * fabs(beam_v(ibin)) <= 0.25) )  && beam_z (ibin) != Z_missing  && beam_sd(ibin) > sd_threshold && (beam_sdzdr(ibin) >2.0 || beam_sd (ibin) > 10. ))
+//            if ( ((beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number) ||(beam_w(ibin) * fabs(beam_v(ibin)) <= 0.25) )  && beam_z (ibin) != Z_missing  && beam_sd(ibin) > sd_threshold && (beam_sdzdr(ibin) >2.0 || beam_sd (ibin) > 10. ))
+            if ( is_clutter || is_trash  )
             {
-// printf(" 1  ----- START SEGMENT ------");
-                in_a_segment = true;
+// printf(" %1d  ----- START SEGMENT ------",flag);
+               in_a_segment = true;
                 start = ibin;
                 after = false;
                 before = false;
             } 
-//	    else printf(" 0 ");
+//	    else printf(" %1d ",flag);
         } else {
             /* cerco la fine segmento da pulire*/
-            if ( ( ( beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number) && (beam_w(ibin) * fabs(beam_v(ibin)) > 0.25) ) || ibin == (beam_size - 1) || beam_z(ibin) == Z_missing ||   beam_sd(ibin) <= sd_threshold || ( beam_sdzdr(ibin) <= 2.0 && beam_sd (ibin) < 10.)) 
+            //if ( ( ( beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number) && (beam_w(ibin) * fabs(beam_v(ibin)) > 0.25) ) || ibin == (beam_size - 1) || beam_z(ibin) == Z_missing ||   beam_sd(ibin) <= sd_threshold || ( beam_sdzdr(ibin) <= 2.0 && beam_sd (ibin) < 10.)) 
+            if ( ! (is_clutter || is_trash ) || ibin == (beam_size - 1)) 
             {
                 in_a_segment = false;
                 end = ibin - 1;
@@ -153,7 +189,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
                         count ++;
                   if (double(count)/double(min(int(beam_size - ibin),int(2*min_segment_length))) >=0.25) after = true;
 		}
-// printf(" 0 ----- STOP SEGMENT ------ %4d  --  %4d    before %d   after %d ",segment_length,counter, before,after);
+// printf(" %1d ----- STOP SEGMENT ------ %4d  --  %4d    before %d   after %d ",flag, segment_length,counter, before,after);
                 if ((segment_length >= min_segment_length && (!before || !after) ) ||  segment_length >= max_segment_length)
  //               if ((segment_length >= min_segment_length ) ||  segment_length >= max_segment_length)
                 {
@@ -163,7 +199,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
                         res[ib] = true;
                 }
             } 
-// 	    else printf(" 1 ");
+// 	    else printf(" %1d ",flag);
 
         }
 // printf("\n");
@@ -171,7 +207,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     return res;
 }
 
-
+// Senza ZDR
 std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& SD, int iray) const
 {
     const unsigned beam_size = beam_z.rows();
@@ -363,7 +399,7 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
     elaboradar::volume::textureSD( ZDR_S,SDZDR2D, 1000. , 3,false);
 
 //	elaboradar::gdal_init_once();
-	
+      
 //printf("scrivo Z ");
 //Matrix2D <double>img;
 //img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
