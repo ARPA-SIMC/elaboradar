@@ -106,7 +106,8 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     unsigned segment_length;
     bool before, after;
     unsigned counter = 0;
-
+    unsigned counter_trash = 0;
+    unsigned counter_clutter =0;
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
     {
 	bool is_clutter = false;
@@ -121,16 +122,18 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 		is_trash = true;
 		flag=2;
            } else {
-//  2) inside thunderstorms (Z > 45) StdDev of Zdr and StdDev of Z are quite high) 
 	     if (beam_z (ibin) >= 45. ){
-	       if (beam_sdzdr(ibin) >4.0 && beam_sd (ibin) > 20. ) {
+//  2) inside thunderstorms (Z > 45) StdDev of Zdr and StdDev of Z are quite high) 
+	       if ((ibin >100 && double(counter_trash)/double(ibin) >=0.5 &&  ( beam_sdzdr(ibin) >1 || beam_sd (ibin) > 5. )) ||
+                   beam_sdzdr(ibin) >4.0 && beam_sd (ibin) > 20. ) {
 	         is_trash = true;
 	         flag=2;
                } else {
 		 is_trash = false;
 		 flag=0;
                }
-           } else if ( beam_sd (ibin) >2. && (beam_sdzdr(ibin) >2.0 || beam_sd (ibin) > 10. ) ) {
+           } else if ( (ibin >100 && double(counter_trash)/double(ibin) >=0.5 &&  ( beam_sdzdr(ibin) >1 || beam_sd (ibin) > 5. )) ||
+                       beam_sd (ibin) >2. && (beam_sdzdr(ibin) >2.0 || beam_sd (ibin) > 10. ) ) {
 //  2) outside thunderstorms (Z > 45) StdDev of Zdr and StdDev of Z are lower  
 	        is_trash = true;
 	        flag=2;
@@ -143,6 +146,9 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
                 flag = 1;	  
 	    }
 	 }
+         if( is_clutter) counter_clutter ++;
+         if( is_trash  ) counter_trash ++;
+
 //printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
 //printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
 //(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
@@ -151,7 +157,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
         if (!in_a_segment)
         {
             /* cerco la prima cella segmento da pulire*/
-//            if ( ((beam_w(ibin) == W_threshold && beam_v(ibin) == bin_wind_magic_number) ||(beam_w(ibin) * fabs(beam_v(ibin)) <= 0.25) )  && beam_z (ibin) != Z_missing  && beam_sd(ibin) > sd_threshold && (beam_sdzdr(ibin) >2.0 || beam_sd (ibin) > 10. ))
             if ( is_clutter || is_trash  )
             {
 // printf(" %1d  ----- START SEGMENT ------",flag);
@@ -163,7 +168,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 //	    else printf(" %1d ",flag);
         } else {
             /* cerco la fine segmento da pulire*/
-            //if ( ( ( beam_w(ibin) != W_threshold || beam_v(ibin) != bin_wind_magic_number) && (beam_w(ibin) * fabs(beam_v(ibin)) > 0.25) ) || ibin == (beam_size - 1) || beam_z(ibin) == Z_missing ||   beam_sd(ibin) <= sd_threshold || ( beam_sdzdr(ibin) <= 2.0 && beam_sd (ibin) < 10.)) 
             if ( ! (is_clutter || is_trash ) || ibin == (beam_size - 1)) 
             {
                 in_a_segment = false;
@@ -202,7 +206,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 // 	    else printf(" %1d ",flag);
 
         }
-// printf("\n");
+//printf("   %4d %4d \n",counter_clutter,counter_trash);
     }
     return res;
 }
@@ -354,11 +358,12 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
             if (corrected[ib])
             {
                 scan_z(i, ib) = cleaner.Z_missing;
-  //              scan_w(i, ib) = cleaner.W_threshold;
+    //            scan_w(i, ib) = cleaner.W_threshold;
     //            scan_v(i, ib) = cleaner.V_missing;
+	    }
 //	       img_tmp(i,ib)=255;
 //	       z_clean(i,ib)=0;
-            } //else img_tmp(i,ib)= 0 ;
+//            } else img_tmp(i,ib)= 0 ;
 
     }
 //elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
@@ -398,38 +403,47 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
     ZDR_S.push_back(scan_zdr);
     elaboradar::volume::textureSD( ZDR_S,SDZDR2D, 1000. , 3,false);
 
-//	elaboradar::gdal_init_once();
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+// Mettere a true per fare grafica per debug o false per non fare grafica
+//
+// RICORDARSI DI TOGLIERE/METTERE COMMENTI DOPO CLEAN_BEAM
+// -------------------------------------------------------------------
+Matrix2D <unsigned char>img_tmp, z_clean;
+Matrix2D <double>img;
+std::string ext;
+char pippo[200];
+if (false){
+  elaboradar::gdal_init_once();
       
-//printf("scrivo Z ");
-//Matrix2D <double>img;
-//img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
-//Matrix2D <unsigned char>img_tmp, z_clean;
-//std::string ext;
-//char pippo[200];
-//sprintf(pippo, "_%02d.png",iel);
-//ext=pippo;
+  printf("scrivo Z ");
+  img = (scan_z.array() - scan_z.offset )/ scan_z.gain /256 ;
+  sprintf(pippo, "_%02d.png",iel);
+  ext=pippo;
+  img_tmp=img.cast<unsigned char>();
+  z_clean=img_tmp;
+  elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
 
-//img_tmp=img.cast<unsigned char>();
-//z_clean=img_tmp;
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Z"+ext,  "PNG");
+//  printf("V ");
+//  img = (scan_v.array()-scan_v.offset)/scan_v.gain/256 ;
+//  img_tmp=img.cast<unsigned char>();
+//  elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_V"+ext,"PNG");
+//  printf("W ");
+//  img = (scan_w.array()-scan_w.offset)/scan_w.gain/256 ;
+//  img_tmp=img.cast<unsigned char>();
+//  elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_W"+ext,"PNG");
+  printf("SD2d ");
+  img = (SD2D[0].array()-SD2D[0].offset)/SD2D[0].gain/256 ;
+  img_tmp=img.cast<unsigned char>();
+  elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SD2d"+ext,"PNG");
+  printf("SDZDR2d ");
+  img = (SDZDR2D[0].array()-SDZDR2D[0].offset)/SDZDR2D[0].gain/256 ;
+  img_tmp=img.cast<unsigned char>();
+  elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SDZDR2d"+ext,"PNG");
+  printf("\n");
+}
 
-//printf("V ");
-//img = (scan_v.array()-scan_v.offset)/scan_v.gain/256 ;
-//img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_V"+ext,"PNG");
-//printf("W ");
-//img = (scan_w.array()-scan_w.offset)/scan_w.gain/256 ;
-//img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_W"+ext,"PNG");
-//printf("SD2d ");
-//img = (SD2D[0].array()-SD2D[0].offset)/SD2D[0].gain/256 ;
-//img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SD2d"+ext,"PNG");
-//printf("SDZDR2d ");
-//img = (SDZDR2D[0].array()-SDZDR2D[0].offset)/SDZDR2D[0].gain/256 ;
-//img_tmp=img.cast<unsigned char>();
-//elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SDZDR2d"+ext,"PNG");
-//printf("\n");
 
     for (unsigned i = 0; i < beam_count; ++i)
     {
@@ -442,9 +456,10 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
                 scan_z(i, ib) = cleaner.Z_missing;
   //              scan_w(i, ib) = cleaner.W_threshold;
     //            scan_v(i, ib) = cleaner.V_missing;
+            }
 //	       img_tmp(i,ib)=255;
 //	       z_clean(i,ib)=0;
-            } //else img_tmp(i,ib)= 0 ;
+//            } else img_tmp(i,ib)= 0 ;
 
     }
 //elaboradar::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_clean"+ext,"PNG");
