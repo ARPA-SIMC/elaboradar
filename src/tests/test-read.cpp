@@ -226,7 +226,7 @@ void to::test<1>()
 
     Volume<double> vsp20;
     algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(ssp20, vsp20);
+    resampler.resample_volume(ssp20, vsp20, 1);
     // Check the contents of what we read
     wruntest(test_0120141530gat_SP20, vsp20);
 }
@@ -266,8 +266,8 @@ void to::test<3>()
     lodim.load("../testdata/MSG1400715300U.101.h5");
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(ssp20, vsp20);
-    resampler.resample_volume(sodim, vodim);
+    resampler.resample_volume(ssp20, vsp20, 1);
+    resampler.resample_volume(sodim, vodim, 1);
 
     wruntest(test_volumes_equal, vsp20, vodim);
 }
@@ -306,8 +306,8 @@ void to::test<5>()
     _mod.load("../testdata/DBP2_060220140140_GATTATICO_mod");
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(ssp20, vsp20);
-    resampler.resample_volume(s_mod, v_mod);
+    resampler.resample_volume(ssp20, vsp20, 1);
+    resampler.resample_volume(s_mod, v_mod, 1);
 
     wruntest(test_volumes_equal, vsp20, v_mod);
 }

@@ -64,18 +64,18 @@ pair<double, unsigned> AzimuthIndex::closest(double azimuth) const
     return closest_of_two(azimuth, *prev, *i);
 }
 
-std::vector<pair<double, unsigned>> AzimuthIndex::intersecting(double azimuth, double amplitude) const
+std::vector<pair<double, unsigned>> AzimuthIndex::intersecting(double dst_azimuth, double dst_amplitude, double src_amplitude) const
 {
     // Compute the amplitude between our beams assuming the angles we have are
     // close to evenly spaced
-    double my_semi_amplitude = 360.0 / (double)by_angle.size() /2.;
+    double my_semi_amplitude = src_amplitude / 2.0;
     // Angles closer than this amount are considered the same for overlap detection
     static const double precision = 0.000000001;
 
-    double lowest_azimuth = azimuth - amplitude / 2 - my_semi_amplitude + precision;
+    double lowest_azimuth = dst_azimuth - dst_amplitude / 2 - my_semi_amplitude + precision;
     while (lowest_azimuth < 0) lowest_azimuth += 360;
     lowest_azimuth = fmod(lowest_azimuth, 360);
-    double highest_azimuth = azimuth + amplitude / 2 + my_semi_amplitude - precision;
+    double highest_azimuth = dst_azimuth + dst_amplitude / 2 + my_semi_amplitude - precision;
     while (highest_azimuth < 0) highest_azimuth += 360;
     highest_azimuth = fmod(highest_azimuth, 360);
 
@@ -101,12 +101,11 @@ std::vector<pair<double, unsigned>> AzimuthIndex::intersecting(double azimuth, d
 
 
 template<typename T>
-void Closest<T>::resample_polarscan(const PolarScan<T>& src, PolarScan<T>& dst) const
+void Closest<T>::resample_polarscan(const PolarScan<T>& src, PolarScan<T>& dst, double src_beam_width) const
 {
-    if (src.beam_count < dst.beam_count)
-        throw std::runtime_error("resample_polarscan currently only work for resampling to smaller volumes");
-
     AzimuthIndex index(src.azimuths_real);
+
+    double max_distance = src_beam_width/2 + 360.0 / dst.beam_count / 2;
 
     // Do the merge
     for (unsigned dst_idx = 0; dst_idx < dst.beam_count; ++dst_idx)
@@ -115,57 +114,72 @@ void Closest<T>::resample_polarscan(const PolarScan<T>& src, PolarScan<T>& dst) 
 
         pair<double, unsigned> pos = index.closest(dst_azimuth);
 
-        /// Copy the real elevation value
-        dst.elevations_real(dst_idx) = src.elevations_real(pos.second);
+        if (angle_distance(dst_azimuth, pos.first) > max_distance)
+        {
+            /// Use the nominal elevation as the real one
+            dst.elevations_real(dst_idx) = src.elevation;
 
-        /// Copy the real azimuth value
-        dst.azimuths_real(dst_idx) = pos.first;
+            /// Use the nominal azimuth as the real one
+            dst.azimuths_real(dst_idx) = dst_azimuth;
+        } else {
+            /// Copy the real elevation value
+            dst.elevations_real(dst_idx) = src.elevations_real(pos.second);
 
-        /// Copy the closest beam
-        dst.row(dst_idx) = src.row(pos.second); 
+            /// Copy the real azimuth value
+            dst.azimuths_real(dst_idx) = pos.first;
+
+            /// Copy the closest beam
+            dst.row(dst_idx) = src.row(pos.second);
+        }
     }
 }
 
 
 template<typename T>
-void MaxOfClosest<T>::resample_polarscan(const PolarScan<T>& src, PolarScan<T>& dst) const
+void MaxOfClosest<T>::resample_polarscan(const PolarScan<T>& src, PolarScan<T>& dst, double src_beam_width) const
 {
-    if (src.beam_count < dst.beam_count)
-        throw std::runtime_error("resample_polarscan currently only work for resampling to smaller volumes");
-
     AzimuthIndex index(src.azimuths_real);
+
+    double max_distance = src_beam_width/2 + 360.0 / dst.beam_count / 2;
 
     // Do the merge
     for (unsigned dst_idx = 0; dst_idx < dst.beam_count; ++dst_idx)
     {
         double dst_azimuth = (double)dst_idx / (double)dst.beam_count * 360.0;
-        vector<pair<double, unsigned>> positions = index.intersecting(dst_azimuth, 360.0 / dst.beam_count);
-        if (positions.empty()) throw std::runtime_error("no source beams found");
-
-        double el_sum = 0;
-        double az_sum = 0;
-
-        // Copy the first beam
-        auto i = positions.cbegin();
-        dst.row(dst_idx) = src.row(i->second);
-        el_sum += src.elevations_real(i->second);
-        az_sum += src.azimuths_real(i->second);
-
-        // Take the maximum of all beam values
-        for (++i; i != positions.end(); ++i)
+        vector<pair<double, unsigned>> positions = index.intersecting(dst_azimuth, 360.0 / dst.beam_count, src_beam_width);
+        if (positions.empty())
         {
-            for (unsigned bi = 0; bi < dst.beam_size; ++bi)
-                if (dst(dst_idx, bi) < src(i->second, bi))
-                    dst(dst_idx, bi) = src(i->second, bi);
+            /// Use the nominal elevation as the real one
+            dst.elevations_real(dst_idx) = src.elevation;
+
+            /// Use the nominal azimuth as the real one
+            dst.azimuths_real(dst_idx) = dst_azimuth;
+        } else {
+            double el_sum = 0;
+            double az_sum = 0;
+
+            // Copy the first beam
+            auto i = positions.cbegin();
+            dst.row(dst_idx) = src.row(i->second);
             el_sum += src.elevations_real(i->second);
             az_sum += src.azimuths_real(i->second);
+
+            // Take the maximum of all beam values
+            for (++i; i != positions.end(); ++i)
+            {
+                for (unsigned bi = 0; bi < dst.beam_size; ++bi)
+                    if (dst(dst_idx, bi) < src(i->second, bi))
+                        dst(dst_idx, bi) = src(i->second, bi);
+                el_sum += src.elevations_real(i->second);
+                az_sum += src.azimuths_real(i->second);
+            }
+
+            // The real elevation of this beam is the average of the beams we used
+            dst.elevations_real(dst_idx) = el_sum / positions.size();
+
+            // The real azimuth of this beam is the average of the azimuths we used
+            dst.azimuths_real(dst_idx) = az_sum / positions.size();
         }
-
-        // The real elevation of this beam is the average of the beams we used
-        dst.elevations_real(dst_idx) = el_sum / positions.size();
-
-        // The real azimuth of this beam is the average of the azimuths we used
-        dst.azimuths_real(dst_idx) = az_sum / positions.size();
     }
 }
 

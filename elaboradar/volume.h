@@ -145,7 +145,7 @@ public:
  * @param [in] beam_size
  * @param[in] default_value
  */
-    PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value = BYTEtoDB(1))
+    PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value=BYTEtoDB(1))
         : PolarScanBase(beam_count, beam_size),
           Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value))
     {

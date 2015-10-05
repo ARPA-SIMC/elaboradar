@@ -184,7 +184,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     }
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(z_volume, volume);
+    resampler.resample_volume(z_volume, volume, 1.0);
 
     /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
@@ -249,17 +249,17 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
         //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
             elaboradar::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
-	}
-      }else {
+        }
+      } else {
         for (unsigned i = 0; i < z_volume->size(); ++i){
             algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i);
             algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100);
-	}
+        }
       }
     }
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(*z_volume, volume);
+    resampler.resample_volume(*z_volume, volume, 1.0);
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);
