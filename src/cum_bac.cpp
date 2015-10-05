@@ -233,8 +233,10 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
       if(!i.second->empty() ) i.second->normalize_elevations(elev_array);
     }
     Scans<double>* z_volume;
-    if (!dbzh_volume.empty())
-        z_volume = &dbzh_volume;
+    if (!dbzh_volume.empty()) {
+        LOG_WARN(" DBZH found");
+       z_volume = &dbzh_volume;
+    }
     else {
         LOG_WARN("no DBZH found: using TH");
         z_volume = &th_volume;
