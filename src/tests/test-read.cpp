@@ -52,30 +52,30 @@ void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
     VolumeStats stats;
     v.compute_stats(stats);
     //stats.print(stdout);
-    wassert(actual(stats.count_zeros[0]) == 139396);
-    wassert(actual(stats.count_zeros[1]) == 181135);
-    wassert(actual(stats.count_zeros[2]) == 192056);
-    wassert(actual(stats.count_zeros[3]) == 196000);
-    wassert(actual(stats.count_zeros[4]) == 195715);
-    wassert(actual(stats.count_zeros[5]) == 195897);
-    wassert(actual(stats.count_ones[0]) ==  97);
-    wassert(actual(stats.count_ones[1]) == 217);
-    wassert(actual(stats.count_ones[2]) == 119);
-    wassert(actual(stats.count_ones[3]) ==  70);
-    wassert(actual(stats.count_ones[4]) ==  66);
-    wassert(actual(stats.count_ones[5]) ==  43);
-    wassert(actual(stats.count_others[0]) == 58107);
-    wassert(actual(stats.count_others[1]) == 16248);
-    wassert(actual(stats.count_others[2]) ==  5425);
-    wassert(actual(stats.count_others[3]) ==  1530);
-    wassert(actual(stats.count_others[4]) ==  1819);
-    wassert(actual(stats.count_others[5]) ==  1660);
-    wassert(actual(stats.sum_others[0]) == 5475665);
-    wassert(actual(stats.sum_others[1]) == 1130268);
-    wassert(actual(stats.sum_others[2]) ==  332252);
-    wassert(actual(stats.sum_others[3]) ==   52204);
-    wassert(actual(stats.sum_others[4]) ==  100286);
-    wassert(actual(stats.sum_others[5]) ==  101241);
+    wassert(actual(stats.count_zeros[0]) == 145426);
+    wassert(actual(stats.count_zeros[1]) == 184085);
+    wassert(actual(stats.count_zeros[2]) == 193145);
+    wassert(actual(stats.count_zeros[3]) == 196213);
+    wassert(actual(stats.count_zeros[4]) == 196085);
+    wassert(actual(stats.count_zeros[5]) == 196080);
+    wassert(actual(stats.count_ones[0]) == 104);
+    wassert(actual(stats.count_ones[1]) == 204);
+    wassert(actual(stats.count_ones[2]) == 104);
+    wassert(actual(stats.count_ones[3]) ==  58);
+    wassert(actual(stats.count_ones[4]) ==  61);
+    wassert(actual(stats.count_ones[5]) ==  38);
+    wassert(actual(stats.count_others[0]) == 52070);
+    wassert(actual(stats.count_others[1]) == 13311);
+    wassert(actual(stats.count_others[2]) ==  4351);
+    wassert(actual(stats.count_others[3]) ==  1329);
+    wassert(actual(stats.count_others[4]) ==  1454);
+    wassert(actual(stats.count_others[5]) ==  1482);
+    wassert(actual(stats.sum_others[0]) == 4759195);
+    wassert(actual(stats.sum_others[1]) ==  914997);
+    wassert(actual(stats.sum_others[2]) ==  257459);
+    wassert(actual(stats.sum_others[3]) ==   46349);
+    wassert(actual(stats.sum_others[4]) ==   78749);
+    wassert(actual(stats.sum_others[5]) ==   90563);
 }
 
 void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
@@ -107,31 +107,31 @@ void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
     // that looks correct
     VolumeStats stats;
     v.compute_stats(stats);
-    //stats.print(stdout);
-    wassert(actual(stats.count_zeros[0]) == 139391);
-    wassert(actual(stats.count_zeros[1]) == 181129);
-    wassert(actual(stats.count_zeros[2]) == 192055);
-    wassert(actual(stats.count_zeros[3]) == 196011);
-    wassert(actual(stats.count_zeros[4]) == 195722);
-    wassert(actual(stats.count_zeros[5]) == 195897);
-    wassert(actual(stats.count_ones[0]) ==  98);
-    wassert(actual(stats.count_ones[1]) == 217);
-    wassert(actual(stats.count_ones[2]) == 120);
-    wassert(actual(stats.count_ones[3]) ==  67);
-    wassert(actual(stats.count_ones[4]) ==  62);
-    wassert(actual(stats.count_ones[5]) ==  49);
-    wassert(actual(stats.count_others[0]) == 58111);
-    wassert(actual(stats.count_others[1]) == 16254);
-    wassert(actual(stats.count_others[2]) ==  5425);
-    wassert(actual(stats.count_others[3]) ==  1522);
-    wassert(actual(stats.count_others[4]) ==  1816);
-    wassert(actual(stats.count_others[5]) ==  1654);
-    wassert(actual(stats.sum_others[0]) == 5454271);
-    wassert(actual(stats.sum_others[1]) == 1125972);
-    wassert(actual(stats.sum_others[2]) ==  330926);
-    wassert(actual(stats.sum_others[3]) ==   51911);
-    wassert(actual(stats.sum_others[4]) ==   99965);
-    wassert(actual(stats.sum_others[5]) ==  100920);
+    // stats.print(stdout);
+    wassert(actual(stats.count_zeros[0]) == 145420);
+    wassert(actual(stats.count_zeros[1]) == 184078);
+    wassert(actual(stats.count_zeros[2]) == 193143);
+    wassert(actual(stats.count_zeros[3]) == 196220);
+    wassert(actual(stats.count_zeros[4]) == 196090);
+    wassert(actual(stats.count_zeros[5]) == 196080);
+    wassert(actual(stats.count_ones[0]) == 106);
+    wassert(actual(stats.count_ones[1]) == 203);
+    wassert(actual(stats.count_ones[2]) == 105);
+    wassert(actual(stats.count_ones[3]) ==  56);
+    wassert(actual(stats.count_ones[4]) ==  58);
+    wassert(actual(stats.count_ones[5]) ==  43);
+    wassert(actual(stats.count_others[0]) == 52074);
+    wassert(actual(stats.count_others[1]) == 13319);
+    wassert(actual(stats.count_others[2]) ==  4352);
+    wassert(actual(stats.count_others[3]) ==  1324);
+    wassert(actual(stats.count_others[4]) ==  1452);
+    wassert(actual(stats.count_others[5]) ==  1477);
+    wassert(actual(stats.sum_others[0]) == 4740629);
+    wassert(actual(stats.sum_others[1]) ==  911724);
+    wassert(actual(stats.sum_others[2]) ==  256528);
+    wassert(actual(stats.sum_others[3]) ==   46119);
+    wassert(actual(stats.sum_others[4]) ==   78528);
+    wassert(actual(stats.sum_others[5]) ==   90287);
 }
 
 namespace {
@@ -246,6 +246,8 @@ void to::test<2>()
 template<> template<>
 void to::test<3>()
 {
+    // Odim and SP20 are not comparable anymore
+#if 0
     using namespace std;
     using namespace elaboradar::volume;
     namespace odim = OdimH5v21;
@@ -270,6 +272,7 @@ void to::test<3>()
     resampler.resample_volume(sodim, vodim, 1);
 
     wruntest(test_volumes_equal, vsp20, vodim);
+#endif
 }
 
 template<> template<>
@@ -288,6 +291,8 @@ void to::test<4>()
 template<> template<>
 void to::test<5>()
 {
+    // Odim and SP20 are not comparable anymore
+#if 0
     using namespace std;
     using namespace elaboradar::volume;
     Scans<double> ssp20;
@@ -310,6 +315,7 @@ void to::test<5>()
     resampler.resample_volume(s_mod, v_mod, 1);
 
     wruntest(test_volumes_equal, vsp20, v_mod);
+#endif
 }
 
 

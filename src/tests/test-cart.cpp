@@ -170,8 +170,8 @@ void to::test<2>()
 
     // Azimuth at the map corners and edge middle points
     wassert(actual(mapping.map_azimuth(  0,   0)) == mis); // Top left
-    wassert(actual(mapping.map_azimuth(  0, 493)) == 399); // Top middle
-    wassert(actual(mapping.map_azimuth(  0, 494)) == 399); // Top middle
+    wassert(actual(mapping.map_azimuth(  0, 493)) ==   0); // Top middle
+    wassert(actual(mapping.map_azimuth(  0, 494)) ==   0); // Top middle
     wassert(actual(mapping.map_azimuth(  0, 987)) == mis); // Top right
     wassert(actual(mapping.map_azimuth(493, 987)) ==  99); // Middle right
     wassert(actual(mapping.map_azimuth(494, 987)) ==  99); // Middle right
@@ -206,10 +206,10 @@ void to::test<2>()
     // Check range
 
     // Range in the middle (on top of the radar) should be 0
-    wassert(actual(smapping.map_range(123, 123)) == 2);
+    wassert(actual(smapping.map_range(123, 123)) == 0);
 
     // Range at map edges at 90° angles should be beam_size
-    wassert(actual(smapping.map_range(  0, 123)) == 493); // Middle left
+    wassert(actual(smapping.map_range(  0, 123)) == 492); // Middle left
     wassert(actual(smapping.map_range(246, 123)) == 490); // Middle right
     wassert(actual(smapping.map_range(123,   0)) == 493); // Top middle
     wassert(actual(smapping.map_range(123, 246)) == 490); // Bottom middle
@@ -224,7 +224,7 @@ void to::test<2>()
 
     // Azimuth at the map corners and edge middle points
     wassert(actual(smapping.map_azimuth(  0,   0)) == mis); // Top left
-    wassert(actual(smapping.map_azimuth(  0, 123)) == 399); // Top middle
+    wassert(actual(smapping.map_azimuth(  0, 123)) ==   0); // Top middle
     wassert(actual(smapping.map_azimuth(  0, 246)) == mis); // Top right
     wassert(actual(smapping.map_azimuth(123, 246)) ==  99); // Middle right
     wassert(actual(smapping.map_azimuth(246, 246)) == mis); // Bottom right
@@ -234,10 +234,10 @@ void to::test<2>()
 
     // Azimuth at the 4 corners around the centre should be at roughly 45°
     // angles
-    wassert(actual(smapping.map_azimuth(122, 122)) == 335);
-    wassert(actual(smapping.map_azimuth(122, 124)) ==  26);
-    wassert(actual(smapping.map_azimuth(124, 124)) == 144);
-    wassert(actual(smapping.map_azimuth(124, 122)) == 241);
+    wassert(actual(smapping.map_azimuth(122, 122)) == 364);
+    wassert(actual(smapping.map_azimuth(122, 124)) ==  72);
+    wassert(actual(smapping.map_azimuth(124, 124)) == 149);
+    wassert(actual(smapping.map_azimuth(124, 122)) == 261);
 }
 
 }
