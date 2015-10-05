@@ -19,25 +19,26 @@ protected:
     std::map<double, unsigned> by_angle;		///< map to link azimuth angle and beam index\
 
 public:
-/**
- * Build an index with the azimuths of a PolarScan
- * @param [in] - azimuths
- */
+    /**
+     * Build an index with the azimuths of a PolarScan
+     * @param [in] - azimuths
+     */
     AzimuthIndex(const Eigen::VectorXd& azimuths);
 
-/**
- *  Get the closest position to an azimuth angle
- *
- *  @param [in] azimuth - Searched value
- *  @return pair value
- */
+    /**
+     *  Get the closest position to an azimuth angle
+     *
+     *  @param [in] azimuth - Searched value
+     *  @return pair value
+     */
     std::pair<double, unsigned> closest(double azimuth) const;
-/**
- * Get all the positions intersecting an angle centered on azimuth and with the given amplitude
- *
- * @param [in] - azimuth
- * @param [in] - amplitude
- */
+
+    /**
+     * Get all the positions intersecting an angle centered on azimuth and with the given amplitude
+     *
+     * @param [in] - azimuth
+     * @param [in] - amplitude
+     */
     std::vector<std::pair<double, unsigned>> intersecting(double azimuth, double amplitude) const;
 };
 
