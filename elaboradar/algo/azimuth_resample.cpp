@@ -66,8 +66,8 @@ pair<double, unsigned> AzimuthIndex::closest(double azimuth) const
 
 std::vector<pair<double, unsigned>> AzimuthIndex::intersecting(double azimuth, double amplitude) const
 {
-    // Approximate our amplitude assuming the angles we have are close to
-    // evenly spaced
+    // Compute the amplitude between our beams assuming the angles we have are
+    // close to evenly spaced
     double my_semi_amplitude = 360.0 / (double)by_angle.size() /2.;
     // Angles closer than this amount are considered the same for overlap detection
     static const double precision = 0.000000001;

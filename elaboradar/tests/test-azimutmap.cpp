@@ -54,13 +54,17 @@ void to::test<4>()
         azimuths(i) = (double)i;
     AzimuthIndex am(azimuths);
 
-    auto res = am.intersecting(0, 2);
-    wassert(actual(res.size()) == 3);
-    wassert(actual(res[0]) == make_pair(359.0, 359u));
-    wassert(actual(res[1]) == make_pair(0.0, 0u));
-    wassert(actual(res[2]) == make_pair(1.0, 1u));
+    // From -177.5 to 182.5
+    auto res = am.intersecting(0, 4);
+    wassert(actual(res.size()) == 5);
+    wassert(actual(res[0]) == make_pair(358.0, 358u));
+    wassert(actual(res[1]) == make_pair(359.0, 359u));
+    wassert(actual(res[2]) == make_pair(0.0, 0u));
+    wassert(actual(res[3]) == make_pair(1.0, 1u));
+    wassert(actual(res[4]) == make_pair(2.0, 2u));
 
-    res = am.intersecting(180, 2.1);
+    // From -177.1 to 182.9
+    res = am.intersecting(180, 4.8);
     wassert(actual(res.size()) == 5);
     wassert(actual(res[0]) == make_pair(178.0, 178u));
     wassert(actual(res[1]) == make_pair(179.0, 179u));
@@ -68,13 +72,16 @@ void to::test<4>()
     wassert(actual(res[3]) == make_pair(181.0, 181u));
     wassert(actual(res[4]) == make_pair(182.0, 182u));
 
-    res = am.intersecting(360, 2.1);
-    wassert(actual(res.size()) == 5);
-    wassert(actual(res[0]) == make_pair(358.0, 358u));
-    wassert(actual(res[1]) == make_pair(359.0, 359u));
-    wassert(actual(res[2]) == make_pair(0.0, 0u));
-    wassert(actual(res[3]) == make_pair(1.0, 1u));
-    wassert(actual(res[4]) == make_pair(2.0, 2u));
+    // From -176.6 to 183.1
+    res = am.intersecting(360, 5.2);
+    wassert(actual(res.size()) == 7);
+    wassert(actual(res[0]) == make_pair(357.0, 357u));
+    wassert(actual(res[1]) == make_pair(358.0, 358u));
+    wassert(actual(res[2]) == make_pair(359.0, 359u));
+    wassert(actual(res[3]) == make_pair(0.0, 0u));
+    wassert(actual(res[4]) == make_pair(1.0, 1u));
+    wassert(actual(res[5]) == make_pair(2.0, 2u));
+    wassert(actual(res[6]) == make_pair(3.0, 3u));
 }
 
 }
