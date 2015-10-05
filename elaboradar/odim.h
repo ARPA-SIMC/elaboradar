@@ -1,5 +1,11 @@
 #ifndef ELABORADAR_ODIM_H
 #define ELABORADAR_ODIM_H
+/**
+ *  @file
+ *  @ingroup progetto_cum_bac
+ *  @brief Codice per il caricamento di volumi ODIM in elaboradar
+*/
+
 
 #include <elaboradar/volume.h>
 #include <string>
@@ -10,12 +16,22 @@
 namespace elaboradar {
 namespace volume {
 
+/**
+ *  Struttura che eredita da Loader e definisce i metodi per accedere ai dati ODIM
+ */
 struct ODIMLoader : Loader
 {
-//    std::map<std::string, Scans<double>*> to_load;
-
+    /**
+     * Define a request - Fill to_load attribute  
+     * @param [in] name   - Quantity requested
+     * @param [in] volume - Scans where the data will be loaded
+     */
     void request_quantity(const std::string& name, Scans<double>* volume);
 
+    /**
+     * Load method 
+     * @param [in] pathname - full path for data file
+     */
     void load(const std::string& pathname);
 };
 

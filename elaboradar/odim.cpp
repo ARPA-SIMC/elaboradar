@@ -155,7 +155,7 @@ void ODIMStorer::store(const std::string& pathname)
     unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
     unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
-cout<<"aperto file"<<endl;
+// cout<<"aperto file"<<endl;
 //    unsigned max_elev=0;
     for(unsigned i=0;i<to_store_int.size();i++)
 	for(unsigned j=0;j<to_store_int[i]->size();j++)
