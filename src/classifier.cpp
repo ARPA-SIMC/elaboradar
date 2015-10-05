@@ -197,13 +197,13 @@ classifier::classifier(const string& file, const Site& site):pathname(file)
 	printf("Non so se è andato tutto bene, ma almeno sono arrivato in fondo\n");
 
     algo::azimuthresample::Closest<double> resampler;
-	resampler.resample_volume(full_volume_z, vol_z);
-	resampler.resample_volume(full_volume_zdr, vol_zdr);
-	resampler.resample_volume(full_volume_rhohv, vol_rhohv);
-	resampler.resample_volume(full_volume_phidp, vol_phidp);
-	resampler.resample_volume(full_volume_vrad, vol_vrad);
-	resampler.resample_volume(full_volume_snr, vol_snr);
-	vol_hca.quantity="CLASS";
+    resampler.resample_volume(full_volume_z, vol_z, 1);
+    resampler.resample_volume(full_volume_zdr, vol_zdr, 1);
+    resampler.resample_volume(full_volume_rhohv, vol_rhohv, 1);
+    resampler.resample_volume(full_volume_phidp, vol_phidp, 1);
+    resampler.resample_volume(full_volume_vrad, vol_vrad, 1);
+    resampler.resample_volume(full_volume_snr, vol_snr, 1);
+    vol_hca.quantity="CLASS";
 
 	cout<<vol_z.load_info->acq_date<<endl;
 }
