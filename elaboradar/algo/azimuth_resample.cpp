@@ -68,14 +68,14 @@ std::vector<pair<double, unsigned>> AzimuthIndex::intersecting(double azimuth, d
 {
     // Approximate our amplitude assuming the angles we have are close to
     // evenly spaced
-    double my_amplitude = 360.0 / (double)by_angle.size();
+    double my_semi_amplitude = 360.0 / (double)by_angle.size() /2.;
     // Angles closer than this amount are considered the same for overlap detection
     static const double precision = 0.000000001;
 
-    double lowest_azimuth = azimuth - amplitude / 2 - my_amplitude + precision;
+    double lowest_azimuth = azimuth - amplitude / 2 - my_semi_amplitude + precision;
     while (lowest_azimuth < 0) lowest_azimuth += 360;
     lowest_azimuth = fmod(lowest_azimuth, 360);
-    double highest_azimuth = azimuth + amplitude / 2 + my_amplitude - precision;
+    double highest_azimuth = azimuth + amplitude / 2 + my_semi_amplitude - precision;
     while (highest_azimuth < 0) highest_azimuth += 360;
     highest_azimuth = fmod(highest_azimuth, 360);
 
@@ -122,7 +122,7 @@ void Closest<T>::resample_polarscan(const PolarScan<T>& src, PolarScan<T>& dst) 
         dst.azimuths_real(dst_idx) = pos.first;
 
         /// Copy the closest beam
-        dst.row(dst_idx) = src.row(pos.second);
+        dst.row(dst_idx) = src.row(pos.second); 
     }
 }
 
