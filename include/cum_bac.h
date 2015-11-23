@@ -78,7 +78,7 @@ public:
 
     log4c_category_t* logging_category; ///< logging category 
 
-    unsigned MyMAX_BIN;			///< maxmimu number of beam size
+    unsigned MyMAX_BIN;			///< maximum number of beam size
     const Config& cfg;			///< Configuration object
     const Site& site;			///< site information object
     Assets assets;			///< others
