@@ -369,10 +369,11 @@ LOG_WARN("Anaprop remove without SD");
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            int loc_el_inf = first_level(i, k);
+            int loc_el_inf = first_level(i, k) <= volume.size() ? first_level(i,k) : volume.size();
+            
             while ( k >= volume[loc_el_inf].beam_size)
             {
-//                LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
+            //    LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
                 loc_el_inf--;
                 if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
             }
@@ -380,7 +381,7 @@ LOG_WARN("Anaprop remove without SD");
  * PER IL MOMENTO NON BUTTO ANCORA QUESTO CODICE CI DEVO PENSARE
  */
 	   while (loc_el_inf > 0 && SD[loc_el_inf-1].get(i,k) < conf_texture_threshold &&  SD[loc_el_inf-1].get(i,k)>=0.01 && volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
-//                  LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
+             //     LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
                 loc_el_inf--;
             }
 /*  */   
@@ -425,7 +426,7 @@ LOG_WARN("Anaprop remove without SD");
                 test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
             else
                 test_an=(bin_low > fondo_scala && bin_high > fondo_scala );
-            //  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  ",i,k,el_inf,el_up,bin_low,bin_high,   cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT);
+           //   LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  ",i,k,el_inf,el_up,bin_low,bin_high,   cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT);
             //------------------ se ho qualcosa sia al livello base che sopra allora effettuo il confronto-----------------
             if(test_an )
             {
@@ -459,12 +460,12 @@ LOG_WARN("Anaprop remove without SD");
                        for(unsigned l=0; l<el_up; l++){
                            volume[l].set(i, k, bin_high);  //ALTERN
                        }
-                       //  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  TA-AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT ) ;
+                     //    LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  TA-AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT ) ;
                    } else {
                        for(unsigned l=0; l<el_up; l++){
                            volume[l].set(i, k, fondo_scala);  //ALTERN
                        }
-                       // if (k < volume[el_up].beam_size) LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f   TA-AN set to fondo_scala",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT);
+                      //  if (k < volume[el_up].beam_size) LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f   TA-AN set to fondo_scala",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT);
                    }
                    //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
                    flag_anap = true;
