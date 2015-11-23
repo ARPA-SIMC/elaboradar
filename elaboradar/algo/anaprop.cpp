@@ -96,7 +96,9 @@ void Anaprop<T>::remove(
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            int loc_el_inf = first_level(i, k);
+            //int loc_el_inf = first_level(i, k);
+            int loc_el_inf = first_level(i, k) < volume.size() ? first_level(i,k) : volume.size()-1;
+//           LOG_WARN(" Decremento %d %d %d %d ",i,k,loc_el_inf, volume.size() ); 
             while ( k >= volume[loc_el_inf].beam_size)
             {
                 //LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
@@ -113,17 +115,21 @@ void Anaprop<T>::remove(
                 elev_fin[i][k]=el_inf;
 
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
-            const unsigned el_up = el_inf +1;
+            //const unsigned el_up = el_inf +1;
+            unsigned el_up = el_inf +1;
 
             // ------------assegno bin_low e bin_high 
 
             float bin_low  = volume[el_inf].get(i, k);
             float bin_high;
             if (el_up >= volume.size() || k >= volume[el_up].beam_size){
-                bin_high=fondo_scala;
+                el_up=el_inf;
+                bin_high = volume[el_up].get(i, k);
+                //bin_high=fondo_scala;
             } else{
                 bin_high = volume[el_up].get(i, k);
             }
+ //          LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up ); 
 
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if(bin_high == fondo_scala && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
@@ -369,8 +375,7 @@ LOG_WARN("Anaprop remove without SD");
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
-            int loc_el_inf = first_level(i, k) <= volume.size() ? first_level(i,k) : volume.size();
-            
+            int loc_el_inf = first_level(i, k) < volume.size() ? first_level(i,k) : volume.size()-1;
             while ( k >= volume[loc_el_inf].beam_size)
             {
             //    LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
@@ -391,14 +396,17 @@ LOG_WARN("Anaprop remove without SD");
                 elev_fin[i][k]=el_inf;
 
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
-            const unsigned el_up = el_inf +1;
+            //const unsigned el_up = el_inf +1;
+            unsigned el_up = el_inf +1;
 
             // ------------assegno bin_low e bin_high 
 
             float bin_low  = volume[el_inf].get(i, k);
             float bin_high;
             if (el_up >= volume.size() || k >= volume[el_up].beam_size){
-                bin_high=fondo_scala;
+                el_up=el_inf;
+                bin_high = volume[el_up].get(i, k);
+                //bin_high=fondo_scala;
             } else{
                 bin_high = volume[el_up].get(i, k);
             }
