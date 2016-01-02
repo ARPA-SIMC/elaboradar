@@ -1,4 +1,4 @@
-#include <wibble/tests.h>
+#include "elaboradar/utils/tests.h"
 #include <elaboradar/logging.h>
 #include "cum_bac.h"
 #include "config.h"
@@ -10,21 +10,15 @@
 #include "test-utils.h"
 #include <unistd.h>
 
-using namespace wibble::tests;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
 using namespace testradar;
+
 using namespace std;
 
-namespace tut {
-
-struct cart_shar {
-    Logging logging;
-    static const auto mis = IndexMapping::missing;
-
-};
-TESTGRP(cart);
-
 namespace {
+
+static const auto mis = IndexMapping::missing;
 
 struct CBTest
 {
@@ -50,12 +44,17 @@ struct CBTest
     }
 };
 
-}
+class Tests : public TestCase
+{
+    using TestCase::TestCase;
+
+    void register_tests() override;
+} test("cart");
+
+void Tests::register_tests() {
 
 /// Check the basic mapping calculations
-template<> template<>
-void to::test<1>()
-{
+add_method("basic", []() {
     CoordinateMapping mapping(494);
 
     // Write out images in /tmp
@@ -66,7 +65,7 @@ void to::test<1>()
     //assets.write_gdal_image(mapping.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
     //assets.write_gdal_image(mapping.map_range, "DIR_DEBUG", "map_range", "png");
 
-    wassert(actual(mapping.beam_size) == 494);
+    wassert(actual(mapping.beam_size) == 494u);
 
     // Check range
 
@@ -114,12 +113,10 @@ void to::test<1>()
     wassert(actual(floor(mapping.map_azimuth(493, 494) * 400/360)) ==  50);
     wassert(actual(floor(mapping.map_azimuth(494, 494) * 400/360)) == 150);
     wassert(actual(floor(mapping.map_azimuth(494, 493) * 400/360)) == 250);
-}
+});
 
 /// Check the actual mapping calculations on an image
-template<> template<>
-void to::test<2>()
-{
+add_method("image", []() {
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
     CBTest test("GAT", false);
@@ -136,7 +133,7 @@ void to::test<2>()
     //assets.write_gdal_image(mapping.map_azimuth, "DIR_DEBUG", "map_azimuth", "png");
     //assets.write_gdal_image(mapping.map_range, "DIR_DEBUG", "map_range", "png");
 
-    wassert(actual(test.volume.beam_count) == 400);
+    wassert(actual(test.volume.beam_count) == 400u);
     wassert(actual(mapping.width) == 988);
     wassert(actual(mapping.height) == 988);
 
@@ -238,6 +235,8 @@ void to::test<2>()
     wassert(actual(smapping.map_azimuth(122, 124)) ==  72);
     wassert(actual(smapping.map_azimuth(124, 124)) == 149);
     wassert(actual(smapping.map_azimuth(124, 122)) == 261);
+});
+
 }
 
 }

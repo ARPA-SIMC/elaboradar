@@ -1,34 +1,26 @@
-#include <wibble/tests.h>
-#include <elaboradar/algo/utils.h>
-#include <elaboradar/volume.h>
-#include <elaboradar/logging.h>
+#include "elaboradar/utils/tests.h"
+#include "elaboradar/algo/utils.h"
+#include "elaboradar/volume.h"
+#include "elaboradar/logging.h"
 
-using namespace wibble::tests;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
 
-namespace tut {
+namespace {
 
-struct functions_shar {
-    Logging logging;
-};
-TESTGRP(functions);
-
-template<> template<>
-void to::test<1>()
+class Tests : public TestCase
 {
-#if 0
-    // Test NormalizzoData
-    Config cfg;
-    CUM_BAC* cb = new CUM_BAC(cfg, "SPC");
-    wassert(actual(cb->NormalizzoData(0)) == 0); // TODO: check value
-    wassert(actual(cb->NormalizzoData(1)) == 0); // TODO: check value
-#endif
-}
+    using TestCase::TestCase;
 
-template<> template<>
-void to::test<2>()
-{
+    void register_tests() override;
+} test("functions");
+
+void Tests::register_tests() {
+
+add_method("beam_blocking_correction", []() {
     // Test BeamBlockingCorrection
-    wassert(actual((unsigned)DBtoBYTE(algo::beam_blocking_correction(BYTEtoDB(128),50))) == 138);
+    wassert(actual((unsigned)DBtoBYTE(algo::beam_blocking_correction(BYTEtoDB(128),50))) == 138u);
+});
+
 }
 }

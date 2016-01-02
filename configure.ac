@@ -76,19 +76,6 @@ fi
 PKG_CHECK_MODULES([RADARLIB], [radarlib])
 PKG_CHECK_MODULES([EIGEN3], [eigen3])
 
-dnl Optional libraries
-PKG_CHECK_EXISTS([libwibble], [have_wibble=yes], [have_wibble=no])
-if test x$have_wibble = xyes
-then
-        PKG_CHECK_MODULES(WIBBLE, libwibble)
-        enable_tests=yes
-else
-        AC_MSG_WARN([libwibble not found, tests will be disabled])
-        enable_tests=no
-fi
-AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
-
-
 AC_CONFIG_FILES([
 Makefile
 elaboradar/Makefile

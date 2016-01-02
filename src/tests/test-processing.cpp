@@ -1,8 +1,8 @@
-#include <wibble/tests.h>
-#include "cum_bac.h"
-#include "config.h"
+#include "elaboradar/utils/tests.h"
 #include <elaboradar/logging.h>
 #include <elaboradar/image.h>
+#include "cum_bac.h"
+#include "config.h"
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -12,17 +12,10 @@
 #include "test-utils.h"
 #include <unistd.h>
 
-using namespace wibble::tests;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
 using namespace testradar;
 using namespace std;
-
-namespace tut {
-
-struct process_shar {
-    Logging logging;
-};
-TESTGRP(process);
 
 namespace {
 
@@ -55,11 +48,16 @@ struct CBTest
     }
 };
 
-}
-
-template<> template<>
-void to::test<1>()
+class Tests : public TestCase
 {
+    using TestCase::TestCase;
+
+    void register_tests() override;
+} test("process");
+
+void Tests::register_tests() {
+
+add_method("elabora_all_true_caratterizzo", []() {
     // Test elabora_dato, con tutti i do_* a true
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
@@ -89,30 +87,30 @@ void to::test<1>()
     VolumeStats stats;
     cb->volume.compute_stats(stats);
     // stats.print(stdout);
-    wassert(actual(stats.count_zeros[0]) == 145426);
-    wassert(actual(stats.count_zeros[1]) == 184085);
-    wassert(actual(stats.count_zeros[2]) == 193145);
-    wassert(actual(stats.count_zeros[3]) == 196213);
-    wassert(actual(stats.count_zeros[4]) == 196085);
-    wassert(actual(stats.count_zeros[5]) == 196080);
-    wassert(actual(stats.count_ones[0]) == 104);
-    wassert(actual(stats.count_ones[1]) == 204);
-    wassert(actual(stats.count_ones[2]) == 104);
-    wassert(actual(stats.count_ones[3]) ==  58);
-    wassert(actual(stats.count_ones[4]) ==  61);
-    wassert(actual(stats.count_ones[5]) ==  38);
-    wassert(actual(stats.count_others[0]) == 52070);
-    wassert(actual(stats.count_others[1]) == 13311);
-    wassert(actual(stats.count_others[2]) ==  4351);
-    wassert(actual(stats.count_others[3]) ==  1329);
-    wassert(actual(stats.count_others[4]) ==  1454);
-    wassert(actual(stats.count_others[5]) ==  1482);
-    wassert(actual(stats.sum_others[0]) == 4759195);
-    wassert(actual(stats.sum_others[1]) ==  914997);
-    wassert(actual(stats.sum_others[2]) ==  257459);
-    wassert(actual(stats.sum_others[3]) ==   46349);
-    wassert(actual(stats.sum_others[4]) ==   78749);
-    wassert(actual(stats.sum_others[5]) ==   90563);
+    wassert(actual(stats.count_zeros[0]) == 145426u);
+    wassert(actual(stats.count_zeros[1]) == 184085u);
+    wassert(actual(stats.count_zeros[2]) == 193145u);
+    wassert(actual(stats.count_zeros[3]) == 196213u);
+    wassert(actual(stats.count_zeros[4]) == 196085u);
+    wassert(actual(stats.count_zeros[5]) == 196080u);
+    wassert(actual(stats.count_ones[0]) == 104u);
+    wassert(actual(stats.count_ones[1]) == 204u);
+    wassert(actual(stats.count_ones[2]) == 104u);
+    wassert(actual(stats.count_ones[3]) ==  58u);
+    wassert(actual(stats.count_ones[4]) ==  61u);
+    wassert(actual(stats.count_ones[5]) ==  38u);
+    wassert(actual(stats.count_others[0]) == 52070u);
+    wassert(actual(stats.count_others[1]) == 13311u);
+    wassert(actual(stats.count_others[2]) ==  4351u);
+    wassert(actual(stats.count_others[3]) ==  1329u);
+    wassert(actual(stats.count_others[4]) ==  1454u);
+    wassert(actual(stats.count_others[5]) ==  1482u);
+    wassert(actual(stats.sum_others[0]) == 4759195u);
+    wassert(actual(stats.sum_others[1]) ==  914997u);
+    wassert(actual(stats.sum_others[2]) ==  257459u);
+    wassert(actual(stats.sum_others[3]) ==   46349u);
+    wassert(actual(stats.sum_others[4]) ==   78749u);
+    wassert(actual(stats.sum_others[5]) ==   90563u);
     cb->caratterizzo_volume();
 
 //    print_stats("cb", *cb, cerr);
@@ -128,11 +126,9 @@ void to::test<1>()
     wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.99, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<2>()
-{
+add_method("elabora_all_true", []() {
     // Test elabora_dato, con tutti i do_* a true
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
 
@@ -156,35 +152,33 @@ void to::test<2>()
     VolumeStats stats;
     cb->volume.compute_stats(stats);
     //stats.print(stdout);
-    wassert(actual(stats.count_zeros[0]) == 145426);
-    wassert(actual(stats.count_zeros[1]) == 184085);
-    wassert(actual(stats.count_zeros[2]) == 193145);
-    wassert(actual(stats.count_zeros[3]) == 196213);
-    wassert(actual(stats.count_zeros[4]) == 196085);
-    wassert(actual(stats.count_zeros[5]) == 196080);
-    wassert(actual(stats.count_ones[0]) == 104);
-    wassert(actual(stats.count_ones[1]) == 204);
-    wassert(actual(stats.count_ones[2]) == 104);
-    wassert(actual(stats.count_ones[3]) ==  58);
-    wassert(actual(stats.count_ones[4]) ==  61);
-    wassert(actual(stats.count_ones[5]) ==  38);
-    wassert(actual(stats.count_others[0]) == 52070);
-    wassert(actual(stats.count_others[1]) == 13311);
-    wassert(actual(stats.count_others[2]) ==  4351);
-    wassert(actual(stats.count_others[3]) ==  1329);
-    wassert(actual(stats.count_others[4]) ==  1454);
-    wassert(actual(stats.count_others[5]) ==  1482);
-    wassert(actual(stats.sum_others[0]) == 4759195);
-    wassert(actual(stats.sum_others[1]) ==  914997);
-    wassert(actual(stats.sum_others[2]) ==  257459);
-    wassert(actual(stats.sum_others[3]) ==   46349);
-    wassert(actual(stats.sum_others[4]) ==   78749);
-    wassert(actual(stats.sum_others[5]) ==   90563);
-}
+    wassert(actual(stats.count_zeros[0]) == 145426u);
+    wassert(actual(stats.count_zeros[1]) == 184085u);
+    wassert(actual(stats.count_zeros[2]) == 193145u);
+    wassert(actual(stats.count_zeros[3]) == 196213u);
+    wassert(actual(stats.count_zeros[4]) == 196085u);
+    wassert(actual(stats.count_zeros[5]) == 196080u);
+    wassert(actual(stats.count_ones[0]) == 104u);
+    wassert(actual(stats.count_ones[1]) == 204u);
+    wassert(actual(stats.count_ones[2]) == 104u);
+    wassert(actual(stats.count_ones[3]) ==  58u);
+    wassert(actual(stats.count_ones[4]) ==  61u);
+    wassert(actual(stats.count_ones[5]) ==  38u);
+    wassert(actual(stats.count_others[0]) == 52070u);
+    wassert(actual(stats.count_others[1]) == 13311u);
+    wassert(actual(stats.count_others[2]) ==  4351u);
+    wassert(actual(stats.count_others[3]) ==  1329u);
+    wassert(actual(stats.count_others[4]) ==  1454u);
+    wassert(actual(stats.count_others[5]) ==  1482u);
+    wassert(actual(stats.sum_others[0]) == 4759195u);
+    wassert(actual(stats.sum_others[1]) ==  914997u);
+    wassert(actual(stats.sum_others[2]) ==  257459u);
+    wassert(actual(stats.sum_others[3]) ==   46349u);
+    wassert(actual(stats.sum_others[4]) ==   78749u);
+    wassert(actual(stats.sum_others[5]) ==   90563u);
+});
 
-template<> template<>
-void to::test<3>()
-{
+add_method("bb_algo_corto", []() {
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
@@ -328,13 +322,11 @@ void to::test<3>()
     wassert(actual(products.neve_1x1).statsEqual(0, 17240, 1, 1.00, 1));
     wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<4>()
-{
+add_method("bb_algo_corto_dev", []() {
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
-	LOG_CATEGORY("Test");
+    LOG_CATEGORY("Test");
 
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
@@ -421,14 +413,12 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<5>()
-{
+add_method("bb_vpr_class_algo_corto_dev", []() {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 5");
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 5");
 
     static const char* fname = "../testdata/DBP2_070120141530_GATTATICO";
     unsetwork();
@@ -519,13 +509,11 @@ unlink("LAST_VPR");
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     // TODO: scrivo_out_file_bin
-}
+});
 
-template<> template<>
-void to::test<6>()
-{
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 6");
+add_method("bb_algo_corto", []() {
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 6");
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
@@ -538,7 +526,7 @@ void to::test<6>()
     setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
     unlink("../testdata/ultimo_vpr");
     setenv("FILE_T", "../testdata/temperature.txt", 1);
-	printwork();
+    printwork();
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
@@ -665,13 +653,11 @@ void to::test<6>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<7>()
-{
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 7");
+add_method("combina_profili", []() {
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 7");
 
     // versione BB_VPR che corrisponde al parametro algo_corto_dev
     static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
@@ -689,7 +675,7 @@ void to::test<7>()
     setenv("VPR_HMAX", "../testdata/vpr_hmax", 1);
     setenv("TEST_VPR", "../testdata/test_vpr", 1);
     setenv("VPR_ARCH", "../testdata/vpr_arch",1);
-	printwork();
+    printwork();
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
@@ -765,11 +751,9 @@ void to::test<7>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<8>()
-{
+add_method("combina_profili1", []() {
     // versione BB_VPR_CLASS che corrisponde al parametro algo_corto_dev
     static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
     unsetwork();
@@ -863,13 +847,11 @@ void to::test<8>()
     wassert(actual(clow.conv_1x1).statsEqual(0, 65477, 100, 100.00, 100));
 
     // TODO: scrivo_out_file_bin
-}
+});
 
-template<> template<>
-void to::test<9>()
-{
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 9");
+add_method("test_9", []() {
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 9");
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
@@ -943,13 +925,11 @@ void to::test<9>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 262144, 0, 0.00, 0));
     wassert(actual(clow.corr_1x1).statsEqual(0, 262144, 0, 0.00, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<10>()
-{
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 6");
+add_method("test_10", []() {
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 6");
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../testdata/2014-05-09-12-40-00.itgat.PVOL.0.h5";
@@ -962,7 +942,7 @@ void to::test<10>()
     setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
     unlink("../testdata/ultimo_vpr");
     setenv("FILE_T", "../testdata/temperature.txt", 1);
-	printwork();
+    printwork();
 
     CBTest test("GAT", false);
     test.read_odim(fname, true);
@@ -1064,29 +1044,27 @@ void to::test<10>()
     wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
     wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
     wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-}
+});
 
-template<> template<>
-void to::test<11>()
-{
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 6");
+add_method("test_11", []() {
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 6");
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../esplosione/2014-03-01-09-15-00.itgat.PVOL.0.h5";
     unsetwork();
     setenv("DIR_OUT_PP_BLOC", "../esplosione", 1);
-    setenv("VPR0_FILE"		, "../esplosione/vpr_GAT", 1);
-    setenv("LAST_VPR"    	, "../esplosione/last_vpr_GAT", 1);
-    setenv("VPR_HMAX"    	, "../esplosione/vpr_hmax_GAT",1); 
-    setenv("VPR_HEATING" 	, "../esplosione/vpr_heat_GAT",1);
-    setenv("LOG_VPR"		, "../esplosione/log_VPR_${SITO}",1);
-    setenv("TEST_VPR"		, "../esplosione/test_vpr",1);
-    setenv("FILE_T"		, "../esplosione/temperature.txt",1);
+    setenv("VPR0_FILE"      , "../esplosione/vpr_GAT", 1);
+    setenv("LAST_VPR"       , "../esplosione/last_vpr_GAT", 1);
+    setenv("VPR_HMAX"       , "../esplosione/vpr_hmax_GAT",1); 
+    setenv("VPR_HEATING"    , "../esplosione/vpr_heat_GAT",1);
+    setenv("LOG_VPR"        , "../esplosione/log_VPR_${SITO}",1);
+    setenv("TEST_VPR"       , "../esplosione/test_vpr",1);
+    setenv("FILE_T"     , "../esplosione/temperature.txt",1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_PRI-EST_2011", 1);
-    setenv("FILE_ZERO_TERMICO"	, "../esplosione/0termico.prev", 1);
+    setenv("FILE_ZERO_TERMICO"  , "../esplosione/0termico.prev", 1);
     setenv("VPR_ARCH"           , "../esplosione/201403010915_vpr_GAT",1);
-	printwork();
+    printwork();
 
     CBTest test("GAT", false);
     test.read_odim(fname, true);
@@ -1106,34 +1084,31 @@ void to::test<11>()
     cb->calcolo_vpr->esegui_tutto();
     VolumeStats stats;
     cb->volume.compute_stats(stats);
-}
+});
 
-
-template<> template<>
-void to::test<12>()
-{
-	LOG_CATEGORY("Test");
-	LOG_INFO ("Start test 12");
+add_method("test_12", []() {
+    LOG_CATEGORY("Test");
+    LOG_INFO ("Start test 12");
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "vpr/2014-03-01-01-35-00.itgat.PVOL.0.h5";
     unsetwork();
     setenv("DIR_OUT_PP_BLOC", "vpr", 1);
-    setenv("VPR0_FILE"		, "vpr/vpr_GAT", 1);
-    setenv("LAST_VPR"    	, "vpr/last_vpr_GAT", 1);
-    setenv("VPR_HMAX"    	, "vpr/vpr_hmax_GAT",1); 
-    setenv("VPR_HEATING" 	, "vpr/vpr_heat_GAT",1);
-    setenv("LOG_VPR"		, "vpr/log_VPR_${SITO}",1);
-    setenv("TEST_VPR"		, "vpr/test_vpr",1);
-    setenv("FILE_T"		, "vpr/temperature.txt",1);
+    setenv("VPR0_FILE"      , "vpr/vpr_GAT", 1);
+    setenv("LAST_VPR"       , "vpr/last_vpr_GAT", 1);
+    setenv("VPR_HMAX"       , "vpr/vpr_hmax_GAT",1); 
+    setenv("VPR_HEATING"    , "vpr/vpr_heat_GAT",1);
+    setenv("LOG_VPR"        , "vpr/log_VPR_${SITO}",1);
+    setenv("TEST_VPR"       , "vpr/test_vpr",1);
+    setenv("FILE_T"     , "vpr/temperature.txt",1);
 //setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_INV_2011_15el", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_INV_2011", 1);
-    setenv("FILE_ZERO_TERMICO"	, "vpr/0termico.prev", 1);
+    setenv("FILE_ZERO_TERMICO"  , "vpr/0termico.prev", 1);
     setenv("OUTPUT_Z_LOWRIS_DIR","vpr",1);
     setenv("DIR_QUALITY","vpr",1);
     setenv("DIR_DEBUG","vpr",1);
 
-	printwork();
+    printwork();
 
     CBTest test("GAT", false, 1024);
     test.read_odim(fname, true);
@@ -1174,6 +1149,8 @@ void to::test<12>()
     LOG_INFO("Scrittura File Precipitazione 1X1\n");
     cart_low.write_out(*cb,cb->assets);
     cb->assets.write_gdal_image(cart_low.z_out,"DIR_DEBUG","ZLR","PNG" );
+});
+
 }
 
 }

@@ -1,7 +1,5 @@
 # Process this file with automake to produce Makefile.in
 
-if DO_TESTS
-
 TESTFILES = \
   DBP2_070120141530_GATTATICO \
   DBP2_060220140140_GATTATICO \
@@ -32,5 +30,3 @@ BUILT_SOURCES = $(TESTFILES)
 
 clean-local:
 	rm -f $(TESTFILES)
-
-endif

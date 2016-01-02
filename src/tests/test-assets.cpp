@@ -1,22 +1,15 @@
-#include <wibble/tests.h>
+#include "elaboradar/utils/tests.h"
+#include <elaboradar/utils.h>
+#include <elaboradar/logging.h>
 #include <stdexcept>
 #include <cstdlib>
 #include <unistd.h>
 #include "assets.h"
 #include "config.h"
-#include <elaboradar/utils.h>
-#include <elaboradar/logging.h>
 
-using namespace wibble::tests;
-using namespace std;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
-
-namespace tut {
-
-struct assets_shar {
-    Logging logging;
-};
-TESTGRP(assets);
+using namespace std;
 
 namespace {
 
@@ -30,11 +23,16 @@ float fscanf_float_and_close(FILE* in)
     return res;
 }
 
-}
-
-template<> template<>
-void to::test<1>()
+class Tests : public TestCase
 {
+    using TestCase::TestCase;
+
+    void register_tests() override;
+} test("assets");
+
+void Tests::register_tests() {
+
+add_method("load_dem", []() {
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -45,94 +43,62 @@ void to::test<1>()
     assets.configure("SPC", 1389108600);
     assets.load_dem(dem);
     wassert(actual(dem(0, 0)) == 9);
-}
+});
 
-template<> template<>
-void to::test<2>()
-{
+add_method("load_first_level", []() {
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 512);
     assets.load_first_level(m);
-}
+});
 
-template<> template<>
-void to::test<3>()
-{
+add_method("load_first_level_bb_el", []() {
     setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 1024);
     assets.load_first_level_bb_el(m);
-}
+});
 
-template<> template<>
-void to::test<4>()
-{
+add_method("load_first_level_bb_bloc", []() {
     setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 1024);
     assets.load_first_level_bb_bloc(m);
-}
+});
 
-template<> template<>
-void to::test<5>()
-{
-    Config cfg;
-    Assets assets(cfg);
-    assets.configure("GAT", 1389108600);
-    //wassert(actual((int)(fscanf_float_and_close(assets.open_file_hray()) * 100)) == 54406);
-}
-
-template<> template<>
-void to::test<6>()
-{
-    Config cfg;
-    Assets assets(cfg);
-    assets.configure("GAT", 1389108600);
-    //wassert(actual((int)(fscanf_float_and_close(assets.open_file_hray_inf()) * 100)) == 54406);
-}
-
-template<> template<>
-void to::test<7>()
-{
+add_method("read_t_ground", []() {
     setenv("FILE_T", "../testdata/temperature.txt", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     wassert(actual((int)(assets.read_t_ground() * 100)) == 1010);
-}
+});
 
-template<> template<>
-void to::test<8>()
-{
+add_method("read_profile_gap", []() {
     setenv("LAST_VPR", "../testdata/last_vpr.tmp", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     assets.write_last_vpr();
     wassert(actual(assets.read_profile_gap()) == 0);
-}
+});
 
-template<> template<>
-void to::test<9>()
-{
+add_method("load_first_level", []() {
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_PRI-EST_2011", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
     Matrix2D<unsigned char> m(400, 1024);
     assets.load_first_level(m);
-}
+});
 
-template<> template<>
-void to::test<10>()
-{
+add_method("save_acq_time", []() {
     static const char* fname = "../testdata/test_last_file";
     Config cfg;
     Assets assets(cfg);
@@ -155,11 +121,9 @@ void to::test<10>()
 
     // False because $LAST_FILE exists and has the same date as the current one
     wassert(actual(assets.save_acq_time(2)).isfalse());
-}
+});
 
-template<> template<>
-void to::test<11>()
-{
+add_method("read_vpr_heating", []() {
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);
@@ -170,6 +134,8 @@ void to::test<11>()
     // Unfortunately, our test file also contains 0
     setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
     wassert(actual(assets.read_vpr_heating()) == 0);
+});
+
 }
 
 }

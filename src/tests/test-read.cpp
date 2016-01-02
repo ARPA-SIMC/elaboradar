@@ -1,4 +1,4 @@
-#include <wibble/tests.h>
+#include "elaboradar/utils/tests.h"
 #include <elaboradar/sp20.h>
 #include <elaboradar/odim.h>
 #include <elaboradar/logging.h>
@@ -10,19 +10,13 @@
 #include <stdio.h>
 #include <vector>
 
-using namespace wibble::tests;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
-
-namespace tut {
-
-struct read_shar {
-    Logging logging;
-};
-TESTGRP(read);
+using namespace std;
 
 namespace {
 
-void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
+void test_0120141530gat_SP20(const Volume<double>& v)
 {
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
@@ -78,7 +72,7 @@ void test_0120141530gat_SP20(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
     wassert(actual(stats.sum_others[5]) ==   90563);
 }
 
-void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
+void test_0120141530gat_ODIM(const Volume<double>& v)
 {
     // Ensure that the beam sizes are what we expect
     wassert(actual(v.scan(0).beam_size) == 494);
@@ -134,7 +128,6 @@ void test_0120141530gat_ODIM(WIBBLE_TEST_LOCPRM, const Volume<double>& v)
     wassert(actual(stats.sum_others[5]) ==   90287);
 }
 
-namespace {
 struct Difference
 {
     unsigned idx;
@@ -143,9 +136,8 @@ struct Difference
     Difference(unsigned idx, double val)
         : idx(idx), val(val) {}
 };
-}
 
-void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const Volume<double>& vodim)
+void test_volumes_equal(const Volume<double>& vsp20, const Volume<double>& vodim)
 {
     using namespace std;
 
@@ -154,7 +146,7 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const V
     unsigned failed_beams = 0;
     for (unsigned ie = 0; ie < vsp20.size(); ++ie)
     {
-        WIBBLE_TEST_INFO(testinfo);
+        ELABORADAR_UTILS_TEST_INFO(testinfo);
         testinfo() << "elevation " << ie;
 
         for (unsigned ia = 0; ia < vsp20.scan(ie).beam_count; ++ia)
@@ -203,11 +195,16 @@ void test_volumes_equal(WIBBLE_TEST_LOCPRM, const Volume<double>& vsp20, const V
     wassert(actual(failed_beams) == 0);
 }
 
-}
-
-template<> template<>
-void to::test<1>()
+class Tests : public TestCase
 {
+    using TestCase::TestCase;
+
+    void register_tests() override;
+} test("read");
+
+void Tests::register_tests() {
+
+add_method("read_sp20", []() {
     using namespace elaboradar::volume;
     // Test loading of a radar volume via SP20
     const Site& gat = Site::get("GAT");
@@ -228,56 +225,20 @@ void to::test<1>()
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(ssp20, vsp20, 1);
     // Check the contents of what we read
-    wruntest(test_0120141530gat_SP20, vsp20);
-}
+    wassert(test_0120141530gat_SP20(vsp20));
+});
 
-template<> template<>
-void to::test<2>()
-{
+add_method("read_odim", []() {
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/MSG1400715300U.101.h5";
     const Site& site(Site::get("GAT"));
     Volume<double> volume;
     CUM_BAC::read_odim_volume(volume, site, fname, false);
     // Check the contents of what we read
-    wruntest(test_0120141530gat_ODIM, volume);
-}
+    wassert(test_0120141530gat_ODIM(volume));
+});
 
-template<> template<>
-void to::test<3>()
-{
-    // Odim and SP20 are not comparable anymore
-#if 0
-    using namespace std;
-    using namespace elaboradar::volume;
-    namespace odim = OdimH5v21;
-    Scans<double> ssp20;
-    Volume<double> vsp20;
-    Scans<double> sodim;
-    Volume<double> vodim;
-
-    // FIXME: get rid of the static elev_array as soon as it is convenient to do so
-    const Site& gat = Site::get("GAT");
-
-    SP20Loader lsp20;
-    lsp20.vol_z = &ssp20;
-    lsp20.load("../testdata/DBP2_070120141530_GATTATICO");
-
-    ODIMLoader lodim;
-    lodim.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &sodim);
-    lodim.load("../testdata/MSG1400715300U.101.h5");
-
-    algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(ssp20, vsp20, 1);
-    resampler.resample_volume(sodim, vodim, 1);
-
-    wruntest(test_volumes_equal, vsp20, vodim);
-#endif
-}
-
-template<> template<>
-void to::test<4>()
-{
+add_method("read_sp20_1", []() {
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
 
@@ -286,43 +247,9 @@ void to::test<4>()
     CUM_BAC::read_sp20_volume(volume, site, fname, 0, false);
     // TODO: Check the contents of what we read
     //wruntest(test_0120141530gat, volume);
-}
+});
 
-template<> template<>
-void to::test<5>()
-{
-    // Odim and SP20 are not comparable anymore
-#if 0
-    using namespace std;
-    using namespace elaboradar::volume;
-    Scans<double> ssp20;
-    Volume<double> vsp20;
-    Scans<double> s_mod;
-    Volume<double> v_mod;
-
-    const Site& gat = Site::get("GAT");
-
-    SP20Loader sp20;
-    sp20.vol_z = &ssp20;
-    sp20.load("../testdata/DBP2_060220140140_GATTATICO");
-
-    SP20Loader _mod;
-    _mod.vol_z = &s_mod;
-    _mod.load("../testdata/DBP2_060220140140_GATTATICO_mod");
-
-    algo::azimuthresample::MaxOfClosest<double> resampler;
-    resampler.resample_volume(ssp20, vsp20, 1);
-    resampler.resample_volume(s_mod, v_mod, 1);
-
-    wruntest(test_volumes_equal, vsp20, v_mod);
-#endif
-}
-
-
-template<> template<>
-void to::test<6>()
-{
-
+add_method("read_sp20_2", []() {
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/DBP2_020520141110_BOLOGNA";
     const Site& site(Site::get("SPC"));
@@ -343,6 +270,8 @@ void to::test<6>()
     wassert(actual(round(volume.scan(10).elevation * 10)) == 250);
     // TODO: Check the contents of what we read
     //wruntest(test_0120141530gat, cb->volume);
+});
+
 }
 
 }

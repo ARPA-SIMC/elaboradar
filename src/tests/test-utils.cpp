@@ -1,21 +1,23 @@
-#include <wibble/tests.h>
-#include <vector>
+#include <elaboradar/utils/tests.h>
 #include <elaboradar/utils.h>
+#include <vector>
 
-using namespace wibble::tests;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
 using namespace std;
 
-namespace tut {
+namespace {
 
-struct utils_shar {
-    Logging logging;
-};
-TESTGRP(utils);
-
-template<> template<>
-void to::test<1>()
+class Tests : public TestCase
 {
+    using TestCase::TestCase;
+
+    void register_tests() override;
+} test("utils");
+
+void Tests::register_tests() {
+
+add_method("str_split", []() {
     char buf[] = ",,, 1, 2, 3  ";
     vector<string> split;
     str_split(buf, ", ", [&](const char* tok) { split.push_back(tok); });
@@ -23,6 +25,8 @@ void to::test<1>()
     wassert(actual(split[0]) == "1");
     wassert(actual(split[1]) == "2");
     wassert(actual(split[2]) == "3");
+});
+
 }
 
 }

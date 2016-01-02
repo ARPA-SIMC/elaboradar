@@ -19,6 +19,9 @@ elaboradarincludedir = $(includedir)/elaboradar
 nobase_dist_elaboradarinclude_HEADERS = \
   logging.h \
   utils.h \
+  utils/string.h \
+  utils/sys.h \
+  utils/tests.h \
   matrix.h \
   image.h \
   volume.h \
@@ -35,6 +38,9 @@ nobase_dist_elaboradarinclude_HEADERS = \
 libelaboradar_la_SOURCES = \
   logging.cpp \
   utils.cpp \
+  utils/string.cc \
+  utils/sys.cc \
+  utils/tests.cc \
   image.cpp \
   volume.cpp \
   sp20.cpp \
@@ -46,15 +52,13 @@ libelaboradar_la_SOURCES = \
   algo/cleaner.cpp \
   algo/dbz.cpp
 
-if DO_TESTS
-
 check_PROGRAMS = testsuite
 
 testsuite_SOURCES = \
   tests/test-azimutmap.cpp \
   tests/test-functions.cpp \
   tests/test-volume.cpp \
-  tests/tut-main.cpp
+  tests/tests-main.cpp
 testsuite_LDADD = libelaboradar.la $(WIBBLE_LIBS)
 
 check-local:
@@ -63,5 +67,3 @@ check-local:
 	else \
 		LOG4C_RCPATH=../testdata/log4c_verbose $(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
 	fi
-
-endif

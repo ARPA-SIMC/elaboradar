@@ -51,8 +51,6 @@ classificatore_SOURCES = \
 classificatore_LDADD = ../elaboradar/libelaboradar.la libtmp.la
   
 
-if DO_TESTS
-
 check_PROGRAMS = ertest
 
 ertest_SOURCES = \
@@ -63,7 +61,7 @@ ertest_SOURCES = \
   tests/test-processing.cpp \
   tests/test-read.cpp \
   tests/test-utils.cpp \
-  tests/tut-main.cpp
+  tests/tests-main.cc
 ertest_LDADD = ../elaboradar/libelaboradar.la libtmp.la $(WIBBLE_LIBS)
 
 check-local:
@@ -72,8 +70,6 @@ check-local:
 	else \
 		LOG4C_RCPATH=../testdata/log4c_verbose $(DEBUGGER) ./ertest $(TEST_ARGS) ; \
 	fi
-
-endif
 
 ## CFLAGS for all current code
 #CFLAGS=-g --std=c++11 -I../include -Wall -O2 -I$(INCLUDEDIR_SP20) -I$(INCLUDEDIR_Z_R) -I$(INCLUDEDIR_NR_C) \

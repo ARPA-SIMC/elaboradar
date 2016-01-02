@@ -1,7 +1,7 @@
 #ifndef ARCHIVIATORE_TEST_UTILS_CLASS_H
 #define ARCHIVIATORE_TEST_UTILS_CLASS_H
 
-#include <wibble/tests.h>
+#include <elaboradar/utils/tests.h>
 #include <elaboradar/volume.h>
 
 namespace elaboradar {
@@ -137,9 +137,9 @@ struct TestStatsEqual
     {
     }
 
-    void check(WIBBLE_TEST_LOCPRM) const
+    void check() const
     {
-        using namespace wibble::tests;
+        using namespace elaboradar::utils::tests;
         using namespace std;
         ArrayStats<Scalar> stats;
         bool failed = false;
@@ -170,32 +170,32 @@ struct TestStatsEqual
                << " avg: " << to_num(avg)
                << " max: " << to_num(max)
                << ")";
-            wibble_test_location.fail_test(ss.str());
+            throw TestFailed(ss.str());
         }
     }
 };
 
 template<typename T>
-struct ActualMatrix2D : public wibble::tests::Actual<const elaboradar::Matrix2D<T>&>
+struct ActualMatrix2D : public elaboradar::utils::tests::Actual<const elaboradar::Matrix2D<T>&>
 {
-    using wibble::tests::Actual<const elaboradar::Matrix2D<T>&>::Actual;
+    using elaboradar::utils::tests::Actual<const elaboradar::Matrix2D<T>&>::Actual;
 
     template<typename... args>
     TestStatsEqual<elaboradar::Matrix2D<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<elaboradar::Matrix2D<T>>(this->actual, params...);
+        return TestStatsEqual<elaboradar::Matrix2D<T>>(this->_actual, params...);
     }
 };
 
 template<typename T>
-struct ActualVolume : public wibble::tests::Actual<const elaboradar::Volume<T>&>
+struct ActualVolume : public elaboradar::utils::tests::Actual<const elaboradar::Volume<T>&>
 {
-    using wibble::tests::Actual<const elaboradar::Volume<T>&>::Actual;
+    using elaboradar::utils::tests::Actual<const elaboradar::Volume<T>&>::Actual;
 
     template<typename... args>
     TestStatsEqual<elaboradar::Volume<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<elaboradar::Volume<T>>(this->actual, params...);
+        return TestStatsEqual<elaboradar::Volume<T>>(this->_actual, params...);
     }
 };
 

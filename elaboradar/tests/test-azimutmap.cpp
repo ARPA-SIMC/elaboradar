@@ -1,10 +1,10 @@
-#include <wibble/tests.h>
+#include "elaboradar/utils/tests.h"
+#include "elaboradar/algo/azimuth_resample.h"
+#include "elaboradar/logging.h"
 #include <cmath>
-#include <elaboradar/algo/azimuth_resample.h>
-#include <elaboradar/logging.h>
 
 using namespace std;
-using namespace wibble::tests;
+using namespace elaboradar::utils::tests;
 using namespace elaboradar;
 using namespace elaboradar::algo::azimuthresample;
 
@@ -21,16 +21,18 @@ ostream& operator<<(ostream& out, const pair<double, unsigned>& p)
 }
 }
 
-namespace tut {
+namespace {
 
-struct azimuthmap_shar {
-    Logging logging;
-};
-TESTGRP(azimuthmap);
-
-template<> template<>
-void to::test<1>()
+class Tests : public TestCase
 {
+    using TestCase::TestCase;
+
+    void register_tests() override;
+} test("azimuthmap");
+
+void Tests::register_tests() {
+
+add_method("closest", []() {
     Eigen::VectorXd azimuths(360);
     for (unsigned i = 0; i < 360; ++i)
         azimuths(i) = (double)i;
@@ -44,11 +46,9 @@ void to::test<1>()
     wassert(actual(am.closest(359.4)) == make_pair(359.0, 359u));
     wassert(actual(am.closest(359.5)) == make_pair(0.0, 0u));
     wassert(actual(am.closest(360.0)) == make_pair(0.0, 0u));
-}
+});
 
-template<> template<>
-void to::test<4>()
-{
+add_method("intersecting", []() {
     Eigen::VectorXd azimuths(360);
     for (unsigned i = 0; i < 360; ++i)
         azimuths(i) = (double)i;
@@ -82,12 +82,10 @@ void to::test<4>()
     wassert(actual(res[4]) == make_pair(1.0, 1u));
     wassert(actual(res[5]) == make_pair(2.0, 2u));
     wassert(actual(res[6]) == make_pair(3.0, 3u));
-}
+});
 
 // Test closest resample from a bigger volume to a smaller
-template<> template<>
-void to::test<5>()
-{
+add_method("reduce", []() {
     // Create a volume with one elevation in which each beam contains as
     // samples its azimuth in degrees
     Volume<double> vol(360);
@@ -106,12 +104,10 @@ void to::test<5>()
     wassert(actual(dst.scan(0).get(179, 0)) == 358);
     wassert(actual(dst.scan(0).get(0, 0)) == 0);
     wassert(actual(dst.scan(0).get(1, 0)) == 2);
-}
+});
 
 // Test closest resample from a smaller volume to a bigger
-template<> template<>
-void to::test<6>()
-{
+add_method("enlarge", []() {
     // Create a volume with one elevation in which each beam contains as
     // samples its azimuth in degrees
     Volume<double> vol(180);
@@ -136,12 +132,10 @@ void to::test<6>()
     wassert(actual(dst.scan(0).get(2, 0)) == 1);
     wassert(actual(dst.scan(0).get(3, 0)) == 2);
     wassert(actual(dst.scan(0).get(4, 0)) == 2);
-}
+});
 
 // Test closest resample from a smaller volume to a bigger, with gaps
-template<> template<>
-void to::test<7>()
-{
+add_method("enlarge_with_gaps", []() {
     // Create a volume with one elevation in which each beam contains as
     // samples its azimuth in degrees
     Volume<double> vol(90);
@@ -168,12 +162,10 @@ void to::test<7>()
     wassert(actual(dst.scan(0).get(2, 0)) == missing);
     wassert(actual(dst.scan(0).get(3, 0)) == 1);
     wassert(actual(dst.scan(0).get(4, 0)) == 1);
-}
+});
 
 // Test max-of-closest resample from a bigger volume to a smaller
-template<> template<>
-void to::test<8>()
-{
+add_method("max-of-closest-reduce", []() {
     // Create a volume with one elevation in which each beam contains as
     // samples its azimuth in degrees
     Volume<double> vol(360);
@@ -192,12 +184,10 @@ void to::test<8>()
     wassert(actual(dst.scan(0).get(179, 0)) == 359);
     wassert(actual(dst.scan(0).get(0, 0)) == 359);
     wassert(actual(dst.scan(0).get(1, 0)) == 3);
-}
+});
 
 // Test max-of-closest resample from a smaller volume to a bigger
-template<> template<>
-void to::test<9>()
-{
+add_method("max-of-closest-enlarge", []() {
     // Create a volume with one elevation in which each beam contains as
     // samples its azimuth in degrees
     Volume<double> vol(180);
@@ -222,12 +212,10 @@ void to::test<9>()
     wassert(actual(dst.scan(0).get(2, 0)) == 1);
     wassert(actual(dst.scan(0).get(3, 0)) == 2);
     wassert(actual(dst.scan(0).get(4, 0)) == 2);
-}
+});
 
 // Test closest resample from a smaller volume to a bigger, with gaps
-template<> template<>
-void to::test<10>()
-{
+add_method("closest-enlarge", []() {
     // Create a volume with one elevation in which each beam contains as
     // samples its azimuth in degrees
     Volume<double> vol(90);
@@ -254,7 +242,8 @@ void to::test<10>()
     wassert(actual(dst.scan(0).get(2, 0)) == missing);
     wassert(actual(dst.scan(0).get(3, 0)) == 1);
     wassert(actual(dst.scan(0).get(4, 0)) == 1);
-}
+});
 
+}
 
 }

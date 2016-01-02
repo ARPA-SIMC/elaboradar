@@ -1,7 +1,5 @@
 # Process this file with automake to produce Makefile.in
 
-if DO_TESTS
-
 TESTFILES = \
   0termico.prev \
   201403010915h_ray.txt \
@@ -29,5 +27,3 @@ BUILT_SOURCES = $(TESTFILES)
 
 clean-local:
 	rm -f $(TESTFILES)
-
-endif
