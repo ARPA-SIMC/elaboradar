@@ -11,19 +11,12 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 	      $(RADARLIB_CFLAGS) \
 	      $(HDF5_CFLAGS) \
 	      $(EIGEN3_CFLAGS) \
-	      $(shell $(LOG4C_CONFIG) --cflags) \
-	      $(shell $(GSL_CONFIG) --cflags) \
-	      $(shell $(GDAL_CONFIG) --cflags) \
-	      -I$(top_srcdir)/../libSP20/include \
-              -I$(top_srcdir)/../util_Z-R/include \
-		-fpermissive 
+	      $(LOG4C_CFLAGS) \
+	      $(GSL_CFLAGS) \
+	      $(GDAL_CFLAGS) \
+	      -fpermissive
 
-AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp \
-	  $(shell $(LOG4C_CONFIG) --libs) \
-	  $(shell $(GSL_CONFIG) --libs) \
-	  $(shell $(GDAL_CONFIG) --libs) \
-          -L$(top_srcdir)/../libSP20/lib/ -lSP20_utility \
-          -L$(top_srcdir)/../util_Z-R/lib/ -lfunc_Z_R
+AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp $(LOG4C_LIBS) $(GSL_LIBS) $(GDAL_LIBS)
 
 
 libtmp_la_SOURCES = \
