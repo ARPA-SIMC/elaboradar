@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(elaboradar, [0.1], [palberoni@arpa.emr.it])
+AC_INIT(radarelab, [0.1], [palberoni@arpa.emr.it])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR([m4])
@@ -32,8 +32,23 @@ AX_CXXFLAGS_WARN_ALL
 
 dnl Mandatory librarires
 AC_PATH_PROG(LOG4C_CONFIG, [log4c-config])
+LOG4C_CFLAGS=$($LOG4C_CONFIG --cflags)
+LOG4C_LIBS=$($LOG4C_CONFIG --libs)
+AC_SUBST(LOG4C_CFLAGS)
+AC_SUBST(LOG4C_LIBS)
+
 AC_PATH_PROG(GSL_CONFIG, [gsl-config])
+GSL_CFLAGS=$($GSL_CONFIG --cflags)
+GSL_LIBS=$($GSL_CONFIG --libs)
+AC_SUBST(GSL_CFLAGS)
+AC_SUBST(GSL_LIBS)
+
 AC_PATH_PROG(GDAL_CONFIG, [gdal-config])
+GDAL_CFLAGS=$($GDAL_CONFIG --cflags)
+GDAL_LIBS=$($GDAL_CONFIG --libs)
+AC_SUBST(GDAL_CFLAGS)
+AC_SUBST(GDAL_LIBS)
+
 PKG_CHECK_MODULES([HDF5], [hdf5], [have_hdf5=yes], [have_hdf5=no])
 if test $have_hdf5 = yes
 then
@@ -70,11 +85,9 @@ AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
 
 AC_CONFIG_FILES([
 Makefile
-elaboradar/Makefile
-src/Makefile
+radarelab/Makefile
 testdata/Makefile
-esplosione/Makefile
-elaboradar.pc
+radarelab.pc
 ])
 AC_OUTPUT
 
