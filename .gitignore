@@ -21,3 +21,5 @@ Makefile
 /ltmain.sh
 /missing
 /elaboradar.pc
+/m4/lt*
+/m4/libtool*
