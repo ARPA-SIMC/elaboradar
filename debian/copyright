@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: wreport
 Upstream-Contact: Enrico Zini <enrico@enricozini.org>
-Source: https://github.com/ARPA-SIMC/radarelab
+Source: https://github.com/ARPA-SIMC/elaboradar
 
 Files: *
 Copyright: (C) 2015 ARPA-SIM <urpsim@smr.arpa.emr.it>

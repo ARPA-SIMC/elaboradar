@@ -20,4 +20,4 @@ Makefile
 /libtool
 /ltmain.sh
 /missing
-/radarelab.pc
+/elaboradar.pc
