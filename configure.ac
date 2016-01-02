@@ -83,7 +83,9 @@ AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
 AC_CONFIG_FILES([
 Makefile
 elaboradar/Makefile
+src/Makefile
 testdata/Makefile
+esplosione/Makefile
 elaboradar.pc
 ])
 AC_OUTPUT
