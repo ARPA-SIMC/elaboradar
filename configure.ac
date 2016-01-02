@@ -5,9 +5,6 @@ AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR([m4])
 
-dnl No shared libraries for now, since libSP20 is not currently compiled with -fPIC
-AM_DISABLE_SHARED
-
 LT_INIT()
 LT_LANG([C++])
 AM_PROG_LIBTOOL

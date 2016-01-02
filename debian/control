@@ -1,0 +1,33 @@
+Source: radarelab
+Section: science
+Priority: optional
+Maintainer: Enrico Zini <enrico@debian.org>
+Build-Depends:
+  debhelper (>= 9), dh-buildinfo, dh-autoreconf,
+  doxygen, pkg-config,
+  liblog4c-dev, libgsl-dev, libgdal-dev, libhdf5-dev, libradar-dev,
+  libeigen3-dev, libwibble-dev
+Standards-Version: 3.9.6.0
+Homepage: https://github.com/ARPA-SIMC/radarelab
+Vcs-Git: https://github.com/ARPA-SIMC/radarelab.git
+
+Package: libradarelab-dev
+Section: libdevel
+Architecture: any
+Depends: libradarelab0 (= ${binary:Version}), ${misc:Depends}
+Recommends: pkg-config
+Description: library for working with radar images
+ libradarelab is a C++ library for working with radar images.
+ .
+ TODO: description to be written.
+
+Package: libradarelab3
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: radarelab-common, ${shlibs:Depends}, ${misc:Depends}
+Description: shared library for working with radar images
+ libradarelab is a C++ library for working with radar images.
+ .
+ This is the shared library for C programs.
