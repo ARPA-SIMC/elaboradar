@@ -2,6 +2,7 @@
 #include "cum_bac.h"
 #include <elaboradar/logging.h>
 #include <vpr_par.h>
+#include <gsl/gsl_version.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_multifit_nlin.h>
@@ -225,7 +226,14 @@ int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
         }
     }
 
-    gsl_multifit_covar (s->J, 0.0, covar);
+#if GSL_MAJOR_VERSION == 2
+    // Use of GSL 2.0 taken from https://sft.its.cern.ch/jira/browse/ROOT-7776
+    gsl_matrix* J = gsl_matrix_alloc(s->fdf->n, s->fdf->p);
+    gsl_multifit_fdfsolver_jac(s, J);
+    gsl_multifit_covar(J, 0.0, covar);
+#else
+    gsl_multifit_covar(s->J, 0.0, covar);
+#endif
 
 #define FIT(i) gsl_vector_get(s->x, i)
 #define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
