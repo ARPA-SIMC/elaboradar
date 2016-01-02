@@ -29,18 +29,27 @@ AX_CXXFLAGS_WARN_ALL
 
 dnl Mandatory librarires
 AC_PATH_PROG(LOG4C_CONFIG, [log4c-config])
+if test x"$LOG4C_CONFIG" = x; then
+	AC_MSG_ERROR([*** missing Log4C library])
+fi
 LOG4C_CFLAGS=$($LOG4C_CONFIG --cflags)
 LOG4C_LIBS=$($LOG4C_CONFIG --libs)
 AC_SUBST(LOG4C_CFLAGS)
 AC_SUBST(LOG4C_LIBS)
 
 AC_PATH_PROG(GSL_CONFIG, [gsl-config])
+if test x"$GSL_CONFIG" = x; then
+	AC_MSG_ERROR([*** missing GSL (GNU Scientific Library)])
+fi
 GSL_CFLAGS=$($GSL_CONFIG --cflags)
 GSL_LIBS=$($GSL_CONFIG --libs)
 AC_SUBST(GSL_CFLAGS)
 AC_SUBST(GSL_LIBS)
 
 AC_PATH_PROG(GDAL_CONFIG, [gdal-config])
+if test x"$GDAL_CONFIG" = x; then
+	AC_MSG_ERROR([*** missing GDAL (Geospatial Data Abstraction Library)])
+fi
 GDAL_CFLAGS=$($GDAL_CONFIG --cflags)
 GDAL_LIBS=$($GDAL_CONFIG --libs)
 AC_SUBST(GDAL_CFLAGS)
