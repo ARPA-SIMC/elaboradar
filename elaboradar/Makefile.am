@@ -58,7 +58,7 @@ testsuite_SOURCES = \
   tests/test-azimutmap.cpp \
   tests/test-functions.cpp \
   tests/test-volume.cpp \
-  tests/tests-main.cpp
+  tests/tests-main.cc
 testsuite_LDADD = libelaboradar.la $(WIBBLE_LIBS)
 
 check-local:
