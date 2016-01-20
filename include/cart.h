@@ -1,11 +1,11 @@
 #ifndef ELABORADAR_CART_H
 #define ELABORADAR_CART_H
 
-#include <elaboradar/matrix.h>
-#include <elaboradar/volume.h>
+#include <radarelab/matrix.h>
+#include <radarelab/volume.h>
 #include <limits>
 
-namespace elaboradar {
+namespace radarelab {
 
 /**
  * Mapping of cartesian coordinates to raw azimuth angles and range distances.

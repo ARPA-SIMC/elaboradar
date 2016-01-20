@@ -17,24 +17,28 @@
  *  librerire necessarie: lib_SP20
 */
 
-#include <elaboradar/logging.h>
-#include <elaboradar/volume.h>
-#include <elaboradar/elev_fin.h>
-#include <elaboradar/algo/anaprop.h>
-#include <elaboradar/algo/dbz.h>
+#include <radarelab/logging.h>
+#include <radarelab/volume.h>
+#include <radarelab/elev_fin.h>
+#include <radarelab/algo/anaprop.h>
+#include <radarelab/algo/dbz.h>
 #include "assets.h"
 #include <stdexcept>
 #include <cmath>
 
 //algoritmo
-#include <vpr_par.h>
+#include <radarelab/vpr_par.h>
 
 
 #define MAX_BIN 512
+
+#define RES_VERT_CIL 0.25
+#define RES_HOR_CIL 0.25
+
 /** 
  * name space generale del programma
  */
-namespace elaboradar {
+namespace radarelab {
 
 struct Site;
 

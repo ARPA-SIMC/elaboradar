@@ -17,14 +17,14 @@
  */
 
 #include "classifier.h"
-#include <elaboradar/odim.h>
+#include <radarelab/odim.h>
 #include <radarlib/radar.hpp>
 #include <sstream>
-#include "algo/elabora_volume.h"
-#include <elaboradar/image.h>
-#include <elaboradar/algo/azimuth_resample.h>
+#include <radarelab/algo/elabora_volume.h>
+#include <radarelab/image.h>
+#include <radarelab/algo/azimuth_resample.h>
 
-using namespace elaboradar;
+using namespace radarelab;
 using namespace volume;
 using namespace std;
 namespace odim = OdimH5v21;

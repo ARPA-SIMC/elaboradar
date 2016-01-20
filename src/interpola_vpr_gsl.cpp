@@ -1,7 +1,7 @@
 #include "interpola_vpr.h"
 #include "cum_bac.h"
-#include <elaboradar/logging.h>
-#include <vpr_par.h>
+#include <radarelab/logging.h>
+//#include <vpr_par.h>             presente in interpola_vpr.h
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_blas.h>
@@ -126,7 +126,7 @@ float lineargauss(double xint , double a[])
 }
 
 
-namespace elaboradar {
+namespace radarelab {
 
 int InterpolaVPR_GSL::interpola_VPR(const float* vpr, int hvprmax, int livmin)
 {

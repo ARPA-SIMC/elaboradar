@@ -9,12 +9,12 @@
 #include <string>
 #include <ctime>
 #include <cstdio>
-#include <elaboradar/logging.h>
+#include <radarelab/logging.h>
 #include <functional>
 #include <vector>
 #include <H5Cpp.h>
 
-namespace elaboradar {
+namespace radarelab {
 
 namespace algo {
 class DBZ;

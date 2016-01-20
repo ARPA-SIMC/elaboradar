@@ -1,10 +1,10 @@
 #ifndef ARCHIVIATORE_TEST_UTILS_CLASS_H
 #define ARCHIVIATORE_TEST_UTILS_CLASS_H
 
-#include <elaboradar/utils/tests.h>
-#include <elaboradar/volume.h>
+#include <radarelab/utils/tests.h>
+#include <radarelab/volume.h>
 
-namespace elaboradar {
+namespace radarelab {
 struct Cart;
 struct CartLowris;
 struct CartProducts;
@@ -61,12 +61,12 @@ struct ArrayStats
             this->count_sample(arr[i]);
     }
 
-    void fill(const elaboradar::Matrix2D<T>& arr)
+    void fill(const radarelab::Matrix2D<T>& arr)
     {
         this->fill(arr.data(), arr.size());
     }
 
-    void fill(const elaboradar::Volume<T>& vol)
+    void fill(const radarelab::Volume<T>& vol)
     {
         for (unsigned i = 0; i < vol.size(); ++i)
             this->fill(vol.scan(i));
@@ -79,12 +79,12 @@ struct ArrayStats
             this->count_sample(missing, arr[i]);
     }
 
-    void fill(const T& missing, const elaboradar::Matrix2D<T>& arr)
+    void fill(const T& missing, const radarelab::Matrix2D<T>& arr)
     {
         this->fill(missing, arr.data(), arr.size());
     }
 
-    void fill(const T& missing, const elaboradar::Volume<T>& vol)
+    void fill(const T& missing, const radarelab::Volume<T>& vol)
     {
         for (unsigned i = 0; i < vol.size(); ++i)
             this->fill(missing, vol.scan(i));
@@ -139,7 +139,7 @@ struct TestStatsEqual
 
     void check() const
     {
-        using namespace elaboradar::utils::tests;
+        using namespace radarelab::utils::tests;
         using namespace std;
         ArrayStats<Scalar> stats;
         bool failed = false;
@@ -176,40 +176,40 @@ struct TestStatsEqual
 };
 
 template<typename T>
-struct ActualMatrix2D : public elaboradar::utils::tests::Actual<const elaboradar::Matrix2D<T>&>
+struct ActualMatrix2D : public radarelab::utils::tests::Actual<const radarelab::Matrix2D<T>&>
 {
-    using elaboradar::utils::tests::Actual<const elaboradar::Matrix2D<T>&>::Actual;
+    using radarelab::utils::tests::Actual<const radarelab::Matrix2D<T>&>::Actual;
 
     template<typename... args>
-    TestStatsEqual<elaboradar::Matrix2D<T>> statsEqual(args&&... params) const
+    TestStatsEqual<radarelab::Matrix2D<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<elaboradar::Matrix2D<T>>(this->_actual, params...);
+        return TestStatsEqual<radarelab::Matrix2D<T>>(this->_actual, params...);
     }
 };
 
 template<typename T>
-struct ActualVolume : public elaboradar::utils::tests::Actual<const elaboradar::Volume<T>&>
+struct ActualVolume : public radarelab::utils::tests::Actual<const radarelab::Volume<T>&>
 {
-    using elaboradar::utils::tests::Actual<const elaboradar::Volume<T>&>::Actual;
+    using radarelab::utils::tests::Actual<const radarelab::Volume<T>&>::Actual;
 
     template<typename... args>
-    TestStatsEqual<elaboradar::Volume<T>> statsEqual(args&&... params) const
+    TestStatsEqual<radarelab::Volume<T>> statsEqual(args&&... params) const
     {
-        return TestStatsEqual<elaboradar::Volume<T>>(this->_actual, params...);
+        return TestStatsEqual<radarelab::Volume<T>>(this->_actual, params...);
     }
 };
 
 template<typename T>
-inline ActualMatrix2D<T> actual(const elaboradar::Matrix2D<T>& actual) { return ActualMatrix2D<T>(actual); }
+inline ActualMatrix2D<T> actual(const radarelab::Matrix2D<T>& actual) { return ActualMatrix2D<T>(actual); }
 
 template<typename T>
-inline ActualMatrix2D<T> actual(const elaboradar::PolarScan<T>& actual) { return ActualMatrix2D<T>(actual); }
+inline ActualMatrix2D<T> actual(const radarelab::PolarScan<T>& actual) { return ActualMatrix2D<T>(actual); }
 
 template<typename T>
-inline ActualMatrix2D<T> actual(const elaboradar::Image<T>& actual) { return ActualMatrix2D<T>(actual); }
+inline ActualMatrix2D<T> actual(const radarelab::Image<T>& actual) { return ActualMatrix2D<T>(actual); }
 
 template<typename T>
-inline ActualVolume<T> actual(const elaboradar::Volume<T>& actual) { return ActualVolume<T>(actual); }
+inline ActualVolume<T> actual(const radarelab::Volume<T>& actual) { return ActualVolume<T>(actual); }
 
 template<typename DATA>
 void print_stats(const std::string& name, const DATA& data, const typename DATA::Scalar& missing, std::ostream& out)
@@ -239,10 +239,10 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
         << "));" << endl;
 }
 
-void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out);
-void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out);
-void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out);
-void print_stats(const std::string& name, const elaboradar::CartProducts& cart, std::ostream& out);
+void print_stats(const std::string& name, const radarelab::CUM_BAC& cb, std::ostream& out);
+void print_stats(const std::string& name, const radarelab::Cart& cart, std::ostream& out);
+void print_stats(const std::string& name, const radarelab::CartLowris& cart, std::ostream& out);
+void print_stats(const std::string& name, const radarelab::CartProducts& cart, std::ostream& out);
 
 }
 

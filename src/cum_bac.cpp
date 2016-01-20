@@ -1,21 +1,21 @@
 #include "cum_bac.h"
-#include <elaboradar/logging.h>
-#include <elaboradar/utils.h>
-#include <elaboradar/image.h>
-#include <elaboradar/sp20.h>
-#include <elaboradar/odim.h>
-#include <elaboradar/algo/cleaner.h>
-#include <elaboradar/algo/anaprop.h>
-#include <elaboradar/algo/utils.h>
-#include <elaboradar/algo/azimuth_resample.h>
-#include <elaboradar/algo/dbz.h>
+#include <radarelab/logging.h>
+#include <radarelab/utils.h>
+#include <radarelab/image.h>
+#include <radarelab/sp20.h>
+#include <radarelab/odim.h>
+#include <radarelab/algo/cleaner.h>
+#include <radarelab/algo/anaprop.h>
+#include <radarelab/algo/utils.h>
+#include <radarelab/algo/azimuth_resample.h>
+#include <radarelab/algo/dbz.h>
 #include "site.h"
-#include "algo/steiner.h"
-#include "algo/viz.h"
-#include "algo/elabora_volume.h"
+#include <radarelab/algo/steiner.h>
+#include <radarelab/algo/viz.h>
+#include <radarelab/algo/elabora_volume.h>
 #include "cartproducts.h"
-#include <elaboradar/algo/top.h>
-#include "cylindrical.h"
+#include <radarelab/algo/top.h>
+#include <radarelab/cylindrical.h>
 #include "interpola_vpr.h"
 #include "cart.h"
 #include <radarlib/radar.hpp>
@@ -39,7 +39,7 @@
 #include <func_Q3d.h>
 
 #include <qual_par.h>
-#include <par_class.h>
+#include <radarelab/par_class.h>
 
 #ifdef NEL
 #undef NEL
@@ -61,7 +61,7 @@
 
 using namespace std;
 
-namespace elaboradar {
+namespace radarelab {
 
 namespace {
 /**
@@ -154,7 +154,7 @@ void CUM_BAC::want_vpr()
 
 void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)
 {
-    using namespace elaboradar::volume;
+    using namespace radarelab::volume;
     LOG_CATEGORY("radar.io");
     LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
 
@@ -197,7 +197,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
 void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)
 {
-    using namespace elaboradar::volume;
+    using namespace radarelab::volume;
     LOG_CATEGORY("radar.io");
     namespace odim = OdimH5v21;
     LOG_INFO("Reading %s for site %s", nome_file, site.name.c_str());
@@ -248,7 +248,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
       {
         //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
-            elaboradar::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
+            radarelab::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
         }
       } else {
         for (unsigned i = 0; i < z_volume->size(); ++i){
@@ -417,7 +417,7 @@ void CUM_BAC::declutter_anaprop()
           for(unsigned k=0 ; k<volume[0].beam_size; k++){
              toBePlotted(i,k)= DBtoBYTE(volume[0].get(i, k));
         }
-            elaboradar::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");*/
+            radarelab::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");*/
 	LOG_INFO("elabora_Dato completata");
 }
 
@@ -725,9 +725,9 @@ void CalcoloVPR::classifica_rain()
     double range_maxLowestRay=(volume[0].beam_size-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
-    double zmin=volume[0].sample_height(0) / 1000. + h_radar; // quota  minima in prop standard
+    double zmin=volume[0].sample_height(0) / 1000. + volume.h_radar; // quota  minima in prop standard
     double xmax=floor(range_maxLowestRay*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
-    double zmax=volume.back().sample_height(volume.back().beam_size - 1) / 1000. + h_radar;//quota massima
+    double zmax=volume.back().sample_height(volume.back().beam_size - 1) / 1000. + volume.h_radar;//quota massima
     //LOG_DEBUG(" Range min maxL maxU  %7.3f %7.3f %7.3f  --  xmin %7.3f xmax %7.3f zmin %7.3f zmax %7.3f", range_min, range_maxLowestRay, range_maxUpperRay, xmin,xmax,zmin,zmax);
 
     x_size=(xmax-xmin)/RES_HOR_CIL; //dimensione orizzontale
@@ -736,7 +736,7 @@ void CalcoloVPR::classifica_rain()
     z_size=(zmax-zmin)/RES_VERT_CIL; //dimensione verticale
 
     // ricampionamento del volume in coordinate cilindriche
-    CylindricalVolume cil(NUM_AZ_X_PPI, x_size, z_size, 0);
+    CylindricalVolume cil(NUM_AZ_X_PPI, x_size, z_size, 0, RES_HOR_CIL,RES_VERT_CIL);
     cil.resample(cum_bac.volume, x_size);
     LOG_DEBUG ("Matrice cilindrica Naz %3d Nrange %4d Nheight %4d", cil.slices.size(), cil.x_size, cil.z_size);
     //-------------------------------------------------------------------------------------------------------------------------
@@ -999,7 +999,7 @@ LOG_DEBUG (" modalita %d",mode);
 }
 
 int CalcoloVPR::profile_heating()
-#include <vpr_par.h>
+#include <radarelab/vpr_par.h>
 {
     LOG_CATEGORY("radar.vpr");
     //---leggo ultimo file contenente riscaldamento , se non esiste impongo heating=0 (verificare comando)
@@ -1074,7 +1074,7 @@ int CalcoloVPR::stampa_vpr()
 int CalcoloVPR::corr_vpr()
     //* ====correzione profilo====================================*/
 
-#include <vpr_par.h>
+#include <radarelab/vpr_par.h>
 
 {
     LOG_CATEGORY("radar.vpr");
@@ -1224,7 +1224,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     *hmax=INODATA;
     // Enrico vprmax=NODATAVPR;
     imax=INODATA;
-    soglia=elaboradar::algo::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
+    soglia=radarelab::algo::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
         LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr[istart] , vpr[istart+4], soglia, peak, imax); 
@@ -2060,7 +2060,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
                         //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
                         if (sample > 0)
                         {
-                            cartm(y, x)=cartm(y, x)+elaboradar::algo::BYTEtoZ(sample);
+                            cartm(y, x)=cartm(y, x)+radarelab::algo::BYTEtoZ(sample);
                             cont=cont+1;
                         }
                     }

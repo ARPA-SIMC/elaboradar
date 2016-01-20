@@ -1,12 +1,12 @@
 #include <iostream>
-#include <elaboradar/volume.h>
-#include <elaboradar/odim.h>
+#include <radarelab/volume.h>
+#include <radarelab/odim.h>
 #include "site.h"
 
 #include "classifier.h"
-#include "algo/elabora_volume.h"
+#include <radarelab/algo/elabora_volume.h>
 
-using namespace elaboradar;
+using namespace radarelab;
 using namespace std;
 
 int main(int argc,char* argv[])

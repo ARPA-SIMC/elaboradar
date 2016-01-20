@@ -16,7 +16,7 @@
 */
 
 #include <Q_components.h>
-#include <elaboradar/algo/anaprop.h>
+#include <radarelab/algo/anaprop.h>
 #include <stdlib.h>
 #include <math.h> //file di sistema definisce costanti matematiche e richiama funzioni mat
 #include <qual_par.h> //file creato da me, parametri qualita'
@@ -89,7 +89,7 @@ float fcErrpt; /* comp. qual. corr. da errore puntamento antenna*/
 
 float qCl( unsigned char  clc)
 {
-    using namespace elaboradar::algo;
+    using namespace radarelab::algo;
     switch(clc)
     {
         case ANAP_OK:

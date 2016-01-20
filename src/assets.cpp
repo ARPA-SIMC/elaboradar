@@ -1,10 +1,10 @@
 #include "assets.h"
 #include "config.h"
-#include <elaboradar/utils.h>
-#include <elaboradar/matrix.h>
-#include <elaboradar/image.h>
-#include <elaboradar/algo/dbz.h>
-#include "vpr_par.h"
+#include <radarelab/utils.h>
+#include <radarelab/matrix.h>
+#include <radarelab/image.h>
+#include <radarelab/algo/dbz.h>
+#include <radarelab/vpr_par.h>
 #include "site.h"
 #include <cstring>
 #include <cstdlib>
@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace elaboradar {
+namespace radarelab {
 
 Assets::Assets(const Config& cfg)
     : logging_category(log4c_category_get("radar.assets")), cfg(cfg), outfile_devel_data(0)
@@ -488,7 +488,7 @@ void Assets::write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var,
 
     string fname = string(dir) + "/" + fname_from_acq_time() + "-" + name + "." + gdal_extension_for_format(format);
 
-    elaboradar::write_image(image, fname, format);
+    radarelab::write_image(image, fname, format);
 }
 
 template void Assets::write_gdal_image(const Matrix2D<unsigned char>&, const char*, const char*, const char*);

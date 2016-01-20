@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-namespace elaboradar {
+namespace radarelab {
 
 class Config
 {

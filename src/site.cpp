@@ -4,8 +4,8 @@
  *  @brief Questo file contiene le strutture site specifiche per GAT e SPC
  */
 #include "site.h"
-#include <elaboradar/utils.h>
-#include "vpr_par.h"
+#include <radarelab/utils.h>
+#include <radarelab/vpr_par.h>
 #include <stdexcept>
 #include <cstring>
 
@@ -34,7 +34,7 @@ vector<double> make_elev_array(const int* data, unsigned count)
 }
 }
 
-namespace elaboradar {
+namespace radarelab {
 Site::~Site()
 {
 }

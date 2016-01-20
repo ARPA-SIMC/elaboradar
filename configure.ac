@@ -78,10 +78,10 @@ PKG_CHECK_MODULES([EIGEN3], [eigen3])
 
 AC_CONFIG_FILES([
 Makefile
-elaboradar/Makefile
+radarelab/Makefile
 src/Makefile
 testdata/Makefile
 esplosione/Makefile
-elaboradar.pc
+radarelab.pc
 ])
 AC_OUTPUT

@@ -17,9 +17,9 @@
  */
 
 #include "classifier.h"
-#include "algo/elabora_volume.h"
+#include <radarelab/algo/elabora_volume.h>
 
-using namespace elaboradar;
+using namespace radarelab;
 using namespace volume;
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include "cart.h"
 #include <cmath>
 
-namespace elaboradar {
+namespace radarelab {
 
 CoordinateMapping::CoordinateMapping(unsigned beam_size)
     : beam_size(beam_size),

@@ -1,8 +1,8 @@
-#include "vpr_par.h"
+#include <radarelab/vpr_par.h>
 
 // #define DO_INTERPOLA_VPR_NR
 
-namespace elaboradar {
+namespace radarelab {
 
 struct CalcoloVPR;
 

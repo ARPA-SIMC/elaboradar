@@ -4,7 +4,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "cum_bac.h"
-#include <elaboradar/logging.h>
+#include <radarelab/logging.h>
 #include "config.h"
 #include "site.h"
 #include "cartproducts.h"
@@ -17,7 +17,7 @@
 #include <setwork.h>
 
 using namespace std;
-using namespace elaboradar;
+using namespace radarelab;
 
 /*----------------------------------------------------------------------------*/
 /*      FINE SEZIONE    INCLUDE                   */
@@ -236,7 +236,7 @@ int main (int argc, char **argv)
 
     if(CL_opt.do_medium && CL_opt.filetype == 3) MyMAX_BIN = 512;   // questo dovrebbe essere il caso del medio vecchio 
 
-    elaboradar::Config cfg;
+    radarelab::Config cfg;
 
     setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
@@ -259,7 +259,7 @@ int main (int argc, char **argv)
 
     check_volume(volume, file_type);
 
-    unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
+    unique_ptr<radarelab::CUM_BAC> cb(new radarelab::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
     if (CL_opt.do_vpr) cb->want_vpr();
     cb->do_quality 	= CL_opt.do_quality;

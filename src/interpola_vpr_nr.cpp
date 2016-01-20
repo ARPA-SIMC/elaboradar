@@ -1,7 +1,7 @@
 #include "interpola_vpr.h"
 #ifdef DO_INTERPOLA_VPR_NR
 #include "cum_bac.h"
-#include "logging.h"
+#include <radarelab/logging.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
 }
 #endif
 
-# include <vpr_par.h>
+//#include <vpr_par.h>             presente in interpola_vpr.h
 
 namespace {
 
@@ -67,7 +67,7 @@ int testfit(float a[], float chisq, float chisqin)
 
 }
 
-namespace elaboradar {
+namespace radarelab {
 
 /*
    comstart interpola_VPR

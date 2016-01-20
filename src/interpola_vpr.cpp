@@ -1,7 +1,7 @@
 #include "interpola_vpr.h"
-#include <vpr_par.h>
+//#include <vpr_par.h>  presente in interpola_vpr.h
 
-namespace elaboradar {
+namespace radarelab {
 
 InterpolaVPR::InterpolaVPR()
     : B(NODATAVPR), E(NODATAVPR), G(NODATAVPR), C(NODATAVPR), F(NODATAVPR),

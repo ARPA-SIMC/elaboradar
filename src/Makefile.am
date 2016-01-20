@@ -20,10 +20,7 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp $(LOG4C_LIB
 
 
 libtmp_la_SOURCES = \
-  algo_steiner.cpp \
-  algo_viz.cpp \
   config.cpp \
-  cylindrical.cpp \
   interpola_vpr.cpp \
   interpola_vpr_gsl.cpp \
   interpola_vpr_nr.cpp \
@@ -36,20 +33,19 @@ libtmp_la_SOURCES = \
   assets.cpp \
   cum_bac.cpp \
   cum_bac_clparser.cpp
-libtmp_la_LIBADD = ../elaboradar/libelaboradar.la
+libtmp_la_LIBADD = ../radarelab/libradarelab.la
 
 bin_PROGRAMS = elaboradar classificatore
 
 elaboradar_SOURCES = \
   elaboradar.cpp
-elaboradar_LDADD = ../elaboradar/libelaboradar.la libtmp.la
+elaboradar_LDADD = ../radarelab/libradarelab.la libtmp.la
 
 classificatore_SOURCES = \
   classificatore.cpp \
   classifier.cpp \
   melting_layer.cpp
-classificatore_LDADD = ../elaboradar/libelaboradar.la libtmp.la
-  
+classificatore_LDADD = ../radarelab/libradarelab.la libtmp.la
 
 check_PROGRAMS = ertest
 
@@ -62,7 +58,7 @@ ertest_SOURCES = \
   tests/test-read.cpp \
   tests/test-utils.cpp \
   tests/tests-main.cc
-ertest_LDADD = ../elaboradar/libelaboradar.la libtmp.la $(WIBBLE_LIBS)
+ertest_LDADD = ../radarelab/libradarelab.la libtmp.la $(WIBBLE_LIBS)
 
 check-local:
 	if [ -z "$(VERBOSE)" ]; then \

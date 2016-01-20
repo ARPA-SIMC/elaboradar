@@ -1,7 +1,7 @@
 #include "cartproducts.h"
 #include "assets.h"
 
-namespace elaboradar {
+namespace radarelab {
 
 CartProducts::CartProducts(const Volume<double>& volume, unsigned image_side, unsigned sample_square_size)
     : mapping(volume[0].beam_size),
