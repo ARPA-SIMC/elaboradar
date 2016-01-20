@@ -111,6 +111,7 @@ void ODIMLoader::load(const std::string& pathname)
 
             // Fill/overwrite variable metadata at volume level
             target.quantity = name;
+	    target.h_radar = volume->getAltitude()/1000.;
             // Fill variable metadata at scan level
             vol_pol_scan.nodata = data->getNodata() * data->getGain() + data->getOffset();
             vol_pol_scan.undetect = data->getUndetect() * data->getGain() + data->getOffset();

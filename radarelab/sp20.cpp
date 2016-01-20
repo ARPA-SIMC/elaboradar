@@ -231,6 +231,7 @@ void SP20Loader::load(const std::string& pathname)
             scan.gain = 80.0 / 255.0;
             scan.offset = -20;
         }
+        vol_z->h_radar = 0.04;
     }
     if (vol_d)
     {
@@ -243,6 +244,7 @@ void SP20Loader::load(const std::string& pathname)
             scan.gain = 16.0 / 255.0;
             scan.offset = -6;
         }
+        vol_d->h_radar = 0.04;
     }
     if (vol_v)
     {
@@ -263,6 +265,7 @@ void SP20Loader::load(const std::string& pathname)
                 scan.offset = -16.5;
             }
         }
+        vol_v->h_radar = 0.04;
     }
     if (vol_w)
     {
@@ -275,6 +278,7 @@ void SP20Loader::load(const std::string& pathname)
             scan.gain = 10.0 / 255.0;
             scan.offset = 0;
         }
+        vol_w->h_radar = 0.04;
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
