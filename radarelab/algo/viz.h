@@ -20,7 +20,7 @@ struct CalcoloVIZ
     const double htbb;
     const double hbbb;
     const double t_ground;
-    const double res_vert_cil
+    const double res_vert_cil;
 
     Matrix2D<unsigned char> conv_VIZ;
     Matrix2D<unsigned char> stratiform;

@@ -37,7 +37,7 @@ nobase_dist_radarelabinclude_HEADERS = \
   algo/cleaner.h \
   algo/dbz.h \
   algo/elabora_volume.h \
-  algo/statistcs.h \
+  algo/statistics.h \
   algo/steiner.h \
   algo/top.h \
   algo/utils.h \
