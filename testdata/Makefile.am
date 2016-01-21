@@ -19,7 +19,16 @@ TESTFILES = \
   201405091240mat_el.bin \
   201405091240h_rayinf.txt \
   2014-05-09-12-40-00.itgat.PVOL.0.h5 \
-  201405091240h_ray.txt
+  201405091240h_ray.txt \
+  vpr/0termico.prev \
+  vpr/2014-03-01-01-35-00.itgat.PVOL.0.h5 \
+  vpr/201403010135h_rayinf.txt \
+  vpr/201403010135h_ray.txt \
+  vpr/201403010135mat_bloc.bin \
+  vpr/201403010135mat_el.bin \
+  vpr/last_vpr_GAT \
+  vpr/temperature.txt \
+  vpr/vpr_hmax_GAT
 
 EXTRA_DIST = $(addsuffix .xz,$(TESTFILES))
 
