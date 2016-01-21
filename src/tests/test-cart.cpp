@@ -1,5 +1,5 @@
-#include "elaboradar/utils/tests.h"
-#include <elaboradar/logging.h>
+#include "radarelab/utils/tests.h"
+#include <radarelab/logging.h>
 #include "cum_bac.h"
 #include "config.h"
 #include <cstdio>
@@ -10,8 +10,8 @@
 #include "test-utils.h"
 #include <unistd.h>
 
-using namespace elaboradar::utils::tests;
-using namespace elaboradar;
+using namespace radarelab::utils::tests;
+using namespace radarelab;
 using namespace testradar;
 
 using namespace std;

@@ -1,6 +1,6 @@
-#include "elaboradar/utils/tests.h"
-#include <elaboradar/logging.h>
-#include <elaboradar/image.h>
+#include "radarelab/utils/tests.h"
+#include <radarelab/logging.h>
+#include <radarelab/image.h>
 #include "cum_bac.h"
 #include "config.h"
 #include <cstdio>
@@ -12,8 +12,8 @@
 #include "test-utils.h"
 #include <unistd.h>
 
-using namespace elaboradar::utils::tests;
-using namespace elaboradar;
+using namespace radarelab::utils::tests;
+using namespace radarelab;
 using namespace testradar;
 using namespace std;
 
@@ -67,6 +67,8 @@ add_method("elabora_all_true_caratterizzo", []() {
     setenv("FILE_T", "../testdata/temperature.txt", 1);
     setenv("LAST_VPR","../testdata/last_vpr",1);
     setenv("FILE_ZERO_TERMICO","../testdata/zero_termico.txt",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
@@ -135,6 +137,8 @@ add_method("elabora_all_true", []() {
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
@@ -187,6 +191,8 @@ add_method("bb_algo_corto", []() {
     setenv("VPR_HEATING", "../testdata/vpr_heat_GAT", 1);
     unlink("../testdata/vpr_heat_GAT");
     setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
@@ -337,6 +343,8 @@ add_method("bb_algo_corto_dev", []() {
     unlink("../testdata/vpr_heat_GAT");
     setenv("FILE_T", "../testdata/temperature.txt", 1);
     setenv("LAST_VPR","../testdata/last_vpr",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     printwork();
 
     CBTest test("GAT", false);
@@ -430,6 +438,8 @@ add_method("bb_vpr_class_algo_corto_dev", []() {
     setenv("LAST_VPR","../testdata/last_vpr",1);
 unlink("LAST_VPR");
     setenv("FILE_ZERO_TERMICO","../testdata/zero_termico.txt",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     printwork();
 
     CBTest test("GAT", false);
@@ -526,6 +536,8 @@ add_method("bb_algo_corto", []() {
     setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
     unlink("../testdata/ultimo_vpr");
     setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     printwork();
 
     CBTest test("GAT", false);
@@ -675,6 +687,8 @@ add_method("combina_profili", []() {
     setenv("VPR_HMAX", "../testdata/vpr_hmax", 1);
     setenv("TEST_VPR", "../testdata/test_vpr", 1);
     setenv("VPR_ARCH", "../testdata/vpr_arch",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     printwork();
 
     CBTest test("GAT", false);
@@ -769,6 +783,8 @@ add_method("combina_profili1", []() {
     unlink("../testdata/last_vpr");
     setenv("VPR_HMAX", "../testdata/vpr_hmax", 1);
     setenv("VPR_ARCH", "../testdata/vpr_arch",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
 
     CBTest test("GAT", false);
     test.read_sp20(fname, true);
@@ -942,6 +958,8 @@ add_method("test_10", []() {
     setenv("VPR0_FILE", "../testdata/ultimo_vpr", 1);
     unlink("../testdata/ultimo_vpr");
     setenv("FILE_T", "../testdata/temperature.txt", 1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     printwork();
 
     CBTest test("GAT", false);
@@ -1064,6 +1082,8 @@ add_method("test_11", []() {
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_PRI-EST_2011", 1);
     setenv("FILE_ZERO_TERMICO"  , "../esplosione/0termico.prev", 1);
     setenv("VPR_ARCH"           , "../esplosione/201403010915_vpr_GAT",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     printwork();
 
     CBTest test("GAT", false);
@@ -1091,22 +1111,24 @@ add_method("test_12", []() {
     LOG_INFO ("Start test 12");
 
     // versione BB che corrisponde al parametro algo_corto
-    static const char* fname = "vpr/2014-03-01-01-35-00.itgat.PVOL.0.h5";
+    static const char* fname = "../testdata/vpr/2014-03-01-01-35-00.itgat.PVOL.0.h5";
     unsetwork();
-    setenv("DIR_OUT_PP_BLOC", "vpr", 1);
-    setenv("VPR0_FILE"      , "vpr/vpr_GAT", 1);
-    setenv("LAST_VPR"       , "vpr/last_vpr_GAT", 1);
-    setenv("VPR_HMAX"       , "vpr/vpr_hmax_GAT",1); 
-    setenv("VPR_HEATING"    , "vpr/vpr_heat_GAT",1);
-    setenv("LOG_VPR"        , "vpr/log_VPR_${SITO}",1);
-    setenv("TEST_VPR"       , "vpr/test_vpr",1);
-    setenv("FILE_T"     , "vpr/temperature.txt",1);
+    setenv("DIR_OUT_PP_BLOC", "../testdata/vpr", 1);
+    setenv("VPR0_FILE"      , "../testdata/vpr/vpr_GAT", 1);
+    setenv("LAST_VPR"       , "../testdata/vpr/last_vpr_GAT", 1);
+    setenv("VPR_HMAX"       , "../testdata/vpr/vpr_hmax_GAT",1); 
+    setenv("VPR_HEATING"    , "../testdata/vpr/vpr_heat_GAT",1);
+    setenv("LOG_VPR"        , "../testdata/vpr/log_VPR_${SITO}",1);
+    setenv("TEST_VPR"       , "../testdata/vpr/test_vpr",1);
+    setenv("FILE_T"     , "../testdata/vpr/temperature.txt",1);
 //setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_INV_2011_15el", 1);
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto+medio_GAT_INV_2011", 1);
-    setenv("FILE_ZERO_TERMICO"  , "vpr/0termico.prev", 1);
-    setenv("OUTPUT_Z_LOWRIS_DIR","vpr",1);
-    setenv("DIR_QUALITY","vpr",1);
-    setenv("DIR_DEBUG","vpr",1);
+    setenv("FILE_ZERO_TERMICO"  , "../testdata/vpr/0termico.prev", 1);
+    setenv("OUTPUT_Z_LOWRIS_DIR","../testdata/vpr",1);
+    setenv("DIR_QUALITY","../testdata/vpr",1);
+    setenv("DIR_DEBUG","../testdata/vpr",1);
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
 
     printwork();
 

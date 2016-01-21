@@ -1,4 +1,4 @@
-#include "elaboradar/utils/tests.h"
+#include "radarelab/utils/tests.h"
 #include <signal.h>
 #include <cstdlib>
 #include <cstring>
@@ -11,7 +11,7 @@ void signal_to_exception(int)
 
 int main(int argc,const char* argv[])
 {
-    using namespace elaboradar::utils::tests;
+    using namespace radarelab::utils::tests;
 
     signal(SIGSEGV, signal_to_exception);
     signal(SIGILL, signal_to_exception);

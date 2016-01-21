@@ -1,14 +1,14 @@
-#include "elaboradar/utils/tests.h"
-#include <elaboradar/utils.h>
-#include <elaboradar/logging.h>
+#include "radarelab/utils/tests.h"
+#include <radarelab/utils.h>
+#include <radarelab/logging.h>
 #include <stdexcept>
 #include <cstdlib>
 #include <unistd.h>
 #include "assets.h"
 #include "config.h"
 
-using namespace elaboradar::utils::tests;
-using namespace elaboradar;
+using namespace radarelab::utils::tests;
+using namespace radarelab;
 using namespace std;
 
 namespace {
@@ -33,6 +33,8 @@ class Tests : public TestCase
 void Tests::register_tests() {
 
 add_method("load_dem", []() {
+    setenv("FILE_DEM_GAT", "../testdata/dem_Gatta.txt", 1);
+    setenv("FILE_DEM_SPC", "../testdata/dem_SanPi.txt", 1);
     Config cfg;
     Assets assets(cfg);
     assets.configure("GAT", 1389108600);

@@ -1,8 +1,8 @@
-#include "elaboradar/utils/tests.h"
-#include <elaboradar/sp20.h>
-#include <elaboradar/odim.h>
-#include <elaboradar/logging.h>
-#include <elaboradar/algo/azimuth_resample.h>
+#include "radarelab/utils/tests.h"
+#include <radarelab/sp20.h>
+#include <radarelab/odim.h>
+#include <radarelab/logging.h>
+#include <radarelab/algo/azimuth_resample.h>
 #include "cum_bac.h"
 #include "config.h"
 #include "site.h"
@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <vector>
 
-using namespace elaboradar::utils::tests;
-using namespace elaboradar;
+using namespace radarelab::utils::tests;
+using namespace radarelab;
 using namespace std;
 
 namespace {
@@ -146,7 +146,7 @@ void test_volumes_equal(const Volume<double>& vsp20, const Volume<double>& vodim
     unsigned failed_beams = 0;
     for (unsigned ie = 0; ie < vsp20.size(); ++ie)
     {
-        ELABORADAR_UTILS_TEST_INFO(testinfo);
+        RADARELAB_UTILS_TEST_INFO(testinfo);
         testinfo() << "elevation " << ie;
 
         for (unsigned ia = 0; ia < vsp20.scan(ie).beam_count; ++ia)
@@ -205,7 +205,7 @@ class Tests : public TestCase
 void Tests::register_tests() {
 
 add_method("read_sp20", []() {
-    using namespace elaboradar::volume;
+    using namespace radarelab::volume;
     // Test loading of a radar volume via SP20
     const Site& gat = Site::get("GAT");
     SP20Loader loader;
