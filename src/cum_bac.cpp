@@ -16,7 +16,7 @@
 #include "cartproducts.h"
 #include <radarelab/algo/top.h>
 #include <radarelab/cylindrical.h>
-#include "interpola_vpr.h"
+#include <radarelab/interpola_vpr.h>
 #include <radarelab/cart.h>
 #include <radarlib/radar.hpp>
 #include <cstring>

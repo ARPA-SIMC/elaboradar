@@ -25,6 +25,7 @@ nobase_dist_radarelabinclude_HEADERS = \
   cylindrical.h \
   matrix.h \
   image.h \
+  interpola_vpr.h \
   loader.h \
   par_class.h \
   volume.h \
@@ -52,6 +53,9 @@ libradarelab_la_SOURCES = \
   utils/tests.cc \
   cylindrical.cpp \
   image.cpp \
+  interpola_vpr.cpp \
+  interpola_vpr_gsl.cpp \
+  interpola_vpr_nr.cpp \
   volume.cpp \
   cart.cpp \
   sp20.cpp \

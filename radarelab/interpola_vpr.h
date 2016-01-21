@@ -1,3 +1,6 @@
+#ifndef RADARELAB_INTERPOLA_VPR_H
+#define RADARELAB_INTERPOLA_VPR_H
+
 #include <radarelab/vpr_par.h>
 
 // #define DO_INTERPOLA_VPR_NR
@@ -40,3 +43,6 @@ struct InterpolaVPR_GSL : public InterpolaVPR
 };
 
 }
+
+#endif
+

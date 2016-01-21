@@ -1,6 +1,6 @@
 #include "radarelab/utils/tests.h"
 #include <radarelab/logging.h>
-#include "interpola_vpr.h"
+#include <radarelab/interpola_vpr.h>
 #include "cum_bac.h"
 #include <cstdio>
 #include <cstdlib>

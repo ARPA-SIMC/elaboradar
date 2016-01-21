@@ -21,9 +21,6 @@ AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp $(LOG4C_LIB
 
 libtmp_la_SOURCES = \
   config.cpp \
-  interpola_vpr.cpp \
-  interpola_vpr_gsl.cpp \
-  interpola_vpr_nr.cpp \
   setwork.cpp \
   func_Q3d.cpp \
   Q_components.cpp \
