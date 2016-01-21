@@ -2,7 +2,7 @@
 #define RADARELAB_ODIM_H
 /**
  *  @file
- *  @ingroup progetto_cum_bac
+ *  @ingroup radarelab
  *  @brief Codice per il caricamento di volumi ODIM in radarelab
 */
 

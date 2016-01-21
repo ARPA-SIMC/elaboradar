@@ -1,4 +1,5 @@
 /*! \file statistics.h
+ *  \ingroup radarelab 
  *  \brief Class to manage statistical information about streamed data
  */
 #include <cmath>

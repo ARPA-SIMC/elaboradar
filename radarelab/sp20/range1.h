@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 // indice tipo variabile
 #define INDEX_Z     0
 #define INDEX_ZDR   1

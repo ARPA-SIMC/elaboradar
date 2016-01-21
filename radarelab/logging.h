@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_LOGGING_H
 #define RADARELAB_LOGGING_H
 

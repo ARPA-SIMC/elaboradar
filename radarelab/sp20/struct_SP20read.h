@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 /*====================================================================*/
 /* Contiene la definizione delle strutture utilizzate in SP20read.c;  */ 
 /* hd_DBP_functions.c e beam_functions.c                              */

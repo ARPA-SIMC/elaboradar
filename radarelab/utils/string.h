@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_UTILS_STRING_H
 #define RADARELAB_UTILS_STRING_H
 

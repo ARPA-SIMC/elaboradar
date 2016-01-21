@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_ELEV_FIN_H
 #define RADARELAB_ELEV_FIN_H
 

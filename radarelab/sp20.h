@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_SP20_H
 #define RADARELAB_SP20_H
 

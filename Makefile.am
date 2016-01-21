@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = radarelab src testdata esplosione
+SUBDIRS = radarelab src testdata esplosione doc
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = radarelab.pc

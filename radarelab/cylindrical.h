@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_CILINDRICAL_CLASS_H
 #define RADARELAB_CILINDRICAL_CLASS_H
 

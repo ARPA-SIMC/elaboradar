@@ -82,6 +82,7 @@ radarelab/Makefile
 src/Makefile
 testdata/Makefile
 esplosione/Makefile
+doc/Makefile
 radarelab.pc
 ])
 AC_OUTPUT

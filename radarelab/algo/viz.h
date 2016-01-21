@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_VIZ_CLASS_H
 #define RADARELAB_VIZ_CLASS_H
 

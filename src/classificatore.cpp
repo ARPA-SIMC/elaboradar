@@ -1,3 +1,9 @@
+/**
+ *  @file
+ *  @defgroup classificatore 
+ *  @brief progetto elaborazione dati radar per ottenere campi di Z da convertire in R
+ *  @details elaborazione dati radar utilizzando dati da radiosondaggio, temperatura e dati in uscita da programma beam blocking che esegue un controllo di qualita' del volume, rimuove la propagazione anomala, corregge il beam blocking,   calcola il profilo verticale, calcola la  qualità, classifica le aree convettive  
+*/
 #include <iostream>
 #include <radarelab/volume.h>
 #include <radarelab/odim.h>

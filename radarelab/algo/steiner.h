@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADAELAB_STEINER_CLASS_H
 #define RADAELAB_STEINER_CLASS_H
 

@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #include <radarelab/volume.h>
 #include <radarelab/algo/statistics.h>
 

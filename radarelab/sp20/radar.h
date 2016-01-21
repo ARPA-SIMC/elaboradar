@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 /*#define ACF 0.043945313 */           /* angle conversion factor for SP20 radar data */
 /*#define ACF 0.0879  */
 

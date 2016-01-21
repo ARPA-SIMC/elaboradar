@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_ALGO_ANAPROP_H
 #define RADARELAB_ALGO_ANAPROP_H
 

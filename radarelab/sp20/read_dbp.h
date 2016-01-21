@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 //#define MAX_BIN 460
 /*per uniformità lo definisco come 
 negli include di cum_bac pari a 512*/

@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @ingroup radarelab 
+*/
 #ifndef RADARELAB_MATRIX_H
 #define RADARELAB_MATRIX_H
 

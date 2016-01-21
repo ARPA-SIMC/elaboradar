@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @ingroup progetto_cum_bac
+ *  @ingroup radarelab
  *  @brief Definisce le principali strutture che contengono i dati
  */
 #ifndef RADARELAB_VOLUME_H
