@@ -1,5 +1,5 @@
-#ifndef ELABORADAR_CART_H
-#define ELABORADAR_CART_H
+#ifndef RADARELAB_CART_H
+#define RADARELAB_CART_H
 
 #include <radarelab/matrix.h>
 #include <radarelab/volume.h>

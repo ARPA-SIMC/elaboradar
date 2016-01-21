@@ -32,6 +32,7 @@ nobase_dist_radarelabinclude_HEADERS = \
   sp20.h \
   odim.h \
   elev_fin.h \
+  cart.h \
   algo/anaprop.h \
   algo/azimuth_resample.h \
   algo/cleaner.h \
@@ -52,6 +53,7 @@ libradarelab_la_SOURCES = \
   cylindrical.cpp \
   image.cpp \
   volume.cpp \
+  cart.cpp \
   sp20.cpp \
   sp20/SP20read.cpp \
   sp20/func_SP20toMDB.cpp \

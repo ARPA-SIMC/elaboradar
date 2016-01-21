@@ -27,7 +27,6 @@ libtmp_la_SOURCES = \
   setwork.cpp \
   func_Q3d.cpp \
   Q_components.cpp \
-  cart.cpp \
   cartproducts.cpp \
   site.cpp \
   assets.cpp \
