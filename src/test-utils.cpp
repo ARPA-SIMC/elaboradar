@@ -2,9 +2,11 @@
 #include <cum_bac.h>
 #include <cartproducts.h>
 
+using namespace elaboradar;
+
 namespace testradar {
 
-void print_stats(const std::string& name, const radarelab::CUM_BAC& cb, std::ostream& out)
+void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out)
 {
     print_stats("*" + name + "->qual", *cb.qual, out);
     print_stats(name + "->top", cb.top, 0, out);
@@ -20,7 +22,7 @@ void print_stats(const std::string& name, const radarelab::CUM_BAC& cb, std::ost
     print_stats(name + "->calcolo_vpr->neve", cb.calcolo_vpr->neve, out);
 }
 
-void print_stats(const std::string& name, const radarelab::Cart& cart, std::ostream& out)
+void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out)
 {
     print_stats(name + ".cart", cart.cart, 0, out);
     print_stats(name + ".cartm", cart.cartm, 0.0, out);
@@ -35,7 +37,7 @@ void print_stats(const std::string& name, const radarelab::Cart& cart, std::ostr
     print_stats(name + ".conv_cart", cart.conv_cart, 0, out);
 }
 
-void print_stats(const std::string& name, const radarelab::CartLowris& cart, std::ostream& out)
+void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out)
 {
     print_stats(name + ".z_out", cart.z_out, 0, out);
     print_stats(name + ".qual_Z_1x1", cart.qual_Z_1x1, 0, out);
@@ -49,7 +51,7 @@ void print_stats(const std::string& name, const radarelab::CartLowris& cart, std
     print_stats(name + ".conv_1x1", cart.conv_1x1, 0, out);
 }
 
-void print_stats(const std::string& name, const radarelab::CartProducts& cart, std::ostream& out)
+void print_stats(const std::string& name, const elaboradar::CartProducts& cart, std::ostream& out)
 {
     print_stats(name + ".z_out", cart.z_out, 0, out);
     print_stats(name + ".qual_Z_1x1", cart.qual_Z_1x1, 0, out);

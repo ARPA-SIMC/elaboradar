@@ -15,13 +15,17 @@
 #include <H5Cpp.h>
 
 namespace radarelab {
+template<typename T> struct Matrix2D;
 
 namespace algo {
 class DBZ;
 }
 
+}
+
+namespace elaboradar {
+
 struct Config;
-template<typename T> struct Matrix2D;
 
 struct Site;
 
@@ -91,7 +95,7 @@ public:
      *
      * TODO: cos'è il dem?
      */
-    void load_dem(Matrix2D<float>& matrix);
+    void load_dem(radarelab::Matrix2D<float>& matrix);
 
     /**
      * Open the first level file.
@@ -99,7 +103,7 @@ public:
      * The result is always a valid file: it throws an exception if something goes wrong.
      * @param matrix - Matrix  [unsigned char] where first_elev table  is loaded
      */
-    void load_first_level(Matrix2D<unsigned char>& matrix);
+    void load_first_level(radarelab::Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the first level elevation BB el file.
@@ -107,7 +111,7 @@ public:
      * The result is always a valid file: it throws an exception if something goes wrong.
      * @param matrix - Matrix  [unsigned char] where first_elev_bb_el table  is loaded
      */
-    void load_first_level_bb_el(Matrix2D<unsigned char>& matrix);
+    void load_first_level_bb_el(radarelab::Matrix2D<unsigned char>& matrix);
 
     /**
      * Open the first level elevation BB bloc file.
@@ -115,7 +119,7 @@ public:
      * The result is always a valid file: it throws an exception if something goes wrong.
      * @param matrix - Matrix  [unsigned char] where first_elev_bb_bloc table  is loaded
      */
-    void load_first_level_bb_bloc(Matrix2D<unsigned char>& matrix);
+    void load_first_level_bb_bloc(radarelab::Matrix2D<unsigned char>& matrix);
 
     /**
      * Read the hray file, calling a callback on each parsed value.
@@ -205,7 +209,7 @@ public:
     /** Write in $OUTPUT_Z_LOWRIS_DIR/MP_coeff the MP coefficients.
      * @param [in] dbz - DBZ object with MP coefficients 
      */  
-    void write_dbz_coefficients(const algo::DBZ& dbz);
+    void write_dbz_coefficients(const radarelab::algo::DBZ& dbz);
 
     /**
      * Return an open HDF5 File ( $DIR_QUALITY/devel-data.h5) to which we can write datasets used to debug
@@ -224,7 +228,7 @@ public:
      * @param [in] ext - file extension
      * @param [out] desc - used to get better error messages.
      */
-    void write_image(const Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
+    void write_image(const radarelab::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
 
     /**
      * Write a graphic image with gdal.
@@ -235,7 +239,7 @@ public:
      * @param [in] format  - file graphic format used.
      */
     template<typename T>
-    void write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
+    void write_gdal_image(const radarelab::Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
 
 protected:
     /// Build a basename (without extension) for a file given the current
@@ -247,10 +251,10 @@ protected:
 
     /// Load a Matrix2D, from packed row-major binary data
     template<typename T>
-    void load_raw(const std::string& fname, const char* desc, Matrix2D<T>& matrix);
+    void load_raw(const std::string& fname, const char* desc, radarelab::Matrix2D<T>& matrix);
 
     /// Load a Matrix2D, from space-separated column-major ascii floats
-    void load_ascii(const std::string& fname, const char* desc, Matrix2D<float>& matrix);
+    void load_ascii(const std::string& fname, const char* desc, radarelab::Matrix2D<float>& matrix);
 };
 
 }

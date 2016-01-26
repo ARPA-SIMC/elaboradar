@@ -4,7 +4,7 @@
 #include <radarelab/utils/tests.h>
 #include <radarelab/volume.h>
 
-namespace radarelab {
+namespace elaboradar {
 struct Cart;
 struct CartLowris;
 struct CartProducts;
@@ -239,10 +239,10 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
         << "));" << endl;
 }
 
-void print_stats(const std::string& name, const radarelab::CUM_BAC& cb, std::ostream& out);
-void print_stats(const std::string& name, const radarelab::Cart& cart, std::ostream& out);
-void print_stats(const std::string& name, const radarelab::CartLowris& cart, std::ostream& out);
-void print_stats(const std::string& name, const radarelab::CartProducts& cart, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out);
+void print_stats(const std::string& name, const elaboradar::CartProducts& cart, std::ostream& out);
 
 }
 

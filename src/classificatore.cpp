@@ -17,7 +17,7 @@ using namespace std;
 
 int main(int argc,char* argv[])
 {
-	const Site& sito(Site::get("SPC"));
+	const elaboradar::Site& sito(elaboradar::Site::get("SPC"));
 	
 	//Volume<double> volume;
 	//volume::ODIMLoader loader(sito, false, 1024);

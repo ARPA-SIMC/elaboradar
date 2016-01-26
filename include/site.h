@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 
-namespace radarelab {
+namespace elaboradar {
 
 /**
  * Radar site information

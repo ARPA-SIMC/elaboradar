@@ -36,19 +36,23 @@
 #define RES_HOR_CIL 0.25
 
 /** 
- * name space generale del programma
+ * namespace per gli algoritmi di elaborazione
  */
 namespace radarelab {
 
-struct Site;
-
-/** 
- * namespace per gli algoritmi di elaborazione
- */
 namespace algo {
 struct CalcoloSteiner;
 struct CalcoloVIZ;
 }
+
+}
+
+/** 
+ * name space generale del programma
+ */
+namespace elaboradar {
+
+struct Site;
 
 struct CalcoloVPR;
 struct Cart;
@@ -69,7 +73,7 @@ public:
      * @param [in] do_clean - flag to abilitate cleaning procedure 
      * @param [in] do_medium - flag to force processing as medium range data  
      */
-    static void read_sp20_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
+    static void read_sp20_volume(radarelab::Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
     /**
      * Read from ODIM data file 
      * @param [out] volume  - Container for radar data
@@ -78,7 +82,7 @@ public:
      * @param [in] do_clean - flag to abilitate cleaning procedure 
      * @param [in] do_medium - flag to force processing as medium range data  
      */
-    static void read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
+    static void read_odim_volume(radarelab::Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
 
     log4c_category_t* logging_category; ///< logging category 
 
@@ -100,10 +104,10 @@ public:
     bool do_readStaticMap = false;	///< Read Static clutter map
     bool do_anaprop=false;		///< anaprop correction
 
-    Volume<double>& volume;		///< Polar volume of Reflectivity 
-    Volume<double> SD_Z6;		///< Polar volume of standard deviation of reflectivity over 6 km length
+    radarelab::Volume<double>& volume;		///< Polar volume of Reflectivity 
+    radarelab::Volume<double> SD_Z6;		///< Polar volume of standard deviation of reflectivity over 6 km length
 
-    algo::DBZ dbz;			///< ????
+    radarelab::algo::DBZ dbz;			///< ????
 	
     CalcoloVPR* calcolo_vpr = 0;	///< Oggetto per calcolare e correggere con VPR
 
@@ -115,21 +119,21 @@ public:
     char date[20];			///<  Acquisition date 
 
     //matrici first_level e first level da beam blocking e valore beam blocking
-    PolarScan<unsigned char> first_level; 		///< mappa dinamica complessiva
-    PolarScan<unsigned char> first_level_static;	///< mappa statica
+    radarelab::PolarScan<unsigned char> first_level; 		///< mappa dinamica complessiva
+    radarelab::PolarScan<unsigned char> first_level_static;	///< mappa statica
 
-    PolarScan<unsigned char> bb_first_level;  		///< mappa di elevazioni da beam blocking (input)
-    PolarScan<unsigned char> beam_blocking;   		///< mappa di beam blocking (input)
+    radarelab::PolarScan<unsigned char> bb_first_level;  		///< mappa di elevazioni da beam blocking (input)
+    radarelab::PolarScan<unsigned char> beam_blocking;   		///< mappa di beam blocking (input)
 
-    algo::Anaprop<double> anaprop;			///< Oggetto per correzione ANAPRO
+    radarelab::algo::Anaprop<double> anaprop;			///< Oggetto per correzione ANAPRO
 
     //variabili legate a propagazione e beam blocking, da prog_bb
-    PolarScan<float> dem; 				///< dem in coordinate azimut range
+    radarelab::PolarScan<float> dem; 				///< dem in coordinate azimut range
 
     // metrici qualita' come sopra
-    Volume<unsigned char>* qual; 			///< qualita volume polare
+    radarelab::Volume<unsigned char>* qual; 			///< qualita volume polare
     // top, come sopra
-    PolarScan<unsigned char> top; 			///< Echo top a ???? dBZ [hm]
+    radarelab::PolarScan<unsigned char> top; 			///< Echo top a ???? dBZ [hm]
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
@@ -143,7 +147,7 @@ public:
  * @param medium - force processing as medium range 
  * @param max_bin - maximum beam_size length 
  */
-    CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium=false, unsigned max_bin=512);
+    CUM_BAC(radarelab::Volume<double>& volume, const Config& cfg, const Site& site, bool medium=false, unsigned max_bin=512);
     ~CUM_BAC();
 
     /**
@@ -180,7 +184,7 @@ public:
      *  @brief   funzione scrittura matrici statistica
      *  @details scrive le statistiche di beam blocking, anaprop, cambio di elevazione in un unsigined char DIM1_ST*DIM1_ST
      */
-    void ScrivoStatistica(const algo::anaprop::GridStats&);
+    void ScrivoStatistica(const radarelab::algo::anaprop::GridStats&);
 
     /**
      *  @brief funzione che legge la mappa statica e la mappa di elevazioni da beam blocking e le condensa in un unica mappa
@@ -226,7 +230,7 @@ struct CalcoloVPR
     long int gap; 	///< distanza temporale dall'ultimo file vpr [numero acquisizioni intercorse dall'ultimo vpr ?)
     float t_ground;	///< 2m temperature
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
-    PolarScan<unsigned char> conv;	/// Informa se il pixel è convettivo
+    radarelab::PolarScan<unsigned char> conv;	/// Informa se il pixel è convettivo
     std::vector<long int> area_vpr; 	///< area degli strati
     std::vector<float> vpr;		///< vpr 
     int hvprmax; 			///< quota picco vpr
@@ -240,14 +244,14 @@ struct CalcoloVPR
     unsigned z_size;		///< Dimensioni ??????
     double htbb;				///< altezza top brightband
     double hbbb;				///< altezza bottom brightband
-    PolarScan<unsigned char> corr_polar;	///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
-    PolarScan<unsigned char> neve;		///< matrice az-range che memorizza punti di neve
+    radarelab::PolarScan<unsigned char> corr_polar;	///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
+    radarelab::PolarScan<unsigned char> neve;		///< matrice az-range che memorizza punti di neve
     int ier_vpr;				///< flag d'errore su calcolo vpr istantaneo
     int ier_comb;				///< flag d'errore su combinazione vpr
     int ier_max;				///< flag d'errore su calcolo quota max 
     int ier_stampa_vpr;				///< flag d'errore su stampa profilo
     // dati per vpr
-    Volume<unsigned char>* flag_vpr; 		///< punti del volume polare ok per calcolo VPR
+    radarelab::Volume<unsigned char>* flag_vpr; 		///< punti del volume polare ok per calcolo VPR
     //obsol.
     float stdev;// obsol.
     // files vpr
@@ -336,7 +340,7 @@ struct CalcoloVPR
      *  @param [in] steiner - oggetto che contiene classificazione secondo Steiner
      *  @param [in] viz - oggetto che contiene classificazione viz
      */
-    void merge_metodi(const algo::CalcoloSteiner& steiner, const algo::CalcoloVIZ& viz);
+    void merge_metodi(const radarelab::algo::CalcoloSteiner& steiner, const radarelab::algo::CalcoloVIZ& viz);
 
     /// stampa profilo combinato
     /// @return codice errore
@@ -356,19 +360,19 @@ struct Cart
     const unsigned max_bin;		///< dimensione matrice
 
     /// vol_pol interpolated in a cartesian map, taking the max of all candidate samples
-    Image<unsigned char> cart;		
+    radarelab::Image<unsigned char> cart;		
     /// vol_pol interpolated in a cartesian map, taking the average of all candidate samples
-    Image<double> cartm;
+    radarelab::Image<double> cartm;
 
-    Image<unsigned char> beam_blocking_xy; 	///< beamblocking cartesiano max resol
-    Image<unsigned char> dato_corr_xy; 		///< flag anap cartesiano max resol
-    Image<unsigned char> elev_fin_xy;		///< Elevazione finale usata per calcolo Z
-    Image<unsigned char> topxy;			///< echotop a 20 dBZ
-    Image<unsigned char> qual_Z_cart; 		///< qualita della Z in formato 1024*1024
-    Image<unsigned char> corr_cart;		///< Correzione vpr applicata
-    Image<unsigned char> neve_cart;		///< neve formato 1024*1024
-    Image<unsigned char> conv_cart;		///< classificazione convettiva
-    Image<unsigned short> quota_cart;		///< quota fascio 
+    radarelab::Image<unsigned char> beam_blocking_xy; 	///< beamblocking cartesiano max resol
+    radarelab::Image<unsigned char> dato_corr_xy; 		///< flag anap cartesiano max resol
+    radarelab::Image<unsigned char> elev_fin_xy;		///< Elevazione finale usata per calcolo Z
+    radarelab::Image<unsigned char> topxy;			///< echotop a 20 dBZ
+    radarelab::Image<unsigned char> qual_Z_cart; 		///< qualita della Z in formato 1024*1024
+    radarelab::Image<unsigned char> corr_cart;		///< Correzione vpr applicata
+    radarelab::Image<unsigned char> neve_cart;		///< neve formato 1024*1024
+    radarelab::Image<unsigned char> conv_cart;		///< classificazione convettiva
+    radarelab::Image<unsigned short> quota_cart;		///< quota fascio 
 
 /**
  * Constructor 
@@ -401,7 +405,7 @@ struct SingleCart
     const unsigned max_bin;		///< dimensione matrice
 
     /// vol_pol interpolated in a cartesian map
-    Image<unsigned char> cart;		
+    radarelab::Image<unsigned char> cart;		
 /** 
  * Constructor
  * @param [in] max_bin - dimensione matrice
@@ -417,7 +421,7 @@ struct SingleCart
      *  @param [in] volume - volume passato per grafica
      *  @param [in] el_index - indice elevazione richiesta da graficare
      */
-    void creo_cart(const Volume <double> & volume, unsigned int el_index);
+    void creo_cart(const radarelab::Volume <double> & volume, unsigned int el_index);
 
 /**
  * Produce in output le immagini PNG dei campi in $DIR_DEBUG
@@ -442,17 +446,17 @@ struct CartLowris
     const Cart& c;				///<  reference all'oggetto Cart di riferimento
 
     
-    Image<unsigned char> z_out;			///< Z cartesiana al livello più basso
-    Image<unsigned char> quota_1x1;		///< quota in formato 256*256 in centinaia di metri, risoluzione ZLR 
-    Image<unsigned char> beam_blocking_1x1;	///< beam blocking cartesiano 1x1
-    Image<unsigned char> dato_corr_1x1; 	///< uscite anap cartesiano  1x1
-    Image<unsigned char> elev_fin_1x1;		///< Elevazione finale 1x1
-    Image<unsigned char> qual_Z_1x1;		///< qualita della Z in formato 256*256, risoluzione ZLR 
-    Image<unsigned char> top_1x1;		///< echotop a 20dBZ a 1x1
+    radarelab::Image<unsigned char> z_out;			///< Z cartesiana al livello più basso
+    radarelab::Image<unsigned char> quota_1x1;		///< quota in formato 256*256 in centinaia di metri, risoluzione ZLR 
+    radarelab::Image<unsigned char> beam_blocking_1x1;	///< beam blocking cartesiano 1x1
+    radarelab::Image<unsigned char> dato_corr_1x1; 	///< uscite anap cartesiano  1x1
+    radarelab::Image<unsigned char> elev_fin_1x1;		///< Elevazione finale 1x1
+    radarelab::Image<unsigned char> qual_Z_1x1;		///< qualita della Z in formato 256*256, risoluzione ZLR 
+    radarelab::Image<unsigned char> top_1x1;		///< echotop a 20dBZ a 1x1
     
-    Image<unsigned char> corr_1x1;		///< uscite  vpr: correzione VPR 1x1
-    Image<unsigned char> neve_1x1;		///< neve in formato 256*256, risoluzione ZLR 
-    Image<unsigned char> conv_1x1;		///< punti convettivi 1x1
+    radarelab::Image<unsigned char> corr_1x1;		///< uscite  vpr: correzione VPR 1x1
+    radarelab::Image<unsigned char> neve_1x1;		///< neve in formato 256*256, risoluzione ZLR 
+    radarelab::Image<unsigned char> conv_1x1;		///< punti convettivi 1x1
 
 /** 
  * Constructor

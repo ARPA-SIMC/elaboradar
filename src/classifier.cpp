@@ -168,7 +168,7 @@ HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, 
 	Ai=((Wij.array()*Pij.array()).matrix()*Qi).array()/(Wij*Qi).array();
 }
 
-classifier::classifier(const string& file, const Site& site):pathname(file)
+classifier::classifier(const string& file, const elaboradar::Site& site):pathname(file)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 

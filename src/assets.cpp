@@ -14,8 +14,9 @@
 #include <stdexcept>
 
 using namespace std;
+using namespace radarelab;
 
-namespace radarelab {
+namespace elaboradar {
 
 Assets::Assets(const Config& cfg)
     : logging_category(log4c_category_get("radar.assets")), cfg(cfg), outfile_devel_data(0)

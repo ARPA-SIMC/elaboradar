@@ -453,7 +453,7 @@ public:
  * \param [in] file - pathname of the odim volume file to be inspected
  * \param [in] site - site object
  */ 
-	classifier(const std::string& file, const Site& site);
+	classifier(const std::string& file, const elaboradar::Site& site);
 /*!
  * \brief Initialize derived input data
  */

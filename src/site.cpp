@@ -16,6 +16,7 @@
 #define GAT_LON 10.4992
 
 using namespace std;
+using namespace radarelab;
 
 namespace {
 /*!
@@ -34,7 +35,7 @@ vector<double> make_elev_array(const int* data, unsigned count)
 }
 }
 
-namespace radarelab {
+namespace elaboradar {
 Site::~Site()
 {
 }

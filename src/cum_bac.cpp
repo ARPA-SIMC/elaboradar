@@ -60,8 +60,9 @@
 #define CONV_RAD 360./4096.*DTOR  // fattore conversione unità angolare radar-radianti
 
 using namespace std;
+using namespace radarelab;
 
-namespace radarelab {
+namespace elaboradar {
 
 namespace {
 /**

@@ -14,6 +14,7 @@
 
 using namespace radarelab::utils::tests;
 using namespace radarelab;
+using namespace elaboradar;
 using namespace testradar;
 using namespace std;
 
