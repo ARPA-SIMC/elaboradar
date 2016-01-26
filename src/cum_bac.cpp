@@ -1743,11 +1743,20 @@ void CUM_BAC::generate_maps(CartProducts& products, bool new_algo)
         LOG_INFO("Scrittura File Precipitazione 1X1\n");
         if (do_zlr_media)
         {
-            std::function<unsigned char(double)> convert = [this](double average) {
-                    // il max serve perchè il valore di MISSING è 0
-                    unsigned char sample = DBtoBYTE(average);
-                    return max(sample, (unsigned char)1);
-                };
+            std::function<unsigned char(const vector<double>&)> convert = [this](const vector<double>& samples) {
+                // Samples are in contains dB (logaritmic values), so mediating
+                // them is not the correct operation, and we need to convert
+                // them to Z (linear) values to average them.
+                // TODO: there may be more efficient way to mediate logaritmic
+                // values.
+                double sum = 0;
+                for (const auto& s: samples)
+                    sum += algo::DBZtoZ(s);
+                unsigned char res = DBtoBYTE(algo::ZtoDBZ(sum / samples.size()));
+                // il max serve perchè il valore di MISSING è 0
+                if (res == 0) return (unsigned char)1;
+                return res;
+            };
             products.scaled.to_cart_average(volume[0], convert, products.z_out);
         } else {
             std::function<unsigned char(unsigned, unsigned)> assign_cart =

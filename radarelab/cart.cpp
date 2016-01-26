@@ -44,8 +44,8 @@ void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std:
     double az = map_azimuth(y, x);
 
     // Iterate indices 0.45° before and after
-    int az_min = floor((az - .45) * beam_count / 360);
-    int az_max = ceil((az + .45) * beam_count / 360);
+    int az_min = floor((az - .45) * beam_count / 360.0);
+    int az_max = ceil((az + .45) * beam_count / 360.0);
     if (az_min < 0)
     {
         az_min += beam_count;

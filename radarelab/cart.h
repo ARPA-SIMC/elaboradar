@@ -8,6 +8,7 @@
 #include <radarelab/matrix.h>
 #include <radarelab/volume.h>
 #include <limits>
+#include <vector>
 
 namespace radarelab {
 
@@ -18,11 +19,25 @@ struct CoordinateMapping
 {
     /// Beam size of the volume that we are mapping to cartesian coordinates
     const unsigned beam_size;
-    /// Azimuth indices to use to lookup a map point in a volume
-    /// -1 means no mapping
+
+    /**
+     * Azimuth indices to use to lookup a map point in a volume.
+     *
+     * -1 means no mapping.
+     *
+     * Each value in the matrix is the azimuth pointing to the center of the
+     * corresponding cartesian pixel.
+     */
     Matrix2D<double> map_azimuth;
-    /// Range indices to use to lookup a map point in a volume
-    /// -1 means no mapping
+
+    /**
+     * Range indices to use to lookup a map point in a volume.
+     *
+     * -1 means no mapping.
+     *
+     * Each value in the matrix is the distance (in cells) from the radar to
+     * the center of the corresponding cartesian pixel.
+     */
     Matrix2D<double> map_range;
 
     /**
@@ -165,11 +180,12 @@ struct ScaledIndexMapping : public IndexMapping
 
     /// Fill the cartesian map dst with the output of the function src(azimuth, range)
     template<typename T>
-    void to_cart_average(const PolarScan<double>& src, std::function<T(double)>& convert, Matrix2D<T>& dst) const
+    void to_cart_average(const PolarScan<double>& src, std::function<T(const std::vector<double>&)>& convert, Matrix2D<T>& dst) const
     {
         // In case dst is not a square with side beam_size*2, center it
         int dx = ((int)width - dst.cols()) / 2;
         int dy = ((int)height - dst.rows()) / 2;
+        std::vector<double> samples;
 
         for (unsigned y = 0; y < dst.rows(); ++y)
         {
@@ -179,13 +195,11 @@ struct ScaledIndexMapping : public IndexMapping
             {
                 if (x + dx < 0 || x + dx >= width) continue;
 
-                double sum = 0;
-                unsigned count = 0;
-                std::function<void(unsigned, unsigned)> compute_average = [&sum, &count, &src](unsigned azimuth, unsigned range) {
+                samples.clear();
+                std::function<void(unsigned, unsigned)> compute_average = [&samples, &src](unsigned azimuth, unsigned range) {
                     if (azimuth < 0 || azimuth > src.beam_count) return;
                     if (range < 0 || range > src.beam_size) return;
-                    sum += src(azimuth, range);
-                    ++count;
+                    samples.push_back(src(azimuth, range));
                 };
 
                 for(unsigned sy = 0; sy < fullsize_pixels_per_scaled_pixel; ++sy)
@@ -198,8 +212,8 @@ struct ScaledIndexMapping : public IndexMapping
                         mapping.sample(src.beam_count, src_x, src_y, compute_average);
                     }
 
-                if (count > 0)
-                    dst(y + dy, x + dx) = convert(sum / count);
+                if (!samples.empty())
+                    dst(y + dy, x + dx) = convert(samples);
             }
         }
     }

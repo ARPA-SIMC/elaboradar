@@ -80,7 +80,7 @@ testsuite_LDADD = libradarelab.la $(WIBBLE_LIBS)
 
 check-local:
 	if [ -z "$(VERBOSE)" ]; then \
-		$(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
+		libtool --mode=execute $(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
 	else \
-		LOG4C_RCPATH=../testdata/log4c_verbose $(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
+		LOG4C_RCPATH=../testdata/log4c_verbose libtool --mode=execute $(DEBUGGER) ./testsuite $(TEST_ARGS) ; \
 	fi

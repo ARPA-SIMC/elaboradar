@@ -77,6 +77,13 @@ inline double BYTEtoZ(unsigned char byte, double gain=80./255., double offset=-2
 inline double DBZtoZ(double DBZ){ return pow(10.,DBZ*0.1);  } 
 
 /**
+*  @brief funzione che converte Z in dBZ
+*  @param[in] Z valore da convertire in dB
+*  @return dBZ value
+*/
+inline double ZtoDBZ(double Z) { return 10 * log10(Z); }
+
+/**
 *  @brief funzione che converte byte in R usando a e b variabili
 *  @param[in] byte byte da convertire
 *  @param[in] aMP  a della relazione z-r
