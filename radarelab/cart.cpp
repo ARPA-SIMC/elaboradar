@@ -55,9 +55,9 @@ void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std:
 #endif
 
     // Iterate on angles that actually overlap with the map cell
-    unsigned d_az = M_1_PI * 180. / (range_idx * 0.9) / 2;
-    int az_min = floor(az / 0.9 - d_az);
-    int az_max = ceil(az / 0.9 + d_az);
+    double d_az = M_1_PI * 180. / range_idx / 2;
+    int az_min = round((az - d_az) * beam_count / 360.);
+    int az_max = round((az + d_az) * beam_count / 360.);
 
     // Iterate all points between az_min and az_max
     for (unsigned iaz = az_min; iaz <= (unsigned)az_max; ++iaz)
