@@ -55,6 +55,7 @@ void ODIMLoader::load(const std::string& pathname)
     {
         unique_ptr<odim::PolarScan> scan(volume->getScan(src_elev));
         double elevation = scan->getEAngle();
+	Available_Elevations.push_back(elevation);
         // FIXME: please add a comment on why this is needed: are there faulty
         // ODIM files out there which repeat elevations? Is it correct that
         // only the first elevation is used and not, say, the last one?
@@ -87,10 +88,6 @@ void ODIMLoader::load(const std::string& pathname)
         }
 
         unsigned beam_size = int_to_unsigned(scan->getNumBins(), "beam size");
-
-        //int el_num = elevation_index(elevation);
-        //if (el_num < 0) continue;
-        unsigned el_num = src_elev;
 
         // Read all quantities that have been requested
         for (auto& todo : to_load)

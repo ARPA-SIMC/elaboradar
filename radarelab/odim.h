@@ -33,6 +33,15 @@ struct ODIMLoader : Loader
      * @param [in] pathname - full path for data file
      */
     void load(const std::string& pathname);
+
+    /**
+     *  Get list of available elevation
+     * 
+     */
+    std::vector<double> get_nominal_elevations() { return Available_Elevations; }
+
+    std::vector<double> Available_Elevations;
+
 };
 
 /*
