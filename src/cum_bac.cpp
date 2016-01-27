@@ -1968,7 +1968,7 @@ struct CartData
         for(int i=0; i<max_bin; i++)
             for(int j=0; j<max_bin; j++)
             {
-                range(i, j) = hypot(i+.5,j+.5);
+                range(i, j) = hypot(i+.5,j+.5) ;
                 azimut(i, j) = 90. - atan((j+.5)/(i+.5)) * M_1_PI*180.;
             }
     }
@@ -1995,7 +1995,7 @@ void Cart::creo_cart(const CUM_BAC& cb)
         for(unsigned i=0; i<max_bin; i++)
             for(unsigned j=0; j<max_bin; j++)
             {
-                unsigned irange = (unsigned)round(cd.range(i, j));
+                unsigned irange = (unsigned)floor(cd.range(i, j));
                 if (irange >= max_bin)
                     continue;
                 switch(quad)
@@ -2022,8 +2022,12 @@ void Cart::creo_cart(const CUM_BAC& cb)
                         break;
                 }
 
-                az_min = (int)((az - .45)/.9);
-                az_max = ceil((az + .45)/.9);
+		unsigned d_az;
+		d_az = M_1_PI*180./(irange * 0.9)/2;
+                az_min = (int)(az/0.9 - d_az);			
+                az_max = (az/0.9 + d_az);		
+                //az_min = (int)((az - .451)/.9);			// allargo leggermente meno della dimensione del fascio
+                //az_max = ceil((az + .449)/.9);			// allargo leggermente meno della dimensione del fascio
 
 
                 if(az_min < 0)
@@ -2032,12 +2036,13 @@ void Cart::creo_cart(const CUM_BAC& cb)
                     az_max = az_max + NUM_AZ_X_PPI;
                 }
                 cont=0;
-                for(iaz = az_min; iaz<az_max; iaz++){
+                for(iaz = az_min; iaz<=az_max; iaz++){
                     // Enrico: cerca di non leggere fuori dal volume effettivo
                     unsigned char sample = 0;
                     if (irange < cb.volume[0].beam_size)
                         sample = max(DBtoBYTE(cb.volume[0].get(iaz%NUM_AZ_X_PPI, irange)), (unsigned char)1);   // il max serve perchè il valore di MISSING è 0
 
+//if (i == j) printf(" i,j,quad %4d %4d %1d -- x,y %4d,%4d az, az_min, az_max %6.2f %3d %3d  iaz, irange  cd.range %3d %4d %6.1f  sample %3d %6.2f\n",i,j,quad,x,y,az,az_min,az_max,iaz, irange, sample,radarelab::algo::BYTEtoDB(sample));
                     if(cart(y, x) <= sample){
                         cart(y, x) = sample;
                         topxy(y, x)=cb.top(iaz%NUM_AZ_X_PPI, irange);
