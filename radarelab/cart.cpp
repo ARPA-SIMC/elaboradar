@@ -43,6 +43,7 @@ void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std:
     // Exact angle
     double az = map_azimuth(y, x);
 
+#if 0
     // Iterate indices 0.45° before and after
     int az_min = floor((az - .45) * beam_count / 360.0);
     int az_max = ceil((az + .45) * beam_count / 360.0);
@@ -51,9 +52,15 @@ void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std:
         az_min += beam_count;
         az_max += beam_count;
     }
+#endif
+
+    // Iterate on angles that actually overlap with the map cell
+    unsigned d_az = M_1_PI * 180. / (range_idx * 0.9) / 2;
+    int az_min = floor(az / 0.9 - d_az);
+    int az_max = ceil(az / 0.9 + d_az);
 
     // Iterate all points between az_min and az_max
-    for (unsigned iaz = az_min; iaz < (unsigned)az_max; ++iaz)
+    for (unsigned iaz = az_min; iaz <= (unsigned)az_max; ++iaz)
         f(iaz % beam_count, range_idx);
 }
 
