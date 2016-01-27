@@ -12,8 +12,8 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
         for (unsigned x = 0; x < beam_size * 2; ++x)
         {
             // x and y centered on the map center
-            double absx = x - beam_size;
-            double absy = y - beam_size;
+            double absx = (double)x - beam_size;
+            double absy = (double)y - beam_size;
             absx += (absx < 0) ? -0.5 : 0.5;
             absy += (absy < 0) ? -0.5 : 0.5;
 
