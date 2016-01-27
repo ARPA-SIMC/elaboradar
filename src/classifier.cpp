@@ -168,7 +168,7 @@ HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, 
 	Ai=((Wij.array()*Pij.array()).matrix()*Qi).array()/(Wij*Qi).array();
 }
 
-classifier::classifier(const string& file, const elaboradar::Site& site):pathname(file)
+classifier::classifier(const string& file):pathname(file)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
@@ -190,7 +190,7 @@ classifier::classifier(const string& file, const elaboradar::Site& site):pathnam
 
 	loader_all.load(pathname);
 
-    auto elev_array = site.get_elev_array();
+    auto elev_array = loader_all.get_nominal_elevations();
     for (auto i: loader_all.to_load)
         i.second->normalize_elevations(elev_array);
 

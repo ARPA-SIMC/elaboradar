@@ -1,10 +1,10 @@
 /*!
  * \file classifier.h
+ * \ingroup HydroClass
  * \brief Classes to compute hydrometeor classification
  */
 
 #include <radarelab/volume.h>
-#include"site.h"
 
 #include<string>
 #include<iostream>
@@ -146,8 +146,9 @@ private:
 class MLpoints : public Matrix2D<unsigned>
 {
 public:
-	double Hmin,Hmax;	// km
-	unsigned count;
+	double Hmin;		///	height min [km]
+	double Hmax;		///	height max [km]
+	unsigned count;		///	counter
 
 	MLpoints(double minHeight,double maxHeight,unsigned az_count,unsigned height_count) 
 	     : 	Matrix2D<unsigned>(Matrix2D::Constant(height_count,az_count,0)),
@@ -451,9 +452,8 @@ public:
 /*!
  * Initialize basic input variables (vol_z vol_zdr vol_rhohv and vol_phidp)
  * \param [in] file - pathname of the odim volume file to be inspected
- * \param [in] site - site object
  */ 
-	classifier(const std::string& file, const elaboradar::Site& site);
+	classifier(const std::string& file);
 /*!
  * \brief Initialize derived input data
  */

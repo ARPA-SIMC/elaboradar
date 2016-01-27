@@ -1,13 +1,16 @@
 /**
  *  @file
- *  @defgroup classificatore 
- *  @brief progetto elaborazione dati radar per ottenere campi di Z da convertire in R
- *  @details elaborazione dati radar utilizzando dati da radiosondaggio, temperatura e dati in uscita da programma beam blocking che esegue un controllo di qualita' del volume, rimuove la propagazione anomala, corregge il beam blocking,   calcola il profilo verticale, calcola la  qualità, classifica le aree convettive  
-*/
+ *  @defgroup HydroClass 
+ *  @brief Hydrometeor Calssifier
+ *  @details Main program for HydroMeteor classification based on radar polarimetry. 
+ *      Classification is based on the HCA from Park et al. (2009).
+ * 	Input data are Z, Zdr, rhohv and phidp and are provided through
+ * 	odim volume data file.
+ */
+
 #include <iostream>
 #include <radarelab/volume.h>
 #include <radarelab/odim.h>
-#include "site.h"
 
 #include "classifier.h"
 #include <radarelab/algo/elabora_volume.h>
@@ -17,12 +20,12 @@ using namespace std;
 
 int main(int argc,char* argv[])
 {
-	const elaboradar::Site& sito(elaboradar::Site::get("SPC"));
+//const elaboradar::Site& sito(elaboradar::Site::get("SPC"));
 	
 	//Volume<double> volume;
 	//volume::ODIMLoader loader(sito, false, 1024);
 
-	volume::classifier classificatore(argv[1],sito);
+	volume::classifier classificatore(argv[1]);
 
 	cout<<"riempito classificatore"<<endl;
 	classificatore.compute_derived_volumes();
