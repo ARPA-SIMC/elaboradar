@@ -223,43 +223,8 @@ add_method("bb_algo_corto", []() {
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 494);
-    cart.creo_cart(*cb);
-    //setenv("DIR_DEBUG", "../testdata/", 1);
-    //cart.write_out(*cb, cb->assets);
-//     print_stats("cart", cart, cout);
-    wassert(actual(cart.cart).statsEqual(0, 213127, 1, 23.95, 251));
-    wassert(actual(cart.cartm).statsEqual(0.00, 976144, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 941551, 1, 10.84, 36));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 213127, 1, 36.94, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 693556, 1, 47.06, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.neve_cart).statsEqual(0, 213127, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 976144, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.CART_DIM_ZLR) == 256);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == -18);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 17489, 1, 36.57, 251));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 17489, 1, 37.29, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 48089, 1, 47.04, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 61004, 1, 10.53, 36));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-
     CartProducts products(cb->volume, 256, 4);
-    cb->generate_maps(products, true);
+    cb->generate_maps(products);
     wassert(actual(products.scaled.image_offset) == -18);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
     // write_image(clow.z_out, "/tmp/zout-old.png", "png");
@@ -280,40 +245,8 @@ add_method("bb_algo_corto", []() {
     // Try again, but with averages
     cb->do_zlr_media = true;
 
-    Cart cart1(cb->volume.max_beam_size());
-    cart1.creo_cart(*cb);
-//     print_stats("cart1", cart1, cerr);
-    wassert(actual(cart1.cart).statsEqual(0, 213127, 1, 23.95, 251));
-    wassert(actual(cart1.cartm).statsEqual(0.00, 213127, 0.01, 264.48, 749048.27));
-    wassert(actual(cart1.topxy).statsEqual(0, 941551, 1, 10.84, 36));
-    wassert(actual(cart1.qual_Z_cart).statsEqual(0, 213127, 1, 36.94, 98));
-    wassert(actual(cart1.quota_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart1.dato_corr_xy).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart1.beam_blocking_xy).statsEqual(0, 693556, 1, 47.06, 51));
-    wassert(actual(cart1.elev_fin_xy).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart1.neve_cart).statsEqual(0, 213127, 1, 1.00, 1));
-    wassert(actual(cart1.corr_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart1.conv_cart).statsEqual(0, 976144, 0, 0.00, 0));
-
-    CartLowris clow1(cb->do_medium ? 512: 256, *cb, cart1);
-    wassert(actual(clow1.CART_DIM_ZLR) == 256);
-    wassert(actual(clow1.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow1.ZLR_OFFSET) == -18);
-    clow1.creo_cart_z_lowris();
-//    print_stats("clow1", clow1, cerr);
-    wassert(actual(clow1.z_out).statsEqual(0, 17489, 1, 29.85, 235));
-    wassert(actual(clow1.qual_Z_1x1).statsEqual(0, 17489, 1, 37.29, 97));
-    wassert(actual(clow1.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow1.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow1.elev_fin_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow1.beam_blocking_1x1).statsEqual(0, 48089, 1, 47.04, 51));
-    wassert(actual(clow1.top_1x1).statsEqual(0, 61004, 1, 10.53, 36));
-    wassert(actual(clow1.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
-    wassert(actual(clow1.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow1.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-
     CartProducts products1(cb->volume, 256, 4);
-    cb->generate_maps(products1, true);
+    cb->generate_maps(products1);
     wassert(actual(products1.scaled.image_offset) == -18);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
     // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
@@ -391,37 +324,24 @@ LOG_INFO("Chiamo caratterizzo volumi");
 
     // TODO: cb->stampa_vpr()
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 494);
-    cart.creo_cart(*cb);
-//     print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 213127, 1, 14.12, 227));
-    wassert(actual(cart.cartm).statsEqual(0.00, 976144, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 945040, 1, 11.02, 36));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 213127, 1, 36.52, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 689773, 1, 47.01, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 764742, 1, 1.15, 3));
-    wassert(actual(cart.neve_cart).statsEqual(0, 213127, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 976144, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == -18);
-    clow.creo_cart_z_lowris();
-//    print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 17489, 1, 22.69, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 17489, 1, 35.78, 98));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 53710, 1, 1.14, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 46906, 1, 46.97, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 62679, 1, 11.32, 36));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -18);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 17489, 1, 22.69, 227));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 17489, 1, 35.78, 98));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 53710, 1, 1.14, 3));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 46906, 1, 46.97, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 62679, 1, 11.32, 36));
+    wassert(actual(products.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
 });
 
 add_method("bb_vpr_class_algo_corto_dev", []() {
@@ -488,38 +408,24 @@ unlink("LAST_VPR");
 
     cb->conversione_convettiva();
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 494);
-    cart.creo_cart(*cb);
-//    print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 213127, 1, 14.12, 227));
-    wassert(actual(cart.cartm).statsEqual(0.00, 976144, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 945040, 1, 11.02, 36));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 213127, 1, 36.52, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 689773, 1, 47.01, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 764742, 1, 1.15, 3));
-    wassert(actual(cart.neve_cart).statsEqual(0, 213127, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 976144, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 976144, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == -18);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 17489, 1, 22.69, 227));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 17489, 1, 35.78, 98));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 53710, 1, 1.14, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 46906, 1, 46.97, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 62679, 1, 11.32, 36));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    // TODO: scrivo_out_file_bin
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -18);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 17489, 1, 22.69, 227));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 17489, 1, 35.78, 98));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 53710, 1, 1.14, 3));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 46906, 1, 46.97, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 62679, 1, 11.32, 36));
+    wassert(actual(products.neve_1x1).statsEqual(0, 17489, 1, 1.00, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
 });
 
 add_method("bb_algo_corto", []() {
@@ -558,26 +464,26 @@ add_method("bb_algo_corto", []() {
     VolumeStats stats;
     cb->volume.compute_stats(stats);
 //    stats.print(stdout);
-    wassert(actual(stats.count_zeros[0]) == 172245);
-    wassert(actual(stats.count_zeros[1]) == 210954);
-    wassert(actual(stats.count_zeros[2]) == 163036);
-    wassert(actual(stats.count_zeros[3]) == 109587);
-    wassert(actual(stats.count_zeros[4]) == 118624);
-    wassert(actual(stats.count_ones[0]) == 0);
-    wassert(actual(stats.count_ones[1]) == 0);
-    wassert(actual(stats.count_ones[2]) == 0);
-    wassert(actual(stats.count_ones[3]) == 0);
-    wassert(actual(stats.count_ones[4]) == 0);
-    wassert(actual(stats.count_others[0]) == 167355);
-    wassert(actual(stats.count_others[1]) == 128646);
-    wassert(actual(stats.count_others[2]) == 100964);
-    wassert(actual(stats.count_others[3]) ==  88013);
-    wassert(actual(stats.count_others[4]) ==  78976);
-    wassert(actual(stats.sum_others[0]) == 23175278);
-    wassert(actual(stats.sum_others[1]) == 16731796);
-    wassert(actual(stats.sum_others[2]) == 12611046);
-    wassert(actual(stats.sum_others[3]) == 10596468);
-    wassert(actual(stats.sum_others[4]) ==  9176701);
+    wassert(actual(stats.count_zeros[0]) == 172245u);
+    wassert(actual(stats.count_zeros[1]) == 210954u);
+    wassert(actual(stats.count_zeros[2]) == 163036u);
+    wassert(actual(stats.count_zeros[3]) == 109587u);
+    wassert(actual(stats.count_zeros[4]) == 118624u);
+    wassert(actual(stats.count_ones[0]) == 0u);
+    wassert(actual(stats.count_ones[1]) == 0u);
+    wassert(actual(stats.count_ones[2]) == 0u);
+    wassert(actual(stats.count_ones[3]) == 0u);
+    wassert(actual(stats.count_ones[4]) == 0u);
+    wassert(actual(stats.count_others[0]) == 167355u);
+    wassert(actual(stats.count_others[1]) == 128646u);
+    wassert(actual(stats.count_others[2]) == 100964u);
+    wassert(actual(stats.count_others[3]) ==  88013u);
+    wassert(actual(stats.count_others[4]) ==  78976u);
+    wassert(actual(stats.sum_others[0]) == 23175278u);
+    wassert(actual(stats.sum_others[1]) == 16731796u);
+    wassert(actual(stats.sum_others[2]) == 12611046u);
+    wassert(actual(stats.sum_others[3]) == 10596468u);
+    wassert(actual(stats.sum_others[4]) ==  9176701u);
 
     wassert(actual(cb->beam_blocking).statsEqual(0, 17.1, 51));
 
@@ -635,37 +541,24 @@ add_method("bb_algo_corto", []() {
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 849);
-    cart.creo_cart(*cb);
-//     print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 624947, 1, 43.33, 255));
-    wassert(actual(cart.cartm).statsEqual(0.00, 2883204, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 2539486, 1, 15.63, 76));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 624947, 1, 18.77, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 1693879, 1, 45.13, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.neve_cart).statsEqual(0, 624947, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == 337);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0, 1, 85.06, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 1, 28.35, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 39215, 1, 45.68, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 42404, 2, 13.40, 57));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -18);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 0, 1, 85.06, 255));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 0, 1, 28.35, 97));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 39215, 1, 45.68, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 42404, 2, 13.40, 57));
+    wassert(actual(products.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
 });
 
 add_method("combina_profili", []() {
@@ -735,37 +628,24 @@ add_method("combina_profili", []() {
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
     // TODO: cb->stampa_vpr()
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 849);
-    cart.creo_cart(*cb);
-//    print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 624947, 1, 39.18, 255));
-    wassert(actual(cart.cartm).statsEqual(0.00, 2883204, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 2545764, 2, 15.70, 76));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 624947, 1, 19.30, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 1688372, 1, 45.11, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 2682479, 1, 1.15, 3));
-    wassert(actual(cart.neve_cart).statsEqual(0, 624947, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == 337);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0, 1, 76.95, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 1, 28.82, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 55707, 1, 1.16, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 37495, 1, 45.41, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 43679, 2, 13.37, 57));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -18);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 0, 1, 76.95, 255));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 0, 1, 28.82, 97));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 55707, 1, 1.16, 3));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 37495, 1, 45.41, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 43679, 2, 13.37, 57));
+    wassert(actual(products.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
 });
 
 add_method("combina_profili1", []() {
@@ -831,39 +711,24 @@ add_method("combina_profili1", []() {
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 849);
-    cart.creo_cart(*cb);
-//     print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 624947, 1, 39.18, 255));
-    wassert(actual(cart.cartm).statsEqual(0.00, 2883204, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 2545764, 2, 15.70, 76));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 624947, 1, 19.30, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 1688372, 1, 45.11, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 2682479, 1, 1.15, 3));
-    wassert(actual(cart.neve_cart).statsEqual(0, 624947, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 2881984, 100, 100.00, 100));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == 337);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0, 1, 76.94, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 1, 28.82, 97));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 55707, 1, 1.16, 3));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 37495, 1, 45.41, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 43679, 2, 13.37, 57));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65477, 100, 100.00, 100));
-
-    // TODO: scrivo_out_file_bin
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -18);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 0, 1, 76.94, 255));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 0, 1, 28.82, 97));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 55707, 1, 1.16, 3));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 37495, 1, 45.41, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 43679, 2, 13.37, 57));
+    wassert(actual(products.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65477, 100, 100.00, 100));
 });
 
 add_method("test_9", []() {
@@ -911,37 +776,24 @@ add_method("test_9", []() {
     wassert(actual(stats.sum_others[4]) ==  9176701);
     //print_stats("cb", *cb, cerr);
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 849);
-    cart.creo_cart(*cb);
-//    print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 624947, 1, 43.33, 255));
-    wassert(actual(cart.cartm).statsEqual(0.00, 2883204, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 2539486, 1, 15.63, 76));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.quota_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.neve_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.corr_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == -175);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 120384, 1, 53.52, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.top_1x1).statsEqual(0, 233808, 2, 17.16, 76));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 262144, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 512, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -175);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 120384, 1, 53.52, 255));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.quota_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.top_1x1).statsEqual(0, 233808, 2, 17.16, 76));
+    wassert(actual(products.neve_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.corr_1x1).statsEqual(0, 262144, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 262144, 0, 0.00, 0));
 });
 
 add_method("test_10", []() {
@@ -1032,37 +884,24 @@ add_method("test_10", []() {
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
-    Cart cart(cb->volume.max_beam_size());
-    wassert(actual(cart.max_bin) == 849);
-    cart.creo_cart(*cb);
-//     print_stats("cart", cart, cerr);
-    wassert(actual(cart.cart).statsEqual(0, 624947, 1, 8.56, 255));
-    wassert(actual(cart.cartm).statsEqual(0.00, 2883204, 0.00, 0.00, 0.00));
-    wassert(actual(cart.topxy).statsEqual(0, 2817169, 1, 14.25, 108));
-    wassert(actual(cart.qual_Z_cart).statsEqual(0, 624947, 1, 18.97, 98));
-    wassert(actual(cart.quota_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.dato_corr_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.beam_blocking_xy).statsEqual(0, 1769167, 1, 49.92, 51));
-    wassert(actual(cart.elev_fin_xy).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.neve_cart).statsEqual(0, 624947, 1, 1.00, 1));
-    wassert(actual(cart.corr_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-    wassert(actual(cart.conv_cart).statsEqual(0, 2883204, 0, 0.00, 0));
-
-    CartLowris clow(cb->do_medium ? 512: 256, *cb, cart);
-    wassert(actual(clow.ZLR_N_ELEMENTARY_PIXEL) == 4);
-    wassert(actual(clow.ZLR_OFFSET) == 337);
-    clow.creo_cart_z_lowris();
-//     print_stats("clow", clow, cerr);
-    wassert(actual(clow.z_out).statsEqual(0, 0, 1, 24.54, 255));
-    wassert(actual(clow.qual_Z_1x1).statsEqual(0, 0, 1, 31.62, 92));
-    wassert(actual(clow.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
-    wassert(actual(clow.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.elev_fin_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.beam_blocking_1x1).statsEqual(0, 43435, 1, 50.17, 51));
-    wassert(actual(clow.top_1x1).statsEqual(0, 59537, 1, 11.87, 108));
-    wassert(actual(clow.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
-    wassert(actual(clow.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
-    wassert(actual(clow.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 256, 4);
+    cb->generate_maps(products);
+    wassert(actual(products.scaled.image_offset) == -18);
+    // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
+    // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
+    // write_image(products1.z_out, "/tmp/zout-new.png", "png");
+//     print_stats("products", products, cerr);
+    wassert(actual(products.z_out).statsEqual(0, 0, 1, 24.54, 255));
+    wassert(actual(products.qual_Z_1x1).statsEqual(0, 0, 1, 31.62, 92));
+    wassert(actual(products.quota_1x1).statsEqual(0, 0, 128, 128.00, 128));
+    wassert(actual(products.dato_corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.elev_fin_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.beam_blocking_1x1).statsEqual(0, 43435, 1, 50.17, 51));
+    wassert(actual(products.top_1x1).statsEqual(0, 59537, 1, 11.87, 108));
+    wassert(actual(products.neve_1x1).statsEqual(0, 0, 1, 1.00, 1));
+    wassert(actual(products.corr_1x1).statsEqual(0, 65536, 0, 0.00, 0));
+    wassert(actual(products.conv_1x1).statsEqual(0, 65536, 0, 0.00, 0));
 });
 
 add_method("test_11", []() {
@@ -1158,20 +997,9 @@ add_method("test_12", []() {
     /*--------------------------------------------------
       | conversione di coordinate da polare a cartesiana |
       --------------------------------------------------*/
-    LOG_INFO("Creazione Matrice Cartesiana");
-    Cart cart_maker(cb->volume.max_beam_size());
-    cart_maker.creo_cart(*cb);
-    cb->assets.write_gdal_image(cart_maker.cart,"DIR_DEBUG","cart","PNG" );
-
-    //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
-
-    LOG_INFO("Estrazione Precipitazione 1X1");
-    CartLowris cart_low(cb->do_medium ? 512: 256, *cb, cart_maker);
-    cart_low.creo_cart_z_lowris();
-
-    LOG_INFO("Scrittura File Precipitazione 1X1\n");
-    cart_low.write_out(*cb,cb->assets);
-    cb->assets.write_gdal_image(cart_low.z_out,"DIR_DEBUG","ZLR","PNG" );
+    cb->do_zlr_media = true;
+    CartProducts products(cb->volume, 512, 4);
+    cb->generate_maps(products);
 });
 
 }

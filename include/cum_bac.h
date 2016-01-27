@@ -204,7 +204,7 @@ public:
 
 /// Nei punti convettivi ricalcola la Z come MP classica, partendo dalla stima di R (convettiva) 
     void conversione_convettiva();
-    void generate_maps(CartProducts& products, bool new_algo=false);
+    void generate_maps(CartProducts& products);
 // added function to calculate beamblocking correction
 
     /**
@@ -353,51 +353,6 @@ struct CalcoloVPR
 };
 
 /**
- * Struttura per gestire output cartesiano
- */ 
-struct Cart
-{
-    const unsigned max_bin;		///< dimensione matrice
-
-    /// vol_pol interpolated in a cartesian map, taking the max of all candidate samples
-    radarelab::Image<unsigned char> cart;		
-    /// vol_pol interpolated in a cartesian map, taking the average of all candidate samples
-    radarelab::Image<double> cartm;
-
-    radarelab::Image<unsigned char> beam_blocking_xy; 	///< beamblocking cartesiano max resol
-    radarelab::Image<unsigned char> dato_corr_xy; 		///< flag anap cartesiano max resol
-    radarelab::Image<unsigned char> elev_fin_xy;		///< Elevazione finale usata per calcolo Z
-    radarelab::Image<unsigned char> topxy;			///< echotop a 20 dBZ
-    radarelab::Image<unsigned char> qual_Z_cart; 		///< qualita della Z in formato 1024*1024
-    radarelab::Image<unsigned char> corr_cart;		///< Correzione vpr applicata
-    radarelab::Image<unsigned char> neve_cart;		///< neve formato 1024*1024
-    radarelab::Image<unsigned char> conv_cart;		///< classificazione convettiva
-    radarelab::Image<unsigned short> quota_cart;		///< quota fascio 
-
-/**
- * Constructor 
- * @param [in] max_bin - dimensione matrice
- */
-    Cart(unsigned max_bin);
-
-    /**
-     *  conversione da polare a cartesiano alta risoluzione
-     *
-     *  @brief funzione che crea l'output cartesiano dal polare
-     *  @details cicla sui quadranti e su i e j, usando il range e l'azimut ottenuti tramite la funzione creo_matrice_conv()
-     *  @param [in] cb - Oggetto CUM_BAC di riferimento\
-     */
-    void creo_cart(const CUM_BAC& cb);
-
-/**
- * Produce in output le immagini PNG dei campi in $DIR_DEBUG
- * @param [in] cb - oggetto CUM_BAC di riferimento
- * @param [in] assets
- */
-    void write_out(const CUM_BAC& cb, Assets& assets);
-};
-
-/**
  * Struttura per gestire output cartesiano di un singolo campo
  */ 
 struct SingleCart
@@ -430,53 +385,6 @@ struct SingleCart
  * @param [in] format - formato grafico richiesto
  */
     void write_out(Assets& assets, const std::string tagname, const std::string format="PNG");
-};
-
-
-/**
- * Struttura per gestire output cartesiano a 1 km di risoluzione
- */ 
-struct CartLowris
-{
-   
-    const unsigned CART_DIM_ZLR; 		///< dimensione matrice a 1x1 km (di norma 256x256 corto o 512x512 medio )
-    const unsigned ZLR_N_ELEMENTARY_PIXEL;	///< numero di celle ad alta risouzione per ogni km
-    const int ZLR_OFFSET;			///< Offset per centrare la mappa 
-    const CUM_BAC& cb;				///< reference all'oggetto CUM_BAC di riferimento
-    const Cart& c;				///<  reference all'oggetto Cart di riferimento
-
-    
-    radarelab::Image<unsigned char> z_out;			///< Z cartesiana al livello più basso
-    radarelab::Image<unsigned char> quota_1x1;		///< quota in formato 256*256 in centinaia di metri, risoluzione ZLR 
-    radarelab::Image<unsigned char> beam_blocking_1x1;	///< beam blocking cartesiano 1x1
-    radarelab::Image<unsigned char> dato_corr_1x1; 	///< uscite anap cartesiano  1x1
-    radarelab::Image<unsigned char> elev_fin_1x1;		///< Elevazione finale 1x1
-    radarelab::Image<unsigned char> qual_Z_1x1;		///< qualita della Z in formato 256*256, risoluzione ZLR 
-    radarelab::Image<unsigned char> top_1x1;		///< echotop a 20dBZ a 1x1
-    
-    radarelab::Image<unsigned char> corr_1x1;		///< uscite  vpr: correzione VPR 1x1
-    radarelab::Image<unsigned char> neve_1x1;		///< neve in formato 256*256, risoluzione ZLR 
-    radarelab::Image<unsigned char> conv_1x1;		///< punti convettivi 1x1
-
-/** 
- * Constructor
- * @param [in] cart_dim_zlr 	-	dimensione matrice
- * @param [in] cb		-	Oggetto CUM_BAC di riferimento
- * @param [in] c 		-	Oggetto Cart di riferimento
- */
-    CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c);
-
-    /**
-     *  @brief funzione che  trasforma il dato da cartesiano alta risoluzione a cartesiano bassa risoluzione
-     *  @details prende il massimo tra i punti considerati, il passo di ricerca è ZLR_N_ELEMENTARY_PIXEL, cioè il rapporto tra dimensioni ad alta risoluzione e le dimensioni bassa risoluzione.
-     */
-    void creo_cart_z_lowris();
-/**
- * stampa file dati e immagini png corrispondenti
- * @param [in] cb		-	Oggetto CUM_BAC di riferimento
- * @param [in] assets
- */
-    void write_out(const CUM_BAC& cb, Assets& assets);
 };
 
 

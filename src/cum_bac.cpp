@@ -1735,120 +1735,81 @@ void CUM_BAC::vpr_class()
         conversione_convettiva();
 }
 
-void CUM_BAC::generate_maps(CartProducts& products, bool new_algo)
+void CUM_BAC::generate_maps(CartProducts& products)
 {
-    if (new_algo)
+    // Generate products and write them out
+    LOG_INFO("Scrittura File Precipitazione 1X1\n");
+    if (do_zlr_media)
     {
-        // Generate products and write them out
-        LOG_INFO("Scrittura File Precipitazione 1X1\n");
-        if (do_zlr_media)
-        {
-            std::function<unsigned char(const vector<double>&)> convert = [this](const vector<double>& samples) {
-                // Samples are in contains dB (logaritmic values), so mediating
-                // them is not the correct operation, and we need to convert
-                // them to Z (linear) values to average them.
-                // TODO: there may be more efficient way to mediate logaritmic
-                // values.
-                double sum = 0;
-                for (const auto& s: samples)
-                    sum += algo::DBZtoZ(s);
-                unsigned char res = DBtoBYTE(algo::ZtoDBZ(sum / samples.size()));
-                // il max serve perchè il valore di MISSING è 0
-                if (res == 0) return (unsigned char)1;
-                return res;
-            };
-            products.scaled.to_cart_average(volume[0], convert, products.z_out);
-        } else {
-            std::function<unsigned char(unsigned, unsigned)> assign_cart =
-                [this](unsigned azimuth, unsigned range) {
-                    // il max serve perchè il valore di MISSING è 0
-                    unsigned char sample = DBtoBYTE(volume[0].get(azimuth, range));
-                    return max(sample, (unsigned char)1);
-                };
-            products.scaled.to_cart(assign_cart, products.z_out);
-        }
-
-        products.scaled.to_cart(top, products.top_1x1);
-
-        if (do_quality)
-        {
-            const auto& elev_fin = anaprop.elev_fin;
-            const auto& quota = anaprop.quota;
-
-            std::function<unsigned char(unsigned, unsigned)> assign_qual =
-                [this, &elev_fin](unsigned azimuth, unsigned range) {
-                    const auto& el = elev_fin[azimuth][range];
-                    if (range >= volume[el].beam_size)
-                        return (unsigned char)0;
-                    return qual->scan(el).get(azimuth, range);
-                };
-            products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
-
-            std::function<unsigned char(unsigned, unsigned)> assign_quota =
-                [&quota](unsigned azimuth, unsigned range) {
-                    return 128 + round(quota(azimuth, range) / 100.0);
-                };
-            products.scaled.to_cart(assign_quota, products.quota_1x1);
-
-            products.scaled.to_cart(anaprop.dato_corrotto, products.dato_corr_1x1);
-
-            std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
-                    return elev_fin[azimuth][range];
-            };
-            products.scaled.to_cart(assign_elev_fin, products.elev_fin_1x1);
-
-            products.scaled.to_cart(beam_blocking, products.beam_blocking_1x1);
-        }
-
-        if (calcolo_vpr)
-        {
-            const auto& neve = calcolo_vpr->neve;
-            std::function<unsigned char(unsigned, unsigned)> assign = [&neve](unsigned azimuth, unsigned range) {
-                return neve(azimuth, range) ? 0 : 1;
-            };
-            products.scaled.to_cart(assign, products.neve_1x1);
-
-            products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
-
-            if (do_class)
-                products.scaled.to_cart(calcolo_vpr->conv, products.conv_1x1);
-        }
+        std::function<unsigned char(const vector<double>&)> convert = [this](const vector<double>& samples) {
+            // Samples are in contains dB (logaritmic values), so mediating
+            // them is not the correct operation, and we need to convert
+            // them to Z (linear) values to average them.
+            // TODO: there may be more efficient way to mediate logaritmic
+            // values.
+            double sum = 0;
+            for (const auto& s: samples)
+                sum += algo::DBZtoZ(s);
+            unsigned char res = DBtoBYTE(algo::ZtoDBZ(sum / samples.size()));
+            // il max serve perchè il valore di MISSING è 0
+            if (res == 0) return (unsigned char)1;
+            return res;
+        };
+        products.scaled.to_cart_average(volume[0], convert, products.z_out);
     } else {
-        /*--------------------------------------------------
-          | conversione di coordinate da polare a cartesiana |
-          --------------------------------------------------*/
-        LOG_INFO("Creazione Matrice Cartesiana");
-        Cart cart_maker(volume.max_beam_size());
-        cart_maker.creo_cart(*this);
+        std::function<unsigned char(unsigned, unsigned)> assign_cart =
+            [this](unsigned azimuth, unsigned range) {
+                // il max serve perchè il valore di MISSING è 0
+                unsigned char sample = DBtoBYTE(volume[0].get(azimuth, range));
+                return max(sample, (unsigned char)1);
+            };
+        products.scaled.to_cart(assign_cart, products.z_out);
+    }
 
+    products.scaled.to_cart(top, products.top_1x1);
 
-        //-------------------Se definita Z_LOWRIS creo matrice 1X1  ZLR  stampo e stampo coeff MP (serve?)------------------
+    if (do_quality)
+    {
+        const auto& elev_fin = anaprop.elev_fin;
+        const auto& quota = anaprop.quota;
 
-        LOG_INFO("Estrazione Precipitazione 1X1");
-        CartLowris cart_low(do_medium ? 512: 256, *this, cart_maker);
-        cart_low.creo_cart_z_lowris();
+        std::function<unsigned char(unsigned, unsigned)> assign_qual =
+            [this, &elev_fin](unsigned azimuth, unsigned range) {
+                const auto& el = elev_fin[azimuth][range];
+                if (range >= volume[el].beam_size)
+                    return (unsigned char)0;
+                return qual->scan(el).get(azimuth, range);
+            };
+        products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
 
-        assets.write_dbz_coefficients(dbz);
-        LOG_INFO("dopo scrivo_z_lowris");
+        std::function<unsigned char(unsigned, unsigned)> assign_quota =
+            [&quota](unsigned azimuth, unsigned range) {
+                return 128 + round(quota(azimuth, range) / 100.0);
+            };
+        products.scaled.to_cart(assign_quota, products.quota_1x1);
 
-        if (do_quality && do_devel)
-        {
-            H5::H5File outfile = assets.get_devel_data_output();
-            //scrivo_out_file_bin(".corrpt","file anap",getenv("DIR_QUALITY"),sizeof(dato_corrotto),dato_corrotto);
-            //scrivo_out_file_bin(".bloc","file bloc",getenv("DIR_QUALITY"),sizeof(beam_blocking),beam_blocking);
-            //scrivo_out_file_bin(".quota","file quota",getenv("DIR_QUALITY"),sizeof(quota),quota);
-            //scrivo_out_file_bin(".elev","file elevazioni",getenv("DIR_QUALITY"),sizeof(elev_fin),elev_fin);
-            anaprop.elev_fin.write_info_to_debug_file(outfile);
-        }
+        products.scaled.to_cart(anaprop.dato_corrotto, products.dato_corr_1x1);
 
-        if (do_devel)
-        {
-            LOG_INFO("Scrittura riproiezioni cartesiane intermedie\n");
-            cart_maker.write_out(*this, assets);
-        }
+        std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
+                return elev_fin[azimuth][range];
+        };
+        products.scaled.to_cart(assign_elev_fin, products.elev_fin_1x1);
 
-        LOG_INFO("Scrittura File Precipitazione 1X1\n");
-        cart_low.write_out(*this, assets);
+        products.scaled.to_cart(beam_blocking, products.beam_blocking_1x1);
+    }
+
+    if (calcolo_vpr)
+    {
+        const auto& neve = calcolo_vpr->neve;
+        std::function<unsigned char(unsigned, unsigned)> assign = [&neve](unsigned azimuth, unsigned range) {
+            return neve(azimuth, range) ? 0 : 1;
+        };
+        products.scaled.to_cart(assign, products.neve_1x1);
+
+        products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
+
+        if (do_class)
+            products.scaled.to_cart(calcolo_vpr->conv, products.conv_1x1);
     }
 
     if (do_devel)
@@ -1940,22 +1901,6 @@ void CalcoloVPR::esegui_tutto()
     }
 }
 
-Cart::Cart(unsigned max_bin)
-    : max_bin(max_bin),
-      cart(max_bin*2), 
-      beam_blocking_xy(max_bin*2),
-      dato_corr_xy(max_bin*2),
-      elev_fin_xy(max_bin*2),
-      topxy(max_bin*2),
-      qual_Z_cart(max_bin*2),
-      corr_cart(max_bin*2),
-      neve_cart(max_bin*2),
-      conv_cart(max_bin*2),
-      quota_cart(max_bin*2),
-      cartm(max_bin*2)
-{
-}
-
 namespace {
 struct CartData
 {
@@ -1973,155 +1918,6 @@ struct CartData
             }
     }
 };
-}
-
-void Cart::creo_cart(const CUM_BAC& cb)
-{
-    LOG_CATEGORY("radar.cart");
-
-    //matrici per ricampionamento cartesiano
-    //int x,y,irange,az,iaz,az_min,az_max,cont;
-    int x,y,iaz,az_min,az_max,cont;
-    float az;
-    CartData cd(max_bin);
-
-    for(unsigned i=0; i<max_bin *2; i++)
-        for(unsigned j=0; j<max_bin *2; j++)
-            cart(i, j) = MISSING;
-
-    LOG_INFO("Creo_cart - %u", max_bin);
-
-    for(unsigned quad=0; quad<4; quad++)
-        for(unsigned i=0; i<max_bin; i++)
-            for(unsigned j=0; j<max_bin; j++)
-            {
-                unsigned irange = (unsigned)floor(cd.range(i, j));
-                if (irange >= max_bin)
-                    continue;
-                switch(quad)
-                {
-                    case 0:
-                        x = max_bin + i;
-                        y = max_bin - j;
-                        az = cd.azimut(i, j);
-                        break;
-                    case 1:
-                        x = max_bin + j;
-                        y = max_bin + i;
-                        az = cd.azimut(i, j) + 90.;
-                        break;
-                    case 2:
-                        x = max_bin - i;
-                        y = max_bin + j;
-                        az = cd.azimut(i, j) + 180.;
-                        break;
-                    case 3:
-                        x = max_bin - j;
-                        y = max_bin - i;
-                        az = cd.azimut(i, j)+270.;
-                        break;
-                }
-
-		unsigned d_az;
-		d_az = M_1_PI*180./(irange * 0.9)/2;
-                az_min = (int)(az/0.9 - d_az);			
-                az_max = (az/0.9 + d_az);		
-                //az_min = (int)((az - .451)/.9);			// allargo leggermente meno della dimensione del fascio
-                //az_max = ceil((az + .449)/.9);			// allargo leggermente meno della dimensione del fascio
-
-
-                if(az_min < 0)
-                {
-                    az_min = az_min + NUM_AZ_X_PPI;
-                    az_max = az_max + NUM_AZ_X_PPI;
-                }
-                cont=0;
-                for(iaz = az_min; iaz<=az_max; iaz++){
-                    // Enrico: cerca di non leggere fuori dal volume effettivo
-                    unsigned char sample = 0;
-                    if (irange < cb.volume[0].beam_size)
-                        sample = max(DBtoBYTE(cb.volume[0].get(iaz%NUM_AZ_X_PPI, irange)), (unsigned char)1);   // il max serve perchè il valore di MISSING è 0
-
-//if (i == j) printf(" i,j,quad %4d %4d %1d -- x,y %4d,%4d az, az_min, az_max %6.2f %3d %3d  iaz, irange  cd.range %3d %4d %6.1f  sample %3d %6.2f\n",i,j,quad,x,y,az,az_min,az_max,iaz, irange, sample,radarelab::algo::BYTEtoDB(sample));
-                    if(cart(y, x) <= sample){
-                        cart(y, x) = sample;
-                        topxy(y, x)=cb.top(iaz%NUM_AZ_X_PPI, irange);
-                        if (cb.do_quality)
-                        {
-                            if (irange < cb.volume[cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange]].beam_size)
-                                qual_Z_cart(y, x) = cb.qual->scan(cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange]).get(iaz%NUM_AZ_X_PPI, irange);
-                            else
-                                qual_Z_cart(y, x) = 0;
-                            quota_cart(y, x)=cb.anaprop.quota(iaz%NUM_AZ_X_PPI, irange);
-// if (iaz == 0) LOG_DEBUG(" x,y %4d,%4d - irange %4d quota %d",x,y,irange,cb.anaprop.quota(iaz%NUM_AZ_X_PPI, irange));
-                            dato_corr_xy(y, x)=cb.anaprop.dato_corrotto(iaz%NUM_AZ_X_PPI, irange);
-                            beam_blocking_xy(y, x)=cb.beam_blocking(iaz%NUM_AZ_X_PPI, irange);
-                            elev_fin_xy(y, x)=cb.anaprop.elev_fin[iaz%NUM_AZ_X_PPI][irange];
-                            /*neve_cart(y, x)=qual_Z_cart(y, x);*/
-                            if (cb.calcolo_vpr)
-                            {
-                                neve_cart(y, x)=(cb.calcolo_vpr->neve(iaz%NUM_AZ_X_PPI, irange))?0:1;
-                                corr_cart(y, x)=cb.calcolo_vpr->corr_polar(iaz%NUM_AZ_X_PPI, irange);
-                            }
-                        }
-                        if (cb.do_class)
-                        {
-                            if (irange<cb.calcolo_vpr->x_size)
-                                conv_cart(y, x)=cb.calcolo_vpr->conv(iaz%NUM_AZ_X_PPI,irange);
-                        }
-                    }
-                    if (cb.do_zlr_media)
-                    {
-                        //if (volume.scan(0).get_raw(iaz%NUM_AZ_X_PPI, irange) > 0)
-                        if (sample > 0)
-                        {
-                            cartm(y, x)=cartm(y, x)+radarelab::algo::BYTEtoZ(sample);
-                            cont=cont+1;
-                        }
-                    }
-                }
-
-                if (cb.do_zlr_media)
-                {
-                    if (cont > 0) cartm(y, x)=cartm(y, x)/(float)(cont);
-                }
-                /*
-                 *****  per scrivere in griglia cartesiana************
-                 bloc_xy[MAX_BIN*2-y][x]=beam_blocking((int)((float)(az)/.9), irange);
-                 elev_xy[MAX_BIN*2-y][x]=volume.elev_fin[(int)((float)(az)/.9)][irange];
-                 dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange);
-                 elev_fin_xy[MAX_BIN*2-y][x]=first_level((int)((float)(az)/.9), irange);
-                 dato_corrotto_xy(MAX_BIN*2-y, x)= dato_corrotto((int)((float)(az)/.9), irange); */
-            }
-}
-
-void Cart::write_out(const CUM_BAC& cb, Assets& assets)
-{
-    if (getenv("DIR_DEBUG") == NULL) return;
-    assets.write_gdal_image(cart, "DIR_DEBUG", "cart", "PNG");
-
-    if (cb.do_devel)
-    {
-        assets.write_gdal_image(beam_blocking_xy, "DIR_DEBUG", "beam_blocking", "PNG");
-        assets.write_gdal_image(dato_corr_xy, "DIR_DEBUG", "dato_corr", "PNG");
-        assets.write_gdal_image(quota_cart, "DIR_DEBUG", "quota", "PNG");
-        assets.write_gdal_image(elev_fin_xy, "DIR_DEBUG", "elev_fin", "PNG");
-        assets.write_gdal_image(topxy, "DIR_DEBUG", "top", "PNG");
-        if (cb.do_quality)
-        {
-            assets.write_gdal_image(qual_Z_cart, "DIR_DEBUG", "qual_Z", "PNG");
-        }
-
-        if (cb.calcolo_vpr)
-        {
-            assets.write_gdal_image(corr_cart, "DIR_DEBUG", "corr", "PNG");
-        }
-
-        if (cb.do_class)
-        {
-            assets.write_gdal_image(conv_cart, "DIR_DEBUG", "conv", "PNG");
-        }
-    }
 }
 
 SingleCart::SingleCart(unsigned max_bin)
@@ -2202,268 +1998,6 @@ void SingleCart::write_out(Assets& assets, const std::string tagname, const std:
     if (getenv("DIR_DEBUG") == NULL) return;
     assets.write_gdal_image(cart, "DIR_DEBUG", tagname.c_str(), format.c_str());
 }
-
-
-CartLowris::CartLowris(unsigned cart_dim_zlr, const CUM_BAC& cb, const Cart& c)
-    : CART_DIM_ZLR(cart_dim_zlr),
-      ZLR_N_ELEMENTARY_PIXEL(cb.do_medium && c.max_bin < 260 ? 1 : 4),
-      // Center image in the middle of the source image
-      ZLR_OFFSET(c.max_bin - CART_DIM_ZLR / 2 * ZLR_N_ELEMENTARY_PIXEL),
-      cb(cb),
-      c(c),
-      z_out(CART_DIM_ZLR),
-      quota_1x1(CART_DIM_ZLR),
-      beam_blocking_1x1(CART_DIM_ZLR),
-      dato_corr_1x1(CART_DIM_ZLR),
-      elev_fin_1x1(CART_DIM_ZLR),
-      qual_Z_1x1(CART_DIM_ZLR),
-      top_1x1(CART_DIM_ZLR),
-      corr_1x1(CART_DIM_ZLR),
-      neve_1x1(CART_DIM_ZLR),
-      conv_1x1(CART_DIM_ZLR)
-{
-    // const unsigned ZLR_OFFSET = cb.do_medium && c.max_bin < 260 ? CART_DIM_ZLR/2 : 0;
-}
-
-void CartLowris::creo_cart_z_lowris()
-{
-    // ciclo sui punti della nuova matrice. per il primo prenderò il massimo tra i primi sedici etc..
-    for(unsigned i=0; i<CART_DIM_ZLR; i++)
-        for(unsigned j=0; j<CART_DIM_ZLR; j++)
-        {
-            //reinizializzo tutte le variabili calcolate dentro la funzione .
-            unsigned int cont=0;
-            double zm = 0.;
-            unsigned char z = 0;
-            unsigned char q = 0;
-            unsigned char nv = 0;
-            unsigned char dc1x1=0;
-            unsigned char el1x1=0;
-            unsigned short q1x1=0;
-            unsigned char c1x1=0;
-            unsigned char bl1x1=0;
-            unsigned char traw=0;
-            // Load each sample with a value from a 4x4 window on the original image
-            for(unsigned x = 0; x < ZLR_N_ELEMENTARY_PIXEL; x++)
-                for(unsigned y = 0; y < ZLR_N_ELEMENTARY_PIXEL; y++)
-                    //ciclo a passi di 4 in x e y nella matrice a massima risoluzione, cercando il valore massimo di z tra i primi sedici e attribuendolo al primo punto della matrice a bassa risoluzione e poi i tra i secondi sedici e attribuendolo al secondo punto etc...
-                {
-                    unsigned src_x = i*ZLR_N_ELEMENTARY_PIXEL+x+ZLR_OFFSET;
-                    unsigned src_y = j*ZLR_N_ELEMENTARY_PIXEL+y+ZLR_OFFSET;
-                    if (src_x < c.max_bin*2 && src_y < c.max_bin*2 && src_x >= 0 && src_y>=0 && c.cart(src_y, src_x) != MISSING)
-                    {
-                        // Use the values at the location where the volume has
-                        // the maxumum sample
-                        if(c.cart(src_y, src_x) > z){
-                            z= c.cart(src_y, src_x);
-                            traw=c.topxy(src_y, src_x);
-                            if (cb.do_quality)
-                            {
-                                q=c.qual_Z_cart(src_y, src_x);
-                                q1x1=c.quota_cart(src_y, src_x);
-                                dc1x1=c.dato_corr_xy(src_y, src_x);
-                                el1x1=c.elev_fin_xy(src_y, src_x);
-                                bl1x1=c.beam_blocking_xy(src_y, src_x);
-
-                                if (cb.calcolo_vpr)
-                                {
-                                    c1x1=c.corr_cart(src_y, src_x);
-                                    nv= c.neve_cart(src_y, src_x);
-                                }
-                            }
-
-                            if (cb.do_class)
-                            {
-                                conv_1x1(j, i)=c.conv_cart(src_y, src_x);
-                            }
-
-                        }
-                        if (cb.do_zlr_media)
-                        {
-                            if (c.cartm(src_y, src_x) > 0) {
-                                zm = zm + c.cartm(src_y, src_x);
-                                cont=cont+1;
-                            }
-                        }
-                    }
-                    // Set the maximum value of Z
-                    z_out(j, i)=z;
-                    if (cb.do_quality)
-                    {
-                        qual_Z_1x1(j, i)=q;
-                        quota_1x1(j, i)=128+(unsigned char)(q1x1/100);
-                        dato_corr_1x1(j, i)=dc1x1;
-                        elev_fin_1x1(j, i)=el1x1;
-                        beam_blocking_1x1(j, i)=bl1x1;
-                    }
-                    top_1x1(j, i)=traw;
-
-                    if (cb.calcolo_vpr)
-                    {
-                        neve_1x1(j, i)=nv;
-                        corr_1x1(j, i)=c1x1;
-                    }
-                }
-            if (cb.do_zlr_media)
-            {
-                if (cont >0 ) {
-                    // If average ZLR has been requested, overwrite the maximum
-                    // with the average
-                    z_out(j, i)=(unsigned char)round((10*log10(zm/(float)(cont))+20.)/80.*255);
-                } else
-                    z_out(j, i)=MISSING;
-            }
-        }
-#if 0
-//---------------------------- INIZIO 
-    LOG_CATEGORY("radar.spikecleaner");
-
-  int icont,gcont,k,ngroup,contgroup[CART_DIM_ZLR*CART_DIM_ZLR],contbord[CART_DIM_ZLR*CART_DIM_ZLR];
-  float diff,rapp; 
-    Image<int> group(CART_DIM_ZLR);
-
-for (unsigned ciclo=0; ciclo<100; ciclo++){ 
-
-
-  memset(contgroup,0, sizeof(contgroup));
-  memset(contbord,0, sizeof(contbord));
- 
-
-  ngroup=0;
-  for (unsigned i=1;i< CART_DIM_ZLR-1;i++){ // tolgo la cornice dall'analisi
-    for (unsigned j=1;j< CART_DIM_ZLR-1;j++){
-   
-      //----------declutter-----------------
-      diff=0;
-	icont=0;
-      for (unsigned ki=i-1;ki<=i+1;ki++){
-      	for (unsigned kj=j-1;kj<=j+1;kj++){
-	    
-      	  if (!(ki == i && kj == j) && z_out(kj,ki)> 1 ){
-	    icont=icont+1;
-      	    diff=diff+z_out(j,i)-z_out(kj,ki);
-
-      	  }
-      	}
-      }
-      if (icont >0)
-      diff=diff/(float)(icont);
-
-
-      if (diff > 9.) {
-	z_out(j,i)=BYTEtoDB(1);
-	LOG_WARN("%3d %3d %f",ciclo,icont, diff);
-     }
-
-      icont=0;
-      gcont=0;
-  //---------analisi contorno----------
-      if (DBtoBYTE(z_out(j,i)) > 1 ){
- 
-        for (unsigned ki=i-1;ki<=i+1;ki++){
-          for (unsigned kj=j-1;kj<=j+1;kj++){
-	  
-  	    if( group(kj,ki)>0){
-	      group(j,i)=group(kj,ki);
-	      gcont=gcont+1;
-	    }
-
-	    if (DBtoBYTE(z_out(kj,ki))>1 && ! (ki == i && kj == j))
-	      icont=icont+1;
-          }
-        }
-        contgroup[group(j,i)]=contgroup[group(j,i)]+1;
-        if ( gcont == 0){
-	  ngroup=ngroup+1;
-	  group(j,i)=ngroup; 
-        }
-        if ( icont < 8)
-	 contbord[group(j,i)]=contbord[group(j,i)]+1;
-      }
-		LOG_WARN("%3d %3d %5d %5d %5d ",i,j,group(j,i),contgroup[group(j,i)],contbord[group(j,i)]);
-      
-    }
-  }
-
-  for (unsigned i=1;i< CART_DIM_ZLR-1;i++){ // tolgo la cornice dall'analisi
-    for (unsigned j=1;j< CART_DIM_ZLR-1;j++){
-      if (contbord[group(j,i)]>0){
-	rapp=(float)(contgroup[group(j,i)])/(float)(contbord[group(j,i)]);
-		LOG_WARN("%d %d %d %f",group(j,i),contgroup[group(j,i)],contbord[group(j,i)], rapp);
-	if (rapp < 1.3){
-	   z_out(j,i)=BYTEtoDB(1);
-	}
-      }
-
-    }
-  }
-
- }
-
-//----------------------------  FINE
-#endif
-}
-
-void CartLowris::write_out(const CUM_BAC& cb, Assets& assets)
-{
-    //-------------------scritture output -----------------------
-    assets.write_image(z_out, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
-
-    //-------------------scritture output -----------------------
-    if (cb.do_quality)
-    {
-        //------------------ output qual  per operativo:qualità in archivio e elevazioni e anap in dir a stoccaggio a scadenza
-        // temporanee
-        // in archivio
-
-        assets.write_image(qual_Z_1x1, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
-
-        //------------------ stampe extra per studio
-        if (cb.do_devel)
-        {
-            assets.write_image(beam_blocking_1x1, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
-            assets.write_image(dato_corr_1x1, "DIR_QUALITY", ".anap_ZLR", "file anap");
-            assets.write_image(quota_1x1, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
-            assets.write_image(elev_fin_1x1, "DIR_QUALITY", ".elev_ZLR", "file elev");
-            assets.write_image(top_1x1, "DIR_QUALITY", ".top20_ZLR", "file top20");
-        }
-
-        //------------------ stampe correzioni da profili verticali in formato ZLR
-        if (cb.calcolo_vpr)
-        {
-            assets.write_image(corr_1x1, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
-            //scrivo_out_file_bin(".neve","punti di neve",getenv("DIR_QUALITY"),sizeof(neve),neve);
-            // scrivo_out_file_bin(".neve_ZLR","file presunta neve ",getenv("DIR_QUALITY"),sizeof(neve_1x1),neve_1x1);
-        }
-
-        //------------------se definita CLASS  stampo punti convettivi
-        if (cb.do_class)
-        {
-            // in archivio?
-            // scrivo_out_file_bin(".conv_ZLR","punti convettivi",getenv("OUTPUT_Z_LOWRIS_DIR"),sizeof(conv_1x1),conv_1x1);
-            assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
-        }
-    }
-        if (cb.do_devel)
-        {
-            assets.write_gdal_image(beam_blocking_1x1, "DIR_DEBUG", "beam_blocking_1x1", "PNG");
-            assets.write_gdal_image(dato_corr_1x1, "DIR_DEBUG", "dato_corr_1x1", "PNG");
-            assets.write_gdal_image(quota_1x1, "DIR_DEBUG", "quota_1x1", "PNG");
-            assets.write_gdal_image(elev_fin_1x1, "DIR_DEBUG", "elev_fin_1x1", "PNG");
-            assets.write_gdal_image(top_1x1, "DIR_DEBUG", "top_1x1", "PNG");
-    	    assets.write_gdal_image(z_out, "DIR_DEBUG", "zlr", "PNG");
-            if (cb.calcolo_vpr)
-            {
-                assets.write_gdal_image(corr_1x1, "DIR_DEBUG", "corr_1x1", "PNG");
-            }
-
-            if (cb.do_class)
-            {
-                assets.write_gdal_image(conv_1x1, "DIR_DEBUG", "conv_1x1", "PNG");
-            }
-        }
-}
-
 
 }
 

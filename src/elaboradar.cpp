@@ -295,11 +295,9 @@ int main (int argc, char **argv)
         unsigned CART_DIM_ZLR = CL_opt.do_medium ? 512 : 256;
         unsigned ZLR_N_ELEMENTARY_PIXEL = CL_opt.do_medium && volume.max_beam_size() < 260 ? 1 : 4;
         // Mettere a true per provare i nuovi algoritmi di generazione cartografia
-        bool new_algo = false;
         CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
-        cb->generate_maps(products, new_algo);
-        if (new_algo)
-            products.write_out(cb->assets);
+        cb->generate_maps(products);
+        products.write_out(cb->assets);
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
 //            for (unsigned beam=130; beam <=170; beam ++) 

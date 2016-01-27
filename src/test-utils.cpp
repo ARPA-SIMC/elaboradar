@@ -22,6 +22,7 @@ void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::os
     print_stats(name + "->calcolo_vpr->neve", cb.calcolo_vpr->neve, out);
 }
 
+#if 0
 void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out)
 {
     print_stats(name + ".cart", cart.cart, 0, out);
@@ -64,5 +65,6 @@ void print_stats(const std::string& name, const elaboradar::CartProducts& cart, 
     print_stats(name + ".corr_1x1", cart.corr_1x1, 0, out);
     print_stats(name + ".conv_1x1", cart.conv_1x1, 0, out);
 }
+#endif
 
 }

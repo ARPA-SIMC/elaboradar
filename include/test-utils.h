@@ -240,9 +240,11 @@ void print_stats(const std::string& name, const DATA& data, std::ostream& out)
 }
 
 void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out);
+#if 0
 void print_stats(const std::string& name, const elaboradar::Cart& cart, std::ostream& out);
 void print_stats(const std::string& name, const elaboradar::CartLowris& cart, std::ostream& out);
 void print_stats(const std::string& name, const elaboradar::CartProducts& cart, std::ostream& out);
+#endif
 
 }
 
