@@ -22,12 +22,12 @@ Summary: Development for radarelab library
 %description devel
 Development for elaboradar library
 
-#package doc
-#Summary: elaboradar documentation
-#Group: Libraries/Meteo
+%package doc
+Summary: elaboradar documentation
+Group: Libraries/Meteo
 
-#description doc
-#elaboradar library documentation
+%description doc
+elaboradar library documentation
 
 %package tools
 Requires: elaboradar = %{version}
@@ -55,19 +55,19 @@ make
 
 %files
 %defattr(-,root,root,-)
-%{_libdir}/lib%{name}.so.0*
+%{_libdir}/libradarelab.so.0*
 
 %files devel
 %defattr(-,root,root,-)
-%{_includedir}/%{name}/*
-%{_libdir}/lib%{name}.a
-%{_libdir}/lib%{name}.la
-%{_libdir}/lib%{name}.so
-%{_libdir}/pkgconfig/%{name}.pc
+%{_includedir}/radarelab/*
+%{_libdir}/libradarelab.a
+%{_libdir}/libradarelab.la
+%{_libdir}/libradarelab.so
+%{_libdir}/pkgconfig/radarelab.pc
 
-#files doc
-#defattr(-,root,root,-)
-#doc %{_docdir}/%{name}
+%files doc
+%defattr(-,root,root,-)
+%doc %{_docdir}/%{name}
 
 %files tools
 %{_bindir}/classificatore
@@ -80,6 +80,8 @@ make
 - removed dependency from site.h
 - changed samplign algorithm
 - double operation instead of unsigned operations
+- renamed lib
+- added doc
 
 * Fri Jan 8 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.1-1%{dist}
 - First build
