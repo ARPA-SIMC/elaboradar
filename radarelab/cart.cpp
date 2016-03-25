@@ -14,8 +14,10 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
             // x and y centered on the map center
             double absx = (double)x - beam_size;
             double absy = (double)y - beam_size;
-            absx += (absx < 0) ? -0.5 : 0.5;
-            absy += (absy < 0) ? -0.5 : 0.5;
+            //absx += (absx < 0) ? -0.5 : 0.5;
+            //absy += (absy < 0) ? -0.5 : 0.5;
+            absx += 0.5;
+            absy += 0.5;
 
             // Compute range
             map_range(y, x) = hypot(absx, absy);
