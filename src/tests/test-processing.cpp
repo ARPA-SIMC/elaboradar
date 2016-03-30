@@ -544,7 +544,7 @@ add_method("bb_algo_corto", []() {
     cb->do_zlr_media = true;
     CartProducts products(cb->volume, 256, 4);
     cb->generate_maps(products);
-    wassert(actual(products.scaled.image_offset) == -18);
+    wassert(actual(products.scaled.image_offset) == 337);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
     // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
     // write_image(products1.z_out, "/tmp/zout-new.png", "png");
@@ -631,7 +631,7 @@ add_method("combina_profili", []() {
     cb->do_zlr_media = true;
     CartProducts products(cb->volume, 256, 4);
     cb->generate_maps(products);
-    wassert(actual(products.scaled.image_offset) == -18);
+    wassert(actual(products.scaled.image_offset) == 337);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
     // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
     // write_image(products1.z_out, "/tmp/zout-new.png", "png");
@@ -714,7 +714,7 @@ add_method("combina_profili1", []() {
     cb->do_zlr_media = true;
     CartProducts products(cb->volume, 256, 4);
     cb->generate_maps(products);
-    wassert(actual(products.scaled.image_offset) == -18);
+    wassert(actual(products.scaled.image_offset) == 337);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
     // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
     // write_image(products1.z_out, "/tmp/zout-new.png", "png");
@@ -887,7 +887,7 @@ add_method("test_10", []() {
     cb->do_zlr_media = true;
     CartProducts products(cb->volume, 256, 4);
     cb->generate_maps(products);
-    wassert(actual(products.scaled.image_offset) == -18);
+    wassert(actual(products.scaled.image_offset) == 337);
     // write_image(cb->volume[0], "/tmp/zout-raw.png", "png");
     // write_image(clow1.z_out, "/tmp/zout-old.png", "png");
     // write_image(products1.z_out, "/tmp/zout-new.png", "png");
