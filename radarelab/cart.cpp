@@ -16,6 +16,7 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
             double absy = (double)y - beam_size;
             //absx += (absx < 0) ? -0.5 : 0.5;
             //absy += (absy < 0) ? -0.5 : 0.5;
+            // x and y (referred to map center) centered on the pixel center
             absx += 0.5;
             absy += 0.5;
 
@@ -24,7 +25,7 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
 
             // Compute azimuth
             double az;
-            if (absx > 0)
+      /*      if (absx > 0)
                 if (absy < 0)
                     az = atan(absx / -absy) * M_1_PI * 180.;
                 else
@@ -35,7 +36,9 @@ CoordinateMapping::CoordinateMapping(unsigned beam_size)
                 else
                     az = 270 + atan(-absy / -absx) * M_1_PI * 180.;
             map_azimuth(y, x) = az;
-        }
+      */
+	    map_azimuth(y,x)= fmod (450 - atan2( -absy,absx)*M_1_PI*180., 360. );
+       }
 }
 
 void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std::function<void(unsigned, unsigned)>& f) const
@@ -64,8 +67,8 @@ void CoordinateMapping::sample(unsigned beam_count, unsigned x, unsigned y, std:
     int az_max = round((az + d_az) * beam_count / 360.);
 
     // Iterate all points between az_min and az_max
-    for (unsigned iaz = az_min; iaz <= (unsigned)az_max; ++iaz)
-        f(iaz % beam_count, range_idx);
+     for (int iaz = az_min; iaz <= az_max; ++iaz) 
+       f((unsigned)((iaz+beam_count) % beam_count), range_idx);
 }
 
 const unsigned IndexMapping::missing;
