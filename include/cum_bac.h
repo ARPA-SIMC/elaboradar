@@ -3,15 +3,7 @@
 
 /**
  *  @file
- *  @defgroup progetto_cum_bac
- *  @brief progetto elaborazione dati radar per ottenere campi di Z da convertire in R
- *  @details elaborazione dati radar utilizzando dati da radiosondaggio, temperatura e dati in uscita da programma beam blocking che esegue un controllo di qualita' del volume, rimuove la propagazione anomala, corregge il beam blocking,   calcola il profilo verticale, calcola la  qualità, classifica le aree convettive  
-*/
-
-
-/**
- *  @file
- *  @ingroup progetto_cum_bac
+ *  @ingroup elaboradar
  *  @brief codice principale di elaborazione dei volumi di riflettivita' radar usato per impulso corto
  *  @details questo codice contiene il main e alcune funzioni usate nell'elaborazione della riflettivita' radar 
  *  librerire necessarie: lib_SP20
@@ -28,7 +20,6 @@
 
 //algoritmo
 #include <radarelab/vpr_par.h>
-
 
 #define MAX_BIN 512
 
