@@ -196,7 +196,8 @@ add_method("image", []() {
 
 
     // 1:4 scaled mapping, perfectly fitting
-    ScaledIndexMapping smapping(test.volume[0].beam_size, 247, 4);
+    CoordinateMapping cmapping(test.volume[0].beam_size);
+    ScaledIndexMapping smapping(cmapping, 247, 4);
     smapping.map_max_sample(test.volume[0], mapping);
     wassert(actual(smapping.width) == 247);
     wassert(actual(smapping.height) == 247);
