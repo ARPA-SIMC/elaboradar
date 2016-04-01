@@ -298,7 +298,11 @@ int main (int argc, char **argv)
         CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
         cb->generate_maps(products);
         products.write_out(cb->assets);
-        products.write_out(cb->assets, 256);
+        // ----->
+        // TODO: Abilitare salvatatggio per altre dimensioni 
+        //LOG_INFO("Salvo sub-image");
+        // products.write_out(cb->assets, 256);
+
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
 //            for (unsigned beam=130; beam <=170; beam ++) 
