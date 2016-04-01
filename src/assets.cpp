@@ -492,12 +492,13 @@ void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image
     LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
 
     // Convert to south-north columns scanned west to east
-    unsigned xofs = (image.cols() + image_side) / 2;
-    unsigned yofs = (image.rows() + image_side) / 2;
+    unsigned xofs = (image.cols() - image_side) / 2;
+    unsigned yofs = (image.rows() - image_side) / 2;
+    LOG_INFO(" Image_size %4d , Image.cols %4d Image.Rows %4d -- xofs %d yofs %d", image_side, image.cols(), image.rows(), xofs, yofs);
     Matrix2D<unsigned char> transformed(image_side, image_side);
     for (unsigned y = 0; y < image_side; ++y)
         for (unsigned x = 0; x < image_side; ++x)
-            transformed(x, image.cols()-1-y) = image(y + yofs, x + xofs);
+            transformed(x, image_side-1-y) = image(y + yofs, x + xofs);
 
     if (fwrite(transformed.data(), transformed.size(), 1, out) != 1)
     {
