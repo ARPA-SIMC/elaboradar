@@ -41,4 +41,18 @@ void CartProducts::write_out(Assets& assets)
     assets.write_image(conv_1x1, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
 }
 
+void CartProducts::write_out(Assets& assets, unsigned image_side)
+{
+    assets.write_subimage(z_out, image_side, "OUTPUT_Z_LOWRIS_DIR", ".ZLR", "file output 1X1");
+    assets.write_subimage(top_1x1, image_side, "DIR_QUALITY", ".top20_ZLR", "file top20");
+    assets.write_subimage(qual_Z_1x1, image_side, "OUTPUT_Z_LOWRIS_DIR", ".qual_ZLR", "file qualita' Z");
+    assets.write_subimage(quota_1x1, image_side, "DIR_QUALITY", ".quota_ZLR", "file qel1uota");
+    assets.write_subimage(dato_corr_1x1, image_side, "DIR_QUALITY", ".anap_ZLR", "file anap");
+    assets.write_subimage(elev_fin_1x1, image_side, "DIR_QUALITY", ".elev_ZLR", "file elev");
+    assets.write_subimage(beam_blocking_1x1, image_side, "DIR_QUALITY", ".bloc_ZLR", "file bloc");
+    assets.write_subimage(neve_1x1, image_side, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+    assets.write_subimage(corr_1x1, image_side, "DIR_QUALITY", ".corr_ZLR", "file correzione VPR");
+    assets.write_subimage(conv_1x1, image_side, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
+}
+
 }

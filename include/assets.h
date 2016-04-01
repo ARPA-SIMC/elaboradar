@@ -231,6 +231,19 @@ public:
     void write_image(const radarelab::Matrix2D<unsigned char>& image, const char* dir_env_var, const char* ext, const char* desc);
 
     /**
+     * Write an image in a raw file in ${dir_env_var}, with the acquisition
+     * date as file name and the given extension.
+     * Image matrix is tranformed in  out_image(x,image.cols()-1-y) = image(y, x);
+     *
+     * @param [in] image - Matrix2D to be written 
+     * @param [in] image_side - write only the square central part of the original image, with this size in pixels of the image side
+     * @param [in] dir_env_var - file path
+     * @param [in] ext - file extension
+     * @param [out] desc - used to get better error messages.
+     */
+    void write_subimage(const radarelab::Matrix2D<unsigned char>& image, unsigned image_side, const char* dir_env_var, const char* ext, const char* desc);
+
+    /**
      * Write a graphic image with gdal.
      *
      * @param [in] image - Matrix2D to be written 

@@ -477,6 +477,38 @@ void Assets::write_image(const Matrix2D<unsigned char>& image, const char* dir_e
     fclose(out);
 }
 
+void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image_side, const char* dir_env_var, const char* ext, const char* desc)
+{
+    const char* dir = getenv(dir_env_var);
+    if (!dir)
+    {
+        LOG_INFO("$%s not set", dir_env_var);
+        throw runtime_error("required env var is not set");
+    }
+
+    string fname = string(dir) + "/" + fname_from_acq_time() + ext;
+    FILE* out = fopen_checked(fname.c_str(), "wb", desc);
+
+    LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
+
+    // Convert to south-north columns scanned west to east
+    Matrix2D<unsigned char> transformed(image.cols(), image.rows());
+    for (unsigned y = 0; y < image.cols(); ++y)
+        for (unsigned x = 0; x < image.rows(); ++x)
+            transformed(x, image.cols()-1-y) = image(y, x);
+
+    unsigned ofs = (transformed.size() + image_side) / 2;
+
+    if (fwrite(transformed.data() + ofs, image_side, 1, out) != 1)
+    {
+        LOG_WARN("cannot write to %s: %s", fname.c_str(), strerror(errno));
+        fclose(out);
+        throw std::runtime_error("cannot write to image file");
+    }
+
+    fclose(out);
+}
+
 template<typename T>
 void Assets::write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format)
 {
