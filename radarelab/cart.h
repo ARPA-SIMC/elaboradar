@@ -14,6 +14,9 @@ namespace radarelab {
 
 /**
  * Mapping of cartesian coordinates to raw azimuth angles and range distances.
+ *
+ * Cartesian coordinates follow the pixels of a rendered image, with (0,0) in
+ * the top left corner, X increasing west to east, Y increasing north to south.
  */
 struct CoordinateMapping
 {
