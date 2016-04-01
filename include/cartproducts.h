@@ -41,7 +41,7 @@ struct CartProducts
     CartProducts(const radarelab::Volume<double>& volume, unsigned image_side, unsigned sample_square_size);
 
     void write_out(Assets& assets);
-    void write_out(Assets& assets, unsigned image_size);
+    void write_out(Assets& assets, unsigned image_side);
 };
 
 }

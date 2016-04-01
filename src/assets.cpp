@@ -486,20 +486,20 @@ void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image
         throw runtime_error("required env var is not set");
     }
 
-    string fname = string(dir) + "/" + fname_from_acq_time() + ext;
+    string fname = string(dir) + "/" + fname_from_acq_time() + "_" + std::to_string(image_side) + ext;
     FILE* out = fopen_checked(fname.c_str(), "wb", desc);
 
     LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
 
     // Convert to south-north columns scanned west to east
-    Matrix2D<unsigned char> transformed(image.cols(), image.rows());
-    for (unsigned y = 0; y < image.cols(); ++y)
-        for (unsigned x = 0; x < image.rows(); ++x)
-            transformed(x, image.cols()-1-y) = image(y, x);
+    unsigned xofs = (image.cols() + image_side) / 2;
+    unsigned yofs = (image.rows() + image_side) / 2;
+    Matrix2D<unsigned char> transformed(image_side, image_side);
+    for (unsigned y = 0; y < image_side; ++y)
+        for (unsigned x = 0; x < image_side; ++x)
+            transformed(x, image.cols()-1-y) = image(y + yofs, x + xofs);
 
-    unsigned ofs = (transformed.size() + image_side) / 2;
-
-    if (fwrite(transformed.data() + ofs, image_side, 1, out) != 1)
+    if (fwrite(transformed.data(), transformed.size(), 1, out) != 1)
     {
         LOG_WARN("cannot write to %s: %s", fname.c_str(), strerror(errno));
         fclose(out);
