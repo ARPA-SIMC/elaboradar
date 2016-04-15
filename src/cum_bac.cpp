@@ -684,11 +684,9 @@ void CalcoloVPR::classifica_rain()
     LOG_INFO("data= %s",cum_bac.date);
     // calcolo il gap
     gap = cum_bac.assets.read_profile_gap();
-printf("dopo read_profile_gap\n");
     //-- se gap < memory leggo hmax da VPR
     if (gap<=MEMORY){
         hmax = cum_bac.assets.read_vpr_hmax();
-printf("dopo read_vpr_hmax\n");
             //---suppongo una semiampiezza massima della bright band di 600 m e definisco htopbb e hbasebb come hmassimo +600 m (che da clima ci sta) e hmassimo -600 m
     }
 
@@ -1714,7 +1712,6 @@ void CUM_BAC::vpr_class()
     if (do_quality)
     {
         //-------------calcolo qualita' e trovo il top
-        printf ("calcolo Q3D \n") ;
 
         caratterizzo_volume();
         /* //---------trovo il top (a X dbZ) */
