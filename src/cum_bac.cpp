@@ -684,9 +684,11 @@ void CalcoloVPR::classifica_rain()
     LOG_INFO("data= %s",cum_bac.date);
     // calcolo il gap
     gap = cum_bac.assets.read_profile_gap();
+printf("dopo read_profile_gap\n");
     //-- se gap < memory leggo hmax da VPR
     if (gap<=MEMORY){
         hmax = cum_bac.assets.read_vpr_hmax();
+printf("dopo read_vpr_hmax\n");
             //---suppongo una semiampiezza massima della bright band di 600 m e definisco htopbb e hbasebb come hmassimo +600 m (che da clima ci sta) e hmassimo -600 m
     }
 
@@ -708,13 +710,13 @@ void CalcoloVPR::classifica_rain()
         } else {
             LOG_ERROR("non ho trovato il file dello zero termico");
             LOG_INFO("attenzione, non ho trovat zero termico ne da vpr ne da radiosondaggio");
-            htbb=0; // discutibile così faccio tutto con VIZ
-            hbbb=0;
+            htbb=0.; // discutibile così faccio tutto con VIZ
+            hbbb=0.;
         }
     }
 
     // se hbasebb è <0 metto 0
-    if (hbbb<0) hbbb=0;
+    if (hbbb<0.) hbbb=0.;
 
     LOG_INFO("calcolati livelli sopra e sotto bright band hbbb=%f  htbb=%f",hbbb,htbb);
 
@@ -759,7 +761,6 @@ void CalcoloVPR::classifica_rain()
 
 void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::CalcoloVIZ& viz)
 {
-    printf ("hbbb %f \n", hbbb);
     for (unsigned j=0; j<NUM_AZ_X_PPI; j++)
         for (unsigned k=0; k<x_size; k++)
           if (   cum_bac.anaprop.quota(j, k) < hbbb*1000. && steiner.conv_STEINER(j, k) == viz.conv_VIZ(j, k) && steiner.conv_STEINER(j, k) > 0)
@@ -1714,8 +1715,8 @@ void CUM_BAC::vpr_class()
     {
         //-------------calcolo qualita' e trovo il top
         printf ("calcolo Q3D \n") ;
-        caratterizzo_volume();
 
+        caratterizzo_volume();
         /* //---------trovo il top (a X dbZ) */
         /* printf ("trovo top \n") ; */
         /* ier=trovo_top(); */
