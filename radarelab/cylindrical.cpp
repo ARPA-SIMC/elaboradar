@@ -33,46 +33,45 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
 
     //LOG_INFO("calcolati range_min e range_max , dimensione orizzontale e dimensione verticale range_min=%f  range_max=%f x_size=%d z_size=%d",range_min,range_max,x_size,z_size);
 
-    unsigned w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
-    unsigned w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
+    int w_x_size=ceil((w_size[0]/resol[0])/2)*2+1; //dimensione x matrice pesi
+    int w_z_size=ceil((w_size[1]/resol[1])/2)*2+1; //dimensione z matrice pesi
 
     if (w_x_size < 3) w_x_size=3;
     if (w_z_size < 3) w_z_size=3;
 
-    unsigned w_x_size_2=w_x_size/2;
-    unsigned w_z_size_2=w_z_size/2;
+    int w_x_size_2=w_x_size/2;
+    int w_z_size_2=w_z_size/2;
 
-    Matrix2D<unsigned> i_xx_min(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
-    Matrix2D<unsigned> i_zz_min(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
-    Matrix2D<unsigned> im(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
-    Matrix2D<unsigned> ix(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
-    Matrix2D<unsigned> jm(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
-    Matrix2D<unsigned> jx(Matrix2D<unsigned>::Zero(max_bin, volume.size()));
-
+    Matrix2D<int> i_xx_min(Matrix2D<int>::Zero(max_bin, volume.size()));
+    Matrix2D<int> i_zz_min(Matrix2D<int>::Zero(max_bin, volume.size()));
+    Matrix2D<int> im(Matrix2D<int>::Zero(max_bin, volume.size()));
+    Matrix2D<int> ix(Matrix2D<int>::Zero(max_bin, volume.size()));
+    Matrix2D<int> jm(Matrix2D<int>::Zero(max_bin, volume.size()));
+    Matrix2D<int> jx(Matrix2D<int>::Zero(max_bin, volume.size()));
     for (unsigned i = 0; i < max_bin; i++){
         double range = (i + 0.5) * cell_size/1000.;
 
-        for (unsigned k=0; k < volume.size(); k++){
+          for (unsigned k=0; k < volume.size(); k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
             double zz = volume.scan(k).sample_height(i) / 1000. + volume.h_radar;// quota
             double xx = range*cos(elev_rad); // distanza
-            unsigned i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k
-            unsigned i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k
+            int i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k  PPA
+            int i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k  PPA
             // Enrico RHI_ind[k][i]=i_xx+i_zz*x_size;
             //shift orizzontale negativo del punto di indice i_xx per costruire la finestra in x
             // se l'estremo minimo in x della finestra è negativo assegno come shift il massimo possibile e cioè la distanza del punto dall'origine
             i_xx_min(i, k)=i_xx;
-            if (i_xx-w_x_size_2 >= 0)
+            if (i_xx -  w_x_size_2 >= 0)
                 i_xx_min(i, k)= w_x_size_2;
 
             //shift orizzontale positivo attorno al punto di indice i_xx per costruire la finestra in x
             int i_xx_max = x_size-i_xx-1;
-            if (i_xx+w_x_size_2 < x_size)
+            if (i_xx+w_x_size_2 < (int) x_size)
                 i_xx_max = w_x_size_2;
 
             //shift verticale negativo attorno al punto di indice i_zz per costruire la finestra in z
             i_zz_min(i, k)=i_zz;
-            if (i_zz_min(i, k) - w_z_size_2 > 0)
+            if (i_zz_min(i, k) -  w_z_size_2 > 0)
                 i_zz_min(i, k) = w_z_size_2;
 
             //shift verticale positivo attorno al punto di indice i_zz per costruire la finestra in z
@@ -88,7 +87,6 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
 
         }
     }
-
     /*
        ;------------------------------------------------------------------------------
        ;          FASE 2
@@ -98,16 +96,16 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
        ;-----------------------------------------------------------------------------*/
 
     vector<double> w_x(w_x_size);
-    for (unsigned k=0;k<w_x_size;k++)
+    for (unsigned k=0;k<(unsigned) w_x_size;k++)
         w_x[k]=exp(-pow(k-w_x_size_2,2.)/pow(w_x_size_2/2.,2.));
 
     vector<double> w_z(w_z_size);
-    for (unsigned k=0;k<w_z_size;k++)
+    for (unsigned k=0;k<(unsigned)w_z_size;k++)
         w_z[k]=exp(-pow(k-w_z_size_2,2.)/pow(w_z_size_2/2.,2.));
 
     Matrix2D<double> w_tot(w_x_size, w_z_size);
-    for (unsigned i=0;i<w_x_size;i++){
-        for (unsigned j=0;j<w_z_size;j++){
+    for (unsigned i=0;i<(unsigned)w_x_size;i++){
+        for (unsigned j=0;j<(unsigned)w_z_size;j++){
             w_tot(i, j)=w_x[i]*w_z[j];
         }
     }
@@ -128,13 +126,12 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
     }
 */
     Matrix2D<double> RHI_beam(volume.size(), max_bin);
-    for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
+    for (unsigned iaz=0; iaz<1; iaz++)      //for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = *slices[iaz];
         Matrix2D<double> rhi_weight(Matrix2D<double>::Zero(x_size, z_size));
 
         volume.read_vertical_slice(iaz, RHI_beam, MISSING_DB);
-
         /* ;---------------------------------- */
         /* ;          FASE 4 */
         /* ;---------------------------------- */
@@ -146,12 +143,14 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
         if (ray_size > max_bin)
             ray_size = max_bin;
 
-        for (unsigned iel=0;iel<volume.size();iel++){
-            for (unsigned ibin=0;ibin<ray_size;ibin++) {
+        //for (unsigned iel=0;iel<volume.size();iel++){
+        //    for (unsigned ibin=0;ibin<ray_size;ibin++) {
+        for (unsigned iel=0;iel<1;iel++){
+            for (unsigned ibin=0;ibin<7;ibin++) {
                 double beamXweight[w_x_size][w_z_size];
 
-                for(unsigned kx=0;kx<w_x_size;kx++){
-                    for(unsigned kz=0;kz<w_z_size;kz++){
+                for(unsigned kx=0;kx<(unsigned)w_x_size;kx++){
+                    for(unsigned kz=0;kz<(unsigned)w_z_size;kz++){
 //std::cout<<"ibin , kx, kz "<<ibin<<" "<<kx<<" "<<kz<<" "<<w_x_size<< " "<<w_z_size<<" "<<MAX_BIN<<std::endl;
 //std::cout<<"beam "<<  beamXweight[ibin][kx][kz]<<std::endl;
 //std::cout<<"RHI "<<  RHI_beam[iel][ibin]<<std::endl;
@@ -159,7 +158,6 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
                         beamXweight[kx][kz] = RHI_beam(iel, ibin) * w_tot(kx, kz);
                     }
                 }
-
                 unsigned imin = im(ibin, iel);
                 unsigned imax = ix(ibin, iel);
                 unsigned jmin = jm(ibin, iel);
