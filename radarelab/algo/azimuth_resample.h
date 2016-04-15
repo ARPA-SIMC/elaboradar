@@ -75,6 +75,7 @@ struct LevelwiseResampler
         dst.quantity = src.quantity;
         dst.units = src.units;
         dst.load_info = src.load_info;
+        dst.h_radar=src.h_radar;
 
         for (unsigned iel = 0; iel < src.size(); ++iel)
         {
@@ -98,6 +99,7 @@ struct LevelwiseResampler
         dst.load_info = src.load_info;
         dst.quantity = src.quantity;
         dst.units = src.units;
+        dst.h_radar=src.h_radar;
 
         for (unsigned iel = 0; iel < src.size(); ++iel)
         {
