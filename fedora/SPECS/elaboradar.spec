@@ -1,6 +1,6 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.3
+Version: 	0.4
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -74,6 +74,10 @@ make
 %{_bindir}/elaboradar
 
 %changelog
+
+* Fri Apr 15 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.4-1%{dist}
+- fixed bug in indexes calculation
+- fixed missing copy of h_radar attribute in resample_volume
 
 * Tue Mar 22 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.2-1%{dist}
 - closed \#6, \#7
