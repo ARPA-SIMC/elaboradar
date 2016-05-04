@@ -46,10 +46,10 @@ inline unsigned char DBtoBYTE(double dB)
 struct PolarScanBase
 {
     /// Count of beams in this scan
-    unsigned beam_count;
+    unsigned beam_count = 0;
 
     /// Number of samples in each beam
-    unsigned beam_size;
+    unsigned beam_size = 0;
 
     /// Vector of actual azimuths for each beam
     Eigen::VectorXd azimuths_real;
@@ -161,7 +161,7 @@ public:
     template<class OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
         : PolarScanBase(s), Matrix2D<T>(PolarScan::Constant(s.beam_count, s.beam_size, default_value)),
-          nodata(default_value)
+          nodata(s.nodata),undetect(s.undetect),gain(s.gain),offset(s.offset)
     {
     }
 
@@ -286,7 +286,7 @@ public:
 /// Polar volume information
     std::shared_ptr<LoadInfo> load_info;
 /// radar height
-    double h_radar;
+    double h_radar = 0.;
 
     Scans() = default;
 
@@ -463,6 +463,15 @@ public:
         for (const auto& scan : *this)
             res = std::max(res, scan.beam_size);
         return res;
+    }
+    
+    /// Test if same cell_size in all PolarScans
+    bool  is_unique_cell_size() const
+    {
+        double cell_size = this->at(0).cell_size;
+	for (size_t i = 1; i < this->size(); ++i)
+            if ( this->at(i).cell_size != cell_size) return false;
+        return true;
     }
 
 /// Return the lowest elevation
