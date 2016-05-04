@@ -466,6 +466,38 @@ void Assets::write_image(const Matrix2D<unsigned char>& image, const char* dir_e
     for (unsigned y = 0; y < image.cols(); ++y)
         for (unsigned x = 0; x < image.rows(); ++x)
             transformed(x, image.cols()-1-y) = image(y, x);
+    if (fwrite(transformed.data(), transformed.size(), 1, out) != 1)
+    {
+        LOG_WARN("cannot write to %s: %s", fname.c_str(), strerror(errno));
+        fclose(out);
+        throw std::runtime_error("cannot write to image file");
+    }
+
+    fclose(out);
+}
+
+void Assets::write_subimage(const Matrix2D<unsigned char>& image,unsigned image_side, const char* dir_env_var, const char* ext, const char* desc)
+{
+    const char* dir = getenv(dir_env_var);
+    if (!dir)
+    {
+        LOG_INFO("$%s not set", dir_env_var);
+        throw runtime_error("required env var is not set");
+    }
+
+    string fname = string(dir) + "/" + fname_from_acq_time() + "_" + std::to_string(image_side) + ext;
+    FILE* out = fopen_checked(fname.c_str(), "wb", desc);
+
+    LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
+
+    // Convert to south-north columns scanned west to east
+    unsigned xofs = (image.cols() - image_side) / 2;
+    unsigned yofs = (image.rows() - image_side) / 2;
+    //LOG_INFO(" Image_size %4d , Image.cols %4d Image.Rows %4d -- xofs %d yofs %d", image_side, image.cols(), image.rows(), xofs, yofs);
+    Matrix2D<unsigned char> transformed(image_side, image_side);
+    for (unsigned y = 0; y < image_side; ++y)
+        for (unsigned x = 0; x < image_side; ++x)
+            transformed(x, image_side-1-y) = image(y + yofs, x + xofs);
 
     if (fwrite(transformed.data(), transformed.size(), 1, out) != 1)
     {
@@ -477,7 +509,7 @@ void Assets::write_image(const Matrix2D<unsigned char>& image, const char* dir_e
     fclose(out);
 }
 
-void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image_side, const char* dir_env_var, const char* ext, const char* desc)
+void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image_side, string algos,const char* dir_env_var, const char* ext, const char* desc)
 {
     const char* dir = getenv(dir_env_var);
     if (!dir)
@@ -485,8 +517,7 @@ void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image
         LOG_INFO("$%s not set", dir_env_var);
         throw runtime_error("required env var is not set");
     }
-
-    string fname = string(dir) + "/" + fname_from_acq_time() + "_" + std::to_string(image_side) + ext;
+    string fname = string(dir) + "/" + fname_from_acq_time() + "_" + std::to_string(image_side) + "_"+algos+ext;
     FILE* out = fopen_checked(fname.c_str(), "wb", desc);
 
     LOG_INFO("aperto file %s dimensione matrice %zd\n", fname.c_str(), image.size());
