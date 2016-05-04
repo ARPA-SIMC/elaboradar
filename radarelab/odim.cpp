@@ -114,7 +114,7 @@ void ODIMLoader::load(const std::string& pathname)
             vol_pol_scan.undetect = data->getUndetect() * data->getGain() + data->getOffset();
             vol_pol_scan.gain = data->getGain();
             vol_pol_scan.offset = data->getOffset();
-
+	    vol_pol_scan.cell_size = scan->getRangeScale();
             // Read actual data from ODIM
             odim::RayMatrix<double> matrix;
             matrix.resize(beam_count, beam_size);
