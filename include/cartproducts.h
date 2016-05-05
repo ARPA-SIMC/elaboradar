@@ -42,6 +42,7 @@ struct CartProducts
 
     void write_out(Assets& assets);
     void write_out(Assets& assets, unsigned image_side);
+    void write_out(Assets& assets, unsigned image_side, std::string algos);
 };
 
 }
