@@ -1765,34 +1765,34 @@ void CUM_BAC::generate_maps(CartProducts& products)
     }
 
     products.scaled.to_cart(top, products.top_1x1);
-
     if (do_quality)
     {
         const auto& elev_fin = anaprop.elev_fin;
         const auto& quota = anaprop.quota;
 
-        std::function<unsigned char(unsigned, unsigned)> assign_qual =
+	if(qual){
+          std::function<unsigned char(unsigned, unsigned)> assign_qual =
             [this, &elev_fin](unsigned azimuth, unsigned range) {
                 const auto& el = elev_fin[azimuth][range];
                 if (range >= volume[el].beam_size)
                     return (unsigned char)0;
                 return qual->scan(el).get(azimuth, range);
             };
-        products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
-
+          products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
+	}
+	
         std::function<unsigned char(unsigned, unsigned)> assign_quota =
             [&quota](unsigned azimuth, unsigned range) {
                 return 128 + round(quota(azimuth, range) / 100.0);
             };
         products.scaled.to_cart(assign_quota, products.quota_1x1);
-
         products.scaled.to_cart(anaprop.dato_corrotto, products.dato_corr_1x1);
 
-        std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
+	std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
                 return elev_fin[azimuth][range];
         };
         products.scaled.to_cart(assign_elev_fin, products.elev_fin_1x1);
-
+	
         products.scaled.to_cart(beam_blocking, products.beam_blocking_1x1);
     }
 
@@ -1803,8 +1803,8 @@ void CUM_BAC::generate_maps(CartProducts& products)
             return neve(azimuth, range) ? 0 : 1;
         };
         products.scaled.to_cart(assign, products.neve_1x1);
-
-        products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
+	
+       products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
 
         if (do_class)
             products.scaled.to_cart(calcolo_vpr->conv, products.conv_1x1);
@@ -1812,7 +1812,6 @@ void CUM_BAC::generate_maps(CartProducts& products)
 
     if (do_devel)
     {
-//std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
         SD_Z6 *= 10.;
 
         SingleCart SC_SD(SD_Z6.max_beam_size());
