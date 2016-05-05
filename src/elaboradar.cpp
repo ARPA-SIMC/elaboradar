@@ -168,6 +168,12 @@ void check_volume(const Volume<double>& volume, int file_type)
             break;
     }
 
+    //----------verifico che la risoluzione di ogni elevazione sia la stessa
+    if ( ! volume.is_unique_cell_size())
+    {
+        LOG_ERROR("File Risoluzione/size_cell non costante nel volume");
+        throw runtime_error("File Risoluzione/size_cell non costante");
+    }
     //----------se la risoluzione del file è diversa da quella prevista dal tipo_file dà errore ed esce (perchè poi probabilmente le matrici sballano ?)
     if (volume[0].cell_size != expected_size_cell)
     {
@@ -263,12 +269,10 @@ int main (int argc, char **argv)
         LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
         return 2;
     }
-
     check_volume(volume, file_type);
 
     unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
-    if (CL_opt.do_vpr) cb->want_vpr();
     cb->do_quality 	= CL_opt.do_quality;
     cb->do_beamblocking = CL_opt.do_beamblocking;
     cb->do_declutter 	= CL_opt.do_declut;
@@ -280,28 +284,55 @@ int main (int argc, char **argv)
     cb->do_anaprop	= CL_opt.do_anaprop;
 
     printwork();
-
+    std::string algos;
+    if (CL_opt.do_clean) 	algos = algos+"CL";
+    if (CL_opt.do_anaprop)	algos = algos+"_AP"; 
+    if (CL_opt.do_beamblocking)	algos = algos+"_BB"; 
     try {
         //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
         LOG_INFO("inizio rimozione anaprop e beam blocking");
         for(unsigned k=0; k<volume.size(); k++) LOG_INFO(" SCAN # %2d - BeamSIZE %4d",k,volume[k].beam_size);
         cb->declutter_anaprop();
-        // cb->StampoFlag();
-        cb->vpr_class();
+        cb->caratterizzo_volume();
 
-        // TODO: tutti i prodotti scriverli a 512 e/o a 256, a seconda della richiesta
-        // dell'utente. Non usare piú do_medium qui, lasciarlo solo per il
-        // caricamento di SP20 vecchi
-        unsigned CART_DIM_ZLR = CL_opt.do_medium ? 512 : 256;
-        unsigned ZLR_N_ELEMENTARY_PIXEL = CL_opt.do_medium && volume.max_beam_size() < 260 ? 1 : 4;
-        // Mettere a true per provare i nuovi algoritmi di generazione cartografia
-        CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
-        cb->generate_maps(products);
-        products.write_out(cb->assets);
-        // ----->
-        // TODO: Abilitare salvatatggio per altre dimensioni 
-        //LOG_INFO("Salvo sub-image");
-        // products.write_out(cb->assets, 256);
+        unsigned CART_DIM_ZLR  = CL_opt.do_medium ? 512 : 256;
+        unsigned ZLR_N_ELEMENTARY_PIXEL = volume.at(0).cell_size == 1000. ? 1 : 4;
+        if (CL_opt.do_SaveBothRanges) {
+	  if (volume.max_beam_size() * volume.at(0).cell_size * 0.001 > 128 ){
+	    CART_DIM_ZLR = 512;
+          } else {
+	    CART_DIM_ZLR = 256;
+            CL_opt.do_SaveBothRanges = false;
+          }
+        }
+
+        if (CL_opt.do_intermediateProd){
+          CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
+          cb->generate_maps(products);
+          products.write_out(cb->assets,CART_DIM_ZLR, algos);
+          if (CL_opt.do_SaveBothRanges){
+            LOG_INFO("Salvo sub-image intermedie");
+            products.write_out(cb->assets, 256, algos);
+	  }
+        }
+
+        // cb->StampoFlag();
+        if (CL_opt.do_vpr) {
+	  cb->want_vpr();
+          if (cb->do_quality)    cb->vpr_class();
+          if (CL_opt.do_vpr)		algos = algos+"_VPR"; 
+          if (CL_opt.do_class)		algos = algos+"_CLASS"; 
+       } 
+       CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
+       cb->generate_maps(products);
+       if (CL_opt.do_SaveBothRanges){
+            products.write_out(cb->assets,CART_DIM_ZLR,algos);
+            LOG_INFO("Salvo sub-image");
+            products.write_out(cb->assets, 256, algos);
+       }else{
+            products.write_out(cb->assets,CART_DIM_ZLR,algos);
+          // products.write_out(cb->assets);
+       }	
 
 //	    unsigned irange=60000/cb->volume.scan(0).cell_size;
 //            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;

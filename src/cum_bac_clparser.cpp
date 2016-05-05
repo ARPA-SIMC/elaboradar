@@ -43,36 +43,43 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	// Define optional arguments
 	//
 //	TCLAP::SwitchArg Short("S", "ShortPulse", "Use parameters for short pulse", false);
-	TCLAP::SwitchArg Medium("M", "MediumPulse", "Use parameters for medium pulse", false);
-        cmd.add(Medium);
 //	std::vector<TCLAP::Arg*> xorpulse;
 //	xorpulse.push_back(&Short);
 //	xorpulse.push_back(&Medium);
 //	cmd.xorAdd( xorpulse );
 
-	TCLAP::SwitchArg Anaprop("A", "Anaprop", "Performe Anaprop identification algorith", false);
-        cmd.add(Anaprop);
-	TCLAP::SwitchArg Quality("Q", "Quality", "Calculate quality", false);
-        cmd.add(Quality);
-	TCLAP::SwitchArg BeamBlocking("B", "BeamBlocking", "Performe BeamBlocking correction", false);
-        cmd.add(BeamBlocking);
-	TCLAP::SwitchArg Declut("D", "Declut", "Performe only static declutter correction", false);
-        cmd.add(Declut);
-	TCLAP::SwitchArg BlocNoCor("b", "BlocNoCor", "Questo non so cosa sia", false);
-        cmd.add(BlocNoCor);
-	TCLAP::SwitchArg VPR("V", "VPR", "Performe VPR correction", false);
-        cmd.add(VPR);
-	TCLAP::SwitchArg Clean("c", "Clean", "Performe Wimax-second trip cleaning", false);
-        cmd.add(Clean);
-	TCLAP::SwitchArg Class("C", "Class", "Evaluate stratiform-convective classification", false);
-        cmd.add(Class);
 	TCLAP::SwitchArg Stampe("s", "StampeExtra", "Stampe Extra per devel", false);
         cmd.add(Stampe);
-
+	TCLAP::SwitchArg VPR("V", "VPR", "Performe VPR correction", false);
+        cmd.add(VPR);
+	TCLAP::SwitchArg Quality("Q", "Quality", "Calculate quality", false);
+        cmd.add(Quality);
 	TCLAP::SwitchArg OdimFormat("O", "Odim", "Data used in ODIM format", false);
         cmd.add(OdimFormat);
+	TCLAP::SwitchArg Medium("M", "MediumPulse", "Use parameters for medium pulse", false);
+        cmd.add(Medium);
 	TCLAP::SwitchArg StaticMap("m", "UseStaticMap", "Use Static Map", false);
         cmd.add(StaticMap);
+	TCLAP::SwitchArg Declut("D", "Declut", "Performe only static declutter correction", false);
+        cmd.add(Declut);
+	TCLAP::SwitchArg Class("C", "Class", "Evaluate stratiform-convective classification", false);
+        cmd.add(Class);
+	TCLAP::SwitchArg Clean("c", "Clean", "Performe Interference and second-trip cleaning", false);
+        cmd.add(Clean);
+	TCLAP::SwitchArg BeamBlocking("B", "BeamBlocking", "Performe BeamBlocking correction", false);
+        cmd.add(BeamBlocking);
+	TCLAP::SwitchArg BlocNoCor("b", "BlocNoCor", "Questo non so cosa sia", false);
+        cmd.add(BlocNoCor);
+	TCLAP::SwitchArg Anaprop("A", "Anaprop", "Performe Anaprop identification algorithm", false);
+        cmd.add(Anaprop);
+
+	TCLAP::SwitchArg IntermediateProd("I", "SaveIntermediateProduct", "Save additional product at intermediate processing level's", false);
+        cmd.add(IntermediateProd);
+	TCLAP::SwitchArg SaveBothRanges("S", "SaveBothRanges", "Save products at both processing ranges (128km ad 256 km)", false);
+        cmd.add(SaveBothRanges);
+
+
+
 	
 	//
 	// Parse the command line.
@@ -99,6 +106,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	opt->do_devel=Stampe.getValue();
 	opt->do_readStaticMap=StaticMap.getValue();  
 	opt->data_in_odim=OdimFormat.getValue();
+        opt->do_intermediateProd=IntermediateProd.getValue();
+        opt->do_SaveBothRanges=SaveBothRanges.getValue();
 	
   } catch ( TCLAP::ArgException& e )
   { std::cout << "ERROR: " << e.error() << " " << e.argId() << std::endl; }
@@ -122,6 +131,8 @@ void PrintOptions(struct CUM_BAC_CLOPT *opt){
    std::cout <<"do_class :"<<opt->do_class<<std::endl;
    std::cout <<"do_devel :"<<opt->do_devel<<std::endl;
    std::cout <<"do_readStaticMap"<<opt->do_readStaticMap<<std::endl;
+   std::cout <<"do_intermediateProd"<<opt->do_intermediateProd<<std::endl;
+   std::cout <<"do_SaveBothRanges"<<  opt->do_SaveBothRanges  <<std::endl;
 
    return ;
 }

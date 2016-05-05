@@ -22,6 +22,8 @@ struct CUM_BAC_CLOPT {
 
    bool data_in_odim;
    bool do_readStaticMap;  
+   bool do_intermediateProd;
+   bool do_SaveBothRanges; 
 }  ;
 
 
