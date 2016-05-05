@@ -51,7 +51,7 @@ struct CartLowris;
 struct CartProducts;
 
 /**
- *  Classe principale del programma. DEriva ancora dal vecchio nome del programma. Sarà da sistemare in futuro
+ *  Classe principale del programma. Deriva ancora dal vecchio nome del programma. Sarà da sistemare in futuro
  */
 class CUM_BAC
 {
@@ -132,7 +132,7 @@ public:
 
 /**
  * Constructor
- * @param volume - refelctivity data
+ * @param volume - reflectivity data
  * @param cfg - Configuration object
  * @param site - Site information
  * @param medium - force processing as medium range 
