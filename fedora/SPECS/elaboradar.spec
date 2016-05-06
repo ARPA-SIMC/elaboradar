@@ -1,6 +1,6 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.4
+Version: 	0.5
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -74,6 +74,13 @@ make
 %{_bindir}/elaboradar
 
 %changelog
+
+* Fri May 6 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.5-1%{dist}
+- Add method to save products with additional info in the filename
+- Add test on presence of qual matrix before produce output product
+- Add method to test cell_size
+- Add method to write subimage with additional info in the filename
+- Get RangeScale value from Odim scan
 
 * Fri Apr 15 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.4-1%{dist}
 - fixed bug in indexes calculation
