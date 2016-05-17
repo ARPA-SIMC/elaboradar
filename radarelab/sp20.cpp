@@ -161,10 +161,6 @@ void SP20Loader::load(const std::string& pathname)
 
     // Read all beams from the file
     Elevations elevations(hd_file.ele, hd_file.num_ele);
-    // TODO for (int i = 0; i < hd_file.num_ele; ++i)
-    // TODO     fprintf(stderr, "%d: %f\n", i, (double)hd_file.ele[i]);
-
-
 
     while (true)
     {
@@ -188,7 +184,6 @@ void SP20Loader::load(const std::string& pathname)
         unsigned beam_size = beams->min_beam_size();
         beams->beam_size = beam_size;
     }
-//for (unsigned i=0; i<elevations.size(); ++i)  std::cout<<elevations[i]->size()<<std::endl;
 
     if (elevations.back()->beam_size == 0)
         throw std::runtime_error("last elevation beam size is 0");
@@ -231,7 +226,6 @@ void SP20Loader::load(const std::string& pathname)
             scan.gain = 80.0 / 255.0;
             scan.offset = -20;
         }
-        vol_z->h_radar = 0.04;
     }
     if (vol_d)
     {
@@ -244,7 +238,6 @@ void SP20Loader::load(const std::string& pathname)
             scan.gain = 16.0 / 255.0;
             scan.offset = -6;
         }
-        vol_d->h_radar = 0.04;
     }
     if (vol_v)
     {
@@ -265,7 +258,6 @@ void SP20Loader::load(const std::string& pathname)
                 scan.offset = -16.5;
             }
         }
-        vol_v->h_radar = 0.04;
     }
     if (vol_w)
     {
@@ -278,15 +270,11 @@ void SP20Loader::load(const std::string& pathname)
             scan.gain = 10.0 / 255.0;
             scan.offset = 0;
         }
-        vol_w->h_radar = 0.04;
     }
 
     LOG_DEBUG ("Nel volume ci sono %zd scan", vol_z->size());
     for (size_t i = 0; i < vol_z->size(); ++i)
         LOG_DEBUG (" Scan %2zd - dimensione beam %5d -  numero raggi %3d", i, vol_z->at(i).beam_size, vol_z->at(i).beam_count);
-    // printf("NEL %d\n", (int)old_data_header.norm.maq.num_el);  // TODO: usare questo invece di NEL
-    // for (int i = 0; i < old_data_header.norm.maq.num_el; ++i)
-    //     printf("VALUE %d %d\n", i, old_data_header.norm.maq.value[i]); // Questi non so se ci servono
 }
 
 void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsigned beam_size, unsigned el_num)
@@ -344,11 +332,6 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
                 else
                     ms(i) = beam.data_v[i] * range_v / 254.;
         }
-        // if (data->beam_w[p] == -128) data->beam_w[p] = -127;
-        // if ( beam_info->PRF == 'S')
-        //   f_ray[p] = data->beam_w[p] * RANGE_V / 127.*.5;
-        // else
-        //   f_ray[p] = data->beam_w[p] * RANGE_V2 / 127.*.5;
         PolarScan<double>& scan = vol_v->at(el_num);
         scan.row(az_idx) = ms;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;

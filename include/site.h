@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <string>
+#include <radarelab/RadarSite.h>
 
 namespace elaboradar {
 
@@ -26,16 +27,12 @@ struct Site
  * @brief Nome sito radar
  */
     std::string name;
+
 /*!
- * radar_lat 
- * @brief latitude of radar site
+ * radariSite 
+ * @brief Description of radar site
  */
-    float radar_lat;
-/*!
- * radar_lon 
- * @brief longitude of radar site
- */
-    float radar_lon;
+    RadarSite radarSite ;
 /*!
  * vpr_iaz_min
  * @brief azimuth index of the begin of the area for vpr computation 

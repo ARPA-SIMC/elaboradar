@@ -75,7 +75,7 @@ struct LevelwiseResampler
         dst.quantity = src.quantity;
         dst.units = src.units;
         dst.load_info = src.load_info;
-        dst.h_radar=src.h_radar;
+        dst.radarSite=src.radarSite;
 
         for (unsigned iel = 0; iel < src.size(); ++iel)
         {
@@ -99,8 +99,7 @@ struct LevelwiseResampler
         dst.load_info = src.load_info;
         dst.quantity = src.quantity;
         dst.units = src.units;
-        dst.h_radar=src.h_radar;
-
+        dst.radarSite=src.radarSite;
         for (unsigned iel = 0; iel < src.size(); ++iel)
         {
             const PolarScan<T>& src_scan = src.at(iel);

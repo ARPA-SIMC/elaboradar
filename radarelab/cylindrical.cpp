@@ -25,7 +25,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
     //double range_max=(max_bin-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
-    double zmin=volume[0].sample_height(0) / 1000. + volume.h_radar; // quota  minima in prop standard
+    double zmin=volume[0].sample_height(0) / 1000. + volume.radarSite.getTotalHeight(); // quota  minima in prop standard
 
 
     //float w_size[2]={3.,1.5}; //dimensione della matrice pesi
@@ -53,7 +53,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
 
           for (unsigned k=0; k < volume.size(); k++){
             double elev_rad = volume.scan(k).elevation * DTOR;
-            double zz = volume.scan(k).sample_height(i) / 1000. + volume.h_radar;// quota
+            double zz = volume.scan(k).sample_height(i) / 1000. + volume.radarSite.getTotalHeight();// quota
             double xx = range*cos(elev_rad); // distanza
             int i_zz=floor((zz - zmin)/resol[1]);// indice in z, nella proiezione cilindrica, del punto i,k  PPA
             int i_xx=floor((xx - xmin)/resol[0]);// indice in x, nella proiezione cilindrica, del punto i,k  PPA

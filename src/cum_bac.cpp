@@ -186,8 +186,9 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(z_volume, volume, 1.0);
-
-    /*
+// Copy all radar site information to volume data
+    volume.radarSite = site.radarSite;
+   /*
     printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
     for (unsigned i = 0; i < 20; ++i)
         printf(" %d", (int)volume.scan(0).get_raw(0, i));
@@ -726,9 +727,9 @@ void CalcoloVPR::classifica_rain()
     double range_maxLowestRay=(volume[0].beam_size-0.5) * size_cell/1000.;
 
     double xmin=floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
-    double zmin=volume[0].sample_height(0) / 1000. + volume.h_radar; // quota  minima in prop standard
+    double zmin=volume[0].sample_height(0) / 1000. + volume.radarSite.getTotalHeight(); // quota  minima in prop standard
     double xmax=floor(range_maxLowestRay*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
-    double zmax=volume.back().sample_height(volume.back().beam_size - 1) / 1000. + volume.h_radar;//quota massima
+    double zmax=volume.back().sample_height(volume.back().beam_size - 1) / 1000. + volume.radarSite.getTotalHeight();//quota massima
     //LOG_DEBUG(" Range min maxL maxU  %7.3f %7.3f %7.3f  --  xmin %7.3f xmax %7.3f zmin %7.3f zmax %7.3f", range_min, range_maxLowestRay, range_maxUpperRay, xmin,xmax,zmin,zmax);
 
     x_size=(xmax-xmin)/RES_HOR_CIL; //dimensione orizzontale

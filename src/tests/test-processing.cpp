@@ -81,7 +81,6 @@ add_method("elabora_all_true_caratterizzo", []() {
     cb->do_bloccorr = true;
     cb->do_class = true;
     cb->do_readStaticMap=true;
-
     wassert(actual((int)(cb->calcolo_vpr->t_ground * 100)) == 1010);
 
     cb->declutter_anaprop();

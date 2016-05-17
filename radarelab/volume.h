@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <memory>
 #include <Eigen/Core>
+#include <radarelab/RadarSite.h>
 
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
@@ -285,8 +286,8 @@ public:
     std::string units;
 /// Polar volume information
     std::shared_ptr<LoadInfo> load_info;
-/// radar height
-    double h_radar = 0.;
+///	RadarSite
+    RadarSite  radarSite ; 
 
     Scans() = default;
 
@@ -303,8 +304,7 @@ public:
         this->units = v.units;
         this->load_info = v.load_info;
         this->reserve(v.size());
-	this->h_radar=v.h_radar;
-
+	this->radarSite = v.radarSite;        
         for (const auto& src_scan : v)
             this->push_back(PolarScan<T>(src_scan, default_value));
     }

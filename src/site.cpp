@@ -48,8 +48,12 @@ struct SiteGAT : public Site
     SiteGAT()
     {
         name = "GAT";
-        radar_lat=GAT_LAT;
-        radar_lon=GAT_LON;
+        radarSite.lat_r=GAT_LAT;
+        radarSite.lon_r=GAT_LON;
+	radarSite.height_r = 35.;
+	radarSite.antennaTowerHeight=25.;
+	radarSite.source="RAD:IYai,PLC:itgat,NOD:itgat ";
+
         vpr_iaz_min=IAZ_MIN_GAT;
         vpr_iaz_max=IAZ_MAX_GAT;
     }
@@ -97,10 +101,15 @@ struct SiteSPC : public Site
     SiteSPC()
     {
         name = "SPC";
-        radar_lat=SPC_LAT;
-        radar_lon=SPC_LON;
+        radarSite.lat_r=SPC_LAT;
+        radarSite.lon_r=SPC_LON;
+	radarSite.height_r = 11.;
+	radarSite.antennaTowerHeight=20.;
+	radarSite.source="WMO:16144,RAD:IY46,PLC:itspc,NOD:itspc ";
         vpr_iaz_min=IAZ_MIN_SPC;
         vpr_iaz_max=IAZ_MAX_SPC;
+
+//WMO:16144,RAD:IY46,PLC:itspc,NOD:itspc 
     }
 
     virtual const char* get_dem_file_name() const

@@ -206,7 +206,7 @@ float Assets::read_t_ground() const
 
     while (1) {
         if(fscanf(in, "%f %f %f \n",&lon,&lat,&t) == EOF) break;
-        if (fabs(conf_site->radar_lat-lat)<=maxdlat && fabs(conf_site->radar_lon-lon)<=maxdlon) {
+        if (fabs(conf_site->radarSite.lat_r-lat)<=maxdlat && fabs(conf_site->radarSite.lon_r-lon)<=maxdlon) {
             ++icount;
             media_t += t - 273.15;
         }
