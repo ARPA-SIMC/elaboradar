@@ -33,6 +33,9 @@ struct CartProducts
     radarelab::Image<unsigned char> corr_1x1;
     radarelab::Image<unsigned char> conv_1x1;
 
+	double FullsizeRes = 0.;
+	double ScaledRes   = 0.;
+
     /**
      * Hold products for volume, with square images with a side of \a
      * image_side pixels, and for each pixel sampling a square area \a
@@ -43,6 +46,9 @@ struct CartProducts
     void write_out(Assets& assets);
     void write_out(Assets& assets, unsigned image_side);
     void write_out(Assets& assets, unsigned image_side, std::string algos);
+
+    void write_odim(Assets& assets, unsigned image_side, std::string algos);
+
 };
 
 }
