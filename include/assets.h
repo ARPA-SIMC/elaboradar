@@ -13,6 +13,7 @@
 #include <functional>
 #include <vector>
 #include <H5Cpp.h>
+#include <radarelab/RadarSite.h>
 
 namespace radarelab {
 template<typename T> struct Matrix2D;
@@ -266,11 +267,16 @@ public:
      */
     template<typename T>
     void write_gdal_image(const radarelab::Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format);
-
-protected:
+    
     /// Build a basename (without extension) for a file given the current
     /// acquisition time
     std::string fname_from_acq_time() const;
+
+    time_t getAcqTime();
+    RadarSite getRadarSite(); 
+
+
+protected:
 
     /// Compute the file name of a date/time based file in $DIR_OUT_PP_BLOC
     std::string fname_out_pp_bloc(const char* suffix) const;
