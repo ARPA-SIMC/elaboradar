@@ -29,7 +29,7 @@ struct Site
     std::string name;
 
 /*!
- * radariSite 
+ * radarSite 
  * @brief Description of radar site
  */
     RadarSite radarSite ;
