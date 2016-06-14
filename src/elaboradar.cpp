@@ -310,9 +310,11 @@ int main (int argc, char **argv)
           CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
           cb->generate_maps(products);
           products.write_out(cb->assets,CART_DIM_ZLR, algos);
+	  products.write_odim(cb->assets, CARTI_DIM_ZLR, algos);
           if (CL_opt.do_SaveBothRanges){
             LOG_INFO("Salvo sub-image intermedie");
             products.write_out(cb->assets, 256, algos);
+	    products.write_odim(cb->assets, 256, algos);
 	  }
         }
 
@@ -327,27 +329,22 @@ int main (int argc, char **argv)
        cb->generate_maps(products);
        if (CL_opt.do_SaveBothRanges){
             products.write_out(cb->assets,CART_DIM_ZLR,algos);
+	    products.write_odim(cb->assets, CART_DIM_ZLR, algos);
             LOG_INFO("Salvo sub-image");
             products.write_out(cb->assets, 256, algos);
+	    products.write_odim(cb->assets, 256, algos);
        }else{
             products.write_out(cb->assets,CART_DIM_ZLR,algos);
+	    products.write_odim(cb->assets, CART_DIM_ZLR, algos);
           // products.write_out(cb->assets);
        }	
 
-//	    unsigned irange=60000/cb->volume.scan(0).cell_size;
-//            std::cout<<"cell size "<<cb->volume.scan(0).cell_size<<"\t Beam_count"<<cb->volume.scan(0).beam_count<<std::endl;
-//            for (unsigned beam=130; beam <=170; beam ++) 
-//               LOG_WARN(" Raggio %3d bin %4d -- db@60Km %3f",beam,irange,cb->volume.scan(0)(beam,irange)); 
-//
     } catch (std::exception& e) {
         LOG_ERROR("Errore nella processazione: %s", e.what());
         ier_main = 1;
     }
 
-    // è stato tolto il loop sui volumi
-
     LOG_INFO("End of processing, result: %d", ier_main);
-
     return ier_main;
 }
 
