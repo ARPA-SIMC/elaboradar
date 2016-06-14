@@ -563,5 +563,7 @@ template void Assets::write_gdal_image(const Matrix2D<unsigned>&, const char*, c
 template void Assets::write_gdal_image(const Matrix2D<short>&, const char*, const char*, const char*);
 template void Assets::write_gdal_image(const Matrix2D<double>&, const char*, const char*, const char*);
 
+   time_t Assets::getAcqTime() { return conf_acq_time;} ;
+   RadarSite Assets::getRadarSite() { return conf_site->radarSite; };
 
 }
