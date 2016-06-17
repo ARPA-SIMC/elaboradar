@@ -105,8 +105,8 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
        exit(1);
     if (!(pj_latlong = pj_init_plus(LatLon_def.c_str())) )
        exit(1);
-    double coord_min =  -(image_side * ScaledRes *0.5) + ScaledRes*0.5;
-    double coord_max =   image_side * ScaledRes *0.5 - ScaledRes*0.5;
+    double coord_min =  -(image_side * ScaledRes *0.5) ;
+    double coord_max =   image_side * ScaledRes *0.5   ;
     double x[]={coord_min, coord_max, coord_min, coord_max};		// { LL , LR, UL, UR }
     double y[]={coord_min, coord_min, coord_max, coord_max};		// { LL , LR, UL, UR }
     if (pj_transform(pj_aeqd, pj_latlong,  4, 1, x, y, NULL ) != 0 ) exit(1000);
