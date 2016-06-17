@@ -143,10 +143,8 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
         if (ray_size > max_bin)
             ray_size = max_bin;
 
-        //for (unsigned iel=0;iel<volume.size();iel++){
-        //    for (unsigned ibin=0;ibin<ray_size;ibin++) {
-        for (unsigned iel=0;iel<1;iel++){
-            for (unsigned ibin=0;ibin<7;ibin++) {
+        for (unsigned iel=0;iel<volume.size();iel++){
+            for (unsigned ibin=0;ibin<ray_size;ibin++) {
                 double beamXweight[w_x_size][w_z_size];
 
                 for(unsigned kx=0;kx<(unsigned)w_x_size;kx++){

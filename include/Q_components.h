@@ -8,8 +8,7 @@ extern "C" {
  *  @file
  *  @ingroup progetto_cum_bac
  *  @brief funzioni componenti di qualita' radar semplici
- *  @details  funzioni componenti di qualita' radar semplici, una per ogni fattore di contaminazione
- i parametri per calcolo qualita' sono in qual_par.h
+ *  @details  funzioni componenti di qualita' radar semplici, una per ogni fattore di contaminazione i parametri per calcolo qualita' sono in qual_par.h
 */
 /**
  *  @brief funzione componente qualita' beam blocking
@@ -21,7 +20,6 @@ extern "C" {
 */
 
 float qBB(unsigned char bbc,float dr,float dt);
-
 /**
  *  @brief funzione componente qualita' clutter
  *  @details  funzione qualita' relativa a clutter che dipende dal valore di ritorno del controllo anaprop:  0 = dato ok    qCl=1, 1 = anaprop    qCl=0.5,  2=  no data    qCl=0,  3=  no control qCl=0.8

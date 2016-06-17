@@ -310,7 +310,7 @@ int main (int argc, char **argv)
           CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
           cb->generate_maps(products);
           products.write_out(cb->assets,CART_DIM_ZLR, algos);
-	  products.write_odim(cb->assets, CARTI_DIM_ZLR, algos);
+	  products.write_odim(cb->assets, CART_DIM_ZLR, algos);
           if (CL_opt.do_SaveBothRanges){
             LOG_INFO("Salvo sub-image intermedie");
             products.write_out(cb->assets, 256, algos);
