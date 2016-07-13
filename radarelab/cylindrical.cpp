@@ -126,7 +126,7 @@ void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
     }
 */
     Matrix2D<double> RHI_beam(volume.size(), max_bin);
-    for (unsigned iaz=0; iaz<1; iaz++)      //for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
+    for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
     {
         Matrix2D<double>& rhi_cart = *slices[iaz];
         Matrix2D<double> rhi_weight(Matrix2D<double>::Zero(x_size, z_size));
