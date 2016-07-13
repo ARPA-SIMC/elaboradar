@@ -1,6 +1,6 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.5
+Version: 	0.6
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -74,6 +74,12 @@ make
 %{_bindir}/elaboradar
 
 %changelog
+
+* Wed Jul 13 2016 Daniele Branchini <dbranchini@arpae.it> - 0.6-1
+- bounding box now computed according to ODIM specification
+- closed #4
+- add RadarSite class to describe radar information site
+- some minor bug fixing
 
 * Fri May 6 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.5-1%{dist}
 - Add method to save products with additional info in the filename
