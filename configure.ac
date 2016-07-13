@@ -55,6 +55,11 @@ GDAL_LIBS=$($GDAL_CONFIG --libs)
 AC_SUBST(GDAL_CFLAGS)
 AC_SUBST(GDAL_LIBS)
 
+AC_CHECK_LIB([proj], [pj_init],
+ PROJ_LIBS="-lproj"
+ AC_SUBST(PROJ_LIBS),
+ AC_MSG_ERROR([*** missing PROJ library]), )
+
 PKG_CHECK_MODULES([HDF5], [hdf5], [have_hdf5=yes], [have_hdf5=no])
 if test $have_hdf5 = yes
 then

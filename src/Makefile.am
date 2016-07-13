@@ -16,7 +16,7 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 	      $(GDAL_CFLAGS) \
 	      -fpermissive
 
-AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp $(LOG4C_LIBS) $(GSL_LIBS) $(GDAL_LIBS)
+AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp $(LOG4C_LIBS) $(GSL_LIBS) $(GDAL_LIBS) $(PROJ_LIBS)
 
 
 libtmp_la_SOURCES = \
