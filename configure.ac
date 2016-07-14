@@ -28,38 +28,12 @@ dnl Give me warnings
 AX_CXXFLAGS_WARN_ALL
 
 dnl Mandatory librarires
-AC_PATH_PROG(LOG4C_CONFIG, [log4c-config])
-if test x"$LOG4C_CONFIG" = x; then
-	AC_MSG_ERROR([*** missing Log4C library])
-fi
-LOG4C_CFLAGS=$($LOG4C_CONFIG --cflags)
-LOG4C_LIBS=$($LOG4C_CONFIG --libs)
-AC_SUBST(LOG4C_CFLAGS)
-AC_SUBST(LOG4C_LIBS)
+PKG_CHECK_MODULES(LOG4C, [log4c])
+PKG_CHECK_MODULES(GSL, [gsl])
+PKG_CHECK_MODULES(GDAL, [gdal])
+PKG_CHECK_MODULES(PROJ, [proj])
 
-AC_PATH_PROG(GSL_CONFIG, [gsl-config])
-if test x"$GSL_CONFIG" = x; then
-	AC_MSG_ERROR([*** missing GSL (GNU Scientific Library)])
-fi
-GSL_CFLAGS=$($GSL_CONFIG --cflags)
-GSL_LIBS=$($GSL_CONFIG --libs)
-AC_SUBST(GSL_CFLAGS)
-AC_SUBST(GSL_LIBS)
-
-AC_PATH_PROG(GDAL_CONFIG, [gdal-config])
-if test x"$GDAL_CONFIG" = x; then
-	AC_MSG_ERROR([*** missing GDAL (Geospatial Data Abstraction Library)])
-fi
-GDAL_CFLAGS=$($GDAL_CONFIG --cflags)
-GDAL_LIBS=$($GDAL_CONFIG --libs)
-AC_SUBST(GDAL_CFLAGS)
-AC_SUBST(GDAL_LIBS)
-
-AC_CHECK_LIB([proj], [pj_init],
- PROJ_LIBS="-lproj"
- AC_SUBST(PROJ_LIBS),
- AC_MSG_ERROR([*** missing PROJ library]), )
-
+dnl Fedora 20 has no pkg-config for hdf5-devel
 PKG_CHECK_MODULES([HDF5], [hdf5], [have_hdf5=yes], [have_hdf5=no])
 if test $have_hdf5 = yes
 then
@@ -75,9 +49,8 @@ else
 		AC_SUBST(HDF5_CFLAGS)
 		AC_SUBST(HDF5_LIBS)
 	fi
-
-        AC_MSG_WARN([compiling without libhdf5])
 fi
+
 PKG_CHECK_MODULES([RADARLIB], [radarlib])
 PKG_CHECK_MODULES([EIGEN3], [eigen3])
 
