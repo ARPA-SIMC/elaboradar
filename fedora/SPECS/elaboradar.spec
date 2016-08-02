@@ -8,7 +8,7 @@ URL:            https://github.com/arpa-simc/%{name}
 Source0:        https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Packager: 	Daniele Branchini <dbranchini@arpa.emr.it>
-BuildRequires:	gcc-c++, hdf5-devel, eigen3-devel, radarlib-devel, log4c-devel, gsl-devel
+BuildRequires:	gcc-c++, hdf5-devel, eigen3-devel, radarlib-devel, log4c-devel, gsl-devel, tclap-devel
 Requires:       hdf5
 
 %description
