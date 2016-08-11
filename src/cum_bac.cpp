@@ -370,29 +370,29 @@ void CUM_BAC::declutter_anaprop()
         std::vector <double>  above_30 (4,0);
         std::vector <double>  above_40 (4,0);
         for( unsigned el =0; el <4; el++)
-	for (unsigned iaz=0; iaz<volume[el].beam_count; iaz++)
+        for (unsigned iaz=0; iaz<volume[el].beam_count; iaz++)
             for (unsigned k=80; k < volume[el].beam_size; k ++)
                 if (volume[el].get(iaz,k) > 40.){
-			above_0[el]++;
-			above_15[el]++;
-			above_30[el]++;
-			above_40[el]++;
+                        above_0[el]++;
+                        above_15[el]++;
+                        above_30[el]++;
+                        above_40[el]++;
                 } else if (volume[el].get(iaz,k) > 30.){
-			above_0[el]++;
-			above_15[el]++;
-			above_30[el]++;
-		} else if (volume[el].get(iaz,k) > 15.){
-			above_0[el]++;
-			above_15[el]++;
-		} else if (volume[el].get(iaz,k) > 0.){
-			above_0[el]++;
-		}
+                        above_0[el]++;
+                        above_15[el]++;
+                        above_30[el]++;
+                } else if (volume[el].get(iaz,k) > 15.){
+                        above_0[el]++;
+                        above_15[el]++;
+                } else if (volume[el].get(iaz,k) > 0.){
+                        above_0[el]++;
+                }
 
         anaprop.do_quality = do_quality;
         anaprop.do_beamblocking = do_beamblocking;
         anaprop.do_bloccorr = do_bloccorr;
-	if ( above_15[2]/above_15[0] >= 0.025){
-	   if (above_0[1]/above_0[0] >= 0.6 && above_30[2]/above_15[2] <0.15 && above_0[1] >=50000){
+        if ( above_15[2]/above_15[0] >= 0.025){
+           if (above_0[1]/above_0[0] >= 0.6 && above_30[2]/above_15[2] <0.15 && above_0[1] >=50000){
               anaprop.conf_texture_threshold = 5.;
         LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
               anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
@@ -400,11 +400,11 @@ void CUM_BAC::declutter_anaprop()
         //      anaprop.conf_texture_threshold = 5.;
               anaprop.remove_without_SD(volume, beam_blocking, first_level, first_level_static,SD_Z6);
         LOG_WARN("THUNDERSTORM           %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", -9.9, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
-	   }
+           }
         } else {
               anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
         LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
-	}
+        }
         LOG_INFO("declutter_anaprop completed with anaprop");
         ScrivoStatistica(anaprop.grid_stats);
     }
@@ -420,7 +420,7 @@ void CUM_BAC::declutter_anaprop()
              toBePlotted(i,k)= DBtoBYTE(volume[0].get(i, k));
         }
             radarelab::write_image(toBePlotted, "/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/Polarplot.png", "PNG");*/
-	LOG_INFO("elabora_Dato completata");
+        LOG_INFO("elabora_Dato completata");
 }
 
 void CUM_BAC::leggo_first_level()
@@ -516,7 +516,7 @@ void CUM_BAC::ScrivoStatistica(const algo::anaprop::GridStats& grid_stats)
                 statistica_bl[az][ran] = grid_stats.perc_bloc(az, ran);
                 statistica_el[az][ran] = grid_stats.perc_elev(az, ran);
             }
-	}
+        }
     File f_stat;
 
     if (f_stat.open_from_env("ANAP_STAT_FILE", "a"))
@@ -819,7 +819,7 @@ int CalcoloVPR::combina_profili()
     ier_vpr=func_vpr(&cv,&ct,vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %d", ier_vpr);
 
-	for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
+    for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
 
     /*modalità VPR combinato*/
 LOG_DEBUG (" modalita %d",mode);
@@ -845,7 +845,7 @@ LOG_DEBUG (" modalita %d",mode);
             //----se file non esiste assegno gap=100----
             gap=100;
         }
-	for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0[i]);
+        for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0[i]);
 
         //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
 
@@ -994,7 +994,7 @@ LOG_DEBUG (" modalita %d",mode);
 
     //-----scrivo il profilo e la sua area-----
     cum_bac.assets.write_vpr0(vpr, area_vpr);
-	for (unsigned i=0; i<vpr.size(); i++) LOG_DEBUG (" Profilo nuovo - livello %2d valore %6.2f",i,vpr[i]);
+    for (unsigned i=0; i<vpr.size(); i++) LOG_DEBUG (" Profilo nuovo - livello %2d valore %6.2f",i,vpr[i]);
 
     return(0);
 }
@@ -1169,7 +1169,7 @@ int CalcoloVPR::corr_vpr()
                     else{
                         // -- altrimenti correggo comunque a livello liquido :
                         corr = cum_bac.dbz.RtoDBZ_class(vpr_liq) - cum_bac.dbz.RtoDBZ_class(vpr_hray);/*riporto comunque al valore liquido anche se sono sopra la bright band*/
-	            }
+                    }
                     // --  controllo qualità su valore correzione
                     if (corr>MAX_CORR) corr=MAX_CORR; /*soglia sulla massima correzione*/
                     if (hbin<hvprmax && corr>0.) corr=0; /*evito effetti incrementi non giustificati*/
@@ -1560,7 +1560,7 @@ int CalcoloVPR::func_vpr(long int *cv, long int *ct, vector<float>& vpr1, vector
                 dist_plain=(long int)(dist*cos(elevaz));
                 if (dist_plain <RMIN_VPR || dist_plain > RMAX_VPR )
                     flag_vpr->scan(l).set(i, k, 0);
-//	if (iA == iaz_min) LOG_DEBUG(" k %3d dist %6d  dist_plain %6d quota_true_st %8.2f ilay %3d elevaz %5.2f %f", k, dist, dist_plain,quota_true_st, ilay,scan.elevation,elevaz);
+//      if (iA == iaz_min) LOG_DEBUG(" k %3d dist %6d  dist_plain %6d quota_true_st %8.2f ilay %3d elevaz %5.2f %f", k, dist, dist_plain,quota_true_st, ilay,scan.elevation,elevaz);
 
                 if (cum_bac.qual->scan(l).get(i, k) < QMIN_VPR) flag_vpr->scan(l).set(i, k, 0);
 
@@ -1771,7 +1771,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
         const auto& elev_fin = anaprop.elev_fin;
         const auto& quota = anaprop.quota;
 
-	if(qual){
+        if(qual){
           std::function<unsigned char(unsigned, unsigned)> assign_qual =
             [this, &elev_fin](unsigned azimuth, unsigned range) {
                 const auto& el = elev_fin[azimuth][range];
@@ -1780,8 +1780,8 @@ void CUM_BAC::generate_maps(CartProducts& products)
                 return qual->scan(el).get(azimuth, range);
             };
           products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
-	}
-	
+        }
+        
         std::function<unsigned char(unsigned, unsigned)> assign_quota =
             [&quota](unsigned azimuth, unsigned range) {
                 return 128 + round(quota(azimuth, range) / 100.0);
@@ -1789,11 +1789,11 @@ void CUM_BAC::generate_maps(CartProducts& products)
         products.scaled.to_cart(assign_quota, products.quota_1x1);
         products.scaled.to_cart(anaprop.dato_corrotto, products.dato_corr_1x1);
 
-	std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
+        std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
                 return elev_fin[azimuth][range];
         };
         products.scaled.to_cart(assign_elev_fin, products.elev_fin_1x1);
-	
+        
         products.scaled.to_cart(beam_blocking, products.beam_blocking_1x1);
     }
 
@@ -1804,8 +1804,8 @@ void CUM_BAC::generate_maps(CartProducts& products)
             return neve(azimuth, range) ? 0 : 1;
         };
         products.scaled.to_cart(assign, products.neve_1x1);
-	
-       products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
+        
+        products.scaled.to_cart(calcolo_vpr->corr_polar, products.corr_1x1);
 
         if (do_class)
             products.scaled.to_cart(calcolo_vpr->conv, products.conv_1x1);
