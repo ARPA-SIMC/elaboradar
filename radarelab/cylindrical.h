@@ -10,22 +10,26 @@
 
 namespace radarelab {
 
+/**
+ * Radar volume mapped to cylindrical coordinates.
+ */
 struct CylindricalVolume
 {
+    /**
+     * Vertical rectangular x,z semi-slices of the cylinder, with one side resting
+     * on the cylinder axis. x grows along the radius of the cylinder, z grows
+     * along the axis.
+     *
+     * The angle between slices is constant.
+     */
     std::vector<Matrix2D<double>*> slices;
-    const unsigned x_size;
-    const unsigned z_size;
+    unsigned x_size;
+    unsigned z_size;
+
+    /// Resolution in x and z
     double resol[2];
 
-    CylindricalVolume(unsigned slice_count, unsigned x_size, unsigned z_size, double missing_value, double x_res, double z_res)
-        : x_size(x_size), z_size(z_size)
-    {
-        resol[0]=x_res;
-        resol[1]=z_res;
-        slices.reserve(slice_count);
-        for (unsigned i = 0; i < slice_count; ++i)
-            slices.push_back(new Matrix2D<double>(Matrix2D<double>::Constant(x_size, z_size, missing_value)));
-    }
+    CylindricalVolume(const Volume<double>& volume, unsigned slice_count, double missing_value, double x_res, double z_res);
     ~CylindricalVolume()
     {
         for (std::vector<Matrix2D<double>*>::iterator i = slices.begin(); i != slices.end(); ++i)

@@ -231,8 +231,6 @@ struct CalcoloVPR
     float resol[2];             ///< array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
     int heating;            ///< variabile di riscaldamento
     int livmin = 0;             ///< quota livello minimo calcolato
-    unsigned x_size;        ///< Dimensioni ??????
-    unsigned z_size;        ///< Dimensioni ??????
     double htbb;                ///< altezza top brightband
     double hbbb;                ///< altezza bottom brightband
     radarelab::PolarScan<unsigned char> corr_polar; ///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
