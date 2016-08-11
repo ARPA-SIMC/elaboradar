@@ -117,7 +117,7 @@ struct HRay : public Matrix2D<double>
 
 CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), cfg(cfg), site(site), assets(cfg),
-      do_medium(medium), volume(volume),
+      do_medium(medium), volume(volume), cil(volume, NUM_AZ_X_PPI, 0, RES_HOR_CIL, RES_VERT_CIL),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024),
       anaprop(volume), dem(NUM_AZ_X_PPI, 1024),
@@ -719,12 +719,9 @@ void CalcoloVPR::classifica_rain()
 
     LOG_INFO("calcolati livelli sopra e sotto bright band hbbb=%f  htbb=%f",hbbb,htbb);
 
-    // TODO: remove duplication with CylindricalVolume::resample
-    const Volume<double>& volume = cum_bac.volume;
+    const CylindricalVolume& cil = cum_bac.cil;
 
     // ricampionamento del volume in coordinate cilindriche
-    CylindricalVolume cil(volume, NUM_AZ_X_PPI, 0, RES_HOR_CIL, RES_VERT_CIL);
-    cil.resample(cum_bac.volume, cil.x_size);
     LOG_DEBUG ("Matrice cilindrica Naz %3d Nrange %4d Nheight %4d", cil.slices.size(), cil.x_size, cil.z_size);
     //-------------------------------------------------------------------------------------------------------------------------
     // faccio la classificazione col metodo Vertical Integrated Reflectivity

@@ -29,10 +29,13 @@ CylindricalVolume::CylindricalVolume(const Volume<double>& volume, unsigned slic
     slices.reserve(slice_count);
     for (unsigned i = 0; i < slice_count; ++i)
         slices.push_back(new Matrix2D<double>(Matrix2D<double>::Constant(x_size, z_size, missing_value)));
+
+    resample(volume);
 }
 
-void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
+void CylindricalVolume::resample(const Volume<double>& volume)
 {
+    unsigned max_bin = x_size;
     /* ---------------------------------- */
     /*           FASE 1 */
     /* ---------------------------------- */

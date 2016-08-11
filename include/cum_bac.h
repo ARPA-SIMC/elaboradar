@@ -14,6 +14,7 @@
 #include <radarelab/elev_fin.h>
 #include <radarelab/algo/anaprop.h>
 #include <radarelab/algo/dbz.h>
+#include <radarelab/cylindrical.h>
 #include "assets.h"
 #include <stdexcept>
 #include <cmath>
@@ -97,6 +98,7 @@ public:
 
     radarelab::Volume<double>& volume;      ///< Polar volume of Reflectivity 
     radarelab::Volume<double> SD_Z6;        ///< Polar volume of standard deviation of reflectivity over 6 km length
+    radarelab::CylindricalVolume cil;       ///< Volume resampled as a cylindrical volume
 
     radarelab::algo::DBZ dbz;           ///< ????
     
