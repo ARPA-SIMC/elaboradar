@@ -18,7 +18,6 @@ radarelabincludedir = $(includedir)/radarelab
 
 nobase_dist_radarelabinclude_HEADERS = \
   logging.h \
-  dbz.h \
   utils.h \
   utils/string.h \
   utils/sys.h \

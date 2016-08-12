@@ -1,5 +1,4 @@
 #include "dbz.h"
-#include "radarelab/dbz.h"
 
 //#define  aMP 316.
 //#define  bMP 1.5
@@ -85,32 +84,32 @@ double DBZ::attenuation(double DBZvalue, double  PIA)  /* Doviak,Zrnic,1984 for 
 
 double DBZ::RtoDBZ(double rain) const
 {
-    return radarelab::algo::RtoDBZ(rain, aMP, bMP);
+    return RtoDBZ(rain, aMP, bMP);
 }
 
 double DBZ::DBZtoR(double dbz) const
 {
-    return radarelab::algo::DBZtoR(dbz, aMP, bMP);
+    return DBZtoR(dbz, aMP, bMP);
 }
 
 double DBZ::DBZ_snow(double dbz) const
 {
-    return radarelab::algo::RtoDBZ(radarelab::algo::DBZtoR(dbz, aMP_SNOW, bMP_SNOW), aMP_class, bMP_class);
+    return RtoDBZ(DBZtoR(dbz, aMP_SNOW, bMP_SNOW), aMP_class, bMP_class);
 }
 
 double DBZ::DBZ_conv(double dbz) const
 {
-    return radarelab::algo::RtoDBZ(radarelab::algo::DBZtoR(dbz, aMP_conv, bMP_conv), aMP_class, bMP_class);
+    return RtoDBZ(DBZtoR(dbz, aMP_conv, bMP_conv), aMP_class, bMP_class);
 }
 
 double DBZ::RtoDBZ_class(double R) const
 {
-    return radarelab::algo::RtoDBZ(R, aMP_class, bMP_class);
+    return RtoDBZ(R, aMP_class, bMP_class);
 }
 
 double DBZ::DBZ_to_mp_func(double sample) const
 {
-    return radarelab::algo::DBZtoR(sample, aMP, bMP);
+    return DBZtoR(sample, aMP, bMP);
 }
 
 double DBZ::BYTEtoZ(unsigned char byte)

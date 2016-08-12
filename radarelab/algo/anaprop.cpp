@@ -134,9 +134,9 @@ void Anaprop<T>::remove(
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if(bin_high == fondo_scala && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
             {
-		do_test_AP=false;
-                MAX_DIF_NEXT=BYTEtoDB(255);
-                MAX_DIF=BYTEtoDB(255);
+                do_test_AP=false;
+                MAX_DIF_NEXT=DBZ::BYTEtoDB(255);
+                MAX_DIF=DBZ::BYTEtoDB(255);
                 MIN_VALUE=fondo_scala;
                 MIN_VALUE_NEXT= fondo_scala;
             }
@@ -414,9 +414,9 @@ LOG_WARN("Anaprop remove without SD");
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if(bin_high == fondo_scala  && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
             {
-		do_test_AP=false;
-                MAX_DIF_NEXT=BYTEtoDB(255);
-                MAX_DIF=BYTEtoDB(255);
+                do_test_AP=false;
+                MAX_DIF_NEXT=DBZ::BYTEtoDB(255);
+                MAX_DIF=DBZ::BYTEtoDB(255);
                 MIN_VALUE=fondo_scala;
                 MIN_VALUE_NEXT= fondo_scala;
             }

@@ -6,7 +6,6 @@
 #include <radarelab/odim.h>
 #include <radarelab/algo/cleaner.h>
 #include <radarelab/algo/anaprop.h>
-#include <radarelab/dbz.h>
 #include <radarelab/algo/azimuth_resample.h>
 #include <radarelab/algo/dbz.h>
 #include "site.h"
@@ -61,6 +60,7 @@
 
 using namespace std;
 using namespace radarelab;
+using namespace radarelab::algo;
 
 namespace elaboradar {
 
@@ -614,7 +614,7 @@ void CUM_BAC::caratterizzo_volume()
 
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                PIA=dbz.attenuation(DBtoBYTE(sample),PIA);
+                PIA=dbz.attenuation(DBZ::DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
                 dhst = PolarScanBase::sample_height(elevaz + 0.45, dist)
@@ -1207,7 +1207,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     *hmax=INODATA;
     // Enrico vprmax=NODATAVPR;
     imax=INODATA;
-    soglia=radarelab::algo::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
+    soglia = DBZ::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
         LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr[istart] , vpr[istart+4], soglia, peak, imax); 
@@ -1730,8 +1730,8 @@ void CUM_BAC::generate_maps(CartProducts& products)
             // values.
             double sum = 0;
             for (const auto& s: samples)
-                sum += algo::DBZtoZ(s);
-            unsigned char res = DBtoBYTE(algo::ZtoDBZ(sum / samples.size()));
+                sum += DBZ::DBZtoZ(s);
+            unsigned char res = DBZ::DBtoBYTE(DBZ::ZtoDBZ(sum / samples.size()));
             // il max serve perchè il valore di MISSING è 0
             if (res == 0) return (unsigned char)1;
             return res;
@@ -1741,7 +1741,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
         std::function<unsigned char(unsigned, unsigned)> assign_cart =
             [this](unsigned azimuth, unsigned range) {
                 // il max serve perchè il valore di MISSING è 0
-                unsigned char sample = DBtoBYTE(volume[0].get(azimuth, range));
+                unsigned char sample = DBZ::DBtoBYTE(volume[0].get(azimuth, range));
                 return max(sample, (unsigned char)1);
             };
         products.scaled.to_cart(assign_cart, products.z_out);

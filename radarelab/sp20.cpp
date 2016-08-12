@@ -12,6 +12,7 @@
 #endif
 
 using namespace std;
+using namespace radarelab::algo;
 
 /// This is not used anymore, but it is here to satisfy libSP20 linking needs
 int elev_array[15];
@@ -221,8 +222,8 @@ void SP20Loader::load(const std::string& pathname)
             vol_z->quantity = odim::PRODUCT_QUANTITY_TH;
         for (auto& scan : *vol_z)
         {
-            scan.nodata = DBtoBYTE(0);
-            scan.undetect = DBtoBYTE(1);
+            scan.nodata = DBZ::DBtoBYTE(0);
+            scan.undetect = DBZ::DBtoBYTE(1);
             scan.gain = 80.0 / 255.0;
             scan.offset = -20;
         }
@@ -286,7 +287,7 @@ void SP20Loader::beam_to_volumes(const sp20::Beam& beam, unsigned az_idx, unsign
         // Convert to DB
         Eigen::VectorXd dbs(max_range);
         for (unsigned i = 0; i < max_range; ++i)
-            dbs(i) = BYTEtoDB(beam.data_z[i]);
+            dbs(i) = DBZ::BYTEtoDB(beam.data_z[i]);
         PolarScan<double>& scan = vol_z->at(el_num);
         scan.row(az_idx) = dbs;
         scan.elevations_real(az_idx) = beam.beam_info.elevation;

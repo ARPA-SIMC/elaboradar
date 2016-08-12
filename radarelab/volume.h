@@ -8,6 +8,7 @@
 
 #include <radarelab/logging.h>
 #include <radarelab/matrix.h>
+#include <radarelab/algo/dbz.h>
 #include <string>
 #include <vector>
 #include <cstdio>
@@ -26,21 +27,6 @@
 
 namespace radarelab {
 
-inline double BYTEtoDB(unsigned char z)
-{
-    return (z*80./255.-20.);
-}
-
-inline unsigned char DBtoBYTE(double dB)
-{
-    int byt = round((dB+20.)*255./80.);
-    if (byt >= 0 && byt <= 255)
-        return ((unsigned char)byt);
-    else if (byt < 0)
-        return 0;
-    else
-        return 255;
-}
 /**
  * Basic structure to describe a polarScan 
  */
@@ -146,7 +132,7 @@ public:
  * @param [in] beam_size
  * @param[in] default_value
  */
-    PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value=BYTEtoDB(1))
+    PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value=algo::DBZ::BYTEtoDB(1))
         : PolarScanBase(beam_count, beam_size),
           Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value))
     {
@@ -517,7 +503,7 @@ public:
             {
                 for (size_t i = 0; i < this->scan(iel).beam_size; ++i)
                 {
-                    int val = DBtoBYTE(this->scan(iel).get(iaz, i));
+                    int val = algo::DBZ::DBtoBYTE(this->scan(iel).get(iaz, i));
                     switch (val)
                     {
                         case 0: stats.count_zeros[iel]++; break;

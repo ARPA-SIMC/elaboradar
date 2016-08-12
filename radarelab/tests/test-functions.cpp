@@ -19,7 +19,7 @@ void Tests::register_tests() {
 
 add_method("beam_blocking_correction", []() {
     // Test BeamBlockingCorrection
-    wassert(actual((unsigned)DBtoBYTE(algo::DBZ::beam_blocking_correction(BYTEtoDB(128),50))) == 138u);
+    wassert(actual((unsigned)algo::DBZ::DBtoBYTE(algo::DBZ::beam_blocking_correction(algo::DBZ::BYTEtoDB(128),50))) == 138u);
 });
 
 }
