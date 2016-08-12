@@ -28,7 +28,9 @@ dnl Give me warnings
 AX_CXXFLAGS_WARN_ALL
 
 dnl Mandatory librarires
-PKG_CHECK_MODULES(LOG4C, [log4c])
+dnl Debian still has a log4c without pkg-config support, see https://bugs.debian.org/834036
+dnl PKG_CHECK_MODULES(LOG4C, [log4c])
+AM_PATH_LOG4C
 PKG_CHECK_MODULES(GSL, [gsl])
 PKG_CHECK_MODULES(GDAL, [gdal])
 PKG_CHECK_MODULES(PROJ, [proj])

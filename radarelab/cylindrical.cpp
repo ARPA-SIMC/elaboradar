@@ -7,8 +7,35 @@ using namespace std;
 
 namespace radarelab {
 
-void CylindricalVolume::resample(const Volume<double>& volume, unsigned max_bin)
+CylindricalVolume::CylindricalVolume(const Volume<double>& volume, unsigned slice_count, double missing_value, double x_res, double z_res)
 {
+    const double size_cell = volume[0].cell_size;
+    double range_min=0.5 * size_cell/1000.;
+    double range_maxLowestRay = (volume[0].beam_size - 0.5) * size_cell / 1000.;
+
+    double xmin = floor(range_min*cos(volume.elevation_max()*DTOR)); // distanza orizzontale minima dal radar
+    double zmin = volume[0].sample_height(0) / 1000. + volume.radarSite.getTotalHeight(); // quota  minima in prop standard
+    double xmax = floor(range_maxLowestRay*cos(volume.elevation_min()*DTOR)); // distanza orizzontale massima dal radar
+    double zmax = volume.back().sample_height(volume.back().beam_size - 1) / 1000. + volume.radarSite.getTotalHeight();//quota massima
+    //LOG_DEBUG(" Range min maxL maxU  %7.3f %7.3f %7.3f  --  xmin %7.3f xmax %7.3f zmin %7.3f zmax %7.3f", range_min, range_maxLowestRay, range_maxUpperRay, xmin,xmax,zmin,zmax);
+
+    x_size = (xmax - xmin) / x_res; //dimensione orizzontale
+    // FIXME: usiamo volume.max_beam_size invece di MyMAX_BIN?
+    if (x_size > volume.max_beam_size()) x_size=volume.max_beam_size();
+    z_size = (zmax - zmin) / z_res; //dimensione verticale
+
+    resol[0] = x_res;
+    resol[1] = z_res;
+    slices.reserve(slice_count);
+    for (unsigned i = 0; i < slice_count; ++i)
+        slices.push_back(new Matrix2D<double>(Matrix2D<double>::Constant(x_size, z_size, missing_value)));
+
+    resample(volume);
+}
+
+void CylindricalVolume::resample(const Volume<double>& volume)
+{
+    unsigned max_bin = x_size;
     /* ---------------------------------- */
     /*           FASE 1 */
     /* ---------------------------------- */

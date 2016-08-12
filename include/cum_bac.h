@@ -14,6 +14,7 @@
 #include <radarelab/elev_fin.h>
 #include <radarelab/algo/anaprop.h>
 #include <radarelab/algo/dbz.h>
+#include <radarelab/cylindrical.h>
 #include "assets.h"
 #include <stdexcept>
 #include <cmath>
@@ -77,54 +78,55 @@ public:
 
     log4c_category_t* logging_category; ///< logging category 
 
-    unsigned MyMAX_BIN;			///< maximum number of beam size
-    const Config& cfg;			///< Configuration object
-    const Site& site;			///< site information object
-    Assets assets;			///< others
+    unsigned MyMAX_BIN;         ///< maximum number of beam size
+    const Config& cfg;          ///< Configuration object
+    const Site& site;           ///< site information object
+    Assets assets;          ///< others
 
-    bool do_medium;			///< medium processing flag
+    bool do_medium;         ///< medium processing flag
 
     /// Feature set required for this run
-    bool do_quality = false;		///< quality flag
-    bool do_beamblocking = false;	///< beamblocking corretion 
-    bool do_bloccorr = false;		///< bloccorrection
-    bool do_declutter = false;		///< use only static declutter map
-    bool do_class = false;		///< Convective-stratiform classification 
-    bool do_zlr_media = false;		///< Compute ZLR map using averaging
-    bool do_devel = false;		///< Produce additional output
-    bool do_readStaticMap = false;	///< Read Static clutter map
-    bool do_anaprop=false;		///< anaprop correction
+    bool do_quality = false;        ///< quality flag
+    bool do_beamblocking = false;   ///< beamblocking corretion 
+    bool do_bloccorr = false;       ///< bloccorrection
+    bool do_declutter = false;      ///< use only static declutter map
+    bool do_class = false;      ///< Convective-stratiform classification 
+    bool do_zlr_media = false;      ///< Compute ZLR map using averaging
+    bool do_devel = false;      ///< Produce additional output
+    bool do_readStaticMap = false;  ///< Read Static clutter map
+    bool do_anaprop=false;      ///< anaprop correction
 
-    radarelab::Volume<double>& volume;		///< Polar volume of Reflectivity 
-    radarelab::Volume<double> SD_Z6;		///< Polar volume of standard deviation of reflectivity over 6 km length
+    radarelab::Volume<double>& volume;      ///< Polar volume of Reflectivity 
+    radarelab::Volume<double> SD_Z6;        ///< Polar volume of standard deviation of reflectivity over 6 km length
+    radarelab::CylindricalVolume cil;       ///< Volume resampled as a cylindrical volume
 
-    radarelab::algo::DBZ dbz;			///< ????
-	
-    CalcoloVPR* calcolo_vpr = 0;	///< Oggetto per calcolare e correggere con VPR
+    radarelab::algo::DBZ dbz;           ///< ????
+    
+    CalcoloVPR* calcolo_vpr = 0;    ///< Oggetto per calcolare e correggere con VPR
 
     /*-----------------------------------------------------------
       Variabili globali
       ------------------------------------------------------------*/
 
     // Data del volume che abbiamo letto
-    char date[20];			///<  Acquisition date 
+    char date[20];          ///<  Acquisition date 
 
     //matrici first_level e first level da beam blocking e valore beam blocking
-    radarelab::PolarScan<unsigned char> first_level; 		///< mappa dinamica complessiva
-    radarelab::PolarScan<unsigned char> first_level_static;	///< mappa statica
+    radarelab::PolarScan<unsigned char> first_level;        ///< mappa dinamica complessiva
+    radarelab::PolarScan<unsigned char> first_level_static; ///< mappa statica
 
-    radarelab::PolarScan<unsigned char> bb_first_level;  		///< mappa di elevazioni da beam blocking (input)
-    radarelab::PolarScan<unsigned char> beam_blocking;   		///< mappa di beam blocking (input)
+    radarelab::PolarScan<unsigned char> bb_first_level;         ///< mappa di elevazioni da beam blocking (input)
+    radarelab::PolarScan<unsigned char> beam_blocking;          ///< mappa di beam blocking (input)
 
-    radarelab::algo::Anaprop<double> anaprop;			///< Oggetto per correzione ANAPRO
+    radarelab::algo::Anaprop<double> anaprop;           ///< Oggetto per correzione ANAPRO
 
     //variabili legate a propagazione e beam blocking, da prog_bb
-    radarelab::PolarScan<float> dem; 				///< dem in coordinate azimut range
+    radarelab::PolarScan<float> dem;                ///< dem in coordinate azimut range
 
     // metrici qualita' come sopra
-    radarelab::Volume<unsigned char>* qual; 			///< qualita volume polare
+    radarelab::Volume<unsigned char>* qual;             ///< qualita volume polare
     // top, come sopra
-    radarelab::PolarScan<unsigned char> top; 			///< Echo top a ???? dBZ [hm]
+    radarelab::PolarScan<unsigned char> top;            ///< Echo top a ???? dBZ [hm]
 
     /* variabili tolte perchè non presenti nel codice cum_bac... controllare che non richiamino qualcosa nelle funzioni
        struct tm *time_dbp;
@@ -217,38 +219,36 @@ struct CalcoloVPR
 {
     log4c_category_t* logging_category;
 
-    CUM_BAC& cum_bac;	///< oggeto CUM_BAC di riferimento
-    long int gap; 	///< distanza temporale dall'ultimo file vpr [numero acquisizioni intercorse dall'ultimo vpr ?)
-    float t_ground;	///< 2m temperature
+    CUM_BAC& cum_bac;   ///< oggeto CUM_BAC di riferimento
+    long int gap;   ///< distanza temporale dall'ultimo file vpr [numero acquisizioni intercorse dall'ultimo vpr ?)
+    float t_ground; ///< 2m temperature
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
-    radarelab::PolarScan<unsigned char> conv;	/// Informa se il pixel è convettivo
-    std::vector<long int> area_vpr; 	///< area degli strati
-    std::vector<float> vpr;		///< vpr 
-    int hvprmax; 			///< quota picco vpr
+    radarelab::PolarScan<unsigned char> conv;   /// Informa se il pixel è convettivo
+    std::vector<long int> area_vpr;     ///< area degli strati
+    std::vector<float> vpr;     ///< vpr 
+    int hvprmax;            ///< quota picco vpr
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
     //int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
    
-    float resol[2]; 			///< array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
-    int heating;			///< variabile di riscaldamento
-    int livmin = 0; 			///< quota livello minimo calcolato
-    unsigned x_size;		///< Dimensioni ??????
-    unsigned z_size;		///< Dimensioni ??????
-    double htbb;				///< altezza top brightband
-    double hbbb;				///< altezza bottom brightband
-    radarelab::PolarScan<unsigned char> corr_polar;	///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
-    radarelab::PolarScan<unsigned char> neve;		///< matrice az-range che memorizza punti di neve
-    int ier_vpr;				///< flag d'errore su calcolo vpr istantaneo
-    int ier_comb;				///< flag d'errore su combinazione vpr
-    int ier_max;				///< flag d'errore su calcolo quota max 
-    int ier_stampa_vpr;				///< flag d'errore su stampa profilo
+    float resol[2];             ///< array di parametri, fisso , RES_HOR_CIL E RES_VERT_CIL
+    int heating;            ///< variabile di riscaldamento
+    int livmin = 0;             ///< quota livello minimo calcolato
+    double htbb;                ///< altezza top brightband
+    double hbbb;                ///< altezza bottom brightband
+    radarelab::PolarScan<unsigned char> corr_polar; ///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
+    radarelab::PolarScan<unsigned char> neve;       ///< matrice az-range che memorizza punti di neve
+    int ier_vpr;                ///< flag d'errore su calcolo vpr istantaneo
+    int ier_comb;               ///< flag d'errore su combinazione vpr
+    int ier_max;                ///< flag d'errore su calcolo quota max 
+    int ier_stampa_vpr;             ///< flag d'errore su stampa profilo
     // dati per vpr
-    radarelab::Volume<unsigned char>* flag_vpr; 		///< punti del volume polare ok per calcolo VPR
+    radarelab::Volume<unsigned char>* flag_vpr;         ///< punti del volume polare ok per calcolo VPR
     //obsol.
     float stdev;// obsol.
     // files vpr
-    FILE *test_vpr;				///< file per diagnostica vpr
+    FILE *test_vpr;             ///< file per diagnostica vpr
 
-    unsigned MyMAX_BIN;				///< LUNGHEZZA MASSIMA 
+    unsigned MyMAX_BIN;             ///< LUNGHEZZA MASSIMA 
 
 /**
  * Constructor
@@ -256,7 +256,7 @@ struct CalcoloVPR
  */
     CalcoloVPR(CUM_BAC& cum_bac);
     ~CalcoloVPR();
-	
+    
     /**
      *  @brief   funzione che analizza il profilo 
      *  @details analizza il profilo usando : la temperatura al suolo, la quota del massimo, e una funzione di interpolazione 
@@ -348,10 +348,10 @@ struct CalcoloVPR
  */ 
 struct SingleCart
 {
-    const unsigned max_bin;		///< dimensione matrice
+    const unsigned max_bin;     ///< dimensione matrice
 
     /// vol_pol interpolated in a cartesian map
-    radarelab::Image<unsigned char> cart;		
+    radarelab::Image<unsigned char> cart;       
 /** 
  * Constructor
  * @param [in] max_bin - dimensione matrice
