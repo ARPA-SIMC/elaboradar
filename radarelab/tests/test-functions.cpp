@@ -1,5 +1,5 @@
 #include "radarelab/utils/tests.h"
-#include "radarelab/algo/utils.h"
+#include "radarelab/algo/dbz.h"
 #include "radarelab/volume.h"
 #include "radarelab/logging.h"
 
@@ -19,7 +19,7 @@ void Tests::register_tests() {
 
 add_method("beam_blocking_correction", []() {
     // Test BeamBlockingCorrection
-    wassert(actual((unsigned)DBtoBYTE(algo::beam_blocking_correction(BYTEtoDB(128),50))) == 138u);
+    wassert(actual((unsigned)DBtoBYTE(algo::DBZ::beam_blocking_correction(BYTEtoDB(128),50))) == 138u);
 });
 
 }

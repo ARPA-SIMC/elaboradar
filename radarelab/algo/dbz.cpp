@@ -1,17 +1,7 @@
 #include "dbz.h"
-#include "utils.h"
-#include "algo/utils.h"
+#include "radarelab/dbz.h"
 
-/* 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <func_Z_R.h>
-#ifdef __cplusplus
-}
-#endif
-*/
-//#define  aMP 316. 
+//#define  aMP 316.
 //#define  bMP 1.5
 #define  aMP_conv 500.0 
 #define  bMP_conv 1.5
@@ -31,7 +21,6 @@ using namespace std;
 
 DBZ::DBZ()
 {
-    logging_category = log4c_category_get("radar.dbz");
 }
 
 void DBZ::setup(int month, double base_cell_size)
@@ -122,6 +111,23 @@ double DBZ::RtoDBZ_class(double R) const
 double DBZ::DBZ_to_mp_func(double sample) const
 {
     return radarelab::algo::DBZtoR(sample, aMP, bMP);
+}
+
+double DBZ::BYTEtoZ(unsigned char byte)
+{
+    const double gain = 80. / 255.;
+    const double offset = -20.;
+    static bool precomputed = false;
+    static double Z[256];
+
+    if (!precomputed)
+    {
+        for (unsigned i=0; i < 256; ++i)
+            Z[i] = pow(10., (i * gain + offset) * 0.1);
+        precomputed = true;
+    }
+
+    return Z[byte];
 }
 
 }

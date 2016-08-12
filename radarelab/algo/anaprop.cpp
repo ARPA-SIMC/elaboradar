@@ -1,5 +1,5 @@
-#include "algo/anaprop.h"
-#include "algo/utils.h"
+#include "anaprop.h"
+#include "radarelab/algo/dbz.h"
 
 // Soglie algoritmi
 #define MAX_DIF_OR 30.            /* differenzio limiti controllo anap      */
@@ -255,10 +255,10 @@ void Anaprop<T>::remove(
                    else {	
                        if (do_beamblocking && do_bloccorr)
                        {
-                           bin_low = beam_blocking_correction(bin_low, beam_blocking(i, k));
+                           bin_low = DBZ::beam_blocking_correction(bin_low, beam_blocking(i, k));
                            grid_stats.incr_bloc(i, k, beam_blocking(i, k));
                        }
-		  }
+                   }
                   for(unsigned l=0; l<=el_inf; l++)
                       volume[l].set(i, k, bin_low);
 //  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),count_low );
@@ -494,7 +494,7 @@ LOG_WARN("Anaprop remove without SD");
                {
                        if (do_beamblocking && do_bloccorr)
                        {
-                           bin_low = beam_blocking_correction(bin_low, beam_blocking(i, k));
+                           bin_low = DBZ::beam_blocking_correction(bin_low, beam_blocking(i, k));
                            grid_stats.incr_bloc(i, k, beam_blocking(i, k));
                        }
 		  

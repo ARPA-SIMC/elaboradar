@@ -6,7 +6,7 @@
 #include <radarelab/odim.h>
 #include <radarelab/algo/cleaner.h>
 #include <radarelab/algo/anaprop.h>
-#include <radarelab/algo/utils.h>
+#include <radarelab/dbz.h>
 #include <radarelab/algo/azimuth_resample.h>
 #include <radarelab/algo/dbz.h>
 #include "site.h"
@@ -343,7 +343,7 @@ void CUM_BAC::declutter_anaprop()
                         volume[l].set(i, k, MISSING_DB);
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
-                        volume[l].set(i, k, algo::beam_blocking_correction(volume[l].get(i, k), beam_blocking(i, k)));
+                        volume[l].set(i, k, algo::DBZ::beam_blocking_correction(volume[l].get(i, k), beam_blocking(i, k)));
                 }
             }
 

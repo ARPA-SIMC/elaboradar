@@ -18,6 +18,7 @@ radarelabincludedir = $(includedir)/radarelab
 
 nobase_dist_radarelabinclude_HEADERS = \
   logging.h \
+  dbz.h \
   utils.h \
   utils/string.h \
   utils/sys.h \
@@ -42,7 +43,6 @@ nobase_dist_radarelabinclude_HEADERS = \
   algo/statistics.h \
   algo/steiner.h \
   algo/top.h \
-  algo/utils.h \
   algo/viz.h
 
 libradarelab_la_SOURCES = \

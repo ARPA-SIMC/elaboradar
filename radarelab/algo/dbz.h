@@ -5,31 +5,27 @@
 #ifndef RADARELAB_ALGO_DBZ_H
 #define RADARELAB_ALGO_DBZ_H
 
-#include <radarelab/volume.h>
-#include <radarelab/elev_fin.h>
+#include <cmath>
 
 namespace radarelab {
 namespace algo {
+
 /**
  * Class to manage reflectivity functions (simply attenuation correction, conversion between Z, dBZ, R)
  */
 class DBZ
 {
 public:
-    log4c_category_t* logging_category;			///< logging category label
+    double base_cell_size;              ///< cella size dimension
+    double aMP, bMP;                    ////< Marshall-Palmer coefficient for Z-R relationship
 
-    double base_cell_size;				///< cella size dimension
-    double aMP, bMP;   					////< Marshall-Palmer coefficient for Z-R relationship
-
-/// Constriuctor
     DBZ();
 
-
-/**
- * @brief Seasonal setup function
- * @param [in] month - month 
- * @param [in] base_cell_size - cell size dimension [m]
- */
+    /**
+     * @brief Seasonal setup function
+     * @param [in] month - month 
+     * @param [in] base_cell_size - cell size dimension [m]
+     */
     void setup(int month, double base_cell_size);
 
     /**
@@ -53,6 +49,58 @@ public:
     double DBZ_conv(double dbz) const;
     double RtoDBZ_class(double R) const;
     double DBZ_to_mp_func(double sample) const;
+
+    /**
+     * @function
+     * Compute the corrected value (in dB) given the original value (in dB) and the
+     * beam blocking percentage (from 0 to 100) for that value
+     * @param [in] val_db - uncorrected dBZ value
+     * @param [in] beamblocking - percentage of beam blocking
+     * @return corrected dBZ value
+     */
+    static constexpr inline double beam_blocking_correction(double val_db, double beamblocking)
+    {
+       return val_db - 10 * log10(1. - beamblocking / 100.);
+    }
+
+    /**
+     * @brief funzione che converte Z unsigned char in  DBZ
+     * @param[in] DBZbyte riflettivita' in byte
+     * @param [in] gain  - first conversion factor 
+     * @param [in] offset - second conversion factor 
+     * @return equivalente in DBZ
+     */
+    static constexpr inline double BYTEtoDB(unsigned char DBZbyte, double gain=80./255., double offset=-20.)
+    {
+        return (DBZbyte * gain + offset);
+    }
+
+    /**
+     * @brief funzione che converte  dB in valore intero tra 0 e 255
+     * @param[in] DB dBZ in ingresso
+     * @param [in] gain  - first conversion factor 
+     * @param [in] offset - second conversion factor 
+     * @return converted value in byte
+     */
+    static inline unsigned char DBtoBYTE(double DB, double gain=80./255., double offset=-20.)
+    {
+        int byt = round((DB - offset) / gain);
+        if (byt <= 0)
+            return 0;
+        else if (byt <= 255)
+            return (unsigned char)(byt);
+        else 
+            return 255;
+    }
+
+    /**
+     * @brief funzione che converte byte in Z
+     * @param[in] byte valore da convertire in z espresso tra 0 e 255
+     * @param [in] gain  - first conversion factor 
+     * @param [in] offset - second conversion factor 
+     * @return Z value (linear not dBZ)
+     */
+    static double BYTEtoZ(unsigned char byte);
 };
 
 }
