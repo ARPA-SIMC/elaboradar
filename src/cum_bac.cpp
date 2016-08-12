@@ -188,12 +188,6 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     resampler.resample_volume(z_volume, volume, 1.0);
 // Copy all radar site information to volume data
     volume.radarSite = site.radarSite;
-   /*
-    printf("fbeam ϑ%f α%f", volume.scan(0)[0].teta, volume.scan(0)[0].alfa);
-    for (unsigned i = 0; i < 20; ++i)
-        printf(" %d", (int)volume.scan(0).get_raw(0, i));
-    printf("\n");
-    */
 
 }
 
@@ -248,10 +242,17 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     {
       if (zdr_volume.empty())
       {
+	volume::Scans<unsigned char> full_volume_cleanID;
         //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
-            radarelab::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
-        }
+//            radarelab::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
+	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+            radarelab::algo::Cleaner::evaluateCleanID(z_volume->at(i), w_volume.at(i), v_volume.at(i),full_volume_cleanID.at(i),i);
+            for (unsigned ibeam=0;ibeam<z_volume->at(i).beam_count; ibeam++)
+		for (unsigned j=0; j<z_volume->at(i).beam_size; j++){
+		  if (full_volume_cleanID.at(i)(ibeam,j) != 0) z_volume->at(i)(ibeam,j)=z_volume->at(i).undetect;
+	        }
+	}
       } else {
         for (unsigned i = 0; i < z_volume->size(); ++i){
             algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i);

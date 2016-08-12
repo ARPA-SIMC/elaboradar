@@ -5,6 +5,7 @@
 #include <memory>
 
 using namespace std;
+using namespace OdimH5v21;
 
 namespace {
 
@@ -142,8 +143,6 @@ void ODIMLoader::load(const std::string& pathname)
 
 void ODIMStorer::store(const std::string& pathname)
 {
-//    LOG_CATEGORY("radar.io");
-
     namespace odim = OdimH5v21;
     using namespace Radar;
     using namespace std;
@@ -154,8 +153,6 @@ void ODIMStorer::store(const std::string& pathname)
     unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
     unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
 
-// cout<<"aperto file"<<endl;
-//    unsigned max_elev=0;
     for(unsigned i=0;i<to_store_int.size();i++)
 	for(unsigned j=0;j<to_store_int[i]->size();j++)
 	{
@@ -180,11 +177,9 @@ void ODIMStorer::store(const std::string& pathname)
 				matrix.elem(ii,jj) = to_store_int[i]->scan(j)(ii,jj);
 		data->writeData(matrix);
 	}
-//cout<<"vado coi double"<<endl;
     for(unsigned i=0;i<to_store_fp.size();i++)
 	for(unsigned j=0;j<to_store_fp[i]->size();j++)
 	{
-//cout<<"vol "<<i<<"scan "<<j<<endl;
 		vector<odim::PolarScan*> scans;
 		scans = volume->getScans(to_store_fp[i]->scan(j).elevation,0.1);
 		shared_ptr<odim::PolarScan> scan;
@@ -194,24 +189,62 @@ void ODIMStorer::store(const std::string& pathname)
 			scan.reset(volume->createScan());
 			scan->setEAngle(to_store_fp[i]->scan(j).elevation);
 		}
-//cout<<"settato puntatore a scan"<<endl;
 		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_fp[i]->quantity));
-//cout<<"settato puntatore a data "<<to_store_fp[i]->quantity<<endl;
 		data->setGain((double)to_store_fp[i]->scan(j).gain);
 		data->setOffset((double)to_store_fp[i]->scan(j).offset);
 		data->setNodata((double)to_store_fp[i]->scan(j).nodata);
 		data->setUndetect((double)to_store_fp[i]->scan(j).undetect);
-//cout<<"settati metadati"<<endl;
 		odim::RayMatrix<float> matrix;
         	matrix.resize(to_store_fp[i]->scan(j).beam_count,to_store_fp[i]->scan(j).beam_size);
-//cout<<"settate dimensioni matrice"<<endl;
 		for(unsigned ii=0;ii<to_store_fp[i]->scan(j).beam_count;ii++)
 			for(unsigned jj=0;jj<to_store_fp[i]->scan(j).beam_size;jj++)
 				matrix.elem(ii,jj) = to_store_fp[i]->scan(j)(ii,jj);
-//cout<<"scrivo matrice"<<endl;
 		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),H5::PredType::NATIVE_UINT16);
-//cout<<"scritto"<<endl;
 	}
+}
+
+void ODIMStorer::storeQuality(const std::string& pathname, const std::string & task, bool RemoveQualityFields)
+{
+    namespace odim = OdimH5v21;
+    using namespace Radar;
+    using namespace std;
+
+    shared_ptr<LoadInfo> load_info = make_shared<LoadInfo>();
+    load_info->filename = pathname;
+
+    unique_ptr<odim::OdimFactory> factory(new odim::OdimFactory());
+    unique_ptr<odim::PolarVolume> volume(factory->openPolarVolume(pathname));
+
+    for(unsigned i=0;i<to_store_uchar.size();i++)
+	for(unsigned j=0;j<to_store_uchar[i]->size();j++)
+	{
+		vector<odim::PolarScan*> scans;
+		scans = volume->getScans(to_store_uchar[i]->scan(j).elevation,0.1);
+		shared_ptr<odim::PolarScan> scan;
+		if(scans.size()) scan.reset(scans[0]);
+		else
+		{
+			scan.reset(volume->createScan());
+			scan->setEAngle(to_store_uchar[i]->scan(j).elevation);
+		}
+		if (RemoveQualityFields) {
+                  int iqc =scan->getQualityCount();
+		  for (int iq=iqc-1; iq >=0 ; iq--){
+		    scan->removeQuality(iq);
+ 		  }
+                }
+		unique_ptr<odim::OdimQuality> quality(scan->createQuality());
+		quality->getWhat()->set(ATTRIBUTE_WHAT_OFFSET,		0.);
+		quality->getWhat()->set(ATTRIBUTE_WHAT_GAIN,		1.);
+		quality->getHow() ->set(ATTRIBUTE_HOW_TASK, task);
+		odim::RayMatrix<unsigned short> matrix;
+        	matrix.resize(to_store_uchar[i]->scan(j).beam_count,to_store_uchar[i]->scan(j).beam_size);
+		for(unsigned ii=0;ii<to_store_uchar[i]->scan(j).beam_count;ii++)
+			for(unsigned jj=0;jj<to_store_uchar[i]->scan(j).beam_size;jj++)
+				matrix.elem(ii,jj) = to_store_uchar[i]->scan(j)(ii,jj);
+		quality->writeQuality(matrix);
+	}
+
 }
 
 

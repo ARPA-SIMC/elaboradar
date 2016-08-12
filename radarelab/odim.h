@@ -57,9 +57,12 @@ class ODIMStorer
 public:
     std::vector<Volume<double>*> to_store_fp;
     std::vector<Volume<int>*> to_store_int;
+    std::vector<Volume<unsigned char>*> to_store_uchar;
     void store_quantity_fp(Volume<double>* vol_fp) {to_store_fp.push_back(vol_fp);}
     void store_quantity_int(Volume<int>* vol_int) {to_store_int.push_back(vol_int);}
+    void store_quality_uchar(Volume<unsigned char>* vol_uchar) {to_store_uchar.push_back(vol_uchar);}
     void store(const std::string& pathname);
+    void storeQuality(const std::string& pathname, const std::string& task, bool RemoveQualityFields=true);
 };
 
 } // volume
