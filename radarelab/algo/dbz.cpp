@@ -1,17 +1,7 @@
 #include "dbz.h"
-#include "utils.h"
-#include "algo/utils.h"
+#include "volume.h"
 
-/* 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <func_Z_R.h>
-#ifdef __cplusplus
-}
-#endif
-*/
-//#define  aMP 316. 
+//#define  aMP 316.
 //#define  bMP 1.5
 #define  aMP_conv 500.0 
 #define  bMP_conv 1.5
@@ -29,12 +19,20 @@ namespace algo {
 
 using namespace std;
 
-DBZ::DBZ()
+DBZ::DBZ(const Volume<double>& volume)
 {
-    logging_category = log4c_category_get("radar.dbz");
+    // --- ricavo il mese x definizione first_level e  aMP bMP ---------
+    time_t Time = volume.load_info->acq_date;
+    struct tm* tempo = gmtime(&Time);
+    init(tempo->tm_mon+1, volume[0].cell_size);
 }
 
-void DBZ::setup(int month, double base_cell_size)
+DBZ::DBZ(int month, double base_cell_size)
+{
+    init(month, base_cell_size);
+}
+
+void DBZ::init(int month, double base_cell_size)
 {
     this->base_cell_size = base_cell_size;
 
@@ -96,32 +94,49 @@ double DBZ::attenuation(double DBZvalue, double  PIA)  /* Doviak,Zrnic,1984 for 
 
 double DBZ::RtoDBZ(double rain) const
 {
-    return radarelab::algo::RtoDBZ(rain, aMP, bMP);
+    return RtoDBZ(rain, aMP, bMP);
 }
 
 double DBZ::DBZtoR(double dbz) const
 {
-    return radarelab::algo::DBZtoR(dbz, aMP, bMP);
+    return DBZtoR(dbz, aMP, bMP);
 }
 
 double DBZ::DBZ_snow(double dbz) const
 {
-    return radarelab::algo::RtoDBZ(radarelab::algo::DBZtoR(dbz, aMP_SNOW, bMP_SNOW), aMP_class, bMP_class);
+    return RtoDBZ(DBZtoR(dbz, aMP_SNOW, bMP_SNOW), aMP_class, bMP_class);
 }
 
 double DBZ::DBZ_conv(double dbz) const
 {
-    return radarelab::algo::RtoDBZ(radarelab::algo::DBZtoR(dbz, aMP_conv, bMP_conv), aMP_class, bMP_class);
+    return RtoDBZ(DBZtoR(dbz, aMP_conv, bMP_conv), aMP_class, bMP_class);
 }
 
 double DBZ::RtoDBZ_class(double R) const
 {
-    return radarelab::algo::RtoDBZ(R, aMP_class, bMP_class);
+    return RtoDBZ(R, aMP_class, bMP_class);
 }
 
 double DBZ::DBZ_to_mp_func(double sample) const
 {
-    return radarelab::algo::DBZtoR(sample, aMP, bMP);
+    return DBZtoR(sample, aMP, bMP);
+}
+
+double DBZ::BYTEtoZ(unsigned char byte)
+{
+    const double gain = 80. / 255.;
+    const double offset = -20.;
+    static bool precomputed = false;
+    static double Z[256];
+
+    if (!precomputed)
+    {
+        for (unsigned i=0; i < 256; ++i)
+            Z[i] = pow(10., (i * gain + offset) * 0.1);
+        precomputed = true;
+    }
+
+    return Z[byte];
 }
 
 }

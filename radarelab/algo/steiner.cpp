@@ -1,7 +1,6 @@
-#include <radarelab/algo/steiner.h>
-#include <radarelab/par_class.h>
-
-#include <radarelab/algo/utils.h>
+#include "steiner.h"
+#include "radarelab/par_class.h"
+#include "radarelab/algo/dbz.h"
 
 //#ifdef __cplusplus
 //extern "C" {
@@ -30,7 +29,7 @@ namespace steiner {
 void Point::add_sample(double sample)
 {
     if (sample <= MINVAL_DB) return;
-    Z_bckgr += radarelab::algo::BYTEtoZ(radarelab::algo::DBtoBYTE(sample));
+    Z_bckgr += DBZ::BYTEtoZ(DBZ::DBtoBYTE(sample));
     bckgr += sample;
     ++npoints;
 }

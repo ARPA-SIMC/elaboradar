@@ -6,7 +6,6 @@
 #include <radarelab/odim.h>
 #include <radarelab/algo/cleaner.h>
 #include <radarelab/algo/anaprop.h>
-#include <radarelab/algo/utils.h>
 #include <radarelab/algo/azimuth_resample.h>
 #include <radarelab/algo/dbz.h>
 #include "site.h"
@@ -61,6 +60,7 @@
 
 using namespace std;
 using namespace radarelab;
+using namespace radarelab::algo;
 
 namespace elaboradar {
 
@@ -118,6 +118,7 @@ struct HRay : public Matrix2D<double>
 CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), cfg(cfg), site(site), assets(cfg),
       do_medium(medium), volume(volume), cil(volume, NUM_AZ_X_PPI, 0, RES_HOR_CIL, RES_VERT_CIL),
+      dbz(volume),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024),
       anaprop(volume), dem(NUM_AZ_X_PPI, 1024),
@@ -126,17 +127,11 @@ CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bo
     logging_category = log4c_category_get("radar.cum_bac");
     assets.configure(site, volume.load_info->acq_date);
 
-    // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
     time_t Time = volume.load_info->acq_date;
     struct tm* tempo = gmtime(&Time);
-    int month=tempo->tm_mon+1;
-
-    dbz.setup(month, volume[0].cell_size);
-
     // scrivo la variabile char date con la data in formato aaaammgghhmm
-    sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
-            tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
+    strftime(date, 20, "%Y%m%d%H%M", tempo);
 
     // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
     algo::compute_top(volume, SOGLIA_TOP, top);
@@ -343,7 +338,7 @@ void CUM_BAC::declutter_anaprop()
                         volume[l].set(i, k, MISSING_DB);
                     //------------se definito BEAM BLOCKING e non definito BLOCNOCORR (OPZIONE PER non correggere il beam blocking a livello di mappa statica PUR SAPENDO QUANT'È)
                     if (do_beamblocking && do_bloccorr)
-                        volume[l].set(i, k, algo::beam_blocking_correction(volume[l].get(i, k), beam_blocking(i, k)));
+                        volume[l].set(i, k, algo::DBZ::beam_blocking_correction(volume[l].get(i, k), beam_blocking(i, k)));
                 }
             }
 
@@ -614,7 +609,7 @@ void CUM_BAC::caratterizzo_volume()
 
 
                 //assegno la PIA (path integrated attenuation) nel punto e POI la incremento  (è funzione dell'attenuazione precedente e del valore nel punto)
-                PIA=dbz.attenuation(DBtoBYTE(sample),PIA);
+                PIA=dbz.attenuation(DBZ::DBtoBYTE(sample),PIA);
 
                 //------calcolo il dhst ciè l'altezza dal bin in condizioni standard utilizzando la funzione quota_f e le elevazioni reali
                 dhst = PolarScanBase::sample_height(elevaz + 0.45, dist)
@@ -1207,7 +1202,7 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     *hmax=INODATA;
     // Enrico vprmax=NODATAVPR;
     imax=INODATA;
-    soglia=radarelab::algo::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
+    soglia = DBZ::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
         LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr[istart] , vpr[istart+4], soglia, peak, imax); 
@@ -1730,8 +1725,8 @@ void CUM_BAC::generate_maps(CartProducts& products)
             // values.
             double sum = 0;
             for (const auto& s: samples)
-                sum += algo::DBZtoZ(s);
-            unsigned char res = DBtoBYTE(algo::ZtoDBZ(sum / samples.size()));
+                sum += DBZ::DBZtoZ(s);
+            unsigned char res = DBZ::DBtoBYTE(DBZ::ZtoDBZ(sum / samples.size()));
             // il max serve perchè il valore di MISSING è 0
             if (res == 0) return (unsigned char)1;
             return res;
@@ -1741,7 +1736,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
         std::function<unsigned char(unsigned, unsigned)> assign_cart =
             [this](unsigned azimuth, unsigned range) {
                 // il max serve perchè il valore di MISSING è 0
-                unsigned char sample = DBtoBYTE(volume[0].get(azimuth, range));
+                unsigned char sample = DBZ::DBtoBYTE(volume[0].get(azimuth, range));
                 return max(sample, (unsigned char)1);
             };
         products.scaled.to_cart(assign_cart, products.z_out);

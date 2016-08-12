@@ -42,7 +42,6 @@ nobase_dist_radarelabinclude_HEADERS = \
   algo/statistics.h \
   algo/steiner.h \
   algo/top.h \
-  algo/utils.h \
   algo/viz.h
 
 libradarelab_la_SOURCES = \
