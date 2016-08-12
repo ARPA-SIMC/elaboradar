@@ -29,7 +29,8 @@ TESTFILES = \
   vpr/last_vpr_GAT \
   vpr/temperature.txt \
   vpr/vpr_hmax_GAT \
-  dem_Gatta.txt
+  dem_Gatta.txt \
+  dem_SanPi.txt
 
 EXTRA_DIST = $(addsuffix .xz,$(TESTFILES))
 
