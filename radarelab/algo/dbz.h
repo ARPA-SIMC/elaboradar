@@ -8,6 +8,8 @@
 #include <cmath>
 
 namespace radarelab {
+template<typename T> class Volume;
+
 namespace algo {
 
 /**
@@ -15,18 +17,21 @@ namespace algo {
  */
 class DBZ
 {
+protected:
+    void init(int month, double base_cell_size);
+
 public:
     double base_cell_size;              ///< cella size dimension
     double aMP, bMP;                    ////< Marshall-Palmer coefficient for Z-R relationship
 
-    DBZ();
+    DBZ(const Volume<double>& volume);
 
     /**
      * @brief Seasonal setup function
      * @param [in] month - month 
      * @param [in] base_cell_size - cell size dimension [m]
      */
-    void setup(int month, double base_cell_size);
+    DBZ(int month, double base_cell_size);
 
     /**
      *

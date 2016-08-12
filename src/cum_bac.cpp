@@ -118,6 +118,7 @@ struct HRay : public Matrix2D<double>
 CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bool medium, unsigned max_bin)
     : MyMAX_BIN(max_bin), cfg(cfg), site(site), assets(cfg),
       do_medium(medium), volume(volume), cil(volume, NUM_AZ_X_PPI, 0, RES_HOR_CIL, RES_VERT_CIL),
+      dbz(volume),
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024),
       anaprop(volume), dem(NUM_AZ_X_PPI, 1024),
@@ -126,17 +127,11 @@ CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bo
     logging_category = log4c_category_get("radar.cum_bac");
     assets.configure(site, volume.load_info->acq_date);
 
-    // --- ricavo il mese x definizione first_level e  aMP bMP ---------
     //definisco stringa data in modo predefinito
     time_t Time = volume.load_info->acq_date;
     struct tm* tempo = gmtime(&Time);
-    int month=tempo->tm_mon+1;
-
-    dbz.setup(month, volume[0].cell_size);
-
     // scrivo la variabile char date con la data in formato aaaammgghhmm
-    sprintf(date,"%04d%02d%02d%02d%02d",tempo->tm_year+1900, tempo->tm_mon+1,
-            tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
+    strftime(date, 20, "%Y%m%d%H%M", tempo);
 
     // ------definisco i coeff MP in base alla stagione( mese) che servono per calcolo VPR e attenuazione--------------
     algo::compute_top(volume, SOGLIA_TOP, top);

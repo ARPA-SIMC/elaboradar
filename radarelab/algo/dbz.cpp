@@ -1,4 +1,5 @@
 #include "dbz.h"
+#include "volume.h"
 
 //#define  aMP 316.
 //#define  bMP 1.5
@@ -18,11 +19,20 @@ namespace algo {
 
 using namespace std;
 
-DBZ::DBZ()
+DBZ::DBZ(const Volume<double>& volume)
 {
+    // --- ricavo il mese x definizione first_level e  aMP bMP ---------
+    time_t Time = volume.load_info->acq_date;
+    struct tm* tempo = gmtime(&Time);
+    init(tempo->tm_mon+1, volume[0].cell_size);
 }
 
-void DBZ::setup(int month, double base_cell_size)
+DBZ::DBZ(int month, double base_cell_size)
+{
+    init(month, base_cell_size);
+}
+
+void DBZ::init(int month, double base_cell_size)
 {
     this->base_cell_size = base_cell_size;
 
