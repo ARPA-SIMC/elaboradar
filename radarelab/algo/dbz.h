@@ -7,6 +7,10 @@
 
 #include <cmath>
 
+#define MISSING_DB (-20.)
+#define MINVAL_DB (80./255.-20.)
+#define MAXVAL_DB (60.)
+
 namespace radarelab {
 template<typename T> class Volume;
 

@@ -21,10 +21,6 @@
 // TODO: prima o poi arriviamo a far senza di questi define
 #define NUM_AZ_X_PPI 400
 
-#define MISSING_DB (-20.)
-#define MINVAL_DB (80./255.-20.)
-#define MAXVAL_DB (60.)
-
 namespace radarelab {
 
 /**
