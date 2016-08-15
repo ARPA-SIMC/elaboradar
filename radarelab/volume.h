@@ -242,8 +242,6 @@ struct LoadInfo
 {
     /// Original file name
     std::string filename;
-///  location
-    std::string location;
 //    std::string date;
 //    std::string time;
     /// Acquisition date
