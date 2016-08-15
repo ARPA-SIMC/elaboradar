@@ -28,7 +28,8 @@
 namespace radarelab {
 
 /**
- * Basic structure to describe a polarScan 
+ * Basic structure to describe a polar scan, independently of the type of its
+ * samples.
  */
 struct PolarScanBase
 {
@@ -122,10 +123,11 @@ public:
     T nodata = 0;
     /// Minimum amount that can be measured
     T undetect = 0;
-    /// Conversion factor 
+    /// Conversion factor
     T gain = 1;
     /// Conversion factor
     T offset = 0;
+
     /*!
      * Constructor - Create a polarscan given beam_count, beam_size and the value to fill the Matrix
      * @param [in] beam_count
@@ -220,6 +222,7 @@ public:
     }
 };
 
+
 struct VolumeStats
 {
     std::vector<unsigned> count_zeros;
@@ -242,8 +245,8 @@ struct LoadInfo
 {
     /// Original file name
     std::string filename;
-//    std::string date;
-//    std::string time;
+    // std::string date;
+    // std::string time;
     /// Acquisition date
     time_t acq_date;
     /// flag true if data have been decluttered with Doppler at rsp level
@@ -269,7 +272,7 @@ public:
     std::string units;
     /// Polar volume information
     std::shared_ptr<LoadInfo> load_info;
-    ///	RadarSite
+    /// RadarSite
     RadarSite radarSite;
 
     Scans() = default;
@@ -449,7 +452,7 @@ public:
     }
 
     /// Test if same cell_size in all PolarScans
-    bool  is_unique_cell_size() const
+    bool is_unique_cell_size() const
     {
         double cell_size = this->at(0).cell_size;
         for (size_t i = 1; i < this->size(); ++i)
