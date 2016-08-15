@@ -62,7 +62,7 @@ CalcoloSteiner::CalcoloSteiner(
         unsigned max_bin)
     // TODO: evaluate cell_size scan by scan?
     : volume(volume), elev_fin(elev_fin), max_bin(max_bin), size_cell(volume.scan(0).cell_size),
-      conv_STEINER(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, max_bin, MISSING))
+      conv_STEINER(Matrix2D<unsigned char>::Constant(volume.beam_count, max_bin, MISSING))
 {
     using namespace steiner;
 
@@ -70,7 +70,7 @@ CalcoloSteiner::CalcoloSteiner(
 
     // Traccio una lista dei punti che hanno valore non nullo e sotto base
     // bright band (lista_bckg) contenente iaz e irange e conto i punti
-    for (unsigned i=0; i < NUM_AZ_X_PPI; ++i)
+    for (unsigned i=0; i < volume.beam_count; ++i)
         for (unsigned j=0; j < max_bin; ++j)  // propongo max_bin visto che risoluzione è la stessa
             //if ( volume.scan(0)[i][j] > 1 &&  (float)(quota[i][j])/1000. < hbbb ) //verifico che il dato usato per la ZLR cioè la Z al lowest level sia > soglia e la sua quota sia sotto bright band o sopra bright band
             if (j < volume.scan(0).beam_size && volume.scan(0).get(i, j) > MINVAL_DB)
@@ -105,24 +105,24 @@ void CalcoloSteiner::calcolo_background() // sui punti precipitanti calcolo bckg
         {
             //definisco ampiezza semi finestra nazimut  corrispondente al raggio di steiner (11km)  (11/distanzacentrocella)(ampiezzaangoloscansione)
             unsigned delta_naz=ceil(STEINER_RADIUS/((i->range * size_cell/1000. + size_cell/2000.)/(AMPLITUDE*DTOR)));
-            if (delta_naz > NUM_AZ_X_PPI / 2)
-                delta_naz = NUM_AZ_X_PPI / 2;
+            if (delta_naz > volume.beam_count / 2)
+                delta_naz = volume.beam_count / 2;
 
             int jmin = i->azimut - delta_naz;
             int jmax = i->azimut + delta_naz;
 
             for (int j = jmin; j < jmax; ++j)
                 for (unsigned k = kmin; k < kmax; ++k)
-                    i->add_sample(elev_fin.db_at_elev_preci((j + NUM_AZ_X_PPI) % NUM_AZ_X_PPI, k));
+                    i->add_sample(elev_fin.db_at_elev_preci((j + volume.beam_count) % volume.beam_count, k));
         } else {
             // FIXME: questo fa mezzo scan tra 0 e kmax, e mezzo scan tra 0 e
             // -kmin. Sempre gli stessi mezzi scan a prescindere dalla
             // posizione di i. Ha senso?
-            for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
+            for (unsigned j=0   ; j<volume.beam_count/2  ; j++)
                 for (unsigned k=0  ; k<kmax   ; k++)
                     i->add_sample(elev_fin.db_at_elev_preci(j, k));
 
-            for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
+            for (unsigned j= volume.beam_count/2  ; j<volume.beam_count  ; j++)
                 for (int k=0  ; k<-kmin   ; k++)
                     i->add_sample(elev_fin.db_at_elev_preci(j, k));
         }
@@ -147,8 +147,8 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
         if (kmax > max_bin) kmax = max_bin;
 
         if (jmin<0) {
-            jmin=NUM_AZ_X_PPI-jmin%NUM_AZ_X_PPI;
-            for (unsigned j=jmin; j< NUM_AZ_X_PPI ; j++) {
+            jmin=volume.beam_count-jmin%volume.beam_count;
+            for (unsigned j=jmin; j< volume.beam_count ; j++) {
                 for (unsigned k=kmin ; k<kmax  ; k++) {
                     conv_STEINER(j, k)=CONV_VAL;
                 }
@@ -158,29 +158,29 @@ void CalcoloSteiner::ingrasso_nuclei(float cr,int ja,int kr)
 
         }
 
-        if (jmax>=NUM_AZ_X_PPI) {
-            jmax=jmax%NUM_AZ_X_PPI;
+        if (jmax>=volume.beam_count) {
+            jmax=jmax%volume.beam_count;
             for (unsigned j=0; j<jmax ; j++) {
                 for (unsigned k=kmin; k<kmax  ; k++) {
                     conv_STEINER(j, k)=CONV_VAL;
                 }
             }
             LOG_DEBUG("jmax %d", jmax);
-            jmax=NUM_AZ_X_PPI;
+            jmax=volume.beam_count;
         }
         for (unsigned j=jmin; j<jmax ; j++) {
             for (unsigned k=kmin; k<kmax  ; k++) {
-                conv_STEINER(j%NUM_AZ_X_PPI, k)=CONV_VAL;
+                conv_STEINER(j%volume.beam_count, k)=CONV_VAL;
             }
         }
     }
     else
     {
-        for (unsigned j=0   ; j<NUM_AZ_X_PPI/2  ; j++)
+        for (unsigned j=0   ; j<volume.beam_count/2  ; j++)
             for (unsigned k=0  ; k<kmax   ; k++){
                 conv_STEINER(j, k)=CONV_VAL;
             }
-        for (unsigned j= NUM_AZ_X_PPI/2  ; j<NUM_AZ_X_PPI  ; j++)
+        for (unsigned j= volume.beam_count/2  ; j<volume.beam_count  ; j++)
             for (unsigned k=0  ; k < (unsigned)-kmin   ; k++){
                 conv_STEINER(j, k)=CONV_VAL;
             }
