@@ -12,8 +12,8 @@ namespace algo {
 
 CalcoloVIZ::CalcoloVIZ(const CylindricalVolume& cil, double htbb, double hbbb, double t_ground)
     : cil(cil), x_size(cil.x_size), z_size(cil.z_size), htbb(htbb), hbbb(hbbb), t_ground(t_ground), res_vert_cil (cil.resol[1]),
-      conv_VIZ(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, x_size, MISSING)),
-      stratiform(Matrix2D<unsigned char>::Constant(NUM_AZ_X_PPI, x_size, MISSING))
+      conv_VIZ(Matrix2D<unsigned char>::Constant(cil.slices.size(), x_size, MISSING)),
+      stratiform(Matrix2D<unsigned char>::Constant(cil.slices.size(), x_size, MISSING))
 {
     logging_category = log4c_category_get("radar.vpr");
 }
@@ -21,8 +21,8 @@ CalcoloVIZ::CalcoloVIZ(const CylindricalVolume& cil, double htbb, double hbbb, d
 void CalcoloVIZ::classifico_VIZ()
 {
     float cil_Z,base;
-    Matrix2D<double> Zabb(Matrix2D<double>::Zero(NUM_AZ_X_PPI, x_size));
-    Matrix2D<double> Zbbb(Matrix2D<double>::Zero(NUM_AZ_X_PPI, x_size));
+    Matrix2D<double> Zabb(Matrix2D<double>::Zero(cil.slices.size(), x_size));
+    Matrix2D<double> Zbbb(Matrix2D<double>::Zero(cil.slices.size(), x_size));
     double ext_abb,ext_bbb;
     float LIM_VERT= 8.;//questo l'ho messo io
     long int ncv = 0;
@@ -37,7 +37,7 @@ void CalcoloVIZ::classifico_VIZ()
     LOG_DEBUG("kmax= %i \n kbbb= %i \n ktbb= %i \n  z_size= %i",kmax,kbbb,ktbb,z_size);
 
     //inizio l'integrazione
-    for(unsigned i=0; i<NUM_AZ_X_PPI; i++){
+    for(unsigned i=0; i<cil.slices.size(); i++){
         for(unsigned j=0; j<x_size; j++)
         {
             ext_abb=0.;

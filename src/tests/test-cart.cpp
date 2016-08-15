@@ -30,7 +30,7 @@ struct CBTest
     unsigned max_bin;
 
     CBTest(const char* site_name, bool do_medium, unsigned max_bin=512):
-        site(Site::get(site_name)), do_medium(do_medium), max_bin(max_bin)
+        site(Site::get(site_name)), volume(NUM_AZ_X_PPI), do_medium(do_medium), max_bin(max_bin)
     {
     }
 

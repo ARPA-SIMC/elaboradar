@@ -7,7 +7,7 @@ using namespace std;
 
 namespace radarelab {
 
-CylindricalVolume::CylindricalVolume(const Volume<double>& volume, unsigned slice_count, double missing_value, double x_res, double z_res)
+CylindricalVolume::CylindricalVolume(const Volume<double>& volume, double missing_value, double x_res, double z_res)
 {
     const double size_cell = volume[0].cell_size;
     double range_min=0.5 * size_cell/1000.;
@@ -26,8 +26,8 @@ CylindricalVolume::CylindricalVolume(const Volume<double>& volume, unsigned slic
 
     resol[0] = x_res;
     resol[1] = z_res;
-    slices.reserve(slice_count);
-    for (unsigned i = 0; i < slice_count; ++i)
+    slices.reserve(volume.beam_count);
+    for (unsigned i = 0; i < volume.beam_count; ++i)
         slices.push_back(new Matrix2D<double>(Matrix2D<double>::Constant(x_size, z_size, missing_value)));
 
     resample(volume);
@@ -153,7 +153,7 @@ void CylindricalVolume::resample(const Volume<double>& volume)
     }
 */
     Matrix2D<double> RHI_beam(volume.size(), max_bin);
-    for (unsigned iaz=0; iaz<NUM_AZ_X_PPI; iaz++)
+    for (unsigned iaz=0; iaz<volume.beam_count; iaz++)
     {
         Matrix2D<double>& rhi_cart = *slices[iaz];
         Matrix2D<double> rhi_weight(Matrix2D<double>::Zero(x_size, z_size));

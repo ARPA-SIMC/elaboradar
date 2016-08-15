@@ -22,6 +22,9 @@
 //algoritmo
 #include <radarelab/vpr_par.h>
 
+// TODO: prima o poi arriviamo a far senza di questi define
+#define NUM_AZ_X_PPI 400
+
 #define MAX_BIN 512
 
 #define RES_VERT_CIL 0.25

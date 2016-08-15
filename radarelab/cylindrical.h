@@ -20,7 +20,8 @@ struct CylindricalVolume
      * on the cylinder axis. x grows along the radius of the cylinder, z grows
      * along the axis.
      *
-     * The angle between slices is constant.
+     * The angle between slices is constant, and the number of slices is the
+     * same as the volume beam_count.
      */
     std::vector<Matrix2D<double>*> slices;
     unsigned x_size;
@@ -29,7 +30,7 @@ struct CylindricalVolume
     /// Resolution in x and z
     double resol[2];
 
-    CylindricalVolume(const Volume<double>& volume, unsigned slice_count, double missing_value, double x_res, double z_res);
+    CylindricalVolume(const Volume<double>& volume, double missing_value, double x_res, double z_res);
     ~CylindricalVolume()
     {
         for (std::vector<Matrix2D<double>*>::iterator i = slices.begin(); i != slices.end(); ++i)

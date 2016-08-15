@@ -222,7 +222,7 @@ add_method("read_sp20", []() {
     wassert(actual(round(ssp20.scan(4).elevation * 10000)) == 41313);
     wassert(actual(round(ssp20.scan(5).elevation * 10000)) == 50103);
 
-    Volume<double> vsp20;
+    Volume<double> vsp20(NUM_AZ_X_PPI);
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(ssp20, vsp20, 1);
     // Check the contents of what we read
@@ -233,7 +233,7 @@ add_method("read_odim", []() {
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/MSG1400715300U.101.h5";
     const Site& site(Site::get("GAT"));
-    Volume<double> volume;
+    Volume<double> volume(NUM_AZ_X_PPI);
     CUM_BAC::read_odim_volume(volume, site, fname, false);
     // Check the contents of what we read
     wassert(test_0120141530gat_ODIM(volume));
@@ -244,7 +244,7 @@ add_method("read_sp20_1", []() {
     static const char* fname = "../testdata/DBP2_060220140140_GATTATICO";
 
     const Site& site(Site::get("GAT"));
-    Volume<double> volume;
+    Volume<double> volume(NUM_AZ_X_PPI);
     CUM_BAC::read_sp20_volume(volume, site, fname, 0, false);
     // TODO: Check the contents of what we read
     //wruntest(test_0120141530gat, volume);
@@ -254,7 +254,7 @@ add_method("read_sp20_2", []() {
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/DBP2_020520141110_BOLOGNA";
     const Site& site(Site::get("SPC"));
-    Volume<double> volume;
+    Volume<double> volume(NUM_AZ_X_PPI);
     CUM_BAC::read_sp20_volume(volume, site, fname, 0, false);
     // Make sure the elevations are what we want
     wassert(actual(volume.size()) == 11);

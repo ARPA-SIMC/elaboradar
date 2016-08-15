@@ -18,9 +18,6 @@
 #include <Eigen/Core>
 #include <radarelab/RadarSite.h>
 
-// TODO: prima o poi arriviamo a far senza di questi define
-#define NUM_AZ_X_PPI 400
-
 namespace radarelab {
 
 /**
@@ -422,7 +419,7 @@ public:
      * Constructor 
      * @param [in] beam_count - number of beam_count to be used
      */
-    Volume(unsigned beam_count=NUM_AZ_X_PPI)
+    Volume(unsigned beam_count)
         : beam_count(beam_count)
     {
     }

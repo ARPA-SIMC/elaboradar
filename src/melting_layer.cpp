@@ -139,13 +139,14 @@ void MeltingLayer::fill_empty_azimuths()
 
 MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<double>& vol_rhohv, 
 								vector< vector< vector< HCA_Park> > >& HCA)
+	: vol_z_0_5km(NUM_AZ_X_PPI), vol_zdr_1km(NUM_AZ_X_PPI), vol_rhohv_1km(NUM_AZ_X_PPI)
 {
 	cout<<"\tInizio melting Layer"<<endl;
 //	filter(vol_z,vol_z_0_5km,1000.,0.,false);	// TODO: se tengo questo range di filtro, semplificare la struttura e riusare i vol_1km vol_2km già filtrati
 //	filter(vol_zdr,vol_zdr_1km,2000.,0.,false);
 //	filter(vol_rhohv,vol_rhohv_1km,2000.,0.,false);
 
-	Volume<double> dummy;
+	Volume<double> dummy(NUM_AZ_X_PPI);
 	filter(vol_z,vol_z_0_5km,500.,3.,false);
 	filter(vol_zdr,dummy,1000.,3.,false);
 	filter(dummy,vol_zdr_1km,1000.,3.,false);

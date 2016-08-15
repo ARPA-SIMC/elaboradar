@@ -168,7 +168,17 @@ HCA_Park::HCA_Park(double Z, double ZDR, double RHOHV, double LKDP, double SDZ, 
 	Ai=((Wij.array()*Pij.array()).matrix()*Qi).array()/(Wij*Qi).array();
 }
 
-classifier::classifier(const string& file):pathname(file)
+classifier::classifier(const string& file):
+    vol_hca(NUM_AZ_X_PPI), pathname(file), vol_z(NUM_AZ_X_PPI),
+    vol_zdr(NUM_AZ_X_PPI), vol_rhohv(NUM_AZ_X_PPI), vol_phidp(NUM_AZ_X_PPI),
+    vol_vrad(NUM_AZ_X_PPI), vol_snr(NUM_AZ_X_PPI), vol_z_1km(NUM_AZ_X_PPI),
+    vol_zdr_2km(NUM_AZ_X_PPI), vol_rhohv_2km(NUM_AZ_X_PPI),
+    vol_phidp_2km(NUM_AZ_X_PPI), vol_phidp_6km(NUM_AZ_X_PPI),
+    vol_lkdp_2km(NUM_AZ_X_PPI), vol_lkdp_6km(NUM_AZ_X_PPI),
+    vol_sdz(NUM_AZ_X_PPI), vol_sdphidp(NUM_AZ_X_PPI),
+    vol_grad_z_phi(NUM_AZ_X_PPI), vol_grad_z_theta(NUM_AZ_X_PPI),
+    vol_grad_zdr_phi(NUM_AZ_X_PPI), vol_grad_zdr_theta(NUM_AZ_X_PPI),
+    vol_grad_phi_phi(NUM_AZ_X_PPI), vol_grad_phi_theta(NUM_AZ_X_PPI)
 {
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
@@ -305,9 +315,9 @@ void classifier::correct_for_attenuation()
 void classifier::correct_for_snr()
 {
 	cout<<"inizio snr"<<endl;
-	Volume<double> vol_snr_linear;
+	Volume<double> vol_snr_linear(NUM_AZ_X_PPI);
 	dB2lin(vol_snr,vol_snr_linear);
-	Volume<double> vol_zdr_linear;
+	Volume<double> vol_zdr_linear(NUM_AZ_X_PPI);
 	dB2lin(vol_zdr,vol_zdr_linear);
 	double alpha=1.48; // horizontal to vertical noise ratio. 1.48 S-band (Schuur 2003)
 	for(unsigned el=0;el<vol_rhohv.size();el++)

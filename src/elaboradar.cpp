@@ -256,7 +256,7 @@ int main (int argc, char **argv)
     startup_banner(&CL_opt);
 
     const Site& site(Site::get(sito));
-    Volume<double> volume;
+    Volume<double> volume(NUM_AZ_X_PPI);
 
     try {
         if (CL_opt.data_in_odim)

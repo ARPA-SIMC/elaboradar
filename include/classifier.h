@@ -11,6 +11,9 @@
 #include<fstream>
 #include<sstream>
 
+// TODO: prima o poi arriviamo a far senza di questi define
+#define NUM_AZ_X_PPI 400
+
 namespace radarelab {
 namespace volume {
 
