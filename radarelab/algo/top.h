@@ -14,10 +14,11 @@ template<typename T>
 void compute_top(const Volume<T>& volume, T threshold, Matrix2D<unsigned char>& top)
 {
     top.fill(0);
+
     for (unsigned l=0; l < volume.size(); ++l)
     {
         const auto& scan = volume[l];
-        for (int i=0; i < NUM_AZ_X_PPI; ++i)
+        for (unsigned i = 0; i < scan.beam_count; ++i)
         {
             const double elevaz = scan.elevations_real(i); //--- elev reale in gradi
             for (unsigned k = 0; k < scan.beam_size; ++k)
