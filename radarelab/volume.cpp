@@ -64,4 +64,8 @@ void VolumeStats::print(FILE* out)
 template class PolarScan<double>;
 template class Volume<double>;
 
+namespace volume {
+template class Scans<double>;
+}
+
 }

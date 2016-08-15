@@ -579,6 +579,16 @@ private:
     Volume(const Volume&);
 };
 
+/*
+ * Tell the compiler that the implementation of these templates is already
+ * explicitly instantiated in volume.cpp, and it should not spend time
+ * reinstantiating it every time the template is used.
+ */
+extern template class PolarScan<double>;
+extern template class Volume<double>;
+namespace volume {
+extern template class Scans<double>;
+}
 
 }
 
