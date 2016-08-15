@@ -72,7 +72,7 @@ void Anaprop<T>::remove(
     const double fondo_scala = volume[0].undetect;
 
     //for(unsigned i=200; i<201; i++)
-    for(unsigned i=0; i<NUM_AZ_X_PPI; i++) 
+    for (unsigned i = 0; i < volume.beam_count; ++i)
     {
         //------------assegno le soglie per anaprop : se sono oltre 60 km e se la differenza tra il bin sotto il base e quello sopra <10 non applico test (cambio i limiti per renderli inefficaci)
         /* differenza massima tra le due elevazioni successive perchè non sia clutter e valore minimo a quella superiore pe il primo e per i successivi (NEXT) bins*/
@@ -230,7 +230,7 @@ void Anaprop<T>::remove(
                    unsigned count_low =0;
                    unsigned count_high=0;
                    for (unsigned ii=0; ii<7; ii++){
-                       int iaz_prox= (i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
+                       int iaz_prox = (i + ii - 3 + volume.beam_count) % volume.beam_count;
                        if( SD[el_inf].get(iaz_prox,k) < conf_texture_threshold && SD[el_inf].get(iaz_prox,k) > 0.01) count_low++;
                        if( k < SD[el_up].beam_size && SD[el_up].get(iaz_prox,k) < 1.7*conf_texture_threshold&& SD[el_up].get(iaz_prox,k) > 0.01) count_high++;
                    }
@@ -307,7 +307,7 @@ void Anaprop<T>::remove(
             {
                 unsigned count =0;
                 for (unsigned ii=0; ii<7; ii++){
-                    int iaz=(i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
+                    int iaz = (i + ii - 3 + volume.beam_count) % volume.beam_count;
                     if( SD[el_inf].get(iaz,k) < conf_texture_threshold && SD[el_inf].get(iaz,k) > 0.01) count++;
                 }
                 if ( !(SD[el_inf].get(i,k) < conf_texture_threshold && SD[el_inf].get(i,k) >0.01 && count >=5 )) 
@@ -546,7 +546,7 @@ LOG_WARN("Anaprop remove without SD");
             {
                 unsigned count =0;
                 for (unsigned ii=0; ii<7; ii++){
-                    int iaz=(i+ii-3+NUM_AZ_X_PPI)%NUM_AZ_X_PPI;
+                    int iaz = (i + ii - 3 + volume.beam_count) % volume.beam_count;
                     if( SD[el_inf].get(iaz,k) < conf_texture_threshold && SD[el_inf].get(iaz,k) > 0.01) count++;
                 }
                 if ( !(SD[el_inf].get(i,k) < conf_texture_threshold && SD[el_inf].get(i,k) >0.01 && count >=5 )) 
