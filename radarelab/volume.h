@@ -53,19 +53,19 @@ struct PolarScanBase
     /// Size of a beam cell in meters
     double cell_size = 0;
 
-/*
- * Constructor
- * Create a PolarScanBase defining beam_count and beam_size
- * @param [in] beam_count
- * @param [in] beam_size
- */
+    /*
+     * Constructor
+     * Create a PolarScanBase defining beam_count and beam_size
+     * @param [in] beam_count
+     * @param [in] beam_size
+     */
     PolarScanBase(unsigned beam_count, unsigned beam_size);
 
-/*
- * Constructor
- * Create a copy of a PolarScanBase
- * @param [in] s  - PolarScanBase to be copied
- */
+    /*
+     * Constructor
+     * Create a copy of a PolarScanBase
+     * @param [in] s  - PolarScanBase to be copied
+     */
     PolarScanBase(const PolarScanBase& s);
 
     /**
@@ -118,31 +118,31 @@ template<typename T>
 class PolarScan : public PolarScanBase, public Matrix2D<T>
 {
 public:
-/// Value used as 'no data' value
-    T nodata = 0;    
-/// Minimum amount that can be measured
-    T undetect = 0;  
-/// Conversion factor 
+    /// Value used as 'no data' value
+    T nodata = 0;
+    /// Minimum amount that can be measured
+    T undetect = 0;
+    /// Conversion factor 
     T gain = 1;
-/// Conversion factor
+    /// Conversion factor
     T offset = 0;
-/*!
- * Constructor - Create a polarscan given beam_count, beam_size and the value to fill the Matrix
- * @param [in] beam_count
- * @param [in] beam_size
- * @param[in] default_value
- */
+    /*!
+     * Constructor - Create a polarscan given beam_count, beam_size and the value to fill the Matrix
+     * @param [in] beam_count
+     * @param [in] beam_size
+     * @param[in] default_value
+     */
     PolarScan(unsigned beam_count, unsigned beam_size, const T& default_value=algo::DBZ::BYTEtoDB(1))
         : PolarScanBase(beam_count, beam_size),
           Matrix2D<T>(PolarScan::Constant(beam_count, beam_size, default_value))
     {
     }
 
-/**
- * Constructor
- * Create a copy of a PolarScan
- * @param [in] s  - PolarScan to be copied
- */
+    /**
+     * Constructor
+     * Create a copy of a PolarScan
+     * @param [in] s  - PolarScan to be copied
+     */
     PolarScan(const PolarScan& s) = default;
 
     template<class OT>
@@ -207,10 +207,10 @@ public:
             out[i] = missing;
     }
 
-/**
- * Enlarges the PolarScan increasing beam_size and propagating the last bin value
- * @param [in] new_beam_size 
- */
+    /**
+     * Enlarges the PolarScan increasing beam_size and propagating the last bin value
+     * @param [in] new_beam_size 
+     */
     void resize_beams_and_propagate_last_bin(unsigned new_beam_size)
     {
         if (new_beam_size <= beam_size) return;
@@ -240,16 +240,15 @@ namespace volume {
  */
 struct LoadInfo
 {
-/// Original file name
+    /// Original file name
     std::string filename;
 ///  location
     std::string location;
 //    std::string date;
 //    std::string time;
-
-/// Acquisition date
+    /// Acquisition date
     time_t acq_date;
-/// flag true if data have been decluttered with Doppler at rsp level
+    /// flag true if data have been decluttered with Doppler at rsp level
     bool declutter_rsp; 
 
     LoadInfo()
@@ -266,23 +265,23 @@ class Scans : public std::vector<PolarScan<T>>
 {
 public:
     typedef T Scalar;
-/// Odim quantity name
+    /// Odim quantity name
     std::string quantity;
-/// Data units according to ODIM documentation
+    /// Data units according to ODIM documentation
     std::string units;
-/// Polar volume information
+    /// Polar volume information
     std::shared_ptr<LoadInfo> load_info;
-///	RadarSite
-    RadarSite  radarSite ; 
+    ///	RadarSite
+    RadarSite radarSite;
 
     Scans() = default;
 
-/** 
- *  Constructor
- *  Copy from another Scans
- *  @param [in] v - Scans object to be copied
- *  @param[in] default_value - default to be used 
- */  
+    /**
+     *  Constructor
+     *  Copy from another Scans
+     *  @param [in] v - Scans object to be copied
+     *  @param[in] default_value - default to be used 
+     */
     template<typename OT>
     Scans(const Scans<OT>& v, const T& default_value)
     {
@@ -290,7 +289,7 @@ public:
         this->units = v.units;
         this->load_info = v.load_info;
         this->reserve(v.size());
-	this->radarSite = v.radarSite;        
+        this->radarSite = v.radarSite;
         for (const auto& src_scan : v)
             this->push_back(PolarScan<T>(src_scan, default_value));
     }
@@ -334,15 +333,15 @@ public:
         return this->back();
     }
 
-/**
- * Create or reuse a scan at position idx, with the given beam size 
- * @param [in] idx - index of the PolarScan 
- * @param [in] beam_count 
- * @param [in] beam_size
- * @param [in] elevation
- * @param [in] cell_size
- * @return the idx PolarScan
- */
+    /**
+     * Create or reuse a scan at position idx, with the given beam size 
+     * @param [in] idx - index of the PolarScan 
+     * @param [in] beam_count 
+     * @param [in] beam_size
+     * @param [in] elevation
+     * @param [in] cell_size
+     * @return the idx PolarScan
+     */
     PolarScan<T>& make_scan(unsigned idx, unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
     {
         if (idx < this->size())
@@ -419,23 +418,23 @@ template<typename T>
 class Volume : public volume::Scans<T>
 {
 public:
-/// Number of beam_count used ast each elevations
+    /// Number of beam_count used ast each elevations
     const unsigned beam_count;
 
-/**
- * Constructor 
- * @param [in] beam_count - number of beam_count to be used
- */
+    /**
+     * Constructor 
+     * @param [in] beam_count - number of beam_count to be used
+     */
     Volume(unsigned beam_count=NUM_AZ_X_PPI)
         : beam_count(beam_count)
     {
     }
 
-/**
- * Copy constructor
- * @param [in] v - Volume to be copied
- * @param [in] default_value
- */
+    /**
+     * Copy constructor
+     * @param [in] v - Volume to be copied
+     * @param [in] default_value
+     */
     template<typename OT>
     Volume(const Volume<OT>& v, const T& default_value)
         : volume::Scans<T>(v, default_value), beam_count(v.beam_count)
@@ -450,22 +449,23 @@ public:
             res = std::max(res, scan.beam_size);
         return res;
     }
-    
+
     /// Test if same cell_size in all PolarScans
     bool  is_unique_cell_size() const
     {
         double cell_size = this->at(0).cell_size;
-	for (size_t i = 1; i < this->size(); ++i)
+        for (size_t i = 1; i < this->size(); ++i)
             if ( this->at(i).cell_size != cell_size) return false;
         return true;
     }
 
-/// Return the lowest elevation
+    /// Return the lowest elevation
     double elevation_min() const
     {
         return this->front().elevation;
     }
-/// Return the highest elevation
+
+    /// Return the highest elevation
     double elevation_max() const
     {
         return this->back().elevation;
@@ -484,7 +484,7 @@ public:
             this->scan(el).read_beam(az, slice.row_ptr(el), slice.cols(), missing_value);
     }
 
-/// Compute Volume statistics
+    /// Compute Volume statistics
     void compute_stats(VolumeStats& stats) const
     {
         stats.count_zeros.resize(this->size());
@@ -547,30 +547,30 @@ public:
         return volume::Scans<T>::make_scan(idx, beam_count, beam_size, elevation, cell_size);
     }
 
-/**
- * *= operator defined
- * @param [in] coefficient  - multiplicative constant
- */
+    /**
+     * *= operator defined
+     * @param [in] coefficient  - multiplicative constant
+     */
     Volume& operator*=(const T coefficient)
     {
-	for(unsigned el=0;el<this->size();el++)
-	{
-		this->scan(el)*=coefficient;
-	}
-	return *this;
+        for(unsigned el=0;el<this->size();el++)
+        {
+            this->scan(el)*=coefficient;
+        }
+        return *this;
     }
 
-/**
- * += operator defined
- * @param [in] addend - additive constant
- */
+    /**
+     * += operator defined
+     * @param [in] addend - additive constant
+     */
     Volume& operator+=(Volume& addend)
     {
-	for(unsigned el=0;el<this->size();el++)
-	{
-		this->scan(el)+=addend[el];
-	}
-	return *this;
+        for(unsigned el=0;el<this->size();el++)
+        {
+            this->scan(el)+=addend[el];
+        }
+        return *this;
     }
 
 protected:
