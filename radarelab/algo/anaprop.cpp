@@ -44,12 +44,11 @@ void GridStats::init(const Volume<double>& volume)
 
 template<class T>
 Anaprop<T>::Anaprop(const Volume<T>& volume)
-    : dato_corrotto(volume.beam_count, volume.max_beam_size(), 0),
+    : elev_fin(volume), dato_corrotto(volume.beam_count, volume.max_beam_size(), 0),
       quota(volume.beam_count, volume.max_beam_size(), 0)
 {
     logging_category = log4c_category_get("radar.anaprop");
     LOG_WARN("Anaprop init");
-    elev_fin.init(volume);
     grid_stats.init(volume);
 }
 
@@ -59,7 +58,7 @@ void Anaprop<T>::init_elev_fin_static(const Volume<T>& volume, const PolarScan<u
     for(unsigned i=0; i < volume[0].beam_count; ++i)
         for(unsigned k=0; k < volume[0].beam_size; ++k)
             //---assegno el_inf a mappa statica
-            elev_fin[i][k] = first_level_static(i, k);
+            elev_fin(i, k) = first_level_static(i, k);
 }
 
 template<class T>
@@ -112,7 +111,7 @@ void Anaprop<T>::remove(
             const unsigned el_inf = loc_el_inf;
             if (el_inf == 0) count_first_elev++;
             if (do_quality)
-                elev_fin[i][k]=el_inf;
+                elev_fin(i, k) = el_inf;
 
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
             //const unsigned el_up = el_inf +1;
@@ -218,7 +217,7 @@ void Anaprop<T>::remove(
                    if (do_quality)
                    {
                        dato_corrotto(i, k)=ANAP_YES;/*matrice risultato test: propagazione anomala*/
-                       elev_fin[i][k]=el_up;
+                       elev_fin(i, k) = el_up;
                    }
                    if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                    if (do_beamblocking)
@@ -245,7 +244,7 @@ void Anaprop<T>::remove(
                            bin_low=bin_high;
                            if (do_quality)
                            {
-                               elev_fin[i][k]=el_up;
+                               elev_fin(i, k) = el_up;
                            }
                            if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                            if (do_beamblocking)
@@ -266,7 +265,7 @@ void Anaprop<T>::remove(
                   if (do_quality)
                   {
                       dato_corrotto(i, k)=ANAP_OK;
-                      elev_fin[i][k]=el_inf;
+                      elev_fin(i, k) = el_inf;
                   }
                   if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                   flag_anap = false;
@@ -324,7 +323,7 @@ void Anaprop<T>::remove(
                 if (do_quality)
                 {
                     dato_corrotto(i, k)=ANAP_OK; // dubbio
-                    elev_fin[i][k]=el_inf;
+                    elev_fin(i, k) = el_inf;
                 }
 
                 if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);
@@ -393,7 +392,7 @@ LOG_WARN("Anaprop remove without SD");
             const unsigned el_inf = loc_el_inf;
             if (el_inf == 0) count_first_elev++;
             if (do_quality)
-                elev_fin[i][k]=el_inf;
+                elev_fin(i, k) = el_inf;
 
             // ------------assegno a el_up il successivo di el_inf e se >=NEL metto bin_high=fondo_scala
             //const unsigned el_up = el_inf +1;
@@ -482,7 +481,7 @@ LOG_WARN("Anaprop remove without SD");
                    if (do_quality)
                    {
                        dato_corrotto(i, k)=ANAP_YES;/*matrice risultato test: propagazione anomala*/
-                       elev_fin[i][k]=el_up;
+                       elev_fin(i, k) = el_up;
                    }
                    if (el_up > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                    if (do_beamblocking)
@@ -505,7 +504,7 @@ LOG_WARN("Anaprop remove without SD");
                   if (do_quality)
                   {
                       dato_corrotto(i, k)=ANAP_OK;
-                      elev_fin[i][k]=el_inf;
+                      elev_fin(i, k) = el_inf;
                   }
                   if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);//incremento la statistica cambio elevazione
                   flag_anap = false;
@@ -563,7 +562,7 @@ LOG_WARN("Anaprop remove without SD");
                 if (do_quality)
                 {
                     dato_corrotto(i, k)=ANAP_OK; // dubbio
-                    elev_fin[i][k]=el_inf;
+                    elev_fin(i, k) = el_inf;
                 }
 
                 if (el_inf > first_level_static(i, k)) grid_stats.incr_elev(i, k);

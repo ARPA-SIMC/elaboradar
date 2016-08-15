@@ -627,13 +627,13 @@ void CUM_BAC::caratterizzo_volume()
                     dh = dhst;
                 }
 
-                if (l < anaprop.elev_fin[i][k]) {
+                if (l < anaprop.elev_fin(i, k)) {
                     cl=algo::ANAP_YES;
                     bb=BBMAX;
-                } else if (l == anaprop.elev_fin[i][k]) {
+                } else if (l == anaprop.elev_fin(i, k)) {
                     cl=anaprop.dato_corrotto(i, k);  /*cl al livello della mappa dinamica*/
                     bb=beam_blocking(i, k);  /*bb al livello della mappa dinamica *///sarebbe da ricontrollare perchè con la copia sopra non è più così
-                } else if (l > anaprop.elev_fin[i][k]) {
+                } else if (l > anaprop.elev_fin(i, k)) {
                     cl=0;       /*per come viene scelta la mappa dinamica si suppone che al livello superiore cl=0 e bb=0*/
                     bb=0;   // sarebbe if (l-bb_first_level(i, k) >0  bb=0;  sopra all'elevazione per cui bb<soglia il bb sia =0 dato che sono contigue o più però condiz. inclusa
                 }
@@ -641,7 +641,7 @@ void CUM_BAC::caratterizzo_volume()
                 //------dato che non ho il valore di beam blocking sotto i livelli che ricevo in ingresso ada progrmma beam blocking e
                 //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%)
                 //--------------assegno qualità zero sotto il livello di elev_fin (si può discutere...), potrei usare first_level_static confrontare e in caso sia sotto porre cl=1
-                if (l < anaprop.elev_fin[i][k]) {
+                if (l < anaprop.elev_fin(i, k)) {
                     qual->scan(l).set(i, k, 0);
                     cl=2;
                 } else {
@@ -1751,7 +1751,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
         if(qual){
           std::function<unsigned char(unsigned, unsigned)> assign_qual =
             [this, &elev_fin](unsigned azimuth, unsigned range) {
-                const auto& el = elev_fin[azimuth][range];
+                const auto& el = elev_fin(azimuth, range);
                 if (range >= volume[el].beam_size)
                     return (unsigned char)0;
                 return qual->scan(el).get(azimuth, range);
@@ -1767,7 +1767,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
         products.scaled.to_cart(anaprop.dato_corrotto, products.dato_corr_1x1);
 
         std::function<unsigned char(unsigned, unsigned)> assign_elev_fin = [&elev_fin](unsigned azimuth, unsigned range) {
-                return elev_fin[azimuth][range];
+                return elev_fin(azimuth, range);
         };
         products.scaled.to_cart(assign_elev_fin, products.elev_fin_1x1);
         
