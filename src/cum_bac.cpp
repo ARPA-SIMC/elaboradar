@@ -809,6 +809,10 @@ LOG_DEBUG (" modalita %d",mode);
         /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
         /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
 
+        // TODO: riorganizzando il codice, si può passare a una nuova funzione
+        // di calcolo VPR mediato solo il time_t dell'ultima volta che è stato
+        // calcolato il VPR (default a 100 quarti d'ora, come dentro a
+        // read_profile_gap())
         gap = cum_bac.assets.read_profile_gap();
 
 
@@ -838,6 +842,9 @@ LOG_DEBUG (" modalita %d",mode);
             //---- trattandosi di profili con data nel nome del file, costruisco il nome a partire dall'istante corrente ciclando su un numero di quarti d'ora
             //---- pari a memory finchè non trovo un profilo. se non lo trovo gap resta=100
 
+            // TODO: cerca in archivio se esiste un VPR piú recente del
+            // last_vpr: togliere dal calcolo VPR generico e spostarlo nel
+            // punto dove viene caricato il VPR precedente
             for (i=0;i<MEMORY;i++){
 
                 //---calcolo della data---//
@@ -991,10 +998,8 @@ int CalcoloVPR::profile_heating()
         heating=heating-gap; /*se il profilo non è stato aggiornato, ho raffreddamento, in caso arrivi sotto WARM riparto da 0, cioè serve riscaldamento  */
     }
     else  {
-        heating=heating-gap+2; /*se il profilo è stato aggiornato, ho riscaldamento , in caso arrivi sopra WARM riparto da MEMORY  */
+        heating = heating - (gap-1) + 1; /*se il profilo è stato aggiornato, ho riscaldamento , in caso arrivi sopra WARM riparto da MEMORY  */
         if (heating>=WARM) heating=MEMORY;  /* se heating raggiunge WARM allora lo pongo uguale a MEMORY     */
-
-        cum_bac.assets.write_last_vpr();
     }
     if (heating<0) heating=0;
 
@@ -1860,6 +1865,9 @@ void CalcoloVPR::esegui_tutto()
     heating=profile_heating();
     printf ("heating %i \n", heating);
     LOG_INFO("ier_vpr %i ier_comb %i",ier_vpr,ier_comb);
+
+    if (ier_vpr == 0)
+        cum_bac.assets.write_last_vpr();
 
     //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
 
