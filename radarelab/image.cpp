@@ -1,7 +1,9 @@
 #include "image.h"
 #include <memory>
+#ifdef HAVE_GDAL
 #include <gdal.h>
 #include <gdal_priv.h>
+#endif
 
 using namespace std;
 
@@ -9,12 +11,17 @@ namespace radarelab {
 
 void gdal_init_once()
 {
+#ifdef HAVE_GDAL
     static bool initialized = false;
     if (initialized) return;
     GDALAllRegister();
     initialized = true;
+#else
+    throw std::runtime_error("GDAL support was not enabled at compile time");
+#endif
 }
 
+#ifdef HAVE_GDAL
 template<typename T> GDALDataType get_gdal_datatype() { throw std::runtime_error("get_gdal_datatype called for unsupported type"); }
 template<> GDALDataType get_gdal_datatype<unsigned char>() { return GDT_Byte; }
 template<> GDALDataType get_gdal_datatype<unsigned short>() { return GDT_UInt16; }
@@ -103,6 +110,14 @@ void write_image(const Matrix2D<T>& image, const std::string& fname, const std::
 }
 
 
+#else
+template<typename T>
+void write_image(const Matrix2D<T>& image, const std::string& fname, const std::string& format)
+{
+    throw std::runtime_error("GDAL support was not enabled at compile time");
+}
+#endif
+
 template void write_image(const Matrix2D<unsigned char>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<unsigned short>&, const std::string&, const std::string&);
 template void write_image(const Matrix2D<double>&, const std::string&, const std::string&);
@@ -112,6 +127,7 @@ template void write_image(const Matrix2D<short>&, const std::string&, const std:
 
 std::string gdal_extension_for_format(const std::string& format)
 {
+#ifdef HAVE_GDAL
     GDALDriver *driver = GetGDALDriverManager()->GetDriverByName(format.c_str());
     if (driver == NULL)
         throw std::runtime_error("driver not found for " + format);
@@ -120,6 +136,9 @@ std::string gdal_extension_for_format(const std::string& format)
     if (ext == NULL)
         throw std::runtime_error("extension not found for format " + format);
     return ext;
+#else
+    throw std::runtime_error("GDAL support was not enabled at compile time");
+#endif
 }
 
 }

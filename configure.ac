@@ -32,7 +32,11 @@ dnl Debian still has a log4c without pkg-config support, see https://bugs.debian
 dnl PKG_CHECK_MODULES(LOG4C, [log4c])
 AM_PATH_LOG4C
 PKG_CHECK_MODULES(GSL, [gsl])
-PKG_CHECK_MODULES(GDAL, [gdal])
+PKG_CHECK_MODULES(GDAL, [gdal], , [have_gdal=no])
+if test x$have_gdal != xno
+then
+    AC_DEFINE([HAVE_GDAL], 1, [gdal is available])
+fi
 PKG_CHECK_MODULES(PROJ, [proj])
 
 dnl Fedora 20 has no pkg-config for hdf5-devel

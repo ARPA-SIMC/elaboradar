@@ -21,7 +21,9 @@ namespace elaboradar {
 Assets::Assets(const Config& cfg)
     : logging_category(log4c_category_get("radar.assets")), cfg(cfg), outfile_devel_data(0)
 {
+#ifdef HAVE_GDAL
     gdal_init_once();
+#endif
 }
 
 Assets::~Assets()
@@ -544,6 +546,7 @@ void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image
 template<typename T>
 void Assets::write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var, const char* name, const char* format)
 {
+#ifdef HAVE_GDAL
     const char* dir = getenv(dir_env_var);
     if (!dir)
     {
@@ -554,6 +557,9 @@ void Assets::write_gdal_image(const Matrix2D<T>& image, const char* dir_env_var,
     string fname = string(dir) + "/" + fname_from_acq_time() + "-" + name + "." + gdal_extension_for_format(format);
 
     radarelab::write_image(image, fname, format);
+#else
+    throw std::runtime_error("GDAL support was not enabled at compile time");
+#endif
 }
 
 template void Assets::write_gdal_image(const Matrix2D<unsigned char>&, const char*, const char*, const char*);
