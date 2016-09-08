@@ -46,7 +46,7 @@ long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del sin
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
-int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, vector<long int>& area_vpr)
+int InstantaneousVPR::compute(vector<float>& vpr1, vector<long int>& area_vpr)
 {
     LOG_CATEGORY("radar.vpr");
     int i,iA,ilay,il,ilast;
@@ -56,10 +56,6 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
 
     //----------------inizializzazioni----------------
     long int vert_ext=0;
-
-    *cv=0;
-    *ct=0;
-
 
     /*SECTION A: cv and ct retrieval and calculation of current area- weighted vpr*/
 
@@ -124,7 +120,7 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
 
                 // ------incremento il volume totale di area
 
-                *cv=*cv+(long int)(area);
+                cv = cv + (long int)(area);
 
 
                 //---------------------condizione per incrementare VPR contributo: valore sopra 13dbz, qualità sopra 20 flag>0 (no clutter e dentro settore)------------------
@@ -136,7 +132,7 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
 
                     //-------incremento l'area precipitante totale ct,aggiungendo però,cosa che avevo messo male una THR solo per ct, cioè per il peso
                     if (sample > THR_PDF)
-                        *ct=*ct+(long int)(area);
+                        ct = ct + (long int)(area);
 
                     //------se l'area in quello strato è già maggiore di 0 allora incremento il volume dello strato altrimenti lo scrivo ex novo. poi vpr1 andrà diviso per l'area
                     if (area_vpr[ilay]> 0) vpr1[ilay]=vpr1[ilay]+(float)(vol_rain);
@@ -149,13 +145,13 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
         }
     }
 
-    LOG_INFO("calcolati ct e cv ct= %li cv= %li",*ct,*cv);
+    LOG_INFO("calcolati ct e cv ct= %li cv= %li", ct, cv);
 
     /*SECTION B: vpr quality checks and re-normalisation of vpr*/
 
     //--------------CONTROLLO DI QUALITA' E NORMALIZZAZIONE DEL PROFILO ISTANTANEO CALCOLATO
     //-------- se il volume supera quello minimo------
-    if ((*ct) > CT_MIN*(*cv)) {
+    if (ct > CT_MIN * cv) {
 
         ilast=0;
         vert_ext=0;
@@ -167,7 +163,7 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
         for (ilay=0; ilay<NMAXLAYER; ilay++){
 
 
-            LOG_INFO("  ilay %d area_vpr= %ld  ct= %ld  cv= %ld", ilay, area_vpr[ilay],*ct,*cv );
+            LOG_INFO("  ilay %d area_vpr= %ld  ct= %ld  cv= %ld", ilay, area_vpr[ilay], ct, cv);
 
             if (area_vpr[ilay]>=MIN_AREA) {
                 vert_ext=vert_ext+TCK_VPR;
@@ -190,7 +186,7 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
                     //---------- raggiunta la cima profilo faccio check immediato sull'estensione verticale
                     if (vert_ext<VEXTMIN_VPR ){
                         LOG_INFO("estensione profilo verticale troppo bassa");
-                        *ct=0;
+                        ct = 0;
                         ilast=0;
                         for  (il=0; il<ilast; il++) vpr1[il]=NODATAVPR;
                         return(1);
@@ -205,7 +201,7 @@ int InstantaneousVPR::compute(long int *cv, long int *ct, vector<float>& vpr1, v
     // ---------se il volume non supera quello minimo esco---------
     else {
         LOG_INFO("volume precipitante troppo piccolo");
-        *ct=0;
+        ct = 0;
         ilast=0;
         for  (il=0; il<NMAXLAYER; il++) vpr1[il]=NODATAVPR; //--devo riassegnare o mi rimane 'sporco' forse si potrebbe usare una ver diversa
         return(1);

@@ -770,7 +770,7 @@ void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::C
 int CalcoloVPR::combina_profili()
 {
     LOG_CATEGORY("radar.vpr");
-    long int c0, cv = 0, ct = 0;
+    long int c0;
     vector<float> vpr0(NMAXLAYER, NODATAVPR);
     vector<float> vpr1(NMAXLAYER, NODATAVPR);
     float vpr_dbz;
@@ -795,7 +795,7 @@ int CalcoloVPR::combina_profili()
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
 
     InstantaneousVPR inst_vpr(cum_bac.volume, *cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max);
-    ier_vpr = inst_vpr.compute(&cv,&ct,vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    ier_vpr = inst_vpr.compute(vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %d", ier_vpr);
 
     for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
@@ -806,7 +806,7 @@ LOG_DEBUG (" modalita %d",mode);
 
         /*----calcolo il peso c0 per la combinazione dei profili*/
 
-        c0=2*(cv);
+        c0 = 2 * inst_vpr.cv;
 
         /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
         /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
@@ -930,7 +930,7 @@ LOG_DEBUG (" modalita %d",mode);
                 }
             }
             // peso vpr corrente per combinazione
-            alfat=(float)ct/(c0+ct);
+            alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
             for (ilay=0;  ilay<NMAXLAYER; ilay++){
                 if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
                     vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli

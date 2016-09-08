@@ -17,6 +17,8 @@ struct InstantaneousVPR
     int az_min;
     int az_max;
     DBZ dbz;
+    long int cv = 0;
+    long int ct = 0;
 
 
 #if 0
@@ -36,7 +38,7 @@ struct InstantaneousVPR
 #endif
 
     InstantaneousVPR(const Volume<double>& volume, const Volume<unsigned char>& qual, Volume<unsigned char>& flag_vpr, int az_min, int az_max);
-    int compute(long int *cv, long int *ct, std::vector<float>& vpr1, std::vector<long int>& area_vpr);
+    int compute(std::vector<float>& vpr1, std::vector<long int>& area_vpr);
 };
 
 }
