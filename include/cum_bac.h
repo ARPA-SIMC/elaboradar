@@ -104,7 +104,8 @@ public:
     radarelab::CylindricalVolume cil;       ///< Volume resampled as a cylindrical volume
 
     radarelab::algo::DBZ dbz;           ///< ????
-    
+    radarelab::Volume<unsigned char> flag_vpr;
+
     CalcoloVPR* calcolo_vpr = 0;    ///< Oggetto per calcolare e correggere con VPR
 
     /*-----------------------------------------------------------
@@ -244,10 +245,6 @@ struct CalcoloVPR
     int ier_comb;               ///< flag d'errore su combinazione vpr
     int ier_max;                ///< flag d'errore su calcolo quota max 
     int ier_stampa_vpr;             ///< flag d'errore su stampa profilo
-    // dati per vpr
-    radarelab::Volume<unsigned char>* flag_vpr;         ///< punti del volume polare ok per calcolo VPR
-    //obsol.
-    float stdev;// obsol.
     // files vpr
     FILE *test_vpr;             ///< file per diagnostica vpr
 
@@ -289,20 +286,6 @@ struct CalcoloVPR
      *  @return 0 se ok 1 se fallisce
      */
     int trovo_hvprmax(int *hmax);
-
-    /**
-     *  crea vpr istantaneo
-     *  @brief funzione che calcola il profilo istantaneo  secondo il metodo di Germann e Joss (2003)
-     *  @details   calcola il VPR istantaneo secondo il metodo di Germann e Joss (2003) 
-     *  Per il calcolo si considerano i punti con Z>THR_VPR, qualità>QMIN_VPR, BeamBlocking<20 percento e clutter free all'interno del volume scelto.
-     *  Il profilo è poi soggetto a quality check e eventualmente viene rigettato (return(1)) 
-     *  @param[out] cv volume precipitante
-     *  @param[out] ct volume totale 
-     *  @param[out] vpr1 vettore vpr istantaneo
-     *  @param[out] area_vpr vettore area di ogni stato 
-     *  @return  0 se ok 1 se fallisce
-     */ 
-    int func_vpr(long int *cv, long int *ct, std::vector<float>& vpr1, std::vector<long int>& area_vpr);
 
     /**
      *  @brief funzione che combina il profilo verticale corrente con quello precedente tramite il metodo di Germann

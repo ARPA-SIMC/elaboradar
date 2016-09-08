@@ -42,7 +42,8 @@ nobase_dist_radarelabinclude_HEADERS = \
   algo/statistics.h \
   algo/steiner.h \
   algo/top.h \
-  algo/viz.h
+  algo/viz.h \
+  algo/vpr.h
 
 libradarelab_la_SOURCES = \
   logging.cpp \
@@ -66,7 +67,8 @@ libradarelab_la_SOURCES = \
   algo/cleaner.cpp \
   algo/dbz.cpp \
   algo/steiner.cpp \
-  algo/viz.cpp
+  algo/viz.cpp \
+  algo/vpr.cpp
 
 check_PROGRAMS = testsuite
 

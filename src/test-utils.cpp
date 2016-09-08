@@ -17,7 +17,7 @@ void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::os
     print_stats(name + "->dem", cb.dem, out);
     print_stats(name + "->anaprop.quota", cb.anaprop.quota, out);
     print_stats(name + "->anaprop.dato_corrotto", cb.anaprop.dato_corrotto, out);
-    print_stats("*" + name + "->calcolo_vpr->flag_vpr", *cb.calcolo_vpr->flag_vpr, out);
+    print_stats(name + "->flag_vpr", cb.flag_vpr, out);
     print_stats(name + "->calcolo_vpr->corr_polar", cb.calcolo_vpr->corr_polar, out);
     print_stats(name + "->calcolo_vpr->neve", cb.calcolo_vpr->neve, out);
 }

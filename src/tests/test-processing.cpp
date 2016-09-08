@@ -125,7 +125,7 @@ add_method("elabora_all_true_caratterizzo", []() {
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.99, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.99, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 });
@@ -218,7 +218,7 @@ add_method("bb_algo_corto", []() {
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.96, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.96, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
@@ -314,7 +314,7 @@ LOG_INFO("Chiamo caratterizzo volumi");
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.70, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.70, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
@@ -399,7 +399,7 @@ unlink("LAST_VPR");
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.70, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.70, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
@@ -536,7 +536,7 @@ add_method("bb_algo_corto", []() {
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.94, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.94, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
@@ -622,7 +622,7 @@ add_method("combina_profili", []() {
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.73, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.73, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
     // TODO: cb->stampa_vpr()
@@ -706,7 +706,7 @@ add_method("combina_profili1", []() {
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.73, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.73, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
@@ -879,7 +879,7 @@ add_method("test_10", []() {
     wassert(actual(cb->dem).statsEqual(-9999, 47.59, 4070.26));
     wassert(actual(cb->anaprop.quota).statsEqual(0, 0.00, 0));
     wassert(actual(cb->anaprop.dato_corrotto).statsEqual(0, 0.00, 0));
-    wassert(actual(*cb->calcolo_vpr->flag_vpr).statsEqual(0, 0.94, 1));
+    wassert(actual(cb->flag_vpr).statsEqual(0, 0.94, 1));
     wassert(actual(cb->calcolo_vpr->corr_polar).statsEqual(0, 0.00, 0));
     wassert(actual(cb->calcolo_vpr->neve).statsEqual(0, 0.00, 0));
 
