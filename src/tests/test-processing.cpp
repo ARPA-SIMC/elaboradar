@@ -301,7 +301,7 @@ LOG_INFO("Chiamo caratterizzo volumi");
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 1);
 
-    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(false);
     wassert(actual(cb->calcolo_vpr->heating) == 0);
 
 //    print_stats("cb", *cb, cerr);
@@ -383,7 +383,7 @@ unlink("LAST_VPR");
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 1);
 
-    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(false);
     wassert(actual(cb->calcolo_vpr->heating) == 0);
 
     ier = cb->calcolo_vpr->corr_vpr();
@@ -606,7 +606,7 @@ add_method("combina_profili", []() {
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
-    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(true);
     wassert(actual(cb->calcolo_vpr->heating) == 0);
 
     ier = cb->calcolo_vpr->corr_vpr();
@@ -687,7 +687,7 @@ add_method("combina_profili1", []() {
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
-    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating();
+    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(true);
     wassert(actual(cb->calcolo_vpr->heating) == 0);
 
     ier = cb->calcolo_vpr->corr_vpr();

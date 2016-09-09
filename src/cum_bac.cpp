@@ -767,12 +767,11 @@ void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::C
     FILE *file;
     int mode,ilay;  modalità calcolo profilo (0=combinazione, 1=istantaneo),indice di strato
 */
-int CalcoloVPR::combina_profili()
+int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr, VPR& vpr1)
 {
     LOG_CATEGORY("radar.vpr");
     long int c0;
-    vector<float> vpr0(NMAXLAYER, NODATAVPR);
-    vector<float> vpr1(NMAXLAYER, NODATAVPR);
+    VPR vpr0;
     float vpr_dbz;
     float alfat,noval;
     int mode,ilay,i,foundlivmin=0,il,ier_ap,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
@@ -793,10 +792,6 @@ int CalcoloVPR::combina_profili()
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
-
-    InstantaneousVPR inst_vpr(cum_bac.volume, *cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max);
-    ier_vpr = inst_vpr.compute(vpr1,area_vpr); // ho fatto func_vpr, il profilo istantaneo
-    LOG_INFO("fatta func vpr %d", ier_vpr);
 
     for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
 
@@ -891,7 +886,7 @@ LOG_DEBUG (" modalita %d",mode);
 
         //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
 
-        if ( !combinante && ier_vpr)
+        if ( !combinante && !inst_vpr.success)
             return (1);
 
 
@@ -910,7 +905,7 @@ LOG_DEBUG (" modalita %d",mode);
         }
     }
     LOG_INFO(" livmin %i", livmin);
-        if (!ier_vpr && combinante) {
+        if (inst_vpr.success && combinante) {
             // calcolo la diff media
             diff=0;
             for (ilay=0;  ilay<NMAXLAYER; ilay++){
@@ -957,7 +952,7 @@ LOG_DEBUG (" modalita %d",mode);
     /*fine mode=0 VPR combinato, mode=1 VPR istantaneo controllo se l'istantaneo è andato ok e in caso affermativo continuo*/
 
     else  {
-        if (ier_vpr)
+        if (!inst_vpr.success)
             return (1);
         for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
     }
@@ -985,7 +980,7 @@ LOG_DEBUG (" modalita %d",mode);
     return(0);
 }
 
-int CalcoloVPR::profile_heating()
+int CalcoloVPR::profile_heating(bool has_inst_vpr)
 #include <radarelab/vpr_par.h>
 {
     LOG_CATEGORY("radar.vpr");
@@ -996,7 +991,7 @@ int CalcoloVPR::profile_heating()
     //--lo faccio perchè potrei avere heating più alto del dovuto se ho avuto un interruzione del flusso dei dati
     //-- heating ha un valore massimo pari  WARM dopodichè diventa heating = MEMORY e così resta finchè non sono passati MEMORY istanti non aggiornati ( va bene?)
     //---se il profil non  è stato aggiornato invece decremento la variabile riscaldamento di gap con un minimo pari a 0
-    if (ier_vpr){
+    if (!has_inst_vpr){
         heating=heating-gap; /*se il profilo non è stato aggiornato, ho raffreddamento, in caso arrivi sotto WARM riparto da 0, cioè serve riscaldamento  */
     }
     else  {
@@ -1597,7 +1592,6 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac),
       conv(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size(),0),
       area_vpr(NMAXLAYER, 0),
-      vpr(NMAXLAYER, NODATAVPR),
       corr_polar(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size()),
       neve(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size())
 {
@@ -1620,6 +1614,18 @@ CalcoloVPR::~CalcoloVPR()
 {
 }
 
+int CalcoloVPR::combina_profili()
+{
+    InstantaneousVPR inst_vpr(cum_bac.volume, *cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max);
+    inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
+
+    algo::VPR vpr1 = inst_vpr.vpr;
+
+    //  ier_comb=combina_profili(sito,argv[4]);
+    return combina_profili(inst_vpr, vpr1);
+}
+
 void CalcoloVPR::esegui_tutto()
 {
     test_vpr=fopen(getenv("TEST_VPR"),"a+");
@@ -1633,19 +1639,25 @@ void CalcoloVPR::esegui_tutto()
 
     //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
 
+    InstantaneousVPR inst_vpr(cum_bac.volume, *cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max);
+    inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
+
+    algo::VPR vpr1 = inst_vpr.vpr;
+
     //  ier_comb=combina_profili(sito,argv[4]);
-    ier_comb=combina_profili();
-    LOG_INFO ("exit status calcolo VPR istantaneo: (1--fallito 0--ok)  %i ",ier_vpr) ; // debug
+    ier_comb=combina_profili(inst_vpr, vpr1);
+    LOG_INFO ("exit status calcolo VPR istantaneo: %s", inst_vpr.success ? "ok": "fallito") ; // debug
     LOG_INFO("exit status combinaprofili: (1--fallito 0--ok) %i ",ier_comb) ; // debug
 
 
     //VPR  // ------------chiamo profile_heating che calcola riscaldamento profilo ---------------
 
-    heating=profile_heating();
+    heating=profile_heating(inst_vpr.success);
     printf ("heating %i \n", heating);
-    LOG_INFO("ier_vpr %i ier_comb %i",ier_vpr,ier_comb);
+    LOG_INFO("ier_comb %i", ier_comb);
 
-    if (ier_vpr == 0)
+    if (inst_vpr.success)
         cum_bac.assets.write_last_vpr();
 
     //VPR  // ------------se combina profili ok e profilo caldo correggo --------------
@@ -1658,7 +1670,7 @@ void CalcoloVPR::esegui_tutto()
 
         //VPR // ------------se la correzione è andata bene e il profilo è 'fresco' stampo profilo con data-------
 
-        if ( ! ier && ! ier_vpr)
+        if ( ! ier && inst_vpr.success)
             ier_stampa_vpr=stampa_vpr();
     }
 }

@@ -14,6 +14,7 @@
 #include <radarelab/elev_fin.h>
 #include <radarelab/algo/anaprop.h>
 #include <radarelab/algo/dbz.h>
+#include <radarelab/algo/vpr.h>
 #include <radarelab/cylindrical.h>
 #include "assets.h"
 #include <stdexcept>
@@ -38,6 +39,8 @@ namespace radarelab {
 namespace algo {
 struct CalcoloSteiner;
 struct CalcoloVIZ;
+struct VPR;
+struct InstantaneousVPR;
 }
 
 }
@@ -229,7 +232,7 @@ struct CalcoloVPR
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
     radarelab::PolarScan<unsigned char> conv;   /// Informa se il pixel è convettivo
     std::vector<long int> area_vpr;     ///< area degli strati
-    std::vector<float> vpr;     ///< vpr 
+    radarelab::algo::VPR vpr;     ///< vpr 
     int hvprmax;            ///< quota picco vpr
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno
     //int lista_conv[NUM_AZ_X_PPI*MAX_BIN][2];
@@ -241,7 +244,6 @@ struct CalcoloVPR
     double hbbb;                ///< altezza bottom brightband
     radarelab::PolarScan<unsigned char> corr_polar; ///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
     radarelab::PolarScan<unsigned char> neve;       ///< matrice az-range che memorizza punti di neve
-    int ier_vpr;                ///< flag d'errore su calcolo vpr istantaneo
     int ier_comb;               ///< flag d'errore su combinazione vpr
     int ier_max;                ///< flag d'errore su calcolo quota max 
     int ier_stampa_vpr;             ///< flag d'errore su stampa profilo
@@ -276,7 +278,7 @@ struct CalcoloVPR
      *   heating=MEMORY;   se heating raggiunge WARM resta costante finchè non inizia raffreddamento 
      *  @return heating , numero di combinazioni di riscaldamento
      */
-    int profile_heating();
+    int profile_heating(bool has_inst_vpr);
 
     /**
      *  trova il massimo del profilo
@@ -292,7 +294,9 @@ struct CalcoloVPR
      *  @details  oltre a lanciare il calcolo del profilo istantaneo provvede alla combinazione del profilo calcolato con il precedente calcolato entro  un limite massimo di distanza temporale pari a 10 quarti d'ora.  restituisce un codice integer pari a 0 se ok 1 se fallisce 
      *  @return 0 se combinazione ok 1 se fallisce
      */
-    int combina_profili();
+    int combina_profili(const radarelab::algo::InstantaneousVPR& inst_vpr, radarelab::algo::VPR& vpr1);
+
+    [[deprecated("use the other combina_profili, this is only as a transition in tests")]] int combina_profili();
 
     /**
      *  @brief funzione  che classifica la precipitazione se stratiforme o convettiva

@@ -4,9 +4,27 @@
 #include <radarelab/volume.h>
 #include <radarelab/algo/dbz.h>
 #include <vector>
+#include <array>
 
 namespace radarelab {
 namespace algo {
+
+constexpr unsigned VPR_NMAXLAYER = 70;
+constexpr float VPR_MISSING = -9999.;
+
+struct VPR : public std::array<float, VPR_NMAXLAYER>
+{
+    VPR(const VPR&) = default;
+    VPR(VPR&&) = default;
+    VPR& operator=(const VPR&) = default;
+    VPR& operator=(VPR&&) = default;
+    VPR()
+    {
+        for (unsigned i = 0; i < size(); ++i)
+            (*this)[i] = VPR_MISSING;
+    }
+};
+
 
 struct InstantaneousVPR
 {
@@ -19,7 +37,8 @@ struct InstantaneousVPR
     DBZ dbz;
     long int cv = 0;
     long int ct = 0;
-
+    VPR vpr;
+    bool success = false;
 
 #if 0
     /**
@@ -38,7 +57,7 @@ struct InstantaneousVPR
 #endif
 
     InstantaneousVPR(const Volume<double>& volume, const Volume<unsigned char>& qual, Volume<unsigned char>& flag_vpr, int az_min, int az_max);
-    int compute(std::vector<float>& vpr1, std::vector<long int>& area_vpr);
+    void compute(std::vector<long int>& area_vpr);
 };
 
 }

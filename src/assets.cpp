@@ -4,6 +4,7 @@
 #include <radarelab/matrix.h>
 #include <radarelab/image.h>
 #include <radarelab/algo/dbz.h>
+#include <radarelab/algo/vpr.h>
 #include <radarelab/vpr_par.h>
 #include "site.h"
 #include <cstring>
@@ -325,7 +326,7 @@ void Assets::write_vpr_hmax(int hvprmax)
     fclose(out);
 }
 
-bool Assets::read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area)
+bool Assets::read_vpr0(algo::VPR& vpr0, std::vector<long int>& area)
 {
     File in(logging_category);
     if (!in.open_from_env("VPR0_FILE", "rt")) return false;
@@ -341,7 +342,7 @@ bool Assets::read_vpr0(std::vector<float>& vpr0, std::vector<long int>& area)
     return true;
 }
 
-void Assets::write_vpr0(std::vector<float>& vpr, std::vector<long int>& area)
+void Assets::write_vpr0(const algo::VPR& vpr, std::vector<long int>& area)
 {
     const char* fname = getenv("VPR0_FILE");
     if (!fname) throw runtime_error("$VPR0_FILE (ultimo vpr) is not set");
