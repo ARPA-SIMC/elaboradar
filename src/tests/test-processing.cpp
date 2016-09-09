@@ -116,7 +116,7 @@ add_method("elabora_all_true_caratterizzo", []() {
     cb->caratterizzo_volume();
 
 //    print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 61.81, 99));
+    wassert(actual(cb->qual).statsEqual(1, 61.81, 99));
     wassert(actual(cb->top).statsEqual(0, 189090, 1, 7.10, 36));
     wassert(actual(cb->first_level).statsEqual(0, 0.86, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.54, 3));
@@ -209,7 +209,7 @@ add_method("bb_algo_corto", []() {
 
     cb->caratterizzo_volume();
 //    print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 60.03, 99));
+    wassert(actual(cb->qual).statsEqual(1, 60.03, 99));
     wassert(actual(cb->top).statsEqual(0, 189090, 1, 7.10, 36));
     wassert(actual(cb->first_level).statsEqual(0, 0.54, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.54, 3));
@@ -297,7 +297,7 @@ LOG_INFO("Chiamo caratterizzo volumi");
     cb->caratterizzo_volume();
 
 //    print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 53.07, 99));
+    wassert(actual(cb->qual).statsEqual(1, 53.07, 99));
     wassert(actual(cb->top).statsEqual(0, 189090, 1, 7.10, 36));
     wassert(actual(cb->first_level).statsEqual(0, 0.54, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.54, 3));
@@ -371,7 +371,7 @@ unlink("LAST_VPR");
     cb->calcolo_vpr->classifica_rain();
 
 //         print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 53.07, 99));
+    wassert(actual(cb->qual).statsEqual(1, 53.07, 99));
     wassert(actual(cb->top).statsEqual(0, 189090, 1, 7.10, 36));
     wassert(actual(cb->first_level).statsEqual(0, 0.54, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.54, 3));
@@ -508,7 +508,7 @@ add_method("bb_algo_corto", []() {
     cb->caratterizzo_volume();
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 //    print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 56.26, 99));
+    wassert(actual(cb->qual).statsEqual(1, 56.26, 99));
     wassert(actual(cb->top).statsEqual(0, 227845, 1, 12.72, 76));
     wassert(actual(cb->first_level).statsEqual(0, 0.33, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.33, 3));
@@ -592,7 +592,7 @@ add_method("combina_profili", []() {
     wassert(actual(ier) == 0);
 
 //    print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 53.05, 99));
+    wassert(actual(cb->qual).statsEqual(1, 53.05, 99));
     wassert(actual(cb->top).statsEqual(0, 227845, 1, 12.72, 76));
     wassert(actual(cb->first_level).statsEqual(0, 0.33, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.33, 3));
@@ -675,7 +675,7 @@ add_method("combina_profili1", []() {
 
     cb->conversione_convettiva();
 //    print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 53.05, 99));
+    wassert(actual(cb->qual).statsEqual(1, 53.05, 99));
     wassert(actual(cb->top).statsEqual(0, 227845, 1, 12.72, 76));
     wassert(actual(cb->first_level).statsEqual(0, 0.33, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.33, 3));
@@ -848,7 +848,7 @@ add_method("test_10", []() {
     wassert(actual(cb->calcolo_vpr) != (void*)0);
 
 //     print_stats("cb", *cb, cerr);
-    wassert(actual(*cb->qual).statsEqual(1, 58.52, 99));
+    wassert(actual(cb->qual).statsEqual(1, 58.52, 99));
     wassert(actual(cb->top).statsEqual(0, 323585, 1, 8.03, 108));
     wassert(actual(cb->first_level).statsEqual(0, 0.33, 3));
     wassert(actual(cb->first_level_static).statsEqual(0, 0.33, 3));

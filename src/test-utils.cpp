@@ -8,7 +8,7 @@ namespace testradar {
 
 void print_stats(const std::string& name, const elaboradar::CUM_BAC& cb, std::ostream& out)
 {
-    print_stats("*" + name + "->qual", *cb.qual, out);
+    print_stats(name + "->qual", cb.qual, out);
     print_stats(name + "->top", cb.top, 0, out);
     print_stats(name + "->first_level", cb.first_level, out);
     print_stats(name + "->first_level_static", cb.first_level_static, out);

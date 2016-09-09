@@ -123,7 +123,8 @@ CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bo
       first_level(NUM_AZ_X_PPI, MyMAX_BIN), first_level_static(NUM_AZ_X_PPI, MyMAX_BIN),
       bb_first_level(NUM_AZ_X_PPI, 1024), beam_blocking(NUM_AZ_X_PPI, 1024),
       anaprop(volume), dem(NUM_AZ_X_PPI, 1024),
-      qual(0), top(volume.beam_count, volume.max_beam_size())
+      qual(volume, 0),
+      top(volume.beam_count, volume.max_beam_size())
 {
     logging_category = log4c_category_get("radar.cum_bac");
     assets.configure(site, volume.load_info->acq_date);
@@ -140,7 +141,6 @@ CUM_BAC::CUM_BAC(Volume<double>& volume, const Config& cfg, const Site& site, bo
 
 CUM_BAC::~CUM_BAC()
 {
-    if (qual) delete qual;
     if (calcolo_vpr) delete calcolo_vpr;
 }
 
@@ -560,8 +560,6 @@ void CUM_BAC::caratterizzo_volume()
     HRay hray_inf(volume); /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     hray_inf.load_hray_inf(assets);
 
-    qual = new Volume<unsigned char>(volume, 0);
-
     // path integrated attenuation
     double PIA;
     // dimensione verticale bin calcolata tramite approcio geo-ottico
@@ -643,17 +641,17 @@ void CUM_BAC::caratterizzo_volume()
                 //--------dato che sotto elev_fin rimuovo i dati come fosse anaprop ( in realtà c'è da considerare che qui ho pure bb>50%)
                 //--------------assegno qualità zero sotto il livello di elev_fin (si può discutere...), potrei usare first_level_static confrontare e in caso sia sotto porre cl=1
                 if (l < anaprop.elev_fin(i, k)) {
-                    qual->scan(l).set(i, k, 0);
+                    qual.scan(l).set(i, k, 0);
                     cl=2;
                 } else {
                     //--bisogna ragionare di nuovo su definizione di qualità con clutter se si copia il dato sopra.--
 
                     //--calcolo la qualità--
                     // FIXME: qui tronca: meglio un round?
-                    qual->scan(l).set(i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,hray_inf.dtrs,dh,dhst,PIA)*100));
+                    qual.scan(l).set(i, k, (unsigned char)(func_q_Z(cl,bb,dist,drrs,hray_inf.dtrs,dh,dhst,PIA)*100));
                 }
 
-                if (qual->scan(l).get(i, k) ==0) qual->scan(l).set(i, k, 1);//????a che serve???
+                if (qual.scan(l).get(i, k) ==0) qual.scan(l).set(i, k, 1);//????a che serve???
                 if (calcolo_vpr)
                 {
                     /* sezione PREPARAZIONE DATI VPR*/
@@ -1534,16 +1532,14 @@ void CUM_BAC::generate_maps(CartProducts& products)
         const auto& elev_fin = anaprop.elev_fin;
         const auto& quota = anaprop.quota;
 
-        if(qual){
-          std::function<unsigned char(unsigned, unsigned)> assign_qual =
-            [this, &elev_fin](unsigned azimuth, unsigned range) {
-                const auto& el = elev_fin(azimuth, range);
-                if (range >= volume[el].beam_size)
-                    return (unsigned char)0;
-                return qual->scan(el).get(azimuth, range);
-            };
-          products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
-        }
+        std::function<unsigned char(unsigned, unsigned)> assign_qual =
+          [this, &elev_fin](unsigned azimuth, unsigned range) {
+              const auto& el = elev_fin(azimuth, range);
+              if (range >= volume[el].beam_size)
+                  return (unsigned char)0;
+              return qual.scan(el).get(azimuth, range);
+          };
+        products.scaled.to_cart(assign_qual, products.qual_Z_1x1);
         
         std::function<unsigned char(unsigned, unsigned)> assign_quota =
             [&quota](unsigned azimuth, unsigned range) {
@@ -1593,6 +1589,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
 
 CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac),
+      inst_vpr(cum_bac.volume, cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max),
       conv(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size(),0),
       area_vpr(NMAXLAYER, 0),
       corr_polar(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size()),
@@ -1619,7 +1616,6 @@ CalcoloVPR::~CalcoloVPR()
 
 int CalcoloVPR::combina_profili()
 {
-    InstantaneousVPR inst_vpr(cum_bac.volume, *cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max);
     inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 
@@ -1640,7 +1636,6 @@ void CalcoloVPR::esegui_tutto()
 
     //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
 
-    InstantaneousVPR inst_vpr(cum_bac.volume, *cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max);
     inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 

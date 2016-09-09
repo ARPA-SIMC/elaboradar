@@ -131,7 +131,7 @@ public:
     radarelab::PolarScan<float> dem;                ///< dem in coordinate azimut range
 
     // metrici qualita' come sopra
-    radarelab::Volume<unsigned char>* qual;             ///< qualita volume polare
+    radarelab::Volume<unsigned char> qual;             ///< qualita volume polare
     // top, come sopra
     radarelab::PolarScan<unsigned char> top;            ///< Echo top a ???? dBZ [hm]
 
@@ -227,6 +227,7 @@ struct CalcoloVPR
     log4c_category_t* logging_category;
 
     CUM_BAC& cum_bac;   ///< oggeto CUM_BAC di riferimento
+    radarelab::algo::InstantaneousVPR inst_vpr;
     long int gap;   ///< distanza temporale dall'ultimo file vpr [numero acquisizioni intercorse dall'ultimo vpr ?)
     float t_ground; ///< 2m temperature
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
