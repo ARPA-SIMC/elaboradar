@@ -803,8 +803,6 @@ int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 
     for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
 
-    Livmin livmin;
-
     /*modalità VPR combinato*/
 LOG_DEBUG (" modalita %d",mode);
     if(mode == 0) {
@@ -905,8 +903,6 @@ LOG_DEBUG (" modalita %d",mode);
         //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
 
         //------------- trovo livello minimo -------
-        livmin.compute(vpr);
-        LOG_INFO(" livmin %i", livmin);
         if (inst_vpr.success && combinante) {
             // calcolo la diff media
             diff=0;
@@ -917,6 +913,8 @@ LOG_DEBUG (" modalita %d",mode);
                 }
             }
             if (n>0){
+                Livmin livmin(vpr);
+                LOG_INFO(" livmin %i", livmin.livmin);
                 diff=diff/n;
                 for (ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
                     if (vpr0[ilay]<= NODATAVPR && vpr1[ilay] > NODATAVPR)
@@ -932,20 +930,15 @@ LOG_DEBUG (" modalita %d",mode);
                 if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
                     vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli
             }
-        }
-
-
-
-        else { // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
-            if (combinante){
-                for (ilay=0;  ilay<NMAXLAYER; ilay++){
-                    area_vpr[ilay]=area[ilay];
-                    vpr[ilay]=vpr0[ilay];
-                }
-            }
-            else{
+        } else {
+            // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
+            if (combinante)
+            {
+                area_vpr = area;
+                vpr = vpr0;
+            } else {
                 // se il calcolo dell'istantaneo  è andato bene ricopio il profilo
-                for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
+                vpr = vpr1;
             }
         }
     }
@@ -956,13 +949,13 @@ LOG_DEBUG (" modalita %d",mode);
     else  {
         if (!inst_vpr.success)
             return (1);
-        for (ilay=0; ilay<NMAXLAYER; ilay++) vpr[ilay]=vpr1[ilay];
+        vpr = vpr1;
     }
 
 
     //------------- trovo livello minimo -------
-    livmin.compute(vpr);
-    LOG_INFO(" livmin %i", livmin);
+    Livmin livmin(vpr);
+    LOG_INFO(" livmin %i", livmin.livmin);
 
     if (livmin.idx >= vpr.size() - 1 || !livmin.found) return (1);
 

@@ -37,7 +37,7 @@ struct Livmin
     /// True if the minimum level has been found
     bool found = false;
 
-    void compute(const VPR& vpr);
+    Livmin(const VPR& vpr);
 };
 
 

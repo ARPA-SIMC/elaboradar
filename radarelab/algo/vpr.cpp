@@ -10,11 +10,8 @@ using namespace std;
 namespace radarelab {
 namespace algo {
 
-void Livmin::compute(const VPR& vpr)
+Livmin::Livmin(const VPR& vpr)
 {
-    idx = 0;
-    livmin = 0;
-    found = false;
     for (unsigned ilay = 0; ilay < vpr.size(); ++ilay)
     {
         if (vpr[ilay] <= NODATAVPR) continue;
