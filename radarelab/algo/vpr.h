@@ -26,6 +26,21 @@ struct VPR : public std::array<float, VPR_NMAXLAYER>
 };
 
 
+struct Livmin
+{
+    /// Index in VPR of the minimum level
+    unsigned idx = 0;
+
+    /// Value of the minimum level
+    int livmin = 0;
+
+    /// True if the minimum level has been found
+    bool found = false;
+
+    void compute(const VPR& vpr);
+};
+
+
 struct InstantaneousVPR
 {
     const Volume<double>& volume;

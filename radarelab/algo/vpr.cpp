@@ -10,6 +10,22 @@ using namespace std;
 namespace radarelab {
 namespace algo {
 
+void Livmin::compute(const VPR& vpr)
+{
+    idx = 0;
+    livmin = 0;
+    found = false;
+    for (unsigned ilay = 0; ilay < vpr.size(); ++ilay)
+    {
+        if (vpr[ilay] <= NODATAVPR) continue;
+        livmin = ilay * TCK_VPR + TCK_VPR / 2;
+        idx = ilay;
+        found = true;
+        break;
+    }
+}
+
+
 InstantaneousVPR::InstantaneousVPR(const Volume<double>& volume, const Volume<unsigned char>& qual, Volume<unsigned char>& flag_vpr, int az_min, int az_max)
     : volume(volume), qual(qual), flag_vpr(flag_vpr), az_min(az_min), az_max(az_max), dbz(volume)
 {

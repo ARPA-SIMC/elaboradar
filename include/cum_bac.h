@@ -39,8 +39,6 @@ namespace radarelab {
 namespace algo {
 struct CalcoloSteiner;
 struct CalcoloVIZ;
-struct VPR;
-struct InstantaneousVPR;
 }
 
 }

@@ -803,6 +803,8 @@ int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 
     for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
 
+    Livmin livmin;
+
     /*modalità VPR combinato*/
 LOG_DEBUG (" modalita %d",mode);
     if(mode == 0) {
@@ -902,17 +904,9 @@ LOG_DEBUG (" modalita %d",mode);
 
         //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
 
-    //------------- trovo livello minimo -------
-
-    livmin=0;
-    foundlivmin=0;
-    for (ilay=0; ilay<NMAXLAYER; ilay++){
-        if (vpr[ilay]> NODATAVPR && !foundlivmin) {
-            livmin=ilay*TCK_VPR+TCK_VPR/2;
-            foundlivmin=1;
-        }
-    }
-    LOG_INFO(" livmin %i", livmin);
+        //------------- trovo livello minimo -------
+        livmin.compute(vpr);
+        LOG_INFO(" livmin %i", livmin);
         if (inst_vpr.success && combinante) {
             // calcolo la diff media
             diff=0;
@@ -924,7 +918,7 @@ LOG_DEBUG (" modalita %d",mode);
             }
             if (n>0){
                 diff=diff/n;
-                for (ilay=0; ilay<livmin/TCK_VPR; ilay++){
+                for (ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
                     if (vpr0[ilay]<= NODATAVPR && vpr1[ilay] > NODATAVPR)
                         vpr0[ilay]=vpr1[ilay]-diff;
                     if (vpr1[ilay]<= NODATAVPR && vpr0[ilay] > NODATAVPR)
@@ -967,18 +961,12 @@ LOG_DEBUG (" modalita %d",mode);
 
 
     //------------- trovo livello minimo -------
-
-    livmin=0;
-    foundlivmin=0;
-    for (ilay=0; ilay<NMAXLAYER; ilay++){
-        if (vpr[ilay]> NODATAVPR && !foundlivmin) {
-            livmin=ilay*TCK_VPR+TCK_VPR/2;
-            foundlivmin=1;
-        }
-    }
+    livmin.compute(vpr);
     LOG_INFO(" livmin %i", livmin);
 
-    if (livmin>=(NMAXLAYER-1)*TCK_VPR+TCK_VPR/2  || !foundlivmin) return (1);
+    if (livmin.idx >= vpr.size() - 1 || !livmin.found) return (1);
+
+    this->livmin = livmin.livmin;
 
 
     //-----scrivo il profilo e la sua area-----
