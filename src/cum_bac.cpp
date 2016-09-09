@@ -892,57 +892,55 @@ LOG_DEBUG (" modalita %d",mode);
         //TOLTA: combinazione dell'istantaneo col vecchio dell'altro radar purchè sia 'caldo' (non prevista la post-combinazione)
 
 
-        //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
-
-        if ( !combinante && !inst_vpr.success)
-            return (1);
-
-
-        //----------------se invece l'istantaneo c'è o ho trovato un file con cui combinare
-
-        //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
-
-        //------------- trovo livello minimo -------
-        if (inst_vpr.success && combinante) {
-            // calcolo la diff media
-            diff=0;
-            for (ilay=0;  ilay<NMAXLAYER; ilay++){
-                if ( vpr0[ilay]> NODATAVPR && vpr1[ilay]>NODATAVPR ){
-                    diff=diff + vpr0[ilay]-vpr1[ilay];
-                    n=n+1;
-                }
-            }
-            if (n>0){
-                Livmin livmin(vpr);
-                LOG_INFO(" livmin %i", livmin.livmin);
-                diff=diff/n;
-                for (ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
-                    if (vpr0[ilay]<= NODATAVPR && vpr1[ilay] > NODATAVPR)
-                        vpr0[ilay]=vpr1[ilay]-diff;
-                    if (vpr1[ilay]<= NODATAVPR && vpr0[ilay] > NODATAVPR)
-                        vpr1[ilay]=vpr0[ilay]+diff;
-
-                }
-            }
-            // peso vpr corrente per combinazione
-            alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
-            for (ilay=0;  ilay<NMAXLAYER; ilay++){
-                if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
-                    vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli
-            }
-        } else {
-            // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
+        if (inst_vpr.success)
+        {
             if (combinante)
             {
-                area_vpr = area;
-                vpr = vpr0;
+                //----------------se l'istantaneo c'è o ho trovato un file con cui combinare
+                //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
+                // calcolo la diff media
+                diff=0;
+                for (ilay=0;  ilay<NMAXLAYER; ilay++){
+                    if ( vpr0[ilay]> NODATAVPR && vpr1[ilay]>NODATAVPR ){
+                        diff=diff + vpr0[ilay]-vpr1[ilay];
+                        n=n+1;
+                    }
+                }
+                if (n>0){
+                    //------------- trovo livello minimo -------
+                    Livmin livmin(vpr);
+                    LOG_INFO(" livmin %i", livmin.livmin);
+                    diff=diff/n;
+                    for (ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
+                        if (vpr0[ilay]<= NODATAVPR && vpr1[ilay] > NODATAVPR)
+                            vpr0[ilay]=vpr1[ilay]-diff;
+                        if (vpr1[ilay]<= NODATAVPR && vpr0[ilay] > NODATAVPR)
+                            vpr1[ilay]=vpr0[ilay]+diff;
+
+                    }
+                }
+                // peso vpr corrente per combinazione
+                alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
+                for (ilay=0;  ilay<NMAXLAYER; ilay++){
+                    if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
+                        vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli
+                }
             } else {
                 // se il calcolo dell'istantaneo  è andato bene ricopio il profilo
                 vpr = vpr1;
             }
+        } else {
+            if (combinante)
+            {
+                // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
+                area_vpr = area;
+                vpr = vpr0;
+            } else {
+                //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
+                return 1;
+            }
         }
     }
-
 
     /*fine mode=0 VPR combinato, mode=1 VPR istantaneo controllo se l'istantaneo è andato ok e in caso affermativo continuo*/
 
