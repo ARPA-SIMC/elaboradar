@@ -83,6 +83,13 @@ struct InstantaneousVPR
     void compute();
 };
 
+
+/**
+ * @brief funzione che combina il profilo verticale corrente con quello
+ * precedente tramite il metodo di Germann
+ */
+VPR combine_profiles(const VPR& vpr0, const VPR& vpr1, long int cv, long int ct);
+
 }
 }
 

@@ -428,6 +428,8 @@ bool Assets::find_vpr0(const radarelab::algo::DBZ& dbz, radarelab::algo::VPR& vp
             gap = 0;
             return true;
         }
+
+    return false;
 }
 
 void Assets::write_vpr0(const algo::VPR& vpr)

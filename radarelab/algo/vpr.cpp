@@ -244,5 +244,60 @@ void InstantaneousVPR::compute()
     success = true;
 }
 
+namespace {
+float comp_levels(float v0, float v1, float nodata, float peso)
+{
+    float result;
+    /* if ((v0<nodata+1)&&(v1<nodata+1)) result=nodata; */
+    /* if (v0<nodata+1) result=v1; */
+    /* if (v1<nodata+1) result=v0;         */
+    if ((v0>nodata) && (v1>nodata)  ) result=((1.-peso)*v0+peso*v1); /* in questa configurazione il vpr è di altezza costante  nel tempo ma un po' 'sconnesso' in alto*/
+
+    else result=nodata;
+    return(result);
+}
+}
+
+VPR combine_profiles(const VPR& _vpr0, const VPR& _vpr1, long int cv, long int ct)
+{
+    VPR vpr;
+    VPR vpr0 = _vpr0;
+    VPR vpr1 = _vpr1;
+    vpr.area = vpr1.area;
+
+    /*----calcolo il peso c0 per la combinazione dei profili*/
+    long int c0 = 2 * cv;
+    int n=0,diff=0;
+    //----------------se l'istantaneo c'è o ho trovato un file con cui combinare
+    //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
+    // calcolo la diff media
+    for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
+        if ( vpr0.val[ilay]> NODATAVPR && vpr1.val[ilay]>NODATAVPR ){
+            diff=diff + vpr0.val[ilay]-vpr1.val[ilay];
+            n=n+1;
+        }
+    }
+    if (n>0){
+        //------------- trovo livello minimo -------
+        Livmin livmin(vpr);
+        diff=diff/n;
+        for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
+            if (vpr0.val[ilay]<= NODATAVPR && vpr1.val[ilay] > NODATAVPR)
+                vpr0.val[ilay]=vpr1.val[ilay]-diff;
+            if (vpr1.val[ilay]<= NODATAVPR && vpr0.val[ilay] > NODATAVPR)
+                vpr1.val[ilay]=vpr0.val[ilay]+diff;
+
+        }
+    }
+    // peso vpr corrente per combinazione
+    float alfat = (float)ct / (c0 + ct);
+    for (unsigned ilay=0; ilay<NMAXLAYER; ilay++){
+        if (vpr0.val[ilay] > NODATAVPR && vpr1.val[ilay] > NODATAVPR)
+            vpr.val[ilay]=comp_levels(vpr0.val[ilay],vpr1.val[ilay],NODATAVPR,alfat);// combino livelli
+    }
+
+    return vpr;
+}
+
 }
 }

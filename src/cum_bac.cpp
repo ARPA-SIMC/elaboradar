@@ -776,6 +776,11 @@ int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
     {
         /* MOD_VPR=0: VPR combinato */
         combinante = cum_bac.assets.find_vpr0(cum_bac.dbz, vpr0, gap);
+
+        for (unsigned i=0; i<vpr0.size(); i++)
+            LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0.val[i]);
+        //----a fine calcolo sul sito in esame stampo il valore del gap
+        LOG_INFO("gap %li",gap);
     } else {
         /* MOD_VPR=1: VPR istantaneo */
         combinante = false;
@@ -783,50 +788,9 @@ int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 
     if (combinante)
     {
-        VPR vpr1 = inst_vpr.vpr;
-
-        /*----calcolo il peso c0 per la combinazione dei profili*/
-
-        long int c0 = 2 * inst_vpr.cv;
-
-        for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0.val[i]);
-
-        //----a fine calcolo sul sito in esame stampo il valore del gap
-        LOG_INFO("gap %li",gap);
-
-        //TOLTA: combinazione dell'istantaneo col vecchio dell'altro radar purchè sia 'caldo' (non prevista la post-combinazione)
-
         if (inst_vpr.success)
         {
-            int n=0,diff=0;
-            //----------------se l'istantaneo c'è o ho trovato un file con cui combinare
-            //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
-            // calcolo la diff media
-            for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                if ( vpr0.val[ilay]> NODATAVPR && vpr1.val[ilay]>NODATAVPR ){
-                    diff=diff + vpr0.val[ilay]-vpr1.val[ilay];
-                    n=n+1;
-                }
-            }
-            if (n>0){
-                //------------- trovo livello minimo -------
-                Livmin livmin(vpr);
-                LOG_INFO(" livmin %i", livmin.livmin);
-                diff=diff/n;
-                for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
-                    if (vpr0.val[ilay]<= NODATAVPR && vpr1.val[ilay] > NODATAVPR)
-                        vpr0.val[ilay]=vpr1.val[ilay]-diff;
-                    if (vpr1.val[ilay]<= NODATAVPR && vpr0.val[ilay] > NODATAVPR)
-                        vpr1.val[ilay]=vpr0.val[ilay]+diff;
-
-                }
-            }
-            // peso vpr corrente per combinazione
-            float alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
-            for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                if (vpr0.val[ilay] > NODATAVPR && vpr1.val[ilay] > NODATAVPR)
-                    vpr.val[ilay]=comp_levels(vpr0.val[ilay],vpr1.val[ilay],NODATAVPR,alfat);// combino livelli
-            }
+            vpr = combine_profiles(vpr0, inst_vpr.vpr, inst_vpr.cv, inst_vpr.ct);
         } else {
             // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
             vpr = vpr0;
@@ -1326,18 +1290,6 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
     LOG_INFO("fatta scrittura hmax vpr = %d",hvprmax);
 
     return (ier_ana);
-}
-
-float comp_levels(float v0, float v1, float nodata, float peso)
-{
-    float result;
-    /* if ((v0<nodata+1)&&(v1<nodata+1)) result=nodata; */
-    /* if (v0<nodata+1) result=v1; */
-    /* if (v1<nodata+1) result=v0;         */
-    if ((v0>nodata) && (v1>nodata)  ) result=((1.-peso)*v0+peso*v1); /* in questa configurazione il vpr è di altezza costante  nel tempo ma un po' 'sconnesso' in alto*/
-
-    else result=nodata;
-    return(result);
 }
 
 void CUM_BAC::conversione_convettiva()
