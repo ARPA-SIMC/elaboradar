@@ -292,8 +292,6 @@ struct CalcoloVPR
      */
     int combina_profili(const radarelab::algo::InstantaneousVPR& inst_vpr);
 
-    [[deprecated("use the other combina_profili, this is only as a transition in tests")]] int combina_profili();
-
     /**
      *  @brief funzione  che classifica la precipitazione se stratiforme o convettiva
      *  @details esegue anche il ricampionamento cilindrico al suo interno

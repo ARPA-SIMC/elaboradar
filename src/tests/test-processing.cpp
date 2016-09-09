@@ -582,7 +582,8 @@ add_method("combina_profili", []() {
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    int ier = cb->calcolo_vpr->combina_profili();
+    cb->calcolo_vpr->inst_vpr.compute();
+    int ier = cb->calcolo_vpr->combina_profili(cb->calcolo_vpr->inst_vpr);
     wassert(actual(ier) == 0);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(true);
@@ -662,7 +663,8 @@ add_method("combina_profili1", []() {
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    int ier = cb->calcolo_vpr->combina_profili();
+    cb->calcolo_vpr->inst_vpr.compute();
+    int ier = cb->calcolo_vpr->combina_profili(cb->calcolo_vpr->inst_vpr);
     wassert(actual(ier) == 0);
 
     cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(true);
