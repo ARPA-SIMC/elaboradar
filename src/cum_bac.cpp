@@ -777,26 +777,13 @@ int CalcoloVPR::combina_profili()
 int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 {
     LOG_CATEGORY("radar.vpr");
-    long int c0;
     VPR vpr0;
     VPR vpr1 = inst_vpr.vpr;
-    float vpr_dbz;
-    float alfat,noval;
-    int mode,ilay,i,foundlivmin=0,il,ier_ap,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
+    int mode,foundlivmin=0,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
     vector<long int> area(NMAXLAYER, NODATAVPR);
-    long int ar=0;
-    int n=0,diff=0;
-    char nomefile[150],stringa[100];
-    struct tm *T_tempo;
-    time_t Time,T_Time;
-    FILE *file;
 
     mode=MOD_VPR;
-    noval=NODATAVPR;
 
-
-    /* questo per fare ciclo sul vpr vecchio*/
-    Time = cum_bac.volume.load_info->acq_date;
 
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
@@ -809,7 +796,7 @@ LOG_DEBUG (" modalita %d",mode);
 
         /*----calcolo il peso c0 per la combinazione dei profili*/
 
-        c0 = 2 * inst_vpr.cv;
+        long int c0 = 2 * inst_vpr.cv;
 
         /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
         /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
@@ -847,33 +834,39 @@ LOG_DEBUG (" modalita %d",mode);
             //---- trattandosi di profili con data nel nome del file, costruisco il nome a partire dall'istante corrente ciclando su un numero di quarti d'ora
             //---- pari a memory finchè non trovo un profilo. se non lo trovo gap resta=100
 
+            /* questo per fare ciclo sul vpr vecchio*/
+            time_t Time = cum_bac.volume.load_info->acq_date;
+            char nomefile[150],stringa[100];
+
             // TODO: cerca in archivio se esiste un VPR piú recente del
             // last_vpr: togliere dal calcolo VPR generico e spostarlo nel
             // punto dove viene caricato il VPR precedente
-            for (i=0;i<MEMORY;i++){
+            for (unsigned i=0;i<MEMORY;i++){
 
                 //---calcolo della data---//
 
-                T_Time=Time+i*900;
-                T_tempo=gmtime(&T_Time);
+                time_t T_Time=Time+i*900;
+                struct tm* T_tempo=gmtime(&T_Time);
 
                 sprintf(nomefile,"%s/%04d%02d%02d%02d%02d_vpr_%s",getenv("DIR_STORE_VPR"), //--questa non sarebbe una dir_arch più che store?... contesto il nome...
                         T_tempo->tm_year+1900, T_tempo->tm_mon+1, T_tempo->tm_mday,
                         T_tempo->tm_hour, T_tempo->tm_min,getenv("SITO"));
-                ier_ap=access(nomefile,R_OK);
+                int ier_ap=access(nomefile,R_OK);
 
                 //---- se non ho errore apertura metto gap=0 e metto profilo 'caldo', leggo il profilo e lo converto in R e interrompo il ciclo di ricerca!
                 if  (!ier_ap){
-                    file=fopen(nomefile,"r");
+                    FILE *file=fopen(nomefile,"r");
                     gap=0;
                     heating=WARM;
                     fscanf(file," %s %s %s %s" ,stringa ,stringa,stringa,stringa);
-                    for (ilay=0;  ilay<NMAXLAYER; ilay++){
+                    for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
+                        long int ar;
+                        int il;
                         fscanf(file," %i %f %li", &il, &vpr0[ilay], &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
 
                         //---- converto in R il profilo vecchio--
                         if (vpr0[ilay]>0){
-                            vpr_dbz=vpr0[ilay];
+                            float vpr_dbz=vpr0[ilay];
                             vpr0[ilay] = cum_bac.dbz.DBZtoR(vpr_dbz);
                             area[ilay]=ar;
                         }
@@ -896,11 +889,11 @@ LOG_DEBUG (" modalita %d",mode);
         {
             if (combinante)
             {
+                int n=0,diff=0;
                 //----------------se l'istantaneo c'è o ho trovato un file con cui combinare
                 //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
                 // calcolo la diff media
-                diff=0;
-                for (ilay=0;  ilay<NMAXLAYER; ilay++){
+                for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
                     if ( vpr0[ilay]> NODATAVPR && vpr1[ilay]>NODATAVPR ){
                         diff=diff + vpr0[ilay]-vpr1[ilay];
                         n=n+1;
@@ -911,7 +904,7 @@ LOG_DEBUG (" modalita %d",mode);
                     Livmin livmin(vpr);
                     LOG_INFO(" livmin %i", livmin.livmin);
                     diff=diff/n;
-                    for (ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
+                    for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
                         if (vpr0[ilay]<= NODATAVPR && vpr1[ilay] > NODATAVPR)
                             vpr0[ilay]=vpr1[ilay]-diff;
                         if (vpr1[ilay]<= NODATAVPR && vpr0[ilay] > NODATAVPR)
@@ -920,10 +913,10 @@ LOG_DEBUG (" modalita %d",mode);
                     }
                 }
                 // peso vpr corrente per combinazione
-                alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
-                for (ilay=0;  ilay<NMAXLAYER; ilay++){
+                float alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
+                for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
                     if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
-                        vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],noval,alfat);// combino livelli
+                        vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],NODATAVPR,alfat);// combino livelli
                 }
             } else {
                 // se il calcolo dell'istantaneo  è andato bene ricopio il profilo
@@ -1000,13 +993,12 @@ int CalcoloVPR::profile_heating(bool has_inst_vpr)
 int CalcoloVPR::stampa_vpr()
 {
     float vpr_dbz;
-    int ilay;
 
     File file(logging_category);
     file.open_from_env("VPR_ARCH", "wt", "ultimo vpr in dBZ per il plot");
 
     fprintf(file," QUOTA   DBZ    AREA PRECI(KM^2/1000)\n" );
-    for (ilay=0;  ilay<NMAXLAYER; ilay++){
+    for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
         if (vpr[ilay]> 0.001 ) {
             vpr_dbz=cum_bac.dbz.RtoDBZ(vpr[ilay]);
             fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, vpr_dbz, area_vpr[ilay]);
