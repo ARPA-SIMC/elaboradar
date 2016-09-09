@@ -1434,8 +1434,11 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
         vprmax=cum_bac.dbz.RtoDBZ(vpr[(hvprmax/TCK_VPR)]);
     }
 
-    fprintf(test_vpr,"%s %i %i -1 %f %f  %f %f %f %f %f %f %f %f  %f %f %f  %f \n",date,hvprmax,tipo_profilo,iv.chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,vprmax,iv.rmsefin,iv.B,iv.E,iv.G,iv.C,iv.F);
-    fclose(test_vpr);
+    if (FILE* test_vpr=fopen(getenv("TEST_VPR"),"a+"))
+    {
+        fprintf(test_vpr,"%s %i %i -1 %f %f  %f %f %f %f %f %f %f %f  %f %f %f  %f \n",date,hvprmax,tipo_profilo,iv.chisqfin,*hliq,vliq,vhliquid,v600sottobb,v1000+6,v1500+6,vprmax,iv.rmsefin,iv.B,iv.E,iv.G,iv.C,iv.F);
+        fclose(test_vpr);
+    }
 
     // fine parte di stampa test vpr
 
@@ -1628,8 +1631,6 @@ int CalcoloVPR::combina_profili()
 
 void CalcoloVPR::esegui_tutto()
 {
-    test_vpr=fopen(getenv("TEST_VPR"),"a+");
-
     LOG_INFO("processo file dati: %s", cum_bac.volume.load_info->filename.c_str());
     printf ("calcolo VPR \n") ;
 

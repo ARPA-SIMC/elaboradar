@@ -296,14 +296,6 @@ LOG_INFO("Chiamo caratterizzo volumi");
 
     cb->caratterizzo_volume();
 
-    // la combina_profili restituisce 1 se non riesce a costruire un profilo
-    // perchè non piove o piove poco
-    int ier = cb->calcolo_vpr->combina_profili();
-    wassert(actual(ier) == 1);
-
-    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(false);
-    wassert(actual(cb->calcolo_vpr->heating) == 0);
-
 //    print_stats("cb", *cb, cerr);
     wassert(actual(*cb->qual).statsEqual(1, 53.07, 99));
     wassert(actual(cb->top).statsEqual(0, 189090, 1, 7.10, 36));
@@ -377,17 +369,6 @@ unlink("LAST_VPR");
 
     cb->caratterizzo_volume();
     cb->calcolo_vpr->classifica_rain();
-
-    // la combina_profili restituisce 1 se non riesce a costruire un profilo
-    // perchè non piove o piove poco
-    int ier = cb->calcolo_vpr->combina_profili();
-    wassert(actual(ier) == 1);
-
-    cb->calcolo_vpr->heating = cb->calcolo_vpr->profile_heating(false);
-    wassert(actual(cb->calcolo_vpr->heating) == 0);
-
-    ier = cb->calcolo_vpr->corr_vpr();
-    wassert(actual(ier) == 1); // TODO: cosa deve dare?
 
 //         print_stats("cb", *cb, cerr);
     wassert(actual(*cb->qual).statsEqual(1, 53.07, 99));
@@ -601,8 +582,6 @@ add_method("combina_profili", []() {
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-   cb->calcolo_vpr->test_vpr=fopen("../testdata/test_vpr","a+");
-
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 
@@ -683,7 +662,6 @@ add_method("combina_profili1", []() {
 
     // la combina_profili restituisce 1 se non riesce a costruire un profilo
     // perchè non piove o piove poco
-    cb->calcolo_vpr->test_vpr=fopen("../testdata/test_vpr","a+");
     int ier = cb->calcolo_vpr->combina_profili();
     wassert(actual(ier) == 0);
 

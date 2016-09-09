@@ -247,8 +247,6 @@ struct CalcoloVPR
     int ier_comb;               ///< flag d'errore su combinazione vpr
     int ier_max;                ///< flag d'errore su calcolo quota max 
     int ier_stampa_vpr;             ///< flag d'errore su stampa profilo
-    // files vpr
-    FILE *test_vpr;             ///< file per diagnostica vpr
 
     unsigned MyMAX_BIN;             ///< LUNGHEZZA MASSIMA 
 
