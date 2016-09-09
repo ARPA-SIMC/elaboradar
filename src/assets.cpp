@@ -342,6 +342,50 @@ bool Assets::read_vpr0(algo::VPR& vpr0)
     return true;
 }
 
+bool Assets::read_archived_vpr(const algo::DBZ& dbz, time_t time, radarelab::algo::VPR& vpr)
+{
+    const char* dir = getenv("DIR_STORE_VPR"); //--questa non sarebbe una dir_arch più che store?... contesto il nome...
+    if (!dir) return false;
+
+    struct tm t;
+    gmtime_r(&time, &t);
+
+    char fname[64];
+    snprintf(fname, 64, "%04d%02d%02d%02d%02d_vpr_%s",
+            t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
+            t.tm_hour, t.tm_min, conf_site->name.c_str());
+
+    string pathname = dir;
+    pathname += "/";
+    pathname += fname;
+
+    File in(logging_category);
+    if (!in.open(pathname, "r", "archived VPR file"))
+        return false;
+
+    // TODO: check the actual format of the file and make the parsing safe:
+    // currently if one of these strings is longer than 99, we crash or worse.
+    char stringa[100];
+    fscanf(in, " %s %s %s %s" ,stringa ,stringa,stringa,stringa);
+    for (unsigned ilay=0; ilay < vpr.size(); ++ilay){
+        float vpr_dbz;
+        long int ar;
+        int il;
+        fscanf(in, " %i %f %li", &il, &vpr_dbz, &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
+
+        //---- converto in R il profilo vecchio--
+        if (vpr_dbz > 0)
+        {
+            vpr.val[ilay] = dbz.DBZtoR(vpr_dbz);
+            vpr.area[ilay] = ar;
+        }
+        else
+            vpr.val[ilay] = NODATAVPR;
+    }
+
+    return true;
+}
+
 void Assets::write_vpr0(const algo::VPR& vpr)
 {
     const char* fname = getenv("VPR0_FILE");

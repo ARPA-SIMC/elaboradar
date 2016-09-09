@@ -841,42 +841,14 @@ LOG_DEBUG (" modalita %d",mode);
             // TODO: cerca in archivio se esiste un VPR piú recente del
             // last_vpr: togliere dal calcolo VPR generico e spostarlo nel
             // punto dove viene caricato il VPR precedente
-            for (unsigned i=0;i<MEMORY;i++){
-
-                //---calcolo della data---//
-
-                time_t T_Time=Time+i*900;
-                struct tm* T_tempo=gmtime(&T_Time);
-
-                sprintf(nomefile,"%s/%04d%02d%02d%02d%02d_vpr_%s",getenv("DIR_STORE_VPR"), //--questa non sarebbe una dir_arch più che store?... contesto il nome...
-                        T_tempo->tm_year+1900, T_tempo->tm_mon+1, T_tempo->tm_mday,
-                        T_tempo->tm_hour, T_tempo->tm_min,getenv("SITO"));
-                int ier_ap=access(nomefile,R_OK);
-
-                //---- se non ho errore apertura metto gap=0 e metto profilo 'caldo', leggo il profilo e lo converto in R e interrompo il ciclo di ricerca!
-                if  (!ier_ap){
-                    FILE *file=fopen(nomefile,"r");
+            for (unsigned i=0;i<MEMORY;i++)
+                if (cum_bac.assets.read_archived_vpr(cum_bac.dbz, Time + i * 900, vpr0))
+                {
+                    combinante = 1;
                     gap=0;
                     heating=WARM;
-                    fscanf(file," %s %s %s %s" ,stringa ,stringa,stringa,stringa);
-                    for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                        long int ar;
-                        int il;
-                        fscanf(file," %i %f %li", &il, &vpr0.val[ilay], &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
-
-                        //---- converto in R il profilo vecchio--
-                        if (vpr0.val[ilay]>0){
-                            float vpr_dbz=vpr0.val[ilay];
-                            vpr0.val[ilay] = cum_bac.dbz.DBZtoR(vpr_dbz);
-                            vpr0.area[ilay]=ar;
-                        }
-                        else
-                            vpr0.val[ilay] = NODATAVPR;
-                    }
-                    combinante=1;
                     break;
                 }
-            }
         }
 
         //----a fine calcolo sul sito in esame stampo il valore del gap

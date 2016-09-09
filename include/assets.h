@@ -199,8 +199,15 @@ public:
      * @param [out] area - areal coverage for each layer km^2/1000
      * @return true if succesfull
      * @return false if file does not exits 
-     */  
+     */
     bool read_vpr0(radarelab::algo::VPR& vpr0);
+
+    /**
+     * Try to read the archived VPR at time `time`.
+     *
+     * Return false if the file was not found.
+     */
+    bool read_archived_vpr(const radarelab::algo::DBZ& dbz, time_t time, radarelab::algo::VPR& vpr);
 
     /** Write in $VPR0_FILE the vpr calculated.
      * @param [in] vpr - vpr profile in mmh-1 [rain intensity]
