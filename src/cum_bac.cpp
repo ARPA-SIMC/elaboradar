@@ -746,6 +746,17 @@ void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::C
                     conv(j,k) = viz.conv_VIZ(j, k);
 }
 
+int CalcoloVPR::combina_profili()
+{
+    inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
+
+    algo::VPR vpr1 = inst_vpr.vpr;
+
+    //  ier_comb=combina_profili(sito,argv[4]);
+    return combina_profili(inst_vpr, vpr1);
+}
+
 //----------ALGORITMO
 /*  combina il profilo verticale corrente con quello precedente tramite il metodo di Germann (2003)
     a) calcolo gap tra ultimo profilo e istante corrente
@@ -1612,17 +1623,6 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
 
 CalcoloVPR::~CalcoloVPR()
 {
-}
-
-int CalcoloVPR::combina_profili()
-{
-    inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
-    LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
-
-    algo::VPR vpr1 = inst_vpr.vpr;
-
-    //  ier_comb=combina_profili(sito,argv[4]);
-    return combina_profili(inst_vpr, vpr1);
 }
 
 void CalcoloVPR::esegui_tutto()
