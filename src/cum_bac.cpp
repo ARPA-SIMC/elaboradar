@@ -798,64 +798,13 @@ LOG_DEBUG (" modalita %d",mode);
 
         long int c0 = 2 * inst_vpr.cv;
 
-        /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
-        /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
-
-        // TODO: riorganizzando il codice, si può passare a una nuova funzione
-        // di calcolo VPR mediato solo il time_t dell'ultima volta che è stato
-        // calcolato il VPR (default a 100 quarti d'ora, come dentro a
-        // read_profile_gap())
-        gap = cum_bac.assets.read_profile_gap();
-
-
-        /*------leggo il profilo vecchio più recente di MEMORY ----*/
-        /*------nota bene: è in R ovvero  pioggia!! ----*/
-
-        if (!cum_bac.assets.read_vpr0(vpr0))
-        {
-            LOG_WARN("non esiste file vpr vecchio: %s",getenv("VPR0_FILE"));
-
-            //----se file non esiste assegno gap=100----
-            gap=100;
-        }
+        combinante = cum_bac.assets.find_vpr0(cum_bac.dbz, vpr0, gap);
         for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0.val[i]);
-
-        //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
-
-        if (gap <= MEMORY)
-        {
-            combinante=1;
-        } else {
-            //-----Se gap > MEMORY
-
-            //a)----- tento .. sono in POST-ELABORAZIONE:----
-
-            //-----devo andare a ricercare tra i profili 'buoni' in archivio quello con cui combinare il dato----
-            //---- trattandosi di profili con data nel nome del file, costruisco il nome a partire dall'istante corrente ciclando su un numero di quarti d'ora
-            //---- pari a memory finchè non trovo un profilo. se non lo trovo gap resta=100
-
-            /* questo per fare ciclo sul vpr vecchio*/
-            time_t Time = cum_bac.volume.load_info->acq_date;
-            char nomefile[150],stringa[100];
-
-            // TODO: cerca in archivio se esiste un VPR piú recente del
-            // last_vpr: togliere dal calcolo VPR generico e spostarlo nel
-            // punto dove viene caricato il VPR precedente
-            for (unsigned i=0;i<MEMORY;i++)
-                if (cum_bac.assets.read_archived_vpr(cum_bac.dbz, Time + i * 900, vpr0))
-                {
-                    combinante = 1;
-                    gap=0;
-                    heating=WARM;
-                    break;
-                }
-        }
 
         //----a fine calcolo sul sito in esame stampo il valore del gap
         LOG_INFO("gap %li",gap);
 
         //TOLTA: combinazione dell'istantaneo col vecchio dell'altro radar purchè sia 'caldo' (non prevista la post-combinazione)
-
 
         if (inst_vpr.success)
         {

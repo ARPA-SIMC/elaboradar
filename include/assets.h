@@ -209,6 +209,11 @@ public:
      */
     bool read_archived_vpr(const radarelab::algo::DBZ& dbz, time_t time, radarelab::algo::VPR& vpr);
 
+    /**
+     * Read the gap and the vpr0, and if vpr0 is not found, look it up among the archived VPRs
+     */
+    bool find_vpr0(const radarelab::algo::DBZ& dbz, radarelab::algo::VPR& vpr0, long int& gap);
+
     /** Write in $VPR0_FILE the vpr calculated.
      * @param [in] vpr - vpr profile in mmh-1 [rain intensity]
      * @param [in] area - areal coverage for each layer km^2/1000

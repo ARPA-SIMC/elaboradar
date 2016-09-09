@@ -386,6 +386,50 @@ bool Assets::read_archived_vpr(const algo::DBZ& dbz, time_t time, radarelab::alg
     return true;
 }
 
+bool Assets::find_vpr0(const radarelab::algo::DBZ& dbz, radarelab::algo::VPR& vpr0, long int& gap)
+{
+    /*------calcolo la distanza temporale che separa l'ultimo profilo calcolato dall'istante attuale--*/
+    /* (dentro il file LAST_VPR c'è una data che contiene la data cui si riferisce il vpr in n0 di secondi dall'istante di riferimento)*/
+    gap = read_profile_gap();
+
+    /*------leggo il profilo vecchio più recente di MEMORY ----*/
+    /*------nota bene: è in R ovvero  pioggia!! ----*/
+
+    if (!read_vpr0(vpr0))
+    {
+        LOG_WARN("non esiste file vpr vecchio: %s",getenv("VPR0_FILE"));
+
+        //----se file non esiste assegno gap=100----
+        gap = 100;
+    }
+
+    //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
+
+    if (gap <= MEMORY)
+        return true;
+
+    //-----Se gap > MEMORY
+
+    //a)----- tento .. sono in POST-ELABORAZIONE:----
+
+    //-----devo andare a ricercare tra i profili 'buoni' in archivio quello con cui combinare il dato----
+    //---- trattandosi di profili con data nel nome del file, costruisco il nome a partire dall'istante corrente ciclando su un numero di quarti d'ora
+    //---- pari a memory finchè non trovo un profilo. se non lo trovo gap resta=100
+
+    /* questo per fare ciclo sul vpr vecchio*/
+    time_t Time = conf_acq_time;
+
+    // TODO: cerca in archivio se esiste un VPR piú recente del
+    // last_vpr: togliere dal calcolo VPR generico e spostarlo nel
+    // punto dove viene caricato il VPR precedente
+    for (unsigned i=0;i<MEMORY;i++)
+        if (read_archived_vpr(dbz, Time + i * 900, vpr0))
+        {
+            gap = 0;
+            return true;
+        }
+}
+
 void Assets::write_vpr0(const algo::VPR& vpr)
 {
     const char* fname = getenv("VPR0_FILE");
