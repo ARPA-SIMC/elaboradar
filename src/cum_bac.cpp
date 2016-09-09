@@ -751,10 +751,8 @@ int CalcoloVPR::combina_profili()
     inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 
-    algo::VPR vpr1 = inst_vpr.vpr;
-
     //  ier_comb=combina_profili(sito,argv[4]);
-    return combina_profili(inst_vpr, vpr1);
+    return combina_profili(inst_vpr);
 }
 
 //----------ALGORITMO
@@ -776,11 +774,12 @@ int CalcoloVPR::combina_profili()
     FILE *file;
     int mode,ilay;  modalità calcolo profilo (0=combinazione, 1=istantaneo),indice di strato
 */
-int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr, VPR& vpr1)
+int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 {
     LOG_CATEGORY("radar.vpr");
     long int c0;
     VPR vpr0;
+    VPR vpr1 = inst_vpr.vpr;
     float vpr_dbz;
     float alfat,noval;
     int mode,ilay,i,foundlivmin=0,il,ier_ap,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
@@ -1639,10 +1638,8 @@ void CalcoloVPR::esegui_tutto()
     inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 
-    algo::VPR vpr1 = inst_vpr.vpr;
-
     //  ier_comb=combina_profili(sito,argv[4]);
-    ier_comb=combina_profili(inst_vpr, vpr1);
+    ier_comb=combina_profili(inst_vpr);
     LOG_INFO ("exit status calcolo VPR istantaneo: %s", inst_vpr.success ? "ok": "fallito") ; // debug
     LOG_INFO("exit status combinaprofili: (1--fallito 0--ok) %i ",ier_comb) ; // debug
 

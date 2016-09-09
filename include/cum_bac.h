@@ -293,7 +293,7 @@ struct CalcoloVPR
      *  @details  oltre a lanciare il calcolo del profilo istantaneo provvede alla combinazione del profilo calcolato con il precedente calcolato entro  un limite massimo di distanza temporale pari a 10 quarti d'ora.  restituisce un codice integer pari a 0 se ok 1 se fallisce 
      *  @return 0 se combinazione ok 1 se fallisce
      */
-    int combina_profili(const radarelab::algo::InstantaneousVPR& inst_vpr, radarelab::algo::VPR& vpr1);
+    int combina_profili(const radarelab::algo::InstantaneousVPR& inst_vpr);
 
     [[deprecated("use the other combina_profili, this is only as a transition in tests")]] int combina_profili();
 
