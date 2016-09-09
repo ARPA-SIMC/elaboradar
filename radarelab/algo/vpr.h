@@ -12,8 +12,11 @@ namespace algo {
 constexpr unsigned VPR_NMAXLAYER = 70;
 constexpr float VPR_MISSING = -9999.;
 
-struct VPR : public std::array<float, VPR_NMAXLAYER>
+struct VPR
 {
+    std::array<float, VPR_NMAXLAYER> val;
+    std::array<long int, VPR_NMAXLAYER> area;
+
     VPR(const VPR&) = default;
     VPR(VPR&&) = default;
     VPR& operator=(const VPR&) = default;
@@ -21,8 +24,13 @@ struct VPR : public std::array<float, VPR_NMAXLAYER>
     VPR()
     {
         for (unsigned i = 0; i < size(); ++i)
-            (*this)[i] = VPR_MISSING;
+        {
+            val[i] = VPR_MISSING;
+            area[i] = 0;
+        }
     }
+
+    size_t size() const { return VPR_NMAXLAYER; }
 };
 
 
@@ -72,7 +80,7 @@ struct InstantaneousVPR
 #endif
 
     InstantaneousVPR(const Volume<double>& volume, const Volume<unsigned char>& qual, Volume<unsigned char>& flag_vpr, int az_min, int az_max);
-    void compute(std::vector<long int>& area_vpr);
+    void compute();
 };
 
 }

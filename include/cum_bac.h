@@ -230,7 +230,6 @@ struct CalcoloVPR
     float t_ground; ///< 2m temperature
     //matrici che dicono se pixel convettivo secondo VIZ, STEINER, riassuntiva mette +50
     radarelab::PolarScan<unsigned char> conv;   /// Informa se il pixel è convettivo
-    std::vector<long int> area_vpr;     ///< area degli strati
     radarelab::algo::VPR vpr;     ///< vpr 
     int hvprmax;            ///< quota picco vpr
     //elab classificazione: lista punti convettivi, iaz e ira, le dimensioni sono le massime possibili, in realtà i punti sono molti meno

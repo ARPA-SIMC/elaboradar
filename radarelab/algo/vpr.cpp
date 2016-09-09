@@ -14,7 +14,7 @@ Livmin::Livmin(const VPR& vpr)
 {
     for (unsigned ilay = 0; ilay < vpr.size(); ++ilay)
     {
-        if (vpr[ilay] <= NODATAVPR) continue;
+        if (vpr.val[ilay] <= NODATAVPR) continue;
         livmin = ilay * TCK_VPR + TCK_VPR / 2;
         idx = ilay;
         found = true;
@@ -59,7 +59,7 @@ long int vert_ext,vol_rain: estensione verticale profilo, volume pioggia del sin
 long int area_vpr[NMAXLAYER]; area totale usata per calcolo vpr
 
 */
-void InstantaneousVPR::compute(vector<long int>& area_vpr)
+void InstantaneousVPR::compute()
 {
     LOG_CATEGORY("radar.vpr");
     int i,iA,ilay,il,ilast;
@@ -148,11 +148,11 @@ void InstantaneousVPR::compute(vector<long int>& area_vpr)
                         ct = ct + (long int)(area);
 
                     //------se l'area in quello strato è già maggiore di 0 allora incremento il volume dello strato altrimenti lo scrivo ex novo. poi vpr1 andrà diviso per l'area
-                    if (area_vpr[ilay]> 0) vpr[ilay]=vpr[ilay]+(float)(vol_rain);
-                    else vpr[ilay]=(float)(vol_rain);
+                    if (vpr.area[ilay]> 0) vpr.val[ilay]=vpr.val[ilay]+(float)(vol_rain);
+                    else vpr.val[ilay]=(float)(vol_rain);
 
                     //------incremento l'area dello strato----------
-                    area_vpr[ilay]=area_vpr[ilay]+area;
+                    vpr.area[ilay]=vpr.area[ilay]+area;
                 }
             }
         }
@@ -176,16 +176,16 @@ void InstantaneousVPR::compute(vector<long int>& area_vpr)
         for (ilay=0; ilay<NMAXLAYER; ilay++){
 
 
-            LOG_INFO("  ilay %d area_vpr= %ld  ct= %ld  cv= %ld", ilay, area_vpr[ilay], ct, cv);
+            LOG_INFO("  ilay %d area_vpr= %ld  ct= %ld  cv= %ld", ilay, vpr.area[ilay], ct, cv);
 
-            if (area_vpr[ilay]>=MIN_AREA) {
+            if (vpr.area[ilay]>=MIN_AREA) {
                 vert_ext=vert_ext+TCK_VPR;
-                vpr[ilay]=vpr[ilay]/(float)(area_vpr[ilay]);
+                vpr.val[ilay]=vpr.val[ilay]/(float)(vpr.area[ilay]);
 
             }
             else
             {
-                vpr[ilay]=NODATAVPR;
+                vpr.val[ilay]=NODATAVPR;
 
 
                 //----  se incontro un punto vuoto oltre 700 m ( o se sono arrivata alla fine) assegno ilast ed esco dal ciclo
@@ -201,7 +201,7 @@ void InstantaneousVPR::compute(vector<long int>& area_vpr)
                         LOG_INFO("estensione profilo verticale troppo bassa");
                         ct = 0;
                         ilast=0;
-                        for  (il=0; il<ilast; il++) vpr[il]=NODATAVPR;
+                        for  (il=0; il<ilast; il++) vpr.val[il]=NODATAVPR;
                         return;
                     }
 
@@ -216,14 +216,14 @@ void InstantaneousVPR::compute(vector<long int>& area_vpr)
         LOG_INFO("volume precipitante troppo piccolo");
         ct = 0;
         ilast=0;
-        for  (il=0; il<NMAXLAYER; il++) vpr[il]=NODATAVPR; //--devo riassegnare o mi rimane 'sporco' forse si potrebbe usare una ver diversa
+        for  (il=0; il<NMAXLAYER; il++) vpr.val[il]=NODATAVPR; //--devo riassegnare o mi rimane 'sporco' forse si potrebbe usare una ver diversa
         return;
     }
 
 
     //------calcolo il gradiente del profilo come media del gradiente negli ultimi 3 strati per assegnare la parte 'alta' (novità)
 
-    grad=((vpr[ilast]-vpr[ilast-1]) + (vpr[ilast-1]-vpr[ilast-2])/(2.)+ (vpr[ilast-2]-vpr[ilast-3])/(3.) ) /3.;
+    grad=((vpr.val[ilast]-vpr.val[ilast-1]) + (vpr.val[ilast-1]-vpr.val[ilast-2])/(2.)+ (vpr.val[ilast-2]-vpr.val[ilast-3])/(3.) ) /3.;
     if (grad > 0.002)
         grad=-0.03 ;
     LOG_INFO(" %f", grad);
@@ -231,10 +231,10 @@ void InstantaneousVPR::compute(vector<long int>& area_vpr)
     //--riempio la parte alta del profilo decrementando di grad il profilo in ogni strato fino a raggiunere 0, SI PUÒ TOGLIERE E METTERE NODATA
 
     for (ilay=ilast+1; ilay<NMAXLAYER; ilay++) {
-        if (vpr[ilay-1] + grad > 0.002)
-            vpr[ilay]= vpr[ilay-1]+grad;
+        if (vpr.val[ilay-1] + grad > 0.002)
+            vpr.val[ilay]= vpr.val[ilay-1]+grad;
         else
-            vpr[ilay]=0;
+            vpr.val[ilay]=0;
     }
 
     // HO CAMBIATO DA GRADIENTE FISSO PARI A (V. VECCHIO) A GRADIENTE RICAVATO DAL PROFILO PER LA PARTE ALTA

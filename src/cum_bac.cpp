@@ -748,7 +748,7 @@ void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::C
 
 int CalcoloVPR::combina_profili()
 {
-    inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    inst_vpr.compute(); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 
     //  ier_comb=combina_profili(sito,argv[4]);
@@ -769,7 +769,7 @@ int CalcoloVPR::combina_profili()
     long int c0,cv,ct; costanti di combinazione (v. ref.)
     h) trovo livello minimo, se livello minimo profilo combinato più alto del precedente calcolo la diff media e sommo al vecchio
     e) ricalcolo livello minimo
-    float vpr0[NMAXLAYER],vpr1[NMAXLAYER],vpr[NMAXLAYER]; profilo precedente, ultimo e combinato
+    float vpr0.val[NMAXLAYER],vpr1.val[NMAXLAYER],vpr.val[NMAXLAYER]; profilo precedente, ultimo e combinato
     float alfat,noval; peso, nodata
     FILE *file;
     int mode,ilay;  modalità calcolo profilo (0=combinazione, 1=istantaneo),indice di strato
@@ -777,10 +777,7 @@ int CalcoloVPR::combina_profili()
 int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 {
     LOG_CATEGORY("radar.vpr");
-    VPR vpr0;
-    VPR vpr1 = inst_vpr.vpr;
-    int mode,foundlivmin=0,combinante=0; // combinante: variabile che contiene presenza vpr alternativo
-    vector<long int> area(NMAXLAYER, NODATAVPR);
+    int mode;
 
     mode=MOD_VPR;
 
@@ -788,11 +785,14 @@ int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
     //--------inizializzo cv e ct-------------//
     //-----calcolo del profilo istantaneo:faccio func_vpr-----//
 
-    for (unsigned i=0; i<vpr1.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,vpr1[i]);
+    for (unsigned i=0; i<inst_vpr.vpr.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,inst_vpr.vpr.val[i]);
 
     /*modalità VPR combinato*/
 LOG_DEBUG (" modalita %d",mode);
     if(mode == 0) {
+        int combinante = 0; // combinante: variabile che contiene presenza vpr alternativo
+        VPR vpr0;
+        VPR vpr1 = inst_vpr.vpr;
 
         /*----calcolo il peso c0 per la combinazione dei profili*/
 
@@ -811,14 +811,14 @@ LOG_DEBUG (" modalita %d",mode);
         /*------leggo il profilo vecchio più recente di MEMORY ----*/
         /*------nota bene: è in R ovvero  pioggia!! ----*/
 
-        if (!cum_bac.assets.read_vpr0(vpr0, area))
+        if (!cum_bac.assets.read_vpr0(vpr0))
         {
             LOG_WARN("non esiste file vpr vecchio: %s",getenv("VPR0_FILE"));
 
             //----se file non esiste assegno gap=100----
             gap=100;
         }
-        for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0[i]);
+        for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0.val[i]);
 
         //------------se gap < MEMORY leggo vpr e area per ogni strato-----------
 
@@ -862,16 +862,16 @@ LOG_DEBUG (" modalita %d",mode);
                     for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
                         long int ar;
                         int il;
-                        fscanf(file," %i %f %li", &il, &vpr0[ilay], &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
+                        fscanf(file," %i %f %li", &il, &vpr0.val[ilay], &ar);  //---NB il file in archivio è in dBZ e contiene anche la quota----
 
                         //---- converto in R il profilo vecchio--
-                        if (vpr0[ilay]>0){
-                            float vpr_dbz=vpr0[ilay];
-                            vpr0[ilay] = cum_bac.dbz.DBZtoR(vpr_dbz);
-                            area[ilay]=ar;
+                        if (vpr0.val[ilay]>0){
+                            float vpr_dbz=vpr0.val[ilay];
+                            vpr0.val[ilay] = cum_bac.dbz.DBZtoR(vpr_dbz);
+                            vpr0.area[ilay]=ar;
                         }
                         else
-                            vpr0[ilay] = NODATAVPR;
+                            vpr0.val[ilay] = NODATAVPR;
                     }
                     combinante=1;
                     break;
@@ -894,8 +894,8 @@ LOG_DEBUG (" modalita %d",mode);
                 //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
                 // calcolo la diff media
                 for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                    if ( vpr0[ilay]> NODATAVPR && vpr1[ilay]>NODATAVPR ){
-                        diff=diff + vpr0[ilay]-vpr1[ilay];
+                    if ( vpr0.val[ilay]> NODATAVPR && vpr1.val[ilay]>NODATAVPR ){
+                        diff=diff + vpr0.val[ilay]-vpr1.val[ilay];
                         n=n+1;
                     }
                 }
@@ -905,18 +905,18 @@ LOG_DEBUG (" modalita %d",mode);
                     LOG_INFO(" livmin %i", livmin.livmin);
                     diff=diff/n;
                     for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
-                        if (vpr0[ilay]<= NODATAVPR && vpr1[ilay] > NODATAVPR)
-                            vpr0[ilay]=vpr1[ilay]-diff;
-                        if (vpr1[ilay]<= NODATAVPR && vpr0[ilay] > NODATAVPR)
-                            vpr1[ilay]=vpr0[ilay]+diff;
+                        if (vpr0.val[ilay]<= NODATAVPR && vpr1.val[ilay] > NODATAVPR)
+                            vpr0.val[ilay]=vpr1.val[ilay]-diff;
+                        if (vpr1.val[ilay]<= NODATAVPR && vpr0.val[ilay] > NODATAVPR)
+                            vpr1.val[ilay]=vpr0.val[ilay]+diff;
 
                     }
                 }
                 // peso vpr corrente per combinazione
                 float alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
                 for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                    if (vpr0[ilay] > NODATAVPR && vpr1[ilay] > NODATAVPR)
-                        vpr[ilay]=comp_levels(vpr0[ilay],vpr1[ilay],NODATAVPR,alfat);// combino livelli
+                    if (vpr0.val[ilay] > NODATAVPR && vpr1.val[ilay] > NODATAVPR)
+                        vpr.val[ilay]=comp_levels(vpr0.val[ilay],vpr1.val[ilay],NODATAVPR,alfat);// combino livelli
                 }
             } else {
                 // se il calcolo dell'istantaneo  è andato bene ricopio il profilo
@@ -926,7 +926,6 @@ LOG_DEBUG (" modalita %d",mode);
             if (combinante)
             {
                 // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
-                area_vpr = area;
                 vpr = vpr0;
             } else {
                 //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
@@ -940,7 +939,7 @@ LOG_DEBUG (" modalita %d",mode);
     else  {
         if (!inst_vpr.success)
             return (1);
-        vpr = vpr1;
+        vpr = inst_vpr.vpr;
     }
 
 
@@ -954,8 +953,8 @@ LOG_DEBUG (" modalita %d",mode);
 
 
     //-----scrivo il profilo e la sua area-----
-    cum_bac.assets.write_vpr0(vpr, area_vpr);
-    for (unsigned i=0; i<vpr.size(); i++) LOG_DEBUG (" Profilo nuovo - livello %2d valore %6.2f",i,vpr[i]);
+    cum_bac.assets.write_vpr0(vpr);
+    for (unsigned i=0; i<vpr.size(); i++) LOG_DEBUG (" Profilo nuovo - livello %2d valore %6.2f",i,vpr.val[i]);
 
     return(0);
 }
@@ -999,12 +998,12 @@ int CalcoloVPR::stampa_vpr()
 
     fprintf(file," QUOTA   DBZ    AREA PRECI(KM^2/1000)\n" );
     for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-        if (vpr[ilay]> 0.001 ) {
-            vpr_dbz=cum_bac.dbz.RtoDBZ(vpr[ilay]);
-            fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, vpr_dbz, area_vpr[ilay]);
+        if (vpr.val[ilay]> 0.001 ) {
+            vpr_dbz=cum_bac.dbz.RtoDBZ(vpr.val[ilay]);
+            fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, vpr_dbz, vpr.area[ilay]);
         }
         else
-            fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, NODATAVPR, area_vpr[ilay]);
+            fprintf(file," %i %10.3f %li\n", ilay*TCK_VPR+TCK_VPR/2, NODATAVPR, vpr.area[ilay]);
     }
 
     return 0;
@@ -1095,9 +1094,9 @@ int CalcoloVPR::corr_vpr()
                 ilref=(cum_bac.dem(i, k)>livmin)?(floor(cum_bac.dem(i, k)/TCK_VPR)):(floor(livmin/TCK_VPR));//livello di riferimento; se livello dem>livmin = livello dem altrimenti livmin
 
 
-                if (vpr[ilref] > 0 && vpr[ilray] > 0 ){ /*devo avere dati validi nel VPR alle quote considerate!*/
+                if (vpr.val[ilref] > 0 && vpr.val[ilray] > 0 ){ /*devo avere dati validi nel VPR alle quote considerate!*/
                     //-- calcolo il valore del profilo alla quota di interesse
-                    vpr_hray=vpr[ilray]+((vpr[ilray]-vpr[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2); /*per rendere la correzione continua non a gradini */
+                    vpr_hray=vpr.val[ilray]+((vpr.val[ilray]-vpr.val[ilay2])/(ilray*TCK_VPR-TCK_VPR/2-ilay2*TCK_VPR))*(hbin-ilray*TCK_VPR-TCK_VPR/2); /*per rendere la correzione continua non a gradini */
                     //--identifico le aree dove nevica stando alla quota teorica dello zero termico
 
                     if (cum_bac.dem(i, k)> hvprmax+HALF_BB-TCK_VPR || snow){ /*classifico neve*/
@@ -1112,15 +1111,15 @@ int CalcoloVPR::corr_vpr()
                     if(neve(i, k)){
 
                         //faccio la regressione lineare dei punti del profilo sopra il punto del dem
-                        //calcolo il valore al livello del dem e lo sostituisco a vpr[ilref] nella correzione
+                        //calcolo il valore al livello del dem e lo sostituisco a vpr.val[ilref] nella correzione
                         // faccio linearizzazione in maniera becera:
-                        //vpr[ilref]=(vpr[ilref+7]-vpr[ilref+2])/(5)*(ilref-(ilref+2))+vpr[ilref+2];
+                        //vpr.val[ilref]=(vpr.val[ilref+7]-vpr.val[ilref+2])/(5)*(ilref-(ilref+2))+vpr.val[ilref+2];
 
                         //passaggio=BYTEtoR(volume.vol_pol,aMP_SNOW,bMP_SNOW)
 
                         //volpol[0][i][k]=RtoBYTE(passaggio)
 
-                        corr=cum_bac.dbz.RtoDBZ(vpr[ilref])-cum_bac.dbz.RtoDBZ(vpr_hray);
+                        corr=cum_bac.dbz.RtoDBZ(vpr.val[ilref])-cum_bac.dbz.RtoDBZ(vpr_hray);
 
                         cum_bac.volume[0].set(i, k, cum_bac.dbz.DBZ_snow(cum_bac.volume[0].get(i, k)));
                     }
@@ -1186,32 +1185,32 @@ int CalcoloVPR::trovo_hvprmax(int *hmax)
     soglia = DBZ::DBZtoR(THR_VPR,200,1.6); // CAMBIATO, ERRORE, PRIMA ERA RtoDBZ!!!!VERIFICARE CHE IL NUMERO PARAMETRI FUNZIONE SIA CORRETTO
 
     //--se vpr al livello corrente e 4 layer sopra> soglia, calcolo picco
-        LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr[istart] , vpr[istart+4], soglia, peak, imax); 
-    if (vpr[istart] >soglia && vpr[istart+4] > soglia){
-        peak=10*log10(vpr[istart]/vpr[istart+4]);//inizializzo il picco
+        LOG_DEBUG(" istart %d low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", istart, vpr.val[istart] , vpr.val[istart+4], soglia, peak, imax); 
+    if (vpr.val[istart] >soglia && vpr.val[istart+4] > soglia){
+        peak=10*log10(vpr.val[istart]/vpr.val[istart+4]);//inizializzo il picco
         LOG_DEBUG("peak1 = %f",peak);
     }
     //----se picco > MINIMO il punto è ok
     if(peak> MIN_PEAK_VPR){
         imax=istart;
-        // Enrico vprmax=vpr[imax];
+        // Enrico vprmax=vpr.val[imax];
         LOG_DEBUG("il primo punto soddisfa le condizioni di picco");
     }
     for (i=istart+1;i<NMAXLAYER-4;i++) //la ricerca è un po' diversa dall'originale.. trovo il picco + alto con valore  rispetto a 4 sopra > soglia
     {
-        if (vpr[i] <soglia || vpr[i+4] < soglia) break;
-        peak=10*log10(vpr[i]/vpr[i+4]);
-        if (vpr[i]>vpr[i-1]  && peak> MIN_PEAK_VPR ) // se vpr(i) maggiore del massimo e picco sufficientemente alto
+        if (vpr.val[i] <soglia || vpr.val[i+4] < soglia) break;
+        peak=10*log10(vpr.val[i]/vpr.val[i+4]);
+        if (vpr.val[i]>vpr.val[i-1]  && peak> MIN_PEAK_VPR ) // se vpr(i) maggiore del massimo e picco sufficientemente alto
         {
             imax=i;
-            // Enrico vprmax=vpr[imax];
+            // Enrico vprmax=vpr.val[imax];
         }
-        LOG_DEBUG(" low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", vpr[i] , vpr[i+4], soglia, peak, imax); 
+        LOG_DEBUG(" low %6.2f  up %6.2f  soglia %6.2f  peak %6.2f  imax %d", vpr.val[i] , vpr.val[i+4], soglia, peak, imax); 
     }
 
     if ( imax  > INODATA ){
         foundlivmax=1;
-        peak=10*log10(vpr[imax]/vpr[imax+4]);
+        peak=10*log10(vpr.val[imax]/vpr.val[imax+4]);
         *hmax=imax*TCK_VPR+TCK_VPR/2;
         LOG_DEBUG("trovato ilaymax %i %i",*hmax,imax);
         LOG_DEBUG(" picco in dbR %f",peak);
@@ -1325,7 +1324,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
             case 0:
             case 1:
             case 2:
-                ier=iv.interpola_VPR(vpr.data(), hvprmax, livmin);
+                ier=iv.interpola_VPR(vpr.val.data(), hvprmax, livmin);
                 if (ier){
                     LOG_INFO(" interpolazione fallita");
                     switch (tipo_profilo)
@@ -1339,7 +1338,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                             *hliq=NODATAVPR;
                             break;
                         case 2:
-                            *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;/*21 aprile 2008*/
+                            *vpr_liq=vpr.val[(hvprmax+1000)/TCK_VPR]*2.15;/*21 aprile 2008*/
                             *hliq=0;
                             break;
                     }
@@ -1363,19 +1362,19 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                         //lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
                         if (*hliq<0)
                             *hliq=0;  /*con casi di bright band bassa.. cerco di correggere il più possibile*/
-                        *vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
+                        *vpr_liq=vpr.val[(hvprmax+1000)/TCK_VPR]*2.15;
                     }
                     else {
                         *hliq=(iv.E-2.1*iv.G)*1000.;
                         //lineargauss(a[2]-2.1*a[3], a, vpr_liq, dyda, ndata);
                         if ( *hliq > livmin) {
-                            *vpr_liq=vpr[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
+                            *vpr_liq=vpr.val[(int)(*hliq/TCK_VPR)]; // ... SE HO IL VALORE VPR USO QUELLO.
                         }
                         else // altrimenti tengo il valore vpr neve + 6 dB* e metto tipo_profilo=2
                         {
                             if (*hliq<0) *hliq=0;
                             tipo_profilo=2;
-                            //*vpr_liq=vpr[(hvprmax+1000)/TCK_VPR]*2.15;
+                            //*vpr_liq=vpr.val[(hvprmax+1000)/TCK_VPR]*2.15;
                             *vpr_liq=iv.C;
                         }
                     }
@@ -1400,17 +1399,17 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
             tempo->tm_mday,tempo->tm_hour, tempo->tm_min);
     if (! ier ) {
         if(*hliq > livmin +200 )
-            vhliquid=cum_bac.dbz.RtoDBZ(vpr[(int)(*hliq)/TCK_VPR]);
+            vhliquid=cum_bac.dbz.RtoDBZ(vpr.val[(int)(*hliq)/TCK_VPR]);
         vliq=cum_bac.dbz.RtoDBZ(*vpr_liq);
     }
     if (ier_max) {
         if ( hvprmax-600 >= livmin )
-            v600sottobb=cum_bac.dbz.RtoDBZ(vpr[(hvprmax-600)/TCK_VPR]);
+            v600sottobb=cum_bac.dbz.RtoDBZ(vpr.val[(hvprmax-600)/TCK_VPR]);
         if ((hvprmax+1000)/TCK_VPR < NMAXLAYER )
-            v1000=cum_bac.dbz.RtoDBZ(vpr[(hvprmax+1000)/TCK_VPR]);
+            v1000=cum_bac.dbz.RtoDBZ(vpr.val[(hvprmax+1000)/TCK_VPR]);
         if ((hvprmax+1500)/TCK_VPR < NMAXLAYER )
-            v1500=cum_bac.dbz.RtoDBZ(vpr[(hvprmax+1500)/TCK_VPR]);
-        vprmax=cum_bac.dbz.RtoDBZ(vpr[(hvprmax/TCK_VPR)]);
+            v1500=cum_bac.dbz.RtoDBZ(vpr.val[(hvprmax+1500)/TCK_VPR]);
+        vprmax=cum_bac.dbz.RtoDBZ(vpr.val[(hvprmax/TCK_VPR)]);
     }
 
     if (FILE* test_vpr=fopen(getenv("TEST_VPR"),"a+"))
@@ -1572,7 +1571,6 @@ CalcoloVPR::CalcoloVPR(CUM_BAC& cum_bac)
     : cum_bac(cum_bac),
       inst_vpr(cum_bac.volume, cum_bac.qual, cum_bac.flag_vpr, cum_bac.site.vpr_iaz_min, cum_bac.site.vpr_iaz_max),
       conv(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size(),0),
-      area_vpr(NMAXLAYER, 0),
       corr_polar(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size()),
       neve(NUM_AZ_X_PPI, cum_bac.volume.max_beam_size())
 {
@@ -1606,7 +1604,7 @@ void CalcoloVPR::esegui_tutto()
 
     //VPR  // ------------chiamo combina profili con parametri sito, sito alternativo ---------------
 
-    inst_vpr.compute(area_vpr); // ho fatto func_vpr, il profilo istantaneo
+    inst_vpr.compute(); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 
     //  ier_comb=combina_profili(sito,argv[4]);

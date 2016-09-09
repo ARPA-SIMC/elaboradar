@@ -200,13 +200,13 @@ public:
      * @return true if succesfull
      * @return false if file does not exits 
      */  
-    bool read_vpr0(radarelab::algo::VPR& vpr0, std::vector<long int>& area);
+    bool read_vpr0(radarelab::algo::VPR& vpr0);
 
     /** Write in $VPR0_FILE the vpr calculated.
      * @param [in] vpr - vpr profile in mmh-1 [rain intensity]
      * @param [in] area - areal coverage for each layer km^2/1000
      */  
-    void write_vpr0(const radarelab::algo::VPR& vpr, std::vector<long int>& area);
+    void write_vpr0(const radarelab::algo::VPR& vpr);
 
     /** Write in $OUTPUT_Z_LOWRIS_DIR/MP_coeff the MP coefficients.
      * @param [in] dbz - DBZ object with MP coefficients 

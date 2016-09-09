@@ -326,14 +326,14 @@ void Assets::write_vpr_hmax(int hvprmax)
     fclose(out);
 }
 
-bool Assets::read_vpr0(algo::VPR& vpr0, std::vector<long int>& area)
+bool Assets::read_vpr0(algo::VPR& vpr0)
 {
     File in(logging_category);
     if (!in.open_from_env("VPR0_FILE", "rt")) return false;
 
     for (unsigned i = 0; i < vpr0.size(); ++i)
         //-----leggo vpr e area per ogni strato----
-        if (fscanf(in, "%f %li\n", &vpr0[i], &area[i]) != 2)
+        if (fscanf(in, "%f %li\n", &vpr0.val[i], &vpr0.area[i]) != 2)
         {
             LOG_ERROR("$VPR0_FILE=%s cannot be read: %s", in.name(), strerror(errno));
             throw std::runtime_error("cannot read $VPR0_FILE");
@@ -342,13 +342,13 @@ bool Assets::read_vpr0(algo::VPR& vpr0, std::vector<long int>& area)
     return true;
 }
 
-void Assets::write_vpr0(const algo::VPR& vpr, std::vector<long int>& area)
+void Assets::write_vpr0(const algo::VPR& vpr)
 {
     const char* fname = getenv("VPR0_FILE");
     if (!fname) throw runtime_error("$VPR0_FILE (ultimo vpr) is not set");
     FILE* out = fopen_checked(fname, "wt", "ultimo vpr");
     for (unsigned i = 0; i < vpr.size(); ++i)
-        if (fprintf(out, " %10.3f %li\n", vpr[i], area[i]) < 0)
+        if (fprintf(out, " %10.3f %li\n", vpr.val[i], vpr.area[i]) < 0)
         {
             LOG_ERROR("$VPR0_FILE=%s cannot be written: %s", fname, strerror(errno));
             fclose(out);
