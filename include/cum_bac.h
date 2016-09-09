@@ -242,7 +242,6 @@ struct CalcoloVPR
     double hbbb;                ///< altezza bottom brightband
     radarelab::PolarScan<unsigned char> corr_polar; ///< correzione vpr in byte 0-128 negativa 128-256 positiva, in coord az-ra
     radarelab::PolarScan<unsigned char> neve;       ///< matrice az-range che memorizza punti di neve
-    int ier_comb;               ///< flag d'errore su combinazione vpr
     int ier_max;                ///< flag d'errore su calcolo quota max 
     int ier_stampa_vpr;             ///< flag d'errore su stampa profilo
 

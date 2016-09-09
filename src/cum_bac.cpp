@@ -1519,6 +1519,8 @@ void CalcoloVPR::esegui_tutto()
     inst_vpr.compute(); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
 
+    int ier_comb;               ///< flag d'errore su combinazione vpr
+
     //  ier_comb=combina_profili(sito,argv[4]);
     ier_comb=combina_profili(inst_vpr);
     LOG_INFO ("exit status calcolo VPR istantaneo: %s", inst_vpr.success ? "ok": "fallito") ; // debug
