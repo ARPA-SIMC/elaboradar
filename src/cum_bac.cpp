@@ -768,28 +768,27 @@ void CalcoloVPR::merge_metodi(const algo::CalcoloSteiner& steiner, const algo::C
 int CalcoloVPR::combina_profili(const InstantaneousVPR& inst_vpr)
 {
     LOG_CATEGORY("radar.vpr");
-    int mode;
 
-    mode=MOD_VPR;
+    LOG_DEBUG (" modalita %d", MOD_VPR);
+    VPR vpr0;
+    bool combinante; // combinante: variabile che contiene presenza vpr alternativo
+    if (MOD_VPR == 0)
+    {
+        /* MOD_VPR=0: VPR combinato */
+        combinante = cum_bac.assets.find_vpr0(cum_bac.dbz, vpr0, gap);
+    } else {
+        /* MOD_VPR=1: VPR istantaneo */
+        combinante = false;
+    }
 
-
-    //--------inizializzo cv e ct-------------//
-    //-----calcolo del profilo istantaneo:faccio func_vpr-----//
-
-    for (unsigned i=0; i<inst_vpr.vpr.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,inst_vpr.vpr.val[i]);
-
-    /*modalità VPR combinato*/
-LOG_DEBUG (" modalita %d",mode);
-    if(mode == 0) {
-        int combinante = 0; // combinante: variabile che contiene presenza vpr alternativo
-        VPR vpr0;
+    if (combinante)
+    {
         VPR vpr1 = inst_vpr.vpr;
 
         /*----calcolo il peso c0 per la combinazione dei profili*/
 
         long int c0 = 2 * inst_vpr.cv;
 
-        combinante = cum_bac.assets.find_vpr0(cum_bac.dbz, vpr0, gap);
         for (unsigned i=0; i<vpr0.size(); i++) LOG_DEBUG (" Profilo vecchio - livello %2d valore %6.2f",i,vpr0.val[i]);
 
         //----a fine calcolo sul sito in esame stampo il valore del gap
@@ -799,67 +798,56 @@ LOG_DEBUG (" modalita %d",mode);
 
         if (inst_vpr.success)
         {
-            if (combinante)
-            {
-                int n=0,diff=0;
-                //----------------se l'istantaneo c'è o ho trovato un file con cui combinare
-                //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
-                // calcolo la diff media
-                for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                    if ( vpr0.val[ilay]> NODATAVPR && vpr1.val[ilay]>NODATAVPR ){
-                        diff=diff + vpr0.val[ilay]-vpr1.val[ilay];
-                        n=n+1;
-                    }
+            int n=0,diff=0;
+            //----------------se l'istantaneo c'è o ho trovato un file con cui combinare
+            //-----se ho i due profili riempio parte bassa con differenza media  allineandoli e combino poi
+            // calcolo la diff media
+            for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
+                if ( vpr0.val[ilay]> NODATAVPR && vpr1.val[ilay]>NODATAVPR ){
+                    diff=diff + vpr0.val[ilay]-vpr1.val[ilay];
+                    n=n+1;
                 }
-                if (n>0){
-                    //------------- trovo livello minimo -------
-                    Livmin livmin(vpr);
-                    LOG_INFO(" livmin %i", livmin.livmin);
-                    diff=diff/n;
-                    for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
-                        if (vpr0.val[ilay]<= NODATAVPR && vpr1.val[ilay] > NODATAVPR)
-                            vpr0.val[ilay]=vpr1.val[ilay]-diff;
-                        if (vpr1.val[ilay]<= NODATAVPR && vpr0.val[ilay] > NODATAVPR)
-                            vpr1.val[ilay]=vpr0.val[ilay]+diff;
+            }
+            if (n>0){
+                //------------- trovo livello minimo -------
+                Livmin livmin(vpr);
+                LOG_INFO(" livmin %i", livmin.livmin);
+                diff=diff/n;
+                for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
+                    if (vpr0.val[ilay]<= NODATAVPR && vpr1.val[ilay] > NODATAVPR)
+                        vpr0.val[ilay]=vpr1.val[ilay]-diff;
+                    if (vpr1.val[ilay]<= NODATAVPR && vpr0.val[ilay] > NODATAVPR)
+                        vpr1.val[ilay]=vpr0.val[ilay]+diff;
 
-                    }
                 }
-                // peso vpr corrente per combinazione
-                float alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
-                for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
-                    if (vpr0.val[ilay] > NODATAVPR && vpr1.val[ilay] > NODATAVPR)
-                        vpr.val[ilay]=comp_levels(vpr0.val[ilay],vpr1.val[ilay],NODATAVPR,alfat);// combino livelli
-                }
-            } else {
-                // se il calcolo dell'istantaneo  è andato bene ricopio il profilo
-                vpr = vpr1;
+            }
+            // peso vpr corrente per combinazione
+            float alfat = (float)inst_vpr.ct / (c0 + inst_vpr.ct);
+            for (unsigned ilay=0;  ilay<NMAXLAYER; ilay++){
+                if (vpr0.val[ilay] > NODATAVPR && vpr1.val[ilay] > NODATAVPR)
+                    vpr.val[ilay]=comp_levels(vpr0.val[ilay],vpr1.val[ilay],NODATAVPR,alfat);// combino livelli
             }
         } else {
-            if (combinante)
-            {
-                // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
-                vpr = vpr0;
-            } else {
-                //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
-                return 1;
-            }
+            // se il calcolo dell'istantaneo non è andato bene , ricopio l'altro vpr e la sua area
+            vpr = vpr0;
+        }
+    } else {
+        if (inst_vpr.success)
+        {
+            // se il calcolo dell'istantaneo  è andato bene ricopio il profilo
+            vpr = inst_vpr.vpr;
+        } else {
+            //-----se è andata male la ricerca dell'altro e anche il calcolo dell'istantaneo esco
+            return 1;
         }
     }
-
-    /*fine mode=0 VPR combinato, mode=1 VPR istantaneo controllo se l'istantaneo è andato ok e in caso affermativo continuo*/
-
-    else  {
-        if (!inst_vpr.success)
-            return (1);
-        vpr = inst_vpr.vpr;
-    }
-
 
     //------------- trovo livello minimo -------
     Livmin livmin(vpr);
     LOG_INFO(" livmin %i", livmin.livmin);
 
-    if (livmin.idx >= vpr.size() - 1 || !livmin.found) return (1);
+    if (livmin.idx >= vpr.size() - 1 || !livmin.found)
+        return (1);
 
     this->livmin = livmin.livmin;
 
@@ -1518,6 +1506,7 @@ void CalcoloVPR::esegui_tutto()
 
     inst_vpr.compute(); // ho fatto func_vpr, il profilo istantaneo
     LOG_INFO("fatta func vpr %s", inst_vpr.success ? "ok" : "errore");
+    for (unsigned i=0; i<inst_vpr.vpr.size(); i++) LOG_DEBUG (" Profilo istantaneo - livello %2d valore %6.2f",i,inst_vpr.vpr.val[i]);
 
     int ier_comb;               ///< flag d'errore su combinazione vpr
 
