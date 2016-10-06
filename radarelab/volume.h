@@ -138,7 +138,8 @@ public:
      * Create a copy of a PolarScan
      * @param [in] s  - PolarScan to be copied
      */
-    PolarScan(const PolarScan& s) = default;
+    // FIXME: Cannot use '= default' or g++ 4.8.3 will not instantiate it on explicit template instantiation
+    PolarScan(const PolarScan& s) : PolarScanBase(s), Matrix2D<T>(s) {}
 
     template<class OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
@@ -268,7 +269,8 @@ public:
     /// RadarSite
     RadarSite radarSite;
 
-    Scans() = default;
+    // FIXME: Cannot use '= default' or g++ 4.8.3 will not instantiate it on explicit template instantiation
+    Scans() : std::vector<PolarScan<T>>() {}
 
     /**
      *  Constructor
