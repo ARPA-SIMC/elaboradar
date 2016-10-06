@@ -89,7 +89,7 @@ static void startup_banner(CUM_BAC_CLOPT *opt)
     if(opt->do_quality)FlagRunTime=FlagRunTime+" QUALITY";
     if(opt->do_readStaticMap) FlagRunTime=FlagRunTime + " STATIC";  
  
-    LOG_INFO(FlagRunTime.c_str());
+    LOG_INFO("%s", FlagRunTime.c_str());
 
     LOG_INFO("-----------------------------------------------------------------");
     LOG_INFO("Variabili d'Ambiente:");
