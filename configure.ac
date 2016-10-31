@@ -31,6 +31,7 @@ dnl Mandatory librarires
 dnl Debian still has a log4c without pkg-config support, see https://bugs.debian.org/834036
 dnl PKG_CHECK_MODULES(LOG4C, [log4c])
 AM_PATH_LOG4C
+PKG_CHECK_MODULES(TCLAP, [tclap])
 PKG_CHECK_MODULES(GSL, [gsl])
 PKG_CHECK_MODULES(GDAL, [gdal], , [have_gdal=no])
 if test x$have_gdal != xno
