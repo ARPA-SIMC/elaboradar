@@ -65,7 +65,7 @@ static void startup_banner(CUM_BAC_CLOPT *opt)
 //            " WRITE_DBP"   eventualmente da re-inserire
 #endif
 #ifdef WRITE_DBP_REORDER
-//            " WRITE_DBP_REORDER" eventiualemnte da re-inserire
+//            " WRITE_DBP_REORDER" eventualemnte da re-inserire
 #endif
 
 #ifdef Z_AVERAGE
@@ -310,11 +310,16 @@ int main (int argc, char **argv)
           CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
           cb->generate_maps(products);
           products.write_out(cb->assets,CART_DIM_ZLR, algos);
-	  products.write_odim(cb->assets, CART_DIM_ZLR, algos);
+	  OdimProdDefs odimProd(products.z_out, products.qual_Z_1x1, products.ScaledRes);
+          products.write_odim(cb->assets, CART_DIM_ZLR, algos, odimProd);
+	  if (CL_opt.do_SaveFullRes){
+            OdimProdDefs odimProdFullRes(products.z_fr, products.FullsizeRes);
+            products.write_odim(cb->assets, 256. * ZLR_N_ELEMENTARY_PIXEL, algos, odimProdFullRes);
+	  }
           if (CL_opt.do_SaveBothRanges){
             LOG_INFO("Salvo sub-image intermedie");
             products.write_out(cb->assets, 256, algos);
-	    products.write_odim(cb->assets, 256, algos);
+	    products.write_odim(cb->assets, 256, algos,odimProd);
 	  }
         }
 
@@ -327,18 +332,22 @@ int main (int argc, char **argv)
        } 
        CartProducts products(volume, CART_DIM_ZLR, ZLR_N_ELEMENTARY_PIXEL);
        cb->generate_maps(products);
+       OdimProdDefs odimProd(products.z_out, products.qual_Z_1x1, products.ScaledRes);
        if (CL_opt.do_SaveBothRanges){
             products.write_out(cb->assets,CART_DIM_ZLR,algos);
-	    products.write_odim(cb->assets, CART_DIM_ZLR, algos);
+	    products.write_odim(cb->assets, CART_DIM_ZLR, algos, odimProd);
             LOG_INFO("Salvo sub-image");
             products.write_out(cb->assets, 256, algos);
-	    products.write_odim(cb->assets, 256, algos);
+	    products.write_odim(cb->assets, 256, algos, odimProd);
        }else{
             products.write_out(cb->assets,CART_DIM_ZLR,algos);
-	    products.write_odim(cb->assets, CART_DIM_ZLR, algos);
+	    products.write_odim(cb->assets, CART_DIM_ZLR, algos, odimProd);
           // products.write_out(cb->assets);
        }	
-
+       if (CL_opt.do_SaveFullRes){
+         OdimProdDefs odimProdFullRes(products.z_fr, products.FullsizeRes);
+         products.write_odim(cb->assets, 256. * ZLR_N_ELEMENTARY_PIXEL, algos, odimProdFullRes);
+       }
     } catch (std::exception& e) {
         LOG_ERROR("Errore nella processazione: %s", e.what());
         ier_main = 1;

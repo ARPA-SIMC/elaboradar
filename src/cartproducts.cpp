@@ -11,7 +11,7 @@ CartProducts::CartProducts(const Volume<double>& volume, unsigned image_side, un
     : mapping(volume[0].beam_size),
       fullres(volume[0].beam_size),
       scaled(mapping, image_side, sample_square_size),
-      z_out(image_side), top_1x1(image_side), qual_Z_1x1(image_side),
+      z_out(image_side), z_fr(image_side*sample_square_size), top_1x1(image_side), qual_Z_1x1(image_side),
       quota_1x1(image_side), dato_corr_1x1(image_side),
       elev_fin_1x1(image_side), beam_blocking_1x1(image_side),
       neve_1x1(image_side), corr_1x1(image_side), conv_1x1(image_side)
@@ -75,7 +75,9 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     assets.write_subimage(conv_1x1, image_side, algos, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
 }
 
-    void CartProducts::write_odim(Assets& assets, unsigned image_side, std::string algos)
+   
+
+    void CartProducts::write_odim(Assets& assets, unsigned image_side, std::string algos, OdimProdDefs &odimProd)
 {
     const char* dir = getenv("OUTPUT_Z_LOWRIS_DIR");
     if (!dir)
@@ -105,8 +107,8 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
        exit(1);
     if (!(pj_latlong = pj_init_plus(LatLon_def.c_str())) )
        exit(1);
-    double coord_min =  -(image_side * ScaledRes *0.5) ;
-    double coord_max =   image_side * ScaledRes *0.5   ;
+    double coord_min =  -(image_side * odimProd.prodRes *0.5) ;
+    double coord_max =    image_side * odimProd.prodRes *0.5   ;
     double x[]={coord_min, coord_max, coord_min, coord_max};		// { LL , LR, UL, UR }
     double y[]={coord_min, coord_min, coord_max, coord_max};		// { LL , LR, UL, UR }
     if (pj_transform(pj_aeqd, pj_latlong,  4, 1, x, y, NULL ) != 0 ) exit(1000);
@@ -121,57 +123,102 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
 
     image->setXSize(image_side);
     image->setYSize(image_side);
-    image->setXScale(ScaledRes);
-    image->setYScale(ScaledRes);
+    image->setXScale(odimProd.prodRes);
+    image->setYScale(odimProd.prodRes);
     image->setProjectionArguments(proj);
 
 		/* how */
     image->setTaskOrProdGen(algos);
     image->setStartEpochs((unsigned int)assets.getAcqTime());
     image->setEndEpochs(  (unsigned int)assets.getAcqTime());
-    image->setSystem("ARPA-SIMC");
-    image->setSoftware("ARPA-SIMC");
-    image->setSoftwareVer("ARPA-SIMC");
+    image->setSystem(odimProd.System);
+    image->setSoftware(odimProd.System);
+    image->setSoftwareVer(odimProd.System);
 
+/*   ------------------------
+ *   QUI BISOGNA METTERE QUALCOSA CHE CREI IL PRODOTTO GIUSTO MA NON SO COME SI FA
+ *
+ *   AL MOEMNTO CREO SOLO QUELLO CHE MI SERVE
+    switch (odimProd.ProductType) {
+	extern RADAR_API const char* PRODUCT_SCAN;
+	extern RADAR_API const char* PRODUCT_PPI; 
+	extern RADAR_API const char* PRODUCT_CAPPI; 
+	extern RADAR_API const char* PRODUCT_PCAPPI; 
+	extern RADAR_API const char* PRODUCT_ETOP; 
+	extern RADAR_API const char* PRODUCT_MAX; 
+	extern RADAR_API const char* PRODUCT_RR; 
+	extern RADAR_API const char* PRODUCT_VIL; 
+	extern RADAR_API const char* PRODUCT_COMP; 
+	extern RADAR_API const char* PRODUCT_VP; 
+	extern RADAR_API const char* PRODUCT_RHI; 
+	extern RADAR_API const char* PRODUCT_XSEC; 
+	extern RADAR_API const char* PRODUCT_VSP; 
+	extern RADAR_API const char* PRODUCT_HSP;
+	extern RADAR_API const char* PRODUCT_RAY; 
+	extern RADAR_API const char* PRODUCT_AZIM; 
+	extern RADAR_API const char* PRODUCT_QUAL;
+	extern RADAR_API const char* PRODUCT_LBM_ARPA;
+	extern RADAR_API const char* PRODUCT_POH_ARPA;
+
+ *
+ */
     Product_LBM * dataset =  image->createProductLBM();
     dataset->setProduct("SURF");// Dato che ODIMh5 v2.2 codifica per i dati riferiti alla superfice il prodotto generico SURF sovrascrivo quindi il tipo di prodotto definito LBM 
     dataset->setStartDateTime(assets.getAcqTime());
     dataset->setEndDateTime  (assets.getAcqTime());
+    Product_2D_Data* data = dataset->createQuantityData(odimProd.Quantity);
+    data->setNodata(odimProd.Nodata);
+    data->setUndetect(odimProd.Undetect);
+    data->setOffset(odimProd.Offset);
+    data->setGain(odimProd.QuantityDynamics/255.);
 
-    Product_2D_Data* data = dataset->createQuantityData(PRODUCT_QUANTITY_DBZH);
-    data->setNodata(255.);
-    data->setUndetect(0.);
-    data->setOffset(-20.);
-    data->setGain(80./255.);
-
-    unsigned xofs = (z_out.cols() - image_side) / 2;
-    unsigned yofs = (z_out.rows() - image_side) / 2;
+    unsigned xofs = (odimProd.prodField.cols() - image_side) / 2;
+    unsigned yofs = (odimProd.prodField.rows() - image_side) / 2;
     OdimH5v21::DataMatrix <unsigned char> field (image_side,image_side,255);
     for (unsigned y = 0; y < image_side; ++y)
         for (unsigned x = 0; x < image_side; ++x)
-            if (z_out(y + yofs, x + xofs) == 0 ) field.elem(y,x) = 255 ;
-            else if (z_out(y + yofs, x + xofs) == 255) field.elem(y,x) = 254 ;
-            else if (z_out(y + yofs, x + xofs) == 1) field.elem(y,x) = 0 ;
-            else field.elem(y,x) = z_out(y + yofs, x + xofs);
+            if (odimProd.prodField(y + yofs, x + xofs) == 0 ) field.elem(y,x) = 255 ;
+            else if (odimProd.prodField(y + yofs, x + xofs) == 255) field.elem(y,x) = 254 ;
+            else if (odimProd.prodField(y + yofs, x + xofs) == 1) field.elem(y,x) = 0 ;
+            else field.elem(y,x) = odimProd.prodField(y + yofs, x + xofs);
     data->writeData(field);
-
-    OdimQuality * quality =data->createQualityData();
-    quality->getWhat()->set(ATTRIBUTE_WHAT_OFFSET,		0.);
-    quality->getWhat()->set(ATTRIBUTE_WHAT_GAIN,		0.01);
-    quality->getHow() ->set(ATTRIBUTE_HOW_TASK,	"Anna Fornasiero");
-    OdimH5v21::DataMatrix <unsigned char> Qfield (image_side,image_side,255);
-    for (unsigned y = 0; y < image_side; ++y)
+    if (odimProd.SaveQuality) {
+      OdimQuality * quality =data->createQualityData();
+      quality->getWhat()->set(ATTRIBUTE_WHAT_OFFSET,		0.);
+      quality->getWhat()->set(ATTRIBUTE_WHAT_GAIN,		0.01);
+      quality->getHow() ->set(ATTRIBUTE_HOW_TASK,	"Anna Fornasiero");
+      OdimH5v21::DataMatrix <unsigned char> Qfield (image_side,image_side,255);
+      for (unsigned y = 0; y < image_side; ++y)
         for (unsigned x = 0; x < image_side; ++x)
-            Qfield.elem(y,x) = qual_Z_1x1(y + yofs, x + xofs);
-    quality->writeQuality(Qfield);
-
-    delete quality;
+            Qfield.elem(y,x) = odimProd.QualityField(y + yofs, x + xofs);
+      quality->writeQuality(Qfield);
+      delete quality;
+    }
     delete data;
     delete dataset;
     delete image;
     delete factory;
 
 }
+
+OdimProdDefs::OdimProdDefs(radarelab::Image<unsigned char> & prodField, double prodRes) 
+   :  prodField (prodField), System("ARPA-SIMC"), ProductType("SURF"),
+    Quantity(PRODUCT_QUANTITY_DBZH), Nodata(255), Undetect (0), Offset(-20.),
+    QuantityDynamics (80), SaveQuality(false), prodRes(prodRes)
+{
+	// Nothing to do
+}
+
+OdimProdDefs::OdimProdDefs(radarelab::Image<unsigned char> & prodField, radarelab::Image<unsigned char> & QualityField, double prodRes) 
+   :  prodField (prodField), System("ARPA-SIMC"), ProductType("SURF"),
+    Quantity(PRODUCT_QUANTITY_DBZH), Nodata(255), Undetect (0), Offset(-20.),
+    QuantityDynamics (80), SaveQuality(true), QualityField(QualityField), prodRes(prodRes)
+
+{
+	// Nothing to do
+}
+
+    
 
 }	// namespace elaboradar
 

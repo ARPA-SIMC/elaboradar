@@ -7,6 +7,27 @@ namespace elaboradar {
 
 struct Assets;
 
+/* structure to describe general features for an odim product */ 
+struct OdimProdDefs 
+{
+    radarelab::Image<unsigned char> & prodField;
+    std::string System ; 
+    std::string ProductType ;
+    std::string Quantity ;
+    unsigned char Nodata ;
+    unsigned char Undetect;
+    double Offset ;
+    double QuantityDynamics ;
+    bool SaveQuality;
+    radarelab::Image<unsigned char> & QualityField;
+    double prodRes;
+    std::vector<double> prodPar;
+
+	OdimProdDefs(radarelab::Image<unsigned char> & prodField, double prodRes) ;
+	OdimProdDefs(radarelab::Image<unsigned char> & prodField, radarelab::Image<unsigned char> & QualityField, double prodRes) ;
+
+};
+
 struct CartProducts
 {
     log4c_category_t* logging_category;
@@ -23,6 +44,7 @@ struct CartProducts
     radarelab::ScaledIndexMapping scaled;
 
     radarelab::Image<unsigned char> z_out;
+    radarelab::Image<unsigned char> z_fr;
     radarelab::Image<unsigned char> top_1x1;
     radarelab::Image<unsigned char> qual_Z_1x1;
     radarelab::Image<unsigned char> quota_1x1;
@@ -47,9 +69,10 @@ struct CartProducts
     void write_out(Assets& assets, unsigned image_side);
     void write_out(Assets& assets, unsigned image_side, std::string algos);
 
-    void write_odim(Assets& assets, unsigned image_side, std::string algos);
+    void write_odim(Assets& assets, unsigned image_side, std::string algos, OdimProdDefs & odimProd);
 
 };
+
 
 }
 

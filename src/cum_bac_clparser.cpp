@@ -77,6 +77,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
         cmd.add(IntermediateProd);
 	TCLAP::SwitchArg SaveBothRanges("S", "SaveBothRanges", "Save products at both processing ranges (128km ad 256 km)", false);
         cmd.add(SaveBothRanges);
+	TCLAP::SwitchArg SaveFullResProd("F", "SaveFullResProd", "Save product at fullsize resolution", false);
+        cmd.add(SaveFullResProd);
 
 
 
@@ -108,6 +110,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	opt->data_in_odim=OdimFormat.getValue();
         opt->do_intermediateProd=IntermediateProd.getValue();
         opt->do_SaveBothRanges=SaveBothRanges.getValue();
+        opt->do_SaveFullRes=SaveFullResProd.getValue();
 	
   } catch ( TCLAP::ArgException& e )
   { std::cout << "ERROR: " << e.error() << " " << e.argId() << std::endl; }
@@ -133,6 +136,7 @@ void PrintOptions(struct CUM_BAC_CLOPT *opt){
    std::cout <<"do_readStaticMap"<<opt->do_readStaticMap<<std::endl;
    std::cout <<"do_intermediateProd"<<opt->do_intermediateProd<<std::endl;
    std::cout <<"do_SaveBothRanges"<<  opt->do_SaveBothRanges  <<std::endl;
+   std::cout <<"do_SaveFullRes"<<  opt->do_SaveFullRes  <<std::endl;
 
    return ;
 }
