@@ -1361,7 +1361,7 @@ void CUM_BAC::generate_maps(CartProducts& products)
     std::function<unsigned char(unsigned, unsigned)> assign_cart =
          [this](unsigned azimuth, unsigned range) {
          // il max serve perchè il valore di MISSING è 0
-         unsigned char sample = DBtoBYTE(volume[0].get(azimuth, range));
+         unsigned char sample = DBZ::DBtoBYTE(volume[0].get(azimuth, range));
          return max(sample, (unsigned char)1);
     };
     products.fullres.to_cart(assign_cart, products.z_fr);
