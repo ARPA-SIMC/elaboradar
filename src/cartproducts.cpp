@@ -85,7 +85,9 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
         LOG_INFO("$%s not set", "OUTPUT_Z_LOWRIS_DIR");
         throw runtime_error("required env var is not set");
     }
-    string fname = string(dir) + "/" + assets.fname_from_acq_time() + "_" + std::to_string(image_side) + "_"+algos+".h5";
+    SourceInfo OdimSource(assets.getRadarSite().source);
+    
+    string fname = string(dir) + "/" + OdimSource.OperaRadarNode + "_" + assets.fname_from_acq_time() + "_" + std::to_string(image_side) + "_"+algos+".h5";
 
     OdimH5v21::OdimFactory*	factory = NULL;
     OdimH5v21::ImageObject*	image	= NULL;
@@ -95,7 +97,6 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
 
     /* what (valori obbligatori e comuni a tutti gli oggetti) */
     image->setDateTime(assets.getAcqTime());
-    SourceInfo OdimSource(assets.getRadarSite().source);
     image->setSource(OdimSource);
 
 		/* where */
