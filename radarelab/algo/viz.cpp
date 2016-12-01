@@ -68,11 +68,10 @@ void CalcoloVIZ::classifico_VIZ()
 
                 }
 
-
                 if (cil(i, j, k) - cil(i, j, k+4) > 5.)
                     stratiform(i, j)=1;
 
-                for(k=ktbb; k<kmax; k++)
+                for(k=ktbb; k<z_size; k++)
                 {
                     if (cil(i, j, k) > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
                         base=(cil(i, j, k))/10.;
