@@ -401,6 +401,7 @@ void CUM_BAC::declutter_anaprop()
         } else {
               anaprop.remove(volume, beam_blocking, first_level, first_level_static, SD_Z6);
         LOG_WARN("TEXTURE THRESHOLD USED %4.1f -- 0. %6d %6d %6d %6d -- 15. %6d %6d %6d %6d -- 30. %6d %6d %6d %6d -- 40. %6d %6d %6d %6d", anaprop.conf_texture_threshold, (int)above_0[0], (int)above_0[1], (int)above_0[2], (int)above_0[3], (int)above_15[0], (int)above_15[1], (int)above_15[2], (int)above_15[3], (int)above_30[0], (int)above_30[1], (int)above_30[2], (int)above_30[3], (int)above_40[0], (int)above_40[1], (int)above_40[2], (int)above_40[3] );
+	
         }
         LOG_INFO("declutter_anaprop completed with anaprop");
         ScrivoStatistica(anaprop.grid_stats);
@@ -578,8 +579,6 @@ void CUM_BAC::caratterizzo_volume()
     //----------ciclo su NSCAN(=6), cioè sul numero di elevazioni (nominali) per le quali ho calcolato il beam blocking
     /* a questo punto servono: bb, cl,  PIA, dtrs e drrs radiosond, quota, hsup e hinf beam-----------------*/
 
-    //for (l=0; l<NSCAN; l++)/*ciclo elevazioni*/// NSCAN(=6) questo lascia molti dubbi sul fatto che il profilo verticale alle acquisizioni 48, 19 etc..  sia realmente con tutti i dati! DEVO SOSTITUIRE CON nel E FARE CHECK.
-
     for (unsigned l=0; l<volume.size(); l++)/*ciclo elevazioni*/// VERIFICARE CHE VADA TUTTO OK
     {
         const auto& scan = volume[l];
@@ -614,10 +613,9 @@ void CUM_BAC::caratterizzo_volume()
                 dhst = PolarScanBase::sample_height(elevaz + 0.45, dist)
                      - PolarScanBase::sample_height(elevaz - 0.45, dist);
 
-
                 //----qui si fa un po' di mischione: finchè ho il dato dal programma di beam blocking uso il dh con propagazione da radiosondaggio, alle elevazioni superiori assegno dh=dhst  e calcolo quota come se fosse prop. standard, però uso le elevazioni nominali
 
-                if (l<hray_inf.NSCAN-1   ) {
+                if (l<volume.size() -1   ) {
                     // differenza tra limite sup e inf lobo centrale secondo appoccio geo-ott
                     dh = hray_inf(l + 1, k) - hray_inf(l, k);
                 }
@@ -1315,7 +1313,9 @@ void CUM_BAC::vpr_class()
 
         //--------------se definita CLASS procedo con  classificazione -----------------//
         if (do_class)
+	 {
             calcolo_vpr->classifica_rain();
+	  }
 
         //--------------se definito VPR procedo con calcolo VPR -----------------//
 
