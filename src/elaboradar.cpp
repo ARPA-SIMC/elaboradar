@@ -188,7 +188,8 @@ void check_volume(const Volume<double>& volume, int file_type)
         throw runtime_error("Insufficient elevation count");
     }
 
-    for (unsigned k = 0; k < n_elev; k++) /* testo solo le prime 4 elevazioni */
+unsigned count_good = 0, bin_in_vol=0;
+    for (unsigned k = 0; k < volume.size(); k++) /* testo solo le prime 4 elevazioni */
     {
         LOG_INFO("Numero beam presenti: %4u -- elevazione %d", volume[k].beam_count, k);
 
@@ -198,6 +199,16 @@ void check_volume(const Volume<double>& volume, int file_type)
             LOG_ERROR("Trovati Pochi Beam Elevazione %2d - num.: %3d", k, volume[k].beam_count);
             throw runtime_error("Insufficient beam count");
         }
+
+	count_good += (volume[k].array() > -19.0).count();
+	bin_in_vol += volume.beam_count*volume[k].beam_size;
+
+    }
+
+// Check if volume data are bad (too many data probably fault due to AFC control
+    if  ((float) (count_good)/bin_in_vol > 0.9 ){
+      LOG_ERROR("Trovati troppi dati > -19 dBZ  %5.2f\%, volume con possibile problema di AFC", (float) (count_good)/bin_in_vol*100.);
+      throw runtime_error ("Possible bad volume (AFC)");
     }
 }
 
