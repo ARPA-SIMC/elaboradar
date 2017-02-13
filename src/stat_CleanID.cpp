@@ -74,7 +74,7 @@ printf("Chiamo cleaner con zdr\n");
 //		Weather(iray), Clutter(iray), Interf(iray), Noise(iray));
       }
     }
-	printf("DateTime, Azimuth, Elev_01, Weather_E01,Clutter_E01, Iterf_E01,Noise_E02, Elev_02, Weather_E02,Clutter_E02, Iterf_E02,Noise_E02, Elev_03, Weather_E03,Clutter_E03, Iterf_E03,Noise_E03, Elev_04, Weather_E04,Clutter_E04, Iterf_E04,Noise_E04, Elev_05, Weather_E05,Clutter_E05, Iterf_E05,Noise_E05, Elev_06, Weather_E06,Clutter_E06, Iterf_E06,Noise_E06\n");
+	printf("DateTime, Azimuth, Elev_01, Weather_E01,Clutter_E01, Iterf_E01,Noise_E01, Elev_02, Weather_E02,Clutter_E02, Iterf_E02,Noise_E02, Elev_03, Weather_E03,Clutter_E03, Iterf_E03,Noise_E03, Elev_04, Weather_E04,Clutter_E04, Iterf_E04,Noise_E04, Elev_05, Weather_E05,Clutter_E05, Iterf_E05,Noise_E05, Elev_06, Weather_E06,Clutter_E06, Iterf_E06,Noise_E06\n");
     for (unsigned iray=0; iray < Sweep.size(); iray ++){
 	printf("%s,%6.1f %s\n",my_time.c_str(), full_volume_z.at(0).azimuths_real(iray),Sweep[iray].c_str()); 
     }
