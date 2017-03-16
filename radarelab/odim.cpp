@@ -201,7 +201,33 @@ void ODIMStorer::store(const std::string& pathname)
 				matrix.elem(ii,jj) = to_store_fp[i]->scan(j)(ii,jj);
 		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),H5::PredType::NATIVE_UINT16);
 	}
+
+    for(unsigned i=0;i<to_store_uchar.size();i++)
+	for(unsigned j=0;j<to_store_uchar[i]->size();j++)
+	{
+		vector<odim::PolarScan*> scans;
+		scans = volume->getScans(to_store_uchar[i]->scan(j).elevation,0.1);
+		shared_ptr<odim::PolarScan> scan;
+		if(scans.size()) scan.reset(scans[0]);
+		else
+		{
+			scan.reset(volume->createScan());
+			scan->setEAngle(to_store_uchar[i]->scan(j).elevation);
+		}
+		unique_ptr<odim::PolarScanData> data(scan->createQuantityData(to_store_uchar[i]->quantity));
+		data->setGain((double)to_store_uchar[i]->scan(j).gain);
+		data->setOffset((double)to_store_uchar[i]->scan(j).offset);
+		data->setNodata((double)to_store_uchar[i]->scan(j).nodata);
+		data->setUndetect((double)to_store_uchar[i]->scan(j).undetect);
+		odim::RayMatrix<float> matrix;
+        	matrix.resize(to_store_uchar[i]->scan(j).beam_count,to_store_uchar[i]->scan(j).beam_size);
+		for(unsigned ii=0;ii<to_store_uchar[i]->scan(j).beam_count;ii++)
+			for(unsigned jj=0;jj<to_store_uchar[i]->scan(j).beam_size;jj++)
+				matrix.elem(ii,jj) = to_store_uchar[i]->scan(j)(ii,jj);
+		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),H5::PredType::NATIVE_UINT8);
+	}
 }
+
 
 void ODIMStorer::storeQuality(const std::string& pathname, const std::string & task, bool RemoveQualityFields)
 {
