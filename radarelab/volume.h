@@ -139,7 +139,9 @@ public:
      * @param [in] s  - PolarScan to be copied
      */
     // FIXME: Cannot use '= default' or g++ 4.8.3 will not instantiate it on explicit template instantiation
-    PolarScan(const PolarScan& s) : PolarScanBase(s), Matrix2D<T>(s) {}
+    PolarScan(const PolarScan& s)
+        : PolarScanBase(s), Matrix2D<T>(s), nodata(s.nodata),
+          undetect(s.undetect), gain(s.gain), offset(s.offset) {}
 
     template<class OT>
     PolarScan(const PolarScan<OT>& s, const T& default_value)
