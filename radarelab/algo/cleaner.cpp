@@ -100,7 +100,7 @@ std::vector<unsigned char> Cleaner::eval_clean_beam(const Eigen::VectorXd& beam_
     bool in_a_segment = false;
     unsigned start = 0, end = 0;
     unsigned segment_length;
-    bool before, after;
+    bool before = false, after = false;
     unsigned counter = 0;
 
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
@@ -167,7 +167,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     const unsigned beam_size = beam_z.rows();
     vector<bool> res(beam_size, false);
     bool in_a_segment = false;
-    unsigned start, end;
+    unsigned start = 0, end;
     unsigned segment_length;
     bool before, after;
     unsigned counter = 0;
