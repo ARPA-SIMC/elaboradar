@@ -342,6 +342,46 @@ MMap FileDescriptor::mmap(size_t length, int prot, int flags, off_t offset)
     return MMap(res, length);
 }
 
+bool FileDescriptor::ofd_setlk(struct flock& lk)
+{
+#ifdef F_OFD_SETLK
+    if (fcntl(fd, F_OFD_SETLK, &lk) != -1)
+#else
+    if (fcntl(fd, F_SETLK, &lk) != -1)
+#endif
+        return true;
+    if (errno != EAGAIN)
+        throw_error("cannot acquire lock");
+    return false;
+}
+
+bool FileDescriptor::ofd_setlkw(struct flock& lk, bool retry_on_signal)
+{
+    while (true)
+    {
+#ifdef F_OFD_SETLK
+        if (fcntl(fd, F_OFD_SETLKW, &lk) != -1)
+#else
+        if (fcntl(fd, F_SETLKW, &lk) != -1)
+#endif
+            return true;
+        if (errno != EAGAIN)
+            throw_error("cannot acquire lock");
+        if (!retry_on_signal)
+            return false;
+    }
+}
+
+bool FileDescriptor::ofd_getlk(struct flock& lk)
+{
+#ifdef F_OFD_SETLK
+    if (fcntl(fd, F_OFD_GETLK, &lk) == -1)
+#else
+    if (fcntl(fd, F_GETLK, &lk) == -1)
+#endif
+        throw_error("cannot test lock");
+    return lk.l_type == F_UNLCK;
+}
 
 /*
  * NamedFileDescriptor
@@ -463,10 +503,32 @@ void Path::fstatat(const char* pathname, struct stat& st)
         throw_error("cannot fstatat");
 }
 
+bool Path::fstatat_ifexists(const char* pathname, struct stat& st)
+{
+    if (::fstatat(fd, pathname, &st, 0) == -1)
+    {
+        if (errno == ENOENT)
+            return false;
+        throw_error("cannot fstatat");
+    }
+    return true;
+}
+
 void Path::lstatat(const char* pathname, struct stat& st)
 {
     if (::fstatat(fd, pathname, &st, AT_SYMLINK_NOFOLLOW) == -1)
         throw_error("cannot fstatat");
+}
+
+bool Path::lstatat_ifexists(const char* pathname, struct stat& st)
+{
+    if (::fstatat(fd, pathname, &st, AT_SYMLINK_NOFOLLOW) == -1)
+    {
+        if (errno == ENOENT)
+            return false;
+        throw_error("cannot fstatat");
+    }
+    return true;
 }
 
 void Path::unlinkat(const char* pathname)
@@ -621,6 +683,11 @@ bool Path::iterator::issock() const
     return S_ISSOCK(st.st_mode);
 }
 
+Path Path::iterator::open_path(int flags) const
+{
+    return Path(*path, cur_entry->d_name);
+}
+
 
 void Path::rmtree()
 {
@@ -727,7 +794,7 @@ void write_file_atomically(const std::string& file, const void* data, size_t siz
     out.write_all_or_retry(data, size);
     out.close();
 
-    if (rename(out.name().c_str(), file.c_str()) < 0)
+    if (::rename(out.name().c_str(), file.c_str()) < 0)
         throw std::system_error(errno, std::system_category(), "cannot rename " + out.name() + " to " + file);
 }
 
@@ -751,6 +818,12 @@ bool unlink_ifexists(const std::string& file)
     }
     else
         return true;
+}
+
+void rename(const std::string& src_pathname, const std::string& dst_pathname)
+{
+    if (::rename(src_pathname.c_str(), dst_pathname.c_str()) != 0)
+        throw std::system_error(errno, std::system_category(), "cannot rename " + src_pathname + " to " + dst_pathname);
 }
 
 bool rename_ifexists(const std::string& src, const std::string& dst)
