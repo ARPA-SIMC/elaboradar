@@ -33,9 +33,18 @@ struct Cleaner
  * @param [in]	beam_z	- raggio DBZH
  * @param [in]	beam_w	- raggio WRAD
  * @param [in]	beam_v	- raggio VRAD
- * @return raggio di flag per correzione
+ * @return raggio di valori boleani per correzione (true-> Da Correggere)
  */
     std::vector<bool> clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v,int i) const;
+/**
+ * Funzione per ripulire raggio.Utilizza (sigmaV, V) 
+ * Analoga a  clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v,int i), ma 
+ * restituisce un vettore di unsigned char 
+ * @param [in]	beam_z	- raggio DBZH
+ * @param [in]	beam_w	- raggio WRAD
+ * @param [in]	beam_v	- raggio VRAD
+ * @return raggio di valori unsigned char per correzione (1 -> Da Correggere)
+ */
     std::vector<unsigned char> eval_clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v,int i) const;
 
 /**
@@ -78,17 +87,8 @@ struct Cleaner
  * @param [in]	scan_V	- volume di V
  * @param [in]	iel	- indice elevazione solo per debug
  */
-    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,unsigned iel=0);
+    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,unsigned iel=0, bool set_undetect=false);
     static void evaluateCleanID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,PolarScan<unsigned char>& scan_cleanID, unsigned iel=0);
-/**
- * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
- * @param [in,out]	scan_Z	- volume di DBZH
- * @param [in]	scan_W	- volume di WRAD
- * @param [in]	scan_V	- volume di V
- * @param [in]	scan_ZDR - volume di ZDR
- * @param [in]	iel	- indice elevazione solo per debug
- */
-    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_ZDR,unsigned iel=0);
 /**
  * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
  * @param [in,out]	scan_Z	- volume di DBZH
@@ -97,7 +97,17 @@ struct Cleaner
  * @param [in]	bin_wind_magic_number	- soglia vento per dati in formato SP20
  * @param [in]	iel	- indice elevazione solo per debug
  */
-    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, double bin_wind_magic_number,unsigned iel=0);
+    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, double bin_wind_magic_number,unsigned iel=0, bool set_undetect=false);
+
+/**
+ * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
+ * @param [in,out]	scan_Z	- volume di DBZH
+ * @param [in]	scan_W	- volume di WRAD
+ * @param [in]	scan_V	- volume di V
+ * @param [in]	scan_ZDR - volume di ZDR
+ * @param [in]	iel	- indice elevazione solo per debug
+ */
+    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_ZDR,unsigned iel=0, bool set_undetect=false);
 
     static void evaluateCleanID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel=0);
 
@@ -111,7 +121,7 @@ struct Cleaner
  * @param [in]	bin_wind_magic_number	- soglia vento per dati in formato SP20
  * @param [in]	iel	- indice elevazione solo per debug
  */
-    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_ZDR, double bin_wind_magic_number,unsigned iel=0);
+    static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_ZDR, double bin_wind_magic_number,unsigned iel=0, bool set_undetect=false);
 
 /**
  * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
@@ -119,7 +129,7 @@ struct Cleaner
  * @param [in]	bin_wind_magic_number	- soglia vento per dati in formato SP20
  * @param [in]	iel	- indice elevazione solo per debug
  */
-    static void clean( radarelab::volume::Loader load_structure, double bin_wind_magic_number,unsigned iel=0);
+    static void clean( radarelab::volume::Loader load_structure, double bin_wind_magic_number,unsigned iel=0, bool set_undetect=false);
 /*!
  * trapezoidal probability function
  */

@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * =================================================================================
  *
  *       Filename:  volume_cleaner.cpp
  *
@@ -13,7 +13,7 @@
  *         Author:  YOUR NAME (), 
  *   Organization:  
  *
- * =====================================================================================
+ * =================================================================================
  */
 #include "cleaner.h"
 #include "elabora_volume.h"
@@ -26,6 +26,9 @@ namespace algo {
 using namespace std;
 using namespace radarelab;
 
+//--------------------------------------------------------------------------------
+//  These methods use only VRAD and WRAD values to clean the beam
+//
 std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, int iray) const
 {
     const unsigned beam_size = beam_z.rows();
@@ -158,10 +161,11 @@ std::vector<unsigned char> Cleaner::eval_clean_beam(const Eigen::VectorXd& beam_
     }
     return res;
 }
+//---------------------------------------------------------------------------------
 
-
-
-// Con ZDR
+//---------------------------------------------------------------------------------
+//  This method use VRAD, WRAD, sdDBZH, sdZDR values to clean the beam
+//
 std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdzdr, PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& SD, int iray) const
 {
     const unsigned beam_size = beam_z.rows();
@@ -275,8 +279,11 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     }
     return res;
 }
+//---------------------------------------------------------------------------------
 
-// Senza ZDR
+//---------------------------------------------------------------------------------
+//  These methods use VRAD, WRAD, sdDBZH, values to clean the beam
+//
 std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& SD, int iray) const
 {
     const unsigned beam_size = beam_z.rows();
@@ -544,6 +551,7 @@ printf("%2d %4d %4d %4d %4d %4d\n",res[ibin],countClutter,countIntStrong, countI
     return res;
 
 }
+//----------------------------------------------------------------------------------
 
 
 
@@ -557,14 +565,14 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_w beam_count");
     if (scan_z.beam_size != scan_w.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_w beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_w beam_size");
 
     if (scan_z.beam_count != scan_v.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_v beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_v beam_count");
     if (scan_z.beam_size != scan_v.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_v beam_size");
 
     Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
 
@@ -599,14 +607,14 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_w beam_count");
     if (scan_z.beam_size != scan_w.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_w beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_w beam_size");
 
     if (scan_z.beam_count != scan_v.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_v beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_v beam_count");
     if (scan_z.beam_size != scan_v.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_v beam_size");
 
     Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
 
@@ -629,22 +637,22 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
     }
 }
 
-void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, unsigned iel )
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, unsigned iel , bool set_undetect)
 {
     return clean(scan_z, scan_w, scan_v, scan_v.undetect,iel);
 }
-void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v,  double bin_wind_magic_number, unsigned iel )
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v,  double bin_wind_magic_number, unsigned iel, bool set_undetect)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_w beam_count");
     if (scan_z.beam_size != scan_w.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_w beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_w beam_size");
 
     if (scan_z.beam_count != scan_v.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_v beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_v beam_count");
     if (scan_z.beam_size != scan_v.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_v beam_size");
 
     Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
 
@@ -688,6 +696,9 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
 //radarelab::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SD2d"+ext,"PNG");
 //printf("\n");
 
+    double new_val=cleaner.Z_missing;
+    if (set_undetect) new_val=scan_z.undetect;
+
     for (unsigned i = 0; i < beam_count; ++i)
     {
         // Compute which elements need to be cleaned
@@ -697,7 +708,8 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
         for (unsigned ib = 0; ib < beam_size; ++ib)
             if (corrected[ib])
             {
-                scan_z(i, ib) = cleaner.Z_missing;
+                //scan_z(i, ib) = cleaner.Z_missing;
+                scan_z(i, ib) = new_val;
     //            scan_w(i, ib) = cleaner.W_threshold;
     //            scan_v(i, ib) = cleaner.V_missing;
 	    }
@@ -712,21 +724,21 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
 
 
 
-void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, unsigned iel )
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, unsigned iel, bool set_undetect )
 {
     return clean(scan_z, scan_w, scan_v, scan_zdr, scan_v.undetect,iel);
 }
-void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, double bin_wind_magic_number, unsigned iel )
+void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, double bin_wind_magic_number, unsigned iel, bool set_undetect )
 {
     if (scan_z.beam_count != scan_w.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_w beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_w beam_count");
     if (scan_z.beam_size != scan_w.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_w beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_w beam_size");
 
     if (scan_z.beam_count != scan_v.beam_count)
-        throw std::runtime_error("scan_z beam_count is different than scan_v beam_count");
+        throw std::runtime_error("scan_z beam_count no equal to scan_v beam_count");
     if (scan_z.beam_size != scan_v.beam_size)
-        throw std::runtime_error("scan_z beam_size is different than scan_v beam_size");
+        throw std::runtime_error("scan_z beam_size no equal to scan_v beam_size");
 
     Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
 
@@ -743,9 +755,9 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
     ZDR_S.push_back(scan_zdr);
     radarelab::volume::textureSD( ZDR_S,SDZDR2D, 1000. , 3,false);
 
-//----------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 // Mettere a true per fare grafica per debug o false per non fare grafica
 //
 // RICORDARSI DI TOGLIERE/METTERE COMMENTI DOPO CLEAN_BEAM
@@ -783,7 +795,8 @@ if (false){
   radarelab::write_image(img_tmp,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_SDZDR2d"+ext,"PNG");
   printf("\n");
 }
-
+    double new_val=cleaner.Z_missing;
+    if (set_undetect) new_val=scan_z.undetect;
 
     for (unsigned i = 0; i < beam_count; ++i)
     {
@@ -793,7 +806,8 @@ if (false){
         for (unsigned ib = 0; ib < beam_size; ++ib)
             if (corrected[ib])
             {
-                scan_z(i, ib) = cleaner.Z_missing;
+                //scan_z(i, ib) = cleaner.Z_missing;
+                scan_z(i, ib) = new_val;
   //              scan_w(i, ib) = cleaner.W_threshold;
     //            scan_v(i, ib) = cleaner.V_missing;
             }
@@ -806,7 +820,7 @@ if (false){
 //radarelab::write_image(z_clean,"/ponte/rad_svn/proc_operative/test_arch/rev_actual/radar/immagini/Cleaner/PPI_Zclean"+ext,"PNG");
 }
 
-void Cleaner::clean( radarelab::volume::Loader load_structure, double bin_wind_magic_number,unsigned iel)
+void Cleaner::clean( radarelab::volume::Loader load_structure, double bin_wind_magic_number,unsigned iel, bool set_undetect)
 {
   std::string Z_Quantity;
 
