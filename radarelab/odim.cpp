@@ -103,7 +103,7 @@ void ODIMLoader::load(const std::string& pathname)
                 LOG_WARN("no %s found for elevation angle %f: skipping", name.c_str(), elevation);
                 continue;
             }
-            PolarScan<double>& vol_pol_scan = target.append_scan(beam_count, beam_size, elevation, range_scale);
+	    PolarScan<double>& vol_pol_scan = target.append_scan(beam_count, beam_size, elevation, range_scale);
 
             unique_ptr<odim::PolarScanData> data(scan->getQuantityData(name));
 
@@ -117,6 +117,7 @@ void ODIMLoader::load(const std::string& pathname)
             vol_pol_scan.gain = data->getGain();
             vol_pol_scan.offset = data->getOffset();
 	    vol_pol_scan.cell_size = scan->getRangeScale();
+
             // Read actual data from ODIM
             odim::RayMatrix<double> matrix;
             matrix.resize(beam_count, beam_size);
@@ -226,6 +227,33 @@ void ODIMStorer::store(const std::string& pathname)
 				matrix.elem(ii,jj) = to_store_uchar[i]->scan(j)(ii,jj);
 		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),H5::PredType::NATIVE_UINT8);
 	}
+	
+    for(unsigned i=0;i<to_replace.size();i++)
+	for(unsigned j=0;j<to_replace[i]->size();j++)
+	{
+		vector<odim::PolarScan*> scans;
+		scans = volume->getScans(to_replace[i]->scan(j).elevation,0.1);
+
+		shared_ptr<odim::PolarScan> scan;
+		if(scans.size()) scan.reset(scans[0]);
+		else
+		{
+//			scan.reset(volume->createScan());
+//			scan->setEAngle(to_store_uchar[i]->scan(j).elevation);
+		; // da sistemare. in questo caso bisogna far uscire una segnalazione perchè qui non dovremmo proprio finirci.
+		}
+
+		unique_ptr<odim::PolarScanData> data(scan->getQuantityData(to_replace[i]->quantity));
+		H5::AtomType	type	= data->getDataType();
+
+		odim::RayMatrix<double> matrix;
+        	matrix.resize(to_replace[i]->scan(j).beam_count,to_replace[i]->scan(j).beam_size);
+		for(unsigned ii=0;ii<to_replace[i]->scan(j).beam_count;ii++)
+			for(unsigned jj=0;jj<to_replace[i]->scan(j).beam_size;jj++)
+				matrix.elem(ii,jj) = to_replace[i]->scan(j)(ii,jj);
+		data->writeAndTranslate(matrix,(float)data->getOffset(),(float)data->getGain(),type);
+	}
+
 }
 
 

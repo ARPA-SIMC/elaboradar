@@ -64,6 +64,14 @@ public:
     void store_quality_uchar(Volume<unsigned char>* vol_uchar) {to_store_uchar.push_back(vol_uchar);}
     void store(const std::string& pathname);
     void storeQuality(const std::string& pathname, const std::string& task, bool RemoveQualityFields=true);
+
+
+    std::vector<Volume<double>*> to_replace;
+    void replace_quantity(Volume<double>* vol_fp) {
+	     to_replace.push_back(vol_fp) ; 
+	std::cout<<" Ho inserito un volume nella coda delle sostituzioni. Ora la coda ne contiene :"<<to_replace.size()<<std::endl;
+    }
+
 };
 
 } // volume
