@@ -72,9 +72,11 @@ make
 %files tools
 %{_bindir}/classificatore
 %{_bindir}/elaboradar
+%{_bindir}/RunCleanID
+%{_bindir}/stat_CleanID
 
 %changelog
-* Tue Jan 12 2017 Daniele Branchini <dbranchini@arpae.it> - 0.7-1
+* Wed Sep 27 2017 Daniele Branchini <dbranchini@arpae.it> - 0.7-1
 - lots of stuff (please refer to upstream github logs)
 
 * Wed Jul 13 2016 Daniele Branchini <dbranchini@arpae.it> - 0.6-1
