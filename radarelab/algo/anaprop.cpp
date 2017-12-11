@@ -334,7 +334,7 @@ void Anaprop<T>::remove(
 
             if (do_quality)
                 quota(i, k)=(unsigned short)PolarScanBase::sample_height(
-                        elev_fin.elevation_rad_at_elev_preci(i, k),
+                        elev_fin.elevation_at_elev_preci(i, k),
                         (k + 0.5) * volume[0].cell_size);
         }
      }    //  end for over beam_count
@@ -573,7 +573,7 @@ LOG_WARN("Anaprop remove without SD");
 
             if (do_quality)
                 quota(i, k)=(unsigned short)PolarScanBase::sample_height(
-                        elev_fin.elevation_rad_at_elev_preci(i, k),
+                        elev_fin.elevation_at_elev_preci(i, k),
                         (k + 0.5) * volume[0].cell_size);
         }
      }    //  end for over beam_count
