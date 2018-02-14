@@ -37,32 +37,37 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_WRAD,&full_volume_wrad);
 
 	loader_all.load(argv[1]);
-
     if ( !full_volume_wrad.empty() && !full_volume_vrad.empty())
     {
       if (full_volume_zdr.empty())
       {
-printf("Chiamo cleaner senza zdr\n");
-        //for (unsigned i = 0; i < 1; ++i){
+	unsigned last = full_volume_z.size() -1; 
         for (unsigned i = 0; i < full_volume_z.size(); ++i){
-printf("Creo scan per output cleaner\n");
 	    full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
-printf("Ora chiamo evaluateCleanID\n");
             radarelab::algo::Cleaner::evaluateCleanID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_cleanID.at(i),i);
 	    task="Cleaner base";
-        }
+	    for (unsigned ii = 0; ii < full_volume_z.at(i).beam_count; ++ii)
+        	for (unsigned ib = 0; ib < full_volume_z.at(i).beam_size; ++ib) {
+		    printf(" %4d %4d %4d %4d %5.2f %5.2f %5.2f %5.2f  ---> ", i,ii,ib, full_volume_cleanID.at(i)(ii,ib), full_volume_z.at(i)(ii,ib),
+				    	full_volume_z.at(last).nodata, full_volume_z.at(last).gain, full_volume_z.at(last).offset);
+     		    if(full_volume_cleanID.at(i)(ii,ib)) 
+			    full_volume_z.at(i)(ii,ib)=full_volume_z.at(last).nodata; 
+		    printf(" %6.2f \n", full_volume_z.at(i)(ii,ib));
+        	}
+	}
       } else {
-printf("Chiamo cleaner con zdr\n");
         for (unsigned i = 0; i < full_volume_z.size(); ++i){
-            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i);
-            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i+100);
+            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i,true);
+            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i+100,true);
         }
       }
     }
+ 
 
-
+      std::cout<<"Finito Cleaner, salvo risultati"<<std::endl;
 	volume::ODIMStorer storer;
-	storer.store_quality_uchar((Volume<unsigned char>*)(&full_volume_cleanID));
-	storer.storeQuality(argv[2],task );
+	storer.replace_quantity((Volume<double>*)(&full_volume_z));
+//	storer.store_quantity_uchar((Volume<unsigned char>*)(&full_volume_cleanID));
+	storer.store(argv[2]);
 	cout<<endl<<"Fine"<<endl;
 }
