@@ -217,24 +217,25 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 	 }
          if( is_clutter) counter_clutter ++;
          if( is_trash  ) counter_trash ++;
-
-//printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
-//printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
-//(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
-//(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
-//(unsigned char)((beam_sd(ibin)-SD.offset)/SD.gain/256));
+if(ibin <40 && false){
+	printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
+	printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
+	(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
+	(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
+	(unsigned char)((beam_sd(ibin)-SD.offset)/SD.gain/256));
+}       
         if (!in_a_segment)
         {
             /* cerco la prima cella segmento da pulire*/
             if ( is_clutter || is_trash  )
             {
-// printf(" %1d  ----- START SEGMENT ------",flag);
+// if(ibin <40)printf(" %1d  ----- START SEGMENT ------",flag);
                in_a_segment = true;
                 start = ibin;
                 after = false;
                 before = false;
             } 
-//	    else printf(" %1d ",flag);
+//            else  if(ibin <40)printf(" %1d ",flag);
         } else {
             /* cerco la fine segmento da pulire*/
             if ( ! (is_clutter || is_trash ) || ibin == (beam_size - 1)) 
@@ -262,20 +263,20 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
                         count ++;
                   if (double(count)/double(min(int(beam_size - ibin),int(2*min_segment_length))) >=0.25) after = true;
 		}
-// printf(" %1d ----- STOP SEGMENT ------ %4d  --  %4d    before %d   after %d ",flag, segment_length,counter, before,after);
+//  if(ibin <40)printf(" %1d ----- STOP SEGMENT ------ %4d  --  %4d    before %d   after %d ",flag, segment_length,counter, before,after);
                 if ((segment_length >= min_segment_length && (!before || !after) ) ||  segment_length >= max_segment_length)
  //               if ((segment_length >= min_segment_length ) ||  segment_length >= max_segment_length)
                 {
                     /* qui pulisco */
-                    //         printf (" pulisco %d %d %d \n",segment_length, min_segment_length, max_segment_length);
+//                              if(ibin <40)printf (" pulisco %d %d %d \n",segment_length, min_segment_length, max_segment_length);
                     for (unsigned ib = start; ib <= end; ++ib)
                         res[ib] = true;
                 }
             } 
-// 	    else printf(" %1d ",flag);
+// 	    else  if(ibin <40)printf(" %1d ",flag);
 
         }
-//printf("   %4d %4d \n",counter_clutter,counter_trash);
+// if(ibin <40)printf("   %4d %4d \n",counter_clutter,counter_trash);
     }
     return res;
 }
@@ -697,7 +698,7 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
 //printf("\n");
 
     double new_val=cleaner.Z_missing;
-    if (set_undetect) new_val=scan_z.undetect;
+    if (set_undetect) new_val=scan_z.nodata;
 
     for (unsigned i = 0; i < beam_count; ++i)
     {
