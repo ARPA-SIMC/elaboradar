@@ -70,6 +70,7 @@ void Anaprop<T>::remove(
         const Volume<double>& SD)
 {
     const double fondo_scala = volume[0].undetect;
+    unsigned NUM_AZ_X_PPI=volume[0].beam_count;
 
     //for(unsigned i=200; i<201; i++)
     for (unsigned i = 0; i < volume.beam_count; ++i)
@@ -92,6 +93,11 @@ void Anaprop<T>::remove(
         //for(unsigned k=150 ; k<volume[0].beam_size; k++)
         for(unsigned k=0; k<volume[0].beam_size; k++)
         {
+
+	    char buf1 [256], buf2[256], buf3[256];
+            unsigned count_low =0;
+            unsigned count_high=0;
+	    buf3[0]='\0';
             //------------- incremento statistica tot ------------------
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
@@ -100,12 +106,12 @@ void Anaprop<T>::remove(
 //           LOG_WARN(" Decremento %d %d %d %d ",i,k,loc_el_inf, volume.size() ); 
             while ( k >= volume[loc_el_inf].beam_size)
             {
-                //LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
+//                LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
                 loc_el_inf--;
                 if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
             }
             while (loc_el_inf > 0 && SD[loc_el_inf-1].get(i,k) < conf_texture_threshold &&  SD[loc_el_inf-1].get(i,k)>=0.01 && volume[loc_el_inf-1].get(i,k) > volume[loc_el_inf].get(i,k)){
-                  //LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
+//                  LOG_WARN("Decremento el_inf Sotto esiste qualcosa %2d %3d %3d %6.2f %6.2f %6.2f",loc_el_inf, i, k , SD[loc_el_inf-1].get(i,k),volume[loc_el_inf-1].get(i,k),volume[loc_el_inf].get(i,k));
                 loc_el_inf--;
             }
             const unsigned el_inf = loc_el_inf;
@@ -128,7 +134,7 @@ void Anaprop<T>::remove(
             } else{
                 bin_high = volume[el_up].get(i, k);
             }
- //          LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up ); 
+  //         LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up ); 
 
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if(bin_high == fondo_scala && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
@@ -153,7 +159,12 @@ void Anaprop<T>::remove(
                 test_an=(bin_low > fondo_scala && bin_high >= fondo_scala );
             else
                 test_an=(bin_low > fondo_scala && bin_high > fondo_scala );
-         //     LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f",i,k,el_inf,el_up,bin_low,bin_high,   cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),SD[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+              sprintf(buf1, "b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f - cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f ",i,k,el_inf,el_up,bin_low,bin_high,   cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),SD[el_up].get((i),k));
+	    
+	      double loc_conf_text_thre ;
+                if (k <= 20 ) loc_conf_text_thre = 20. ;
+		else loc_conf_text_thre= conf_texture_threshold ;
+
             //------------------ se ho qualcosa sia al livello base che sopra allora effettuo il confronto-----------------
             if(test_an )
             {
@@ -184,8 +195,8 @@ void Anaprop<T>::remove(
                     ) 
                                   || 
                     (
-                      SD[el_inf].get(i,k) > conf_texture_threshold
-//                                  &&  
+                      SD[el_inf].get(i,k) > loc_conf_text_thre
+		      //                                  &&  
 //                    (
 //                          SD[el_inf].get((i+1)%NUM_AZ_X_PPI,k) < 3
 //                                 || 
@@ -196,19 +207,19 @@ void Anaprop<T>::remove(
                    )
                {
                    //--------ricopio valore a el_up su tutte elev inferiori--------------
-	           double loc_conf ;
-                   if (k <= 12 ) loc_conf =10 ;
-		   else loc_conf= conf_texture_threshold ;
-                   if(k < volume[el_up].beam_size && SD[el_up].get(i,k) <= loc_conf && SD[el_up].get(i,k) >= 0.01){
+	         //  double loc_conf_text_thre ;
+                 //  if (k <= 100 ) loc_conf_text_thre =10 ;
+		 //  else loc_conf_text_thre= loc_conf_text_thre ;
+                   if(k < volume[el_up].beam_size && SD[el_up].get(i,k) <= loc_conf_text_thre && SD[el_up].get(i,k) >= 0.01){
                        for(unsigned l=0; l<el_up; l++){
                            volume[l].set(i, k, bin_high);  //ALTERN
                        }
-                       //  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f %6.2f TA-AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),SD[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k), SD[el_up].get(i,k)) ;
+                       sprintf(buf2, " tex_th %4.1f cl %4d cu %4d - fin %6.2f - TA-AN",loc_conf_text_thre, count_low, count_high, volume[0].get(i,k)) ;
                    } else {
                        for(unsigned l=0; l<el_up; l++){
                            volume[l].set(i, k, fondo_scala);  //ALTERN
                        }
-                       // if (k < volume[el_up].beam_size) LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --   %6.2f %6.2f %6.2f TA-AN set to fondo_scala",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,SD[el_up].get(i,k),SD[el_up].get((i+1)%NUM_AZ_X_PPI,k) ,SD[el_up].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+                        if (k < volume[el_up].beam_size) sprintf(buf2, " tex_th %4.1f cl %4d cu %4d - fin %6.2f - TA-AN set to fondo_scala",loc_conf_text_thre,count_low, count_high, volume[0].get(i,k)) ;
                    }
                    //---------assegno l'indicatore di presenza anap nel raggio e incremento statistica anaprop, assegno matrici che memorizzano anaprop e elevazione_finale e azzero beam blocking perchè ho cambiato elevazione
                    flag_anap = true;
@@ -227,21 +238,20 @@ void Anaprop<T>::remove(
               //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
                else
                {
-                   unsigned count_low =0;
-                   unsigned count_high=0;
                    for (unsigned ii=0; ii<7; ii++){
                        int iaz_prox = (i + ii - 3 + volume.beam_count) % volume.beam_count;
-                       if( SD[el_inf].get(iaz_prox,k) < conf_texture_threshold && SD[el_inf].get(iaz_prox,k) > 0.01) count_low++;
-                       if( k < SD[el_up].beam_size && SD[el_up].get(iaz_prox,k) < 1.7*conf_texture_threshold&& SD[el_up].get(iaz_prox,k) > 0.01) count_high++;
+                       if( SD[el_inf].get(iaz_prox,k) < loc_conf_text_thre && SD[el_inf].get(iaz_prox,k) > 0.01) count_low++;
+                       if( k < SD[el_up].beam_size && SD[el_up].get(iaz_prox,k) < 1.7*loc_conf_text_thre&& SD[el_up].get(iaz_prox,k) > 0.01) count_high++;
                    }
-                   if ( !(SD[el_inf].get(i,k) < 1.3*conf_texture_threshold && SD[el_inf].get(i,k) > 0.01 && count_low >=5)) {
-                       if ( k >= SD[el_up].beam_size || !(SD[el_up].get(i,k) < 1.7* conf_texture_threshold && SD[el_up].get(i,k) > 0.01 && count_high >=3)){
+                   if ( !(SD[el_inf].get(i,k) < 1.3*loc_conf_text_thre && SD[el_inf].get(i,k) > 0.01 && count_low >=5)) {
+                       if ( k >= SD[el_up].beam_size || !(SD[el_up].get(i,k) < 1.7* loc_conf_text_thre && SD[el_up].get(i,k) > 0.01 && count_high >=3)){
                            bin_low = fondo_scala;
-                       //    if ( k < SD[el_up].beam_size )  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high,  volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_up].get(i,k),count_high );  
-                       //    else   LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  -- %1d TA-NO_AN low=fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT,count_high );
+                           if ( k < SD[el_up].beam_size ) sprintf(buf2, " tex_th %4.1f cl %4d cu %4d - fin %6.2f - TA-NO_AN low = fondo",loc_conf_text_thre,count_low, count_high, volume[0].get(i,k)) ;
+                           else  sprintf(buf2, " tex_th %4.1f cl %4d cu %4d - fin %6.2f - TA-NO_AN low = fondo",loc_conf_text_thre,count_low, count_high, volume[0].get(i,k)) ;
                        }
                        else {
                            bin_low=bin_high;
+			   sprintf(buf2, " tex_th %4.1f cl %4d cu %4d - fin %6.2f - TA-NO_AN low = high",loc_conf_text_thre,count_low, count_high, volume[0].get(i,k)) ;
                            if (do_quality)
                            {
                                elev_fin(i, k) = el_up;
@@ -260,7 +270,7 @@ void Anaprop<T>::remove(
                    }
                   for(unsigned l=0; l<=el_inf; l++)
                       volume[l].set(i, k, bin_low);
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %1d TA-NO_AN",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),count_low );
+sprintf(buf3, " - fin %6.2f - TA-NO_AN",volume[0].get(i,k)) ;
 
                   if (do_quality)
                   {
@@ -308,9 +318,9 @@ void Anaprop<T>::remove(
                 unsigned count =0;
                 for (unsigned ii=0; ii<7; ii++){
                     int iaz = (i + ii - 3 + volume.beam_count) % volume.beam_count;
-                    if( SD[el_inf].get(iaz,k) < conf_texture_threshold && SD[el_inf].get(iaz,k) > 0.01) count++;
+                    if( SD[el_inf].get(iaz,k) < loc_conf_text_thre && SD[el_inf].get(iaz,k) > 0.01) count++;
                 }
-                if ( !(SD[el_inf].get(i,k) < conf_texture_threshold && SD[el_inf].get(i,k) >0.01 && count >=5 )) 
+                if ( !(SD[el_inf].get(i,k) < loc_conf_text_thre && SD[el_inf].get(i,k) >0.01 && count >=5 )) 
                     bin_low = fondo_scala;
 
                 for(unsigned l=0; l<=el_inf; l++)//riempio con i valori di el_inf tutte le elevazioni sotto (ricostruisco il volume)
@@ -318,7 +328,7 @@ void Anaprop<T>::remove(
                     if (volume[l].beam_size > k)
                         volume[l].set(i, k, bin_low);
                 }
-//  LOG_WARN("b@(%3d,%3d) - el_inf %2d  - el_up %2d -low %6.2f - up %6.2f fin %6.2f- cont %3d %1d %1d %6.2f %6.2f %6.2f %6.2f  --  %6.2f %6.2f %6.2f NO_TA-low ==fondo",i,k,el_inf,el_up,bin_low,bin_high, volume[0].get(i,k),cont_anap,test_an, flag_anap, MAX_DIF, MIN_VALUE, MAX_DIF_NEXT, MIN_VALUE_NEXT, SD[el_inf].get(i,k),SD[el_inf].get((i+1)%NUM_AZ_X_PPI,k) ,SD[el_inf].get((i-1+NUM_AZ_X_PPI)%NUM_AZ_X_PPI,k));
+sprintf(buf2, " tex_th %4.1f cl %4d cu %4d - fin %6.2f - NO_TA low = fondo",loc_conf_text_thre,count_low, count_high, volume[0].get(i,k)) ;
 
                 if (do_quality)
                 {
@@ -335,6 +345,9 @@ void Anaprop<T>::remove(
                 quota(i, k)=(unsigned short)PolarScanBase::sample_height(
                         elev_fin.elevation_at_elev_preci(i, k),
                         (k + 0.5) * volume[0].cell_size);
+
+//	    if (k < 20) LOG_WARN("%s %s %s",buf1,buf2, buf3);
+//	    if (k == 20) LOG_WARN("b@(%3d,%3d) ------------------------",i,k);
         }
      }    //  end for over beam_count
 }
