@@ -113,13 +113,13 @@ class PolarScan : public PolarScanBase, public Matrix2D<T>
 {
 public:
     /// Value used as 'no data' value
-    T nodata = 0;
+    double nodata = 0;
     /// Minimum amount that can be measured
-    T undetect = 0;
+    double undetect = 0;
     /// Conversion factor
-    T gain = 1;
+    double gain = 1;
     /// Conversion factor
-    T offset = 0;
+    double offset = 0;
 
     /*!
      * Constructor - Create a polarscan given beam_count, beam_size and the value to fill the Matrix
@@ -323,7 +323,6 @@ public:
             LOG_ERROR("append_scan(beam_count=%u, beam_size=%u, elevation=%f, cell_size=%f) called with an elevation that is not above the last one (%f)", beam_count, beam_size, elevation, cell_size, this->back().elevation);
             throw std::runtime_error("elevation not greather than the last one");
         }
-
         // Add the new polar scan
         this->push_back(PolarScan<T>(beam_count, beam_size));
         this->back().elevation = elevation;
