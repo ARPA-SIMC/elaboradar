@@ -38,7 +38,22 @@ if test x$have_gdal != xno
 then
     AC_DEFINE([HAVE_GDAL], 1, [gdal is available])
 fi
-PKG_CHECK_MODULES(PROJ, [proj])
+
+dnl CentOS 7 has no pkg-config for proj-devel
+PKG_CHECK_MODULES(PROJ, [proj], [have_proj=yes], [have_proj=no])
+if test $have_proj = yes
+then
+        PKG_CHECK_MODULES(PROJ, [proj])
+else
+	AC_CHECK_LIB([proj], [pj_init], [have_proj=yes], [have_proj=no])
+	AC_CHECK_HEADER([proj_api.h], [have_proj=yes], [have_proj=no])
+	if test x"$have_proj" = x"no"; then
+		AC_MSG_ERROR("*** missing proj")
+	else
+		PROJ_LIBS="-lproj"
+		AC_SUBST(PROJ_LIBS)
+	fi
+fi
 
 dnl Fedora 20 has no pkg-config for hdf5-devel
 PKG_CHECK_MODULES([HDF5], [hdf5], [have_hdf5=yes], [have_hdf5=no])

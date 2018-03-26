@@ -1,14 +1,14 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
 Version: 	0.9
-Release: 	1
+Release: 	2
 License: 	GPL
 Group: 		Applications/Meteo
 URL:            https://github.com/arpa-simc/%{name}
 Source0:        https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-Packager: 	Daniele Branchini <dbranchini@arpa.emr.it>
-BuildRequires:	gcc-c++, hdf5-devel, eigen3-devel, radarlib-devel, log4c-devel, gsl-devel, tclap-devel
+Packager: 	Daniele Branchini <dbranchini@arpae.it>
+BuildRequires:	libtool, gcc-c++, hdf5-devel, eigen3-devel, radarlib-devel, log4c-devel, gsl-devel, tclap, gdal-devel, proj-devel, doxygen
 Requires:       hdf5
 
 %description
