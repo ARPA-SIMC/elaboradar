@@ -2,7 +2,6 @@
 *.lo
 *.o
 *.la
-*.pyc
 *~
 .deps
 .dirstamp

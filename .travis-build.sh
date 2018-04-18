@@ -11,7 +11,9 @@ then
     yum install -y epel-release
     yum install -y @buildsys-build
     yum install -y yum-utils
+    yum install -y yum-plugin-copr
     yum install -y git
+    yum copr enable -y simc/stable
 elif [[ $image =~ ^fedora: ]]
 then
     pkgcmd="dnf"
@@ -20,17 +22,18 @@ then
     dnf install -y @buildsys-build
     dnf install -y 'dnf-command(builddep)'
     dnf install -y git
+    dnf copr enable -y simc/stable
 fi
 
 $builddep -y fedora/SPECS/elaboradar.spec
 
 if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
-    pkgname=wreport-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
+    pkgname=elaboradar-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
     mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-    cp fedora/SPECS/wreport.spec ~/rpmbuild/SPECS/wreport.spec
+    cp fedora/SPECS/elabordar.spec ~/rpmbuild/SPECS/elaboradar.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
-    rpmbuild -ba ~/rpmbuild/SPECS/wreport.spec
+    rpmbuild -ba ~/rpmbuild/SPECS/elaboradar.spec
     find ~/rpmbuild/{RPMS,SRPMS}/ -name "${pkgname}*rpm" -exec cp -v {} . \;
     # TODO upload ${pkgname}*.rpm to github release on deploy stage
 else
