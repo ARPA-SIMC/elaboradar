@@ -29,7 +29,7 @@ $builddep -y fedora/SPECS/elaboradar.spec
 
 if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
-    pkgname=elaboradar-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
+    pkgname=elaboradar-"$(rpmspec -q --qf="%{version}-%{release}\n" fedora/SPECS/elaboradar.spec | head -n1)"
     mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
     cp fedora/SPECS/elaboradar.spec ~/rpmbuild/SPECS/elaboradar.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
