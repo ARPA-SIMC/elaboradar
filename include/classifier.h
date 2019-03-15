@@ -478,11 +478,11 @@ public:
  * \brief Compute Echo Classes
  * Park et al. (2009) HCA algorithm
  */
-	void HCA_Park_2009();
+  void HCA_Park_2009(float Ht,float Hb);
 /*!
  * \brief Check consistency respect to Melting Layer height
  */
-	void melting_layer_classification(MeltingLayer& ML);
+  void melting_layer_classification(MeltingLayer& ML, float Ht, float Hb);
 /*!
  * \brief Designate class echo
  * Find the maximum of aggregation values

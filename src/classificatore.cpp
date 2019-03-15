@@ -11,7 +11,7 @@
 #include <iostream>
 #include <radarelab/volume.h>
 #include <radarelab/odim.h>
-
+#include <stdlib.h>
 #include "classifier.h"
 #include <radarelab/algo/elabora_volume.h>
 
@@ -24,13 +24,15 @@ int main(int argc,char* argv[])
 	
 	//Volume<double> volume;
 	//volume::ODIMLoader loader(sito, false, 1024);
-
+        float Ht = atof(argv[2]);
+	float Hb= atof(argv[3]);
+        
 	volume::classifier classificatore(argv[1]);
 
 	cout<<"riempito classificatore"<<endl;
 	classificatore.compute_derived_volumes();
 	cout<<"calcolati i volumi derivati"<<endl;
-	classificatore.HCA_Park_2009();
+	classificatore.HCA_Park_2009 (Ht, Hb );
 //	classificatore.print_ppi_class();
 
 	volume::ODIMStorer storer;

@@ -360,18 +360,20 @@ void classifier::compute_derived_volumes()
 	gradient_elevation(vol_phidp, vol_grad_phi_theta,true);
 }
 
-void classifier::melting_layer_classification(MeltingLayer& ML)
+void classifier::melting_layer_classification(MeltingLayer& ML, float Ht, float Hb)
 {
 	double elev;
-	double Hb,Ht;
+	//double Hb,Ht;
 	for(unsigned el=0;el<vol_z.size();el++)
 	{
 		elev=vol_z.scan(el).elevation;
 		cout<<"El "<<el<<"\t"<<elev<<endl;
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
-			Ht=ML.top[az];
-			Hb=ML.bot[az];
+		  //	Ht=ML.top[az];
+		  //	Hb=ML.bot[az];
+		  //    Ht=10000;
+		  //	Hb=8000;
 			bool flag=true;
 			unsigned rg=0;
 			while(flag&&rg<vol_z.scan(el).beam_size)
@@ -536,7 +538,7 @@ void classifier::class_designation(unsigned win_rg, unsigned win_az)
 	}
 }
 
-void classifier::HCA_Park_2009()
+void classifier::HCA_Park_2009(float Ht, float Hb)
 {
 	vector< vector< HCA_Park > > SCAN;
 	vector< HCA_Park > BEAM;
@@ -579,7 +581,7 @@ void classifier::HCA_Park_2009()
 	// Dopo aver calcolato i valori di aggregazione cerco il melting layer
 	MeltingLayer ML(vol_z,vol_zdr,vol_rhohv,vol_Ai);
 	cout<<"applico ML criteria ad HCA"<<endl;
-	melting_layer_classification(ML);
+	melting_layer_classification(ML, Ht, Hb);
 	class_designation(1,1);
 /*	unsigned elev=1;
 	unsigned azim=140;
