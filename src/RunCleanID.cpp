@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <cstring>
 #include <radarelab/volume.h>
 #include <radarelab/odim.h>
 #include <radarlib/radar.hpp>
@@ -18,6 +19,12 @@ namespace odim = OdimH5v21;
 
 int main(int argc,char* argv[])
 {
+	if (argc < 2)
+	{
+		fprintf(stderr, "Usage: %s <h5-volume-input> <h5-volume-output> [--Use_undetect] \n", argv[0]);
+		exit(1);
+	}
+	
 	std::string pathname = argv[1];	
 
 	printf("il nome del mio file è %s\n", pathname.c_str());
@@ -46,13 +53,15 @@ int main(int argc,char* argv[])
 	    full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
             radarelab::algo::Cleaner::evaluateCleanID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_cleanID.at(i),i);
 	    task="Cleaner base";
+	    double new_value=full_volume_z.at(last).nodata;
+	    if (argc == 4 && ! sscanf(argv[3], " --Use_undetect") ) new_value=full_volume_z.at(last).undetect;
 	    for (unsigned ii = 0; ii < full_volume_z.at(i).beam_count; ++ii)
         	for (unsigned ib = 0; ib < full_volume_z.at(i).beam_size; ++ib) {
-		    printf(" %4d %4d %4d %4d %5.2f %5.2f %5.2f %5.2f  ---> ", i,ii,ib, full_volume_cleanID.at(i)(ii,ib), full_volume_z.at(i)(ii,ib),
-				    	full_volume_z.at(last).nodata, full_volume_z.at(last).gain, full_volume_z.at(last).offset);
-     		    if(full_volume_cleanID.at(i)(ii,ib)) 
-			    full_volume_z.at(i)(ii,ib)=full_volume_z.at(last).nodata; 
-		    printf(" %6.2f \n", full_volume_z.at(i)(ii,ib));
+	//	    printf(" %4d %4d %4d %4d %5.2f %5.2f %5.2f %5.2f  ---> ", i,ii,ib, full_volume_cleanID.at(i)(ii,ib), full_volume_z.at(i)(ii,ib),
+	//			    	full_volume_z.at(last).nodata, full_volume_z.at(last).gain, full_volume_z.at(last).offset);
+     		    if(full_volume_cleanID.at(i)(ii,ib) ) 
+			    full_volume_z.at(i)(ii,ib)= new_value;
+	//	    printf(" %6.2f \n", full_volume_z.at(i)(ii,ib));
         	}
 	}
       } else {
@@ -67,7 +76,7 @@ int main(int argc,char* argv[])
       std::cout<<"Finito Cleaner, salvo risultati"<<std::endl;
 	volume::ODIMStorer storer;
 	storer.replace_quantity((Volume<double>*)(&full_volume_z));
-//	storer.store_quantity_uchar((Volume<unsigned char>*)(&full_volume_cleanID));
+	storer.store_quantity_uchar((Volume<unsigned char>*)(&full_volume_cleanID));
 	storer.store(argv[2]);
 	cout<<endl<<"Fine"<<endl;
 }
