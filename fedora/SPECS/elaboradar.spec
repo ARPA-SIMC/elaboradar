@@ -1,7 +1,7 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.9
-Release: 	2
+Version: 	0.10
+Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
 URL:            https://github.com/arpa-simc/%{name}
@@ -76,6 +76,10 @@ make
 %{_bindir}/stat_CleanID
 
 %changelog
+* Thu Mar 28 2019 Daniele Branchini <dbranchini@arpae.it> - 0.10-1
+- added undetect option to RunCleanID
+- added Ht and Hb parameters passage from rds
+
 * Wed Sep 27 2017 Daniele Branchini <dbranchini@arpae.it> - 0.7-1
 - lots of stuff (please refer to upstream github logs)
 
