@@ -1,6 +1,7 @@
 #include "cartproducts.h"
 #include "assets.h"
 #include <radarlib/radar.hpp>
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H
 #include <proj_api.h>
 
 using namespace radarelab;
