@@ -370,8 +370,8 @@ void classifier::melting_layer_classification(MeltingLayer& ML, float Ht, float 
 		cout<<"El "<<el<<"\t"<<elev<<endl;
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
-		  //	Ht=ML.top[az];
-		  //	Hb=ML.bot[az];
+		   	Ht=ML.top[az];
+		   	Hb=ML.bot[az];
 		  //    Ht=10000;
 		  //	Hb=8000;
 			bool flag=true;
