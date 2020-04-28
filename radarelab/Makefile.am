@@ -28,6 +28,7 @@ nobase_dist_radarelabinclude_HEADERS = \
   interpola_vpr.h \
   loader.h \
   par_class.h \
+  RadarSite.h \
   volume.h \
   vpr_par.h \
   sp20.h \
