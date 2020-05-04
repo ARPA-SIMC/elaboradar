@@ -65,9 +65,13 @@ int main(int argc,char* argv[])
         	}
 	}
       } else {
+	      bool Undetect = false;
+	    if (argc == 4 && ! sscanf(argv[3], " --Use_undetect") ) Undetect = true;
+//	    printf(" flag settata a %d\n",Undetect);
         for (unsigned i = 0; i < full_volume_z.size(); ++i){
-            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i,true);
-            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i+100,true);
+		cout<<"elevazione :"<<i<<endl;
+            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i,Undetect);
+            algo::Cleaner::clean(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i),full_volume_zdr.at(i),i+100,Undetect);
         }
       }
     }

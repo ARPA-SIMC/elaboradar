@@ -727,10 +727,11 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
 
 void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, unsigned iel, bool set_undetect )
 {
-    return clean(scan_z, scan_w, scan_v, scan_zdr, scan_v.undetect,iel);
+    return clean(scan_z, scan_w, scan_v, scan_zdr, scan_v.undetect,iel,set_undetect);
 }
 void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, double bin_wind_magic_number, unsigned iel, bool set_undetect )
 {
+	cout<<"Chiamato cleaner "<<set_undetect<<endl;
     if (scan_z.beam_count != scan_w.beam_count)
         throw std::runtime_error("scan_z beam_count no equal to scan_w beam_count");
     if (scan_z.beam_size != scan_w.beam_size)
@@ -740,8 +741,10 @@ void Cleaner::clean(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarS
         throw std::runtime_error("scan_z beam_count no equal to scan_v beam_count");
     if (scan_z.beam_size != scan_v.beam_size)
         throw std::runtime_error("scan_z beam_size no equal to scan_v beam_size");
-
-    Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
+    double z_val=scan_z.nodata;
+    if(set_undetect) z_val=scan_z.undetect;
+//Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
+    Cleaner cleaner(z_val, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
 
     const unsigned beam_count = scan_z.beam_count;
     const unsigned beam_size = scan_z.beam_size;
@@ -798,7 +801,7 @@ if (false){
 }
     double new_val=cleaner.Z_missing;
     if (set_undetect) new_val=scan_z.undetect;
-
+//printf("valore new_val ---> %f\n",new_val);
     for (unsigned i = 0; i < beam_count; ++i)
     {
         // Compute which elements need to be cleaned
