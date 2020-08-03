@@ -24,12 +24,13 @@ int main(int argc,char* argv[])
 	
 	//Volume<double> volume;
 	//volume::ODIMLoader loader(sito, false, 1024);
-        //float Ht = atof(argv[2]);
-	//float Hb= atof(argv[3]);
-  
+   
+        float Ht=atof(argv[2]);
+	float Hb=atof(argv[3]);
+
         //inizializzo Ht e Hb che verranno poi ricalcolati in classifier
-          float Ht=3.;
-          float Hb=2.;  
+  // float Ht=3.;
+  //   float Hb=2.;  
 	volume::classifier classificatore(argv[1]);
 
 	cout<<"riempito classificatore"<<endl;

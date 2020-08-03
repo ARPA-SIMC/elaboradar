@@ -47,7 +47,7 @@
 
 // Soglie algoritmi
 #define OVERBLOCKING 51 /* minimo BB non accettato*/
-#define SOGLIA_TOP 20.0 // soglia per trovare top
+#define SOGLIA_TOP 45.0 // soglia per trovare top
 #define MISSING 0 /*valore mancante*/
 
 //Definizioni geometriche

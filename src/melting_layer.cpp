@@ -159,11 +159,12 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 
 	double MAX_ML_H=4.5;	//TODO: check for climatological boundaries in ML height
 	double MIN_ML_H=0.;
+        float max_z,max_zdr;
 
 	MLpoints melting_points(MIN_ML_H,MAX_ML_H,vol_z.beam_count,100);
 	top.resize(vol_z.beam_count);
 	bot.resize(vol_z.beam_count);
-	unsigned curr_rg=0;
+	unsigned curr_rg=0,rg_maxz=0,rg_maxzdr=0;
 	bool confirmed=false;
 
 	ostringstream ML;
@@ -185,25 +186,45 @@ MeltingLayer::MeltingLayer(Volume<double>& vol_z,Volume<double>& vol_zdr,Volume<
 			{
 				Statistic<double> average;
 				double min_zdr=0.8;
+                                //calcolo la media sul raggio di zdr
 				for(unsigned rg=0;rg<rho.beam_size;rg++)
 				{
-					if(zdr(az,rg)>0.2)average.feed(zdr(az,rg));
+					if(zdr(az,rg)>0.2) average.feed(zdr(az,rg));
 				}
 				if(average.N) min_zdr=average.compute_mean();
 				else min_zdr=0.8;
-				
-				for(unsigned rg=0;rg<rho.beam_size;rg++)
-				{
+								for(unsigned rg=0;rg<rho.beam_size;rg++)
+                                  {
 					//if(el==5)cout<<rg<<" "<<rho.beam_size<<"\t"<<az<<" "<<rho.beam_count<<endl;
 					if(rho(az,rg)>=0.9 && rho(az,rg)<=0.95 && HCA[el][az][rg].meteo_echo() && z.height(rg)>MIN_ML_H && z.height(rg)<MAX_ML_H)	//TODO diminuisco la soglia minima di rho da 0.9 a 0.85 e la massima da 0.97 a 0.95
 					{
 						curr_rg=rg;
+                                                max_z=-19.;
+                                                max_zdr=-5;
+                                                //scorro il raggio entro 0.5 km dal bin alla ricerca di un bin con valori accettabili di z e zdr 
+                                                while (curr_rg<z.beam_size && z.diff_height(rg,curr_rg<0.5)){
+                                                  if (z(az,curr_rg) > max_z)
+                                                  {
+                                                   
+                                                   max_z=z(az,curr_rg);
+                                                   rg_maxz=rg;
+                                                   
+                                                  }
+                                                  if (zdr(az,curr_rg)>max_zdr)
+                                                  {
+                                                   max_zdr=zdr(az,curr_rg);
+                                                   rg_maxzdr=rg;
+                                                  }
+                                                  
+                                                  curr_rg++; }
+                                                curr_rg=rg;
 						while(curr_rg<z.beam_size && z.diff_height(rg,curr_rg)<0.5 && !confirmed)
 						{
 							//if(el==5&&az==165&&rg==448)cout<<curr_rg<<endl;
 							//if(el==4)if(az==85)if(rg>200)if(rg<250)cout<<rg<<" "<<rho(az,rg)<<" "<<z(az,rg)<<" "<<zdr(az,rg)<<endl;
-							if(z(az,curr_rg)>20. && z(az,curr_rg)<47 && zdr(az,curr_rg)>min_zdr &&  //TODO cambio la soglia minima da 0.8 a metodo wise
-								zdr(az,curr_rg)<2.5 && z.height(rg)>melting_points.Hmin)	// TODO diminuisco soglia minima z da 30 a 20
+                                                  if(z(az,rg_maxz)>20. && max_z <47 && max_zdr >min_zdr &&  //TODO cambio la soglia minima da 0.8 a metodo wise
+                                                           max_zdr < 2.5 && z.height(rg)>melting_points.Hmin)	// TODO diminuisco soglia minima z da 30 a 20
+                                                          
 							{
 								confirmed=true;
 							}
