@@ -478,7 +478,7 @@ public:
  * \brief Compute Echo Classes
  * Park et al. (2009) HCA algorithm
  */
-  void HCA_Park_2009(float Ht,float Hb);
+  void HCA_Park_2009(float Ht, float Hb);
 /*!
  * \brief Check consistency respect to Melting Layer height
  */

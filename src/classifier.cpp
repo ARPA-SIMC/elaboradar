@@ -333,7 +333,7 @@ void classifier::correct_for_snr()
 
 void classifier::compute_derived_volumes()
 {
-	//correct_phidp();	//TODO: probabilmente inutile se adottiamo il metodo di Vulpiani che stima direttamente la kdp
+  //correct_phidp();	//TODO: probabilmente inutile se adottiamo il metodo di Vulpiani che stima direttamente la kdp
 	//correct_for_snr();	//TODO: fa danni indicibili questa correzione. Maledetto Schuur 2003 !!!  
 
 	compute_lkdp();
@@ -370,10 +370,12 @@ void classifier::melting_layer_classification(MeltingLayer& ML, float Ht, float 
 		cout<<"El "<<el<<"\t"<<elev<<endl;
 		for(unsigned az=0;az<vol_z.scan(el).beam_count;az++)
 		{
-		   	Ht=ML.top[az];
+                  if ( Ht < 0.0 || Hb < 0.0 ){ //cioè se Ht o Hb sono dati non validi li calcolo
+                  	Ht=ML.top[az];
 		   	Hb=ML.bot[az];
-		  //    Ht=10000;
-		  //	Hb=8000;
+                  }
+               
+                 
 			bool flag=true;
 			unsigned rg=0;
 			while(flag&&rg<vol_z.scan(el).beam_size)
@@ -436,7 +438,9 @@ void classifier::melting_layer_classification(MeltingLayer& ML, float Ht, float 
 			}
 
 		}
+     
 	}
+        ;       
 }
 
 void classifier::class_designation(unsigned win_rg, unsigned win_az)
