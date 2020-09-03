@@ -1,6 +1,6 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.12
+Version: 	0.13
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -76,6 +76,10 @@ make
 %{_bindir}/stat_CleanID
 
 %changelog
+* Thu Sep  3 2020 Daniele Branchini <dbranchini@arpae.it> - 0.13-1
+- external reading for melting layer
+- flag Use_undetect
+
 * Tue Apr 28 2020 Daniele Branchini <dbranchini@arpae.it> - 0.12-1
 - added RadarSite.h
 
