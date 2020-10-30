@@ -20,10 +20,10 @@ Functions includes:
  * Beam blockage corrections
  * VPR correction
 
-ARPA-specific processing tools
+ARPAE-specific processing tools
 ------------------------------
 
-These are found in src/
+These are found in `src/`
 
 Licensing and acquisition
 -------------------------

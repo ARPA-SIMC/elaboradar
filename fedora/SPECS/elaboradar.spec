@@ -1,6 +1,6 @@
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.13
+Version: 	0.14
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -76,6 +76,11 @@ make
 %{_bindir}/stat_CleanID
 
 %changelog
+* Fri Oct 30 2020 Daniele Branchini <dbranchini@arpae.it> - 0.14-1
+- fixed offset management
+- added AddCleanerQuantities
+- forcing clean to use undetect instead of nodata
+
 * Thu Sep  3 2020 Daniele Branchini <dbranchini@arpae.it> - 0.13-1
 - external reading for melting layer
 - flag Use_undetect
