@@ -74,6 +74,8 @@ make
 %{_bindir}/elaboradar
 %{_bindir}/RunCleanID
 %{_bindir}/stat_CleanID
+%dir %{_libexecdir}/%{name}
+%{_libexecdir}/%{name}/vecchioripulisco
 
 %changelog
 * Fri Oct 30 2020 Daniele Branchini <dbranchini@arpae.it> - 0.14-1

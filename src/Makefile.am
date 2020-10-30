@@ -32,7 +32,8 @@ libtmp_la_SOURCES = \
   cum_bac_clparser.cpp
 libtmp_la_LIBADD = ../radarelab/libradarelab.la
 
-bin_PROGRAMS = elaboradar classificatore RunCleanID stat_CleanID vecchioripulisco AddCleanerQuantities
+bin_PROGRAMS = elaboradar classificatore RunCleanID stat_CleanID AddCleanerQuantities
+pkglibexec_PROGRAMS = vecchioripulisco
 
 elaboradar_SOURCES = \
   elaboradar.cpp
