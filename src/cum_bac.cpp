@@ -251,8 +251,8 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
 	}
       } else {
         for (unsigned i = 0; i < z_volume->size(); ++i){
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i);
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100);
+            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i,true);
+            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100,true);
         }
       }
     }
