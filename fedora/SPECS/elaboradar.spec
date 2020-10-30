@@ -70,6 +70,7 @@ make
 %doc %{_docdir}/%{name}
 
 %files tools
+%{_bindir}/AddCleanerQuantities
 %{_bindir}/classificatore
 %{_bindir}/elaboradar
 %{_bindir}/RunCleanID
