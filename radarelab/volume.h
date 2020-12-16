@@ -270,6 +270,8 @@ public:
     std::shared_ptr<LoadInfo> load_info;
     /// RadarSite
     RadarSite radarSite;
+    /// Data Offset
+   T offset = 0;
 
     // FIXME: Cannot use '= default' or g++ 4.8.3 will not instantiate it on explicit template instantiation
     Scans() : std::vector<PolarScan<T>>() {}
@@ -290,7 +292,18 @@ public:
         this->radarSite = v.radarSite;
         for (const auto& src_scan : v)
             this->push_back(PolarScan<T>(src_scan, default_value));
+	this->offset=v.offset;
     }
+
+    /// set offset value
+    /// @param[in] offset 
+    //
+	void SetOffset (T offset) 
+	{
+		this->offset = offset;
+	}
+
+
 
     /// Access a polar scan
     /// @param [in] idx - index of the PolarScan to be used
