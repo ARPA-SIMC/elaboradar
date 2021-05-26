@@ -47,8 +47,6 @@ then
     cp fedora/SPECS/elaboradar.spec ~/rpmbuild/SPECS/elaboradar.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
     rpmbuild -ba ~/rpmbuild/SPECS/elaboradar.spec
-    find ~/rpmbuild/{RPMS,SRPMS}/ -name "${pkgname}*rpm" -exec cp -v {} . \;
-    # TODO upload ${pkgname}*.rpm to github release on deploy stage
 else
     autoreconf -ifv
     ./configure
