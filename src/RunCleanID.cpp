@@ -38,7 +38,8 @@ int main(int argc,char* argv[])
 	volume::Scans<unsigned char> full_volume_cleanID;
 	std::string task;
 	bool is_zdr=true;
-        cout<<"is zdr="<<is_zdr<<endl;
+	string radar_name = "spc";
+        
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_VRAD,&full_volume_vrad);
@@ -53,7 +54,7 @@ int main(int argc,char* argv[])
 	  
 	  if (full_volume_zdr.empty()){
 	    //inizializzo matrice di zeri
-	    cout<<"ZDR empty"<<endl;
+	    //cout<<"ZDR empty"<<endl;
 	    //for (unsigned i=0; i<full_volume_z.size();++i){
 	    //full_volume_zdr.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 	    //full_volume_zdr.at(i).row(i).setZero(); //0 sarebbe undetected, puoi scegliere altro valore
@@ -66,9 +67,9 @@ int main(int argc,char* argv[])
 	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 
 	      if(is_zdr){
-	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect ,i);
+	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect , radar_name, i);
 	      }else{
-		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect,i);
+		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect, radar_name, i);
 	      }
               
 	      task="Cleaner base";
