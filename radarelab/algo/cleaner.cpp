@@ -374,7 +374,8 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     //else{ Num_entries=7;} // che a questo punto se lasci zdr=tutta=0 nel caso manchi , va bene anche se lasci solo N_entries=7
 
     //leggo matrice dei pesi
-    string fin = "/home/ccardinali@ARPA.EMR.NET/Scrivania/matrix-"+radar+".txt";
+    //string fin = "/home/ccardinali@ARPA.EMR.NET/Scrivania/matrix-"+radar+".txt";
+    string fin = "./matrix-"+radar+".txt";
     vector<string> myVector;
 
     ifstream f(fin, ifstream::in);
@@ -529,7 +530,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     //else{ Num_entries=7;} // che a questo punto se lasci zdr=tutta=0 nel caso manchi , va bene anche se lasci solo N_entries=7
 
     //leggo matrice dei pesi
-    string fin = "/home/ccardinali@ARPA.EMR.NET/Scrivania/matrix-"+radar+"-nozdr.txt";
+    string fin = "./matrix-"+radar+"-nozdr.txt";
     vector<string> myVector;
 
     ifstream f(fin, ifstream::in);
