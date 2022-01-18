@@ -548,8 +548,8 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     Num_entries = myVector.size()/Num_echoes;
 
     Matrix2D<double> Wij(Num_echoes,Num_entries);
-    for(int i=0;i<Num_entries;i++){ //itero colonna
-      for(int j=0;j<Num_echoes;j++){ //itero rriga
+    for(int i=0;i<Num_echoes;i++){ //itero colonna
+      for(int j=0;j<Num_entries;j++){ //itero rriga
         Wij(i,j) = stod( myVector[i+j]);
       }
     }
@@ -764,7 +764,7 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
     }
 }
 
-void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel)
+  void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number,const string radar, unsigned iel)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
@@ -789,17 +789,17 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
     radarelab::volume::textureSD( Z_S,SD_Ray, scan_z.cell_size*21 , 360./scan_z.beam_count,true);
     radarelab::volume::textureSD( Z_S,SD_Az, scan_z.cell_size , 5*360./scan_z.beam_count,true);
 
-
+    cout<<"radar="<<radar<<endl;
     for (unsigned i = 0; i <beam_count ; ++i) 
     {
-      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), scan_zdr.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, "spc");
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), scan_zdr.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, radar);
         for (unsigned ib = 0; ib < beam_size; ++ib)
 	   scan_cleanID(i,ib)=corrected[ib];
     }
 }
 
 // senza zdr
-void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel)
+  void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, const string radar, unsigned iel)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
@@ -827,7 +827,7 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
 
     for (unsigned i = 0; i <beam_count ; ++i) 
     {
-      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, "spc");
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, radar);
         for (unsigned ib = 0; ib < beam_size; ++ib)
 	   scan_cleanID(i,ib)=corrected[ib];
     }

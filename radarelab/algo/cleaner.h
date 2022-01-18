@@ -114,7 +114,7 @@ struct Cleaner
 
     static void evaluateCleanID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel=0);
 
-  static void evaluateClassID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_zdr, PolarScan<unsigned char>& scan_cleanID,double bin_wind_magic_number, unsigned iel=0);
+  static void evaluateClassID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_zdr, PolarScan<unsigned char>& scan_cleanID,double bin_wind_magic_number, const string radar, unsigned iel=0);
 /**
  * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
  * @param [in,out]	scan_Z	- volume di DBZH
@@ -124,7 +124,7 @@ struct Cleaner
  * @param [in]	bin_wind_magic_number	- soglia vento per dati in formato SP20
  * @param [in]	iel	- indice elevazione solo per debug
  */
-  static void evaluateClassID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel=0);
+  static void evaluateClassID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, const string radar, unsigned iel=0);
     static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_ZDR, double bin_wind_magic_number,unsigned iel=0, bool set_undetect=false);
 
 /**
