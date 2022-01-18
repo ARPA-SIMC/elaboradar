@@ -359,112 +359,272 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
     return res;
 }
 
-
-// Senza ZDR - Fuzzy logic
-std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray) const
+// CC: fuzzy logic
+  std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar) const
 {
 
     const unsigned beam_size = beam_z.rows();
     vector<unsigned char> res(beam_size, 0);
-    vector<unsigned> counter (6,0) ;
+    int Num_entries=0;
+    int Num_echoes = 6;
 
-	Matrix2D<double> Wij(6,6);
-//		Z	V	Wrad	SD2d	SDRay	SDAz
-	Wij <<	1.0,	1.0,	1.0,	0.5,	0.3,	0.3,	// METEO		4.1 
-		0.8,	0.5,	0.5,	0.5,	0.5,	0.5,	// CLUTTER		3.3
-		0.0,	0.2,	0.2,	0.6,	0.8,	0.5,	// INTERF. Strong	2.3
-		0.0,	0.2,	0.2,	0.5,	0.6,	0.4,	// INTERF. Med.		2.2
-		0.0,	0.2,	0.2,	0.6,	0.5,	0.5,	// INTERF. Weak		1.6
-		0.6,	0.2,	0.2,	0.6,	0.5,	0.5;	// NOISE		2.6
-// TOT =	2.4	2.3	2.3	3.4	3.2	2.5
+    //cout<<"size beam_zdr : "<<beam_zdr.size()<<" -> "<<beam_zdr.rows()<<"x"<<beam_zdr.cols()<<endl;
+    //if(beam_zdr.empty()){
+    //if(beam_zdr.size()<1) Num_entries=6;
+    //else{ Num_entries=7;} // che a questo punto se lasci zdr=tutta=0 nel caso manchi , va bene anche se lasci solo N_entries=7
 
+    //leggo matrice dei pesi
+    string fin = "/home/ccardinali@ARPA.EMR.NET/Scrivania/matrix-"+radar+".txt";
+    vector<string> myVector;
 
+    ifstream f(fin, ifstream::in);
+    string line;
+  
+    if(f.is_open()){
+      while(getline(f,line)){
+        stringstream stream (line);
+        while( getline(stream, line, ' ')){
+	  myVector.push_back(line);
+        }
+      }
+    }
 
+    Num_entries = myVector.size()/Num_echoes;
+
+    cout<<"Num entries"<<Num_entries<<endl;
+
+    Matrix2D<double> Wij(Num_echoes,Num_entries);
+    for(int i=0;i<Num_echoes;i++){ //itero colonna
+      for(int j=0;j<Num_entries;j++){ //itero rriga
+        Wij(i,j) = stod( myVector[i+j]);
+      }
+    }
+
+    cout<<"Wij 0 0 = "<<Wij(0,0)<<endl;
+    
+    vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
+    //for (unsigned ibin = 87*4; ibin < 87*4+12; ++ibin)
     {
-//printf(" %4d %4d  %6.2f %6.2f %10.6f  %10.6f %10.6f %10.6f",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin),beam_sd(ibin),beam_sdray(ibin),beam_sdaz(ibin));
-	Matrix2D<double> Pij(6,6);
+      //printf(" %4d %4d  %6.2f %6.2f %10.6f %10.6f  %10.6f %10.6f %10.6f",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin),beam_zdr(ibin),beam_sd(ibin),beam_sdray(ibin),beam_sdaz(ibin));
+	Matrix2D<double> Pij(Num_echoes,Num_entries);
 	Pij = Pij * 0.;
-	ArrayXd  Class_WP(6);	
+	//cout<<Pij<<endl;
+	ArrayXd  Class_WP(6);	// la dimensione di Class_WP deve essere Num_echoes, perchè alla fine ricavo un vettore con 6 valori, uno per ogni echo, passando per prodotto pesi prob 
 	Class_WP.setZero();
 	if (beam_z(ibin)  == Z_missing) {
 	  unsigned ID=0;
 	  res[ibin]=ID;
 	  counter[ID]++;
-//printf("%2d %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %4d %4d %4d %4d %4d\n",res[ibin],Class_WP(0),Class_WP(1),Class_WP(2),Class_WP(3),Class_WP(4),Class_WP(5),counter[1],counter[2], counter[3], counter[4], counter[5]);
-//printf("%2d %5.3f %4d %4d %4d %4d %4d\n",res[ibin],Class_WP(ID),counter[1],counter[2], counter[3], counter[4], counter[5]);
+
 	  continue;
         }
-	    
+        
 //eseguo un test unico per VRAD e WRAD e assegno tutte le prob assieme
 	if (beam_v(ibin) != bin_wind_magic_number  ) {				//	VRAD
            Pij(0,1)=1.;	 						// METEO		 
-	   double prob_v = trap (-0.5, -0.3, 0.3, 0.5, beam_v(ibin));	// CLUTTER		
+	   double prob_v = trap (-0.5, -0.3, 0.3, 0.5, beam_v(ibin));	// CLUTTER
+	   //cout<<"prob_v computed: "<<prob_v<<endl;
+	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
 	   Pij(1,1)=prob_v;	  					// INTERF. Strong	
            Pij(2,1)=prob_v;	  					// INTERF. Med.		
            Pij(3,1)=prob_v;	  					// INTERF. Weak		
            Pij(4,1)=prob_v;	  					// NOISE		
-           Pij(5,1)=prob_v;	  					
+           Pij(5,1)=prob_v;
 	} else {
 	   Pij(0,1)=0.3;	// METEO		
 	   Pij(1,1)=1.;		// CLUTTER		  
            Pij(2,1)=1.;		// INTERF. Strong	  
            Pij(3,1)=1.;		// INTERF. Med.		  
            Pij(4,1)=1.;		// INTERF. Weak		  
-           Pij(5,1)=1.;		// NOISE		  
+           Pij(5,1)=1.;		// NOISE
 	}
-
-	if (beam_w(ibin) > W_threshold) {					//	WRAD
-           Pij(0,2)=1.;	 						// METEO		 
-	   double prob_w = trap (0.0001, 0., 0.2, 0.3, beam_w(ibin));	// CLUTTER		
-	   Pij(1,2)=prob_w;	  					// INTERF. Strong	
-           Pij(2,2)=prob_w;	  					// INTERF. Med.		
-           Pij(3,2)=prob_w;	  					// INTERF. Weak		
-           Pij(4,2)=prob_w;	  					// NOISE		
-           Pij(5,2)=prob_w;	  					
-	} else {
-	   Pij(0,2)=0.3;	// METEO		
-	   Pij(1,2)=1.;		// CLUTTER		  
-           Pij(2,2)=1.;		// INTERF. Strong	  
-           Pij(3,2)=1.;		// INTERF. Med.		  
-           Pij(4,2)=1.;		// INTERF. Weak		  
-           Pij(5,2)=1.;		// NOISE		  
-	}
-
+	
 // METEO		
 	Pij(0,0) = 1.;							//	Z
 	Pij(0,3) = trap (0.5, 1., 10.,11., beam_sd(ibin));		//	SD_2D
 	Pij(0,4) = trap (0.5, 1., 10.,11., beam_sdray(ibin));		//	SD_RAY
-	Pij(0,5) = trap (0.5, 1., 10.,11., beam_sdaz(ibin));		//	SD_AZ
+	Pij(0,5) = trap (0.5, 1., 3.,5., beam_sdaz(ibin));		//	SD_AZ	
+        //if(Num_entries>6)
+	Pij(0,6) = trap(0.,0.5,1.,3.,beam_zdr(ibin));                 //      ZDR
+	//cout<<"Num_entries control active"<<endl;
 
 // CLUTTER		
 	Pij(1,0) = trap (5., 15., 99., 99.9, beam_z(ibin));		//	Z
 	Pij(1,3) = trap (4.5, 5., 99., 99.9, beam_sd(ibin));		//	SD_2D
-	Pij(1,4) = trap (4., 4.5, 99., 99.9, beam_sdray(ibin));		//	SD_RAY
+	Pij(1,4) = trap (4., 4.5, 19.5, 99.9, beam_sdray(ibin));	//	SD_RAY
 	Pij(1,5) = trap (4., 4.5, 99., 99.9, beam_sdaz(ibin));		//	SD_AZ
+	if(Num_entries>6)
+	  Pij(1,6) = trap(-5,3.,5.,6.,beam_zdr(ibin));            //      ZDR for birds, for insects should be >+7
 // INTERF. Strong	
 	Pij(2,0) = 1.;							//	Z
 	Pij(2,3) = trap (0.5, 1.5, 5., 7., beam_sd(ibin));		//	SD_2D
-	Pij(2,4) = trap (0.0, 0.3, 2., 3., beam_sdray(ibin));		//	SD_RAY
-	Pij(2,5) = trap (2.0, 4., 90.,90.9, beam_sdaz(ibin));		//	SD_AZ
+	Pij(2,4) = trap (1., 2., 3., 4., beam_sdray(ibin));		//	SD_RAY
+	Pij(2,5) = trap (2.0, 4., 10.,15., beam_sdaz(ibin));		//	SD_AZ
+	//if(Num_entries>6)
+	Pij(2,6) = trap(5.,15.,99.,99.9,beam_zdr(ibin));            //      ZDR 
 
 // INTERF. Med.			
 	Pij(3,0) = 1.;							//	Z
 	Pij(3,3) = trap (4.0, 5., 90., 90.9, beam_sd(ibin));		//	SD_2D
-	Pij(3,4) = trap (0., 0.5, 10., 15.0, beam_sdray(ibin));		//	SD_RAY
+	Pij(3,4) = trap (1., 2., 3., 5.0, beam_sdray(ibin));		//	SD_RAY
 	Pij(3,5) = trap (3., 4., 90., 90.9, beam_sdaz(ibin));		//	SD_AZ
+	if(Num_entries>6)
+	  Pij(3,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR 
 
 // INTERF. Weak		
 	Pij(4,0) = 1.;							//	Z
 	Pij(4,3) = trap (4., 7., 90., 90.9, beam_sd(ibin));		//	SD_2D
-	Pij(4,4) = trap (0.5, 1.5, 3., 4., beam_sdray(ibin));		//	SD_RAY
-	Pij(4,5) = trap (3., 4., 90., 90.9, beam_sdaz(ibin));		//	SD_AZ
+	Pij(4,4) = trap (1., 2., 3., 4., beam_sdray(ibin));		//	SD_RAY
+	Pij(4,5) = trap (0., 1., 10., 15., beam_sdaz(ibin));		//	SD_AZ
+	//if(Num_entries>6)
+	Pij(4,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR 
 
 // NOISE	
 	double coeff = 1.;
 	if (ibin >= 40 ) {
 	   if ( ibin <= 160) coeff =  (160 - ibin)/ 120. ;
-	     else coeff = 0.;
+	   else coeff = 0.;
+        }
+	Pij(5,0) = trap(Z_missing-0.0001, Z_missing, 15., 20., beam_z(ibin));	//	Z
+	Pij(5,3) = trap (5., 7., 99., 99.9, beam_sd(ibin));		//	SD_2D
+	Pij(5,4) = trap (0., 0.001, 0.8 + coeff * 9.2 , 1. + coeff * 14.,beam_sdray(ibin));		//	SD_RAY
+//	Pij(5,4) = trap (0., 0.001, 0.8, 1.,beam_sdray(ibin));		//	SD_RAY
+//	Pij(5,4) = trap (0., 0.001, 10., 15.,beam_sdray(ibin));		//	SD_RAY
+	Pij(5,5) = trap (1.5, 3., 99., 99.9,beam_sdaz(ibin));		//	SD_AZ
+	//if(Num_entries>6)
+	Pij(5,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR 
+
+    
+//---- fine calcolo probabilità
+// Calcolo classe appartenenza
+        
+	Class_WP = ((Wij.array()*Pij.array()).matrix()*VectorXd::Ones(Num_entries)).array()/(Wij*VectorXd::Ones(Num_entries)).array();
+	unsigned i,ID;
+	Class_WP.maxCoeff(&i);
+	ID=i;
+	if (Class_WP(i) < 0.1 ) ID=6;
+	res[ibin]=ID;
+	//printf("ID %d \n",ID);
+	counter[ID]++;
+
+    }
+
+    return res;
+	
+    }
+
+// CC: fuzzy logic senza zdr
+  std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar) const
+{
+
+    const unsigned beam_size = beam_z.rows();
+    vector<unsigned char> res(beam_size, 0);
+    int Num_entries=0;
+    int Num_echoes = 6;
+
+    //cout<<"size beam_zdr : "<<beam_zdr.size()<<" -> "<<beam_zdr.rows()<<"x"<<beam_zdr.cols()<<endl;
+    //if(beam_zdr.empty()){
+    //if(beam_zdr.size()<1) Num_entries=6;
+    //else{ Num_entries=7;} // che a questo punto se lasci zdr=tutta=0 nel caso manchi , va bene anche se lasci solo N_entries=7
+
+    //leggo matrice dei pesi
+    string fin = "/home/ccardinali@ARPA.EMR.NET/Scrivania/matrix-"+radar+"-nozdr.txt";
+    vector<string> myVector;
+
+    ifstream f(fin, ifstream::in);
+    string line;
+  
+    if(f.is_open()){
+      while(getline(f,line)){
+        stringstream stream (line);
+        while( getline(stream, line, ' ')){
+	  myVector.push_back(line);
+        }
+      }
+    }
+
+    Num_entries = myVector.size()/Num_echoes;
+
+    Matrix2D<double> Wij(Num_echoes,Num_entries);
+    for(int i=0;i<Num_entries;i++){ //itero colonna
+      for(int j=0;j<Num_echoes;j++){ //itero rriga
+        Wij(i,j) = stod( myVector[i+j]);
+      }
+    }
+    
+    vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter
+    for (unsigned ibin = 0; ibin < beam_size; ++ibin)
+    //for (unsigned ibin = 87*4; ibin < 87*4+12; ++ibin)
+    {
+      //printf(" %4d %4d  %6.2f %6.2f %10.6f %10.6f  %10.6f %10.6f %10.6f",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin),beam_zdr(ibin),beam_sd(ibin),beam_sdray(ibin),beam_sdaz(ibin));
+	Matrix2D<double> Pij(Num_echoes,Num_entries);
+	Pij = Pij * 0.;
+	//cout<<Pij<<endl;
+	ArrayXd  Class_WP(6);	// la dimensione di Class_WP deve essere Num_echoes, perchè alla fine ricavo un vettore con 6 valori, uno per ogni echo, passando per prodotto pesi prob 
+	Class_WP.setZero();
+	if (beam_z(ibin)  == Z_missing) {
+	  unsigned ID=0;
+	  res[ibin]=ID;
+	  counter[ID]++;
+
+	  continue;
+        }
+        
+//eseguo un test unico per VRAD e WRAD e assegno tutte le prob assieme
+	if (beam_v(ibin) != bin_wind_magic_number  ) {				//	VRAD
+           Pij(0,1)=1.;	 						// METEO		 
+	   double prob_v = trap (-0.5, -0.3, 0.3, 0.5, beam_v(ibin));	// CLUTTER
+	   //cout<<"prob_v computed: "<<prob_v<<endl;
+	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
+	   Pij(1,1)=prob_v;	  					// INTERF. Strong	
+           Pij(2,1)=prob_v;	  					// INTERF. Med.		
+           Pij(3,1)=prob_v;	  					// INTERF. Weak		
+           Pij(4,1)=prob_v;	  					// NOISE		
+           Pij(5,1)=prob_v;
+	} else {
+	   Pij(0,1)=0.3;	// METEO		
+	   Pij(1,1)=1.;		// CLUTTER		  
+           Pij(2,1)=1.;		// INTERF. Strong	  
+           Pij(3,1)=1.;		// INTERF. Med.		  
+           Pij(4,1)=1.;		// INTERF. Weak		  
+           Pij(5,1)=1.;		// NOISE
+	}
+	
+// METEO		
+	Pij(0,0) = 1.;							//	Z
+	Pij(0,3) = trap (0.5, 1., 10.,11., beam_sd(ibin));		//	SD_2D
+	Pij(0,4) = trap (0.5, 1., 10.,11., beam_sdray(ibin));		//	SD_RAY
+	Pij(0,5) = trap (0.5, 1., 3.,5., beam_sdaz(ibin));		//	SD_AZ	
+
+// CLUTTER		
+	Pij(1,0) = trap (5., 15., 99., 99.9, beam_z(ibin));		//	Z
+	Pij(1,3) = trap (4.5, 5., 99., 99.9, beam_sd(ibin));		//	SD_2D
+	Pij(1,4) = trap (4., 4.5, 19.5, 99.9, beam_sdray(ibin));	//	SD_RAY
+	Pij(1,5) = trap (4., 4.5, 99., 99.9, beam_sdaz(ibin));		//	SD_AZ
+// INTERF. Strong	
+	Pij(2,0) = 1.;							//	Z
+	Pij(2,3) = trap (0.5, 1.5, 5., 7., beam_sd(ibin));		//	SD_2D
+	Pij(2,4) = trap (1., 2., 3., 4., beam_sdray(ibin));		//	SD_RAY
+	Pij(2,5) = trap (2.0, 4., 10.,15., beam_sdaz(ibin));		//	SD_AZ 
+
+// INTERF. Med.			
+	Pij(3,0) = 1.;							//	Z
+	Pij(3,3) = trap (4.0, 5., 90., 90.9, beam_sd(ibin));		//	SD_2D
+	Pij(3,4) = trap (1., 2., 3., 5.0, beam_sdray(ibin));		//	SD_RAY
+	Pij(3,5) = trap (3., 4., 90., 90.9, beam_sdaz(ibin));		//	SD_AZ
+
+// INTERF. Weak		
+	Pij(4,0) = 1.;							//	Z
+	Pij(4,3) = trap (4., 7., 90., 90.9, beam_sd(ibin));		//	SD_2D
+	Pij(4,4) = trap (1., 2., 3., 4., beam_sdray(ibin));		//	SD_RAY
+	Pij(4,5) = trap (0., 1., 10., 15., beam_sdaz(ibin));		//	SD_AZ 
+
+// NOISE	
+	double coeff = 1.;
+	if (ibin >= 40 ) {
+	   if ( ibin <= 160) coeff =  (160 - ibin)/ 120. ;
+	   else coeff = 0.;
         }
 	Pij(5,0) = trap(Z_missing-0.0001, Z_missing, 15., 20., beam_z(ibin));	//	Z
 	Pij(5,3) = trap (5., 7., 99., 99.9, beam_sd(ibin));		//	SD_2D
@@ -473,25 +633,24 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 //	Pij(5,4) = trap (0., 0.001, 10., 15.,beam_sdray(ibin));		//	SD_RAY
 	Pij(5,5) = trap (1.5, 3., 99., 99.9,beam_sdaz(ibin));		//	SD_AZ
 
+    
 //---- fine calcolo probabilità
 // Calcolo classe appartenenza
-
-	Class_WP = ((Wij.array()*Pij.array()).matrix()*VectorXd::Ones(6)).array()/(Wij*VectorXd::Ones(6)).array();
+        
+	Class_WP = ((Wij.array()*Pij.array()).matrix()*VectorXd::Ones(Num_entries)).array()/(Wij*VectorXd::Ones(Num_entries)).array();
 	unsigned i,ID;
 	Class_WP.maxCoeff(&i);
 	ID=i;
 	if (Class_WP(i) < 0.1 ) ID=6;
 	res[ibin]=ID;
+	//printf("ID %d \n",ID);
 	counter[ID]++;
-//printf("%2d %5.3f %5.3f %5.3f %5.3f %5.3f %5.3f %4d %4d %4d %4d %4d\n",res[ibin],Class_WP(0),Class_WP(1),Class_WP(2),Class_WP(3),Class_WP(4),Class_WP(5),counter[1],counter[2], counter[3], counter[4], counter[5]);
-//	if (iray == 225 and ibin <= 50) {
-//	std::cout <<"Valori per fuzzy - Z_missing "<<Z_missing<< "differenza " <<beam_z(ibin)-Z_missing << std::endl;
-//	std::cout << Pij<<std::endl;
-//        }
+
     }
 
     return res;
-}
+	
+    }
 
 // Senza ZDR - Basato su test
 std::vector<unsigned char> Cleaner::eval_clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray) const
@@ -556,10 +715,10 @@ printf("%2d %4d %4d %4d %4d %4d\n",res[ibin],countClutter,countIntStrong, countI
 
 
 
-void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v,PolarScan<unsigned char>& scan_cleanID, unsigned iel)
+void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v,PolarScan<unsigned char>& scan_cleanID,  unsigned iel)
 {
-    //return evaluateCleanID(scan_z, scan_w, scan_v, scan_cleanID, scan_v.undetect,iel);
-    return evaluateClassID(scan_z, scan_w, scan_v, scan_cleanID, scan_v.undetect,iel);
+    return evaluateCleanID(scan_z, scan_w, scan_v, scan_cleanID, scan_v.undetect,iel);
+  //return evaluateClassID(scan_z, scan_w, scan_v, scan_cleanID, scan_v.undetect, radar, iel);
 }
 
 void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v,PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel)
@@ -604,7 +763,7 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
     }
 }
 
-void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v,PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel)
+void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
@@ -630,9 +789,44 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
     radarelab::volume::textureSD( Z_S,SD_Az, scan_z.cell_size , 5*360./scan_z.beam_count,true);
 
 
-    for (unsigned i = 0; i < beam_count; ++i)
+    for (unsigned i = 0; i <beam_count ; ++i) 
     {
-        vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i),SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i);
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), scan_zdr.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, "spc");
+        for (unsigned ib = 0; ib < beam_size; ++ib)
+	   scan_cleanID(i,ib)=corrected[ib];
+    }
+}
+
+// senza zdr
+void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel)
+{
+
+    if (scan_z.beam_count != scan_w.beam_count)
+        throw std::runtime_error("scan_z beam_count no equal to scan_w beam_count");
+    if (scan_z.beam_size != scan_w.beam_size)
+        throw std::runtime_error("scan_z beam_size no equal to scan_w beam_size");
+
+    if (scan_z.beam_count != scan_v.beam_count)
+        throw std::runtime_error("scan_z beam_count no equal to scan_v beam_count");
+    if (scan_z.beam_size != scan_v.beam_size)
+        throw std::runtime_error("scan_z beam_size no equal to scan_v beam_size");
+
+    Cleaner cleaner(scan_z.undetect, scan_w.undetect, scan_v.nodata, bin_wind_magic_number);
+
+    const unsigned beam_count = scan_z.beam_count;
+    const unsigned beam_size = scan_z.beam_size;
+
+// compute texture volumes
+    radarelab::volume::Scans<double>   Z_S,  SD2D,SD_Ray,SD_Az;
+    Z_S.push_back(scan_z);
+    radarelab::volume::textureSD( Z_S,SD2D, 1000. , 3,false);
+    radarelab::volume::textureSD( Z_S,SD_Ray, scan_z.cell_size*21 , 360./scan_z.beam_count,true);
+    radarelab::volume::textureSD( Z_S,SD_Az, scan_z.cell_size , 5*360./scan_z.beam_count,true);
+
+
+    for (unsigned i = 0; i <beam_count ; ++i) 
+    {
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, "spc");
         for (unsigned ib = 0; ib < beam_size; ++ib)
 	   scan_cleanID(i,ib)=corrected[ib];
     }
@@ -829,7 +1023,6 @@ void Cleaner::clean( radarelab::volume::Loader load_structure, double bin_wind_m
   std::string Z_Quantity;
 
 }
-
 
 double Cleaner::trap(double x1, double x2, double x3, double x4, double val) const
 {
