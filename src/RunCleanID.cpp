@@ -44,6 +44,7 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_VRAD,&full_volume_vrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_WRAD,&full_volume_wrad);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rohv);
 
 	loader_all.load(argv[1]);
         cout<<argv[1]<<endl;
@@ -63,11 +64,11 @@ int main(int argc,char* argv[])
 	  }
 	  cout<<"full volume zdr size = "<<full_volume_zdr.size()<<" and z size "<<full_volume_z.size()<<endl;
 	  cout<<"is zdr="<<is_zdr<<endl;
-	    for (unsigned i=0; i<1;++i){//full_volume_z.size()
+	  for (unsigned i=0; i<full_volume_z.size();++i){//1 anziche full_volume_z.size()
 	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 
 	      if(is_zdr){
-	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect , radar_name, i);
+	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect , radar_name, i);
 	      }else{
 		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect, radar_name, i);
 	      }

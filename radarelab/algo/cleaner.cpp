@@ -360,7 +360,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 }
 
 // CC: fuzzy logic
-  std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar) const
+  std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar) const
 {
 
     const unsigned beam_size = beam_z.rows();
@@ -392,7 +392,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
     Num_entries = myVector.size()/Num_echoes;
 
-    cout<<"Num entries"<<Num_entries<<endl;
+    //cout<<"Num entries"<<Num_entries<<endl;
 
     Matrix2D<double> Wij(Num_echoes,Num_entries);
     for(int i=0;i<Num_echoes;i++){ //itero colonna
@@ -400,8 +400,6 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
         Wij(i,j) = stod( myVector[i+j]);
       }
     }
-
-    cout<<"Wij 0 0 = "<<Wij(0,0)<<endl;
     
     vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
@@ -448,6 +446,8 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 	Pij(0,5) = trap (0.5, 1., 3.,5., beam_sdaz(ibin));		//	SD_AZ	
         //if(Num_entries>6)
 	Pij(0,6) = trap(0.,0.5,1.,3.,beam_zdr(ibin));                 //      ZDR
+	Pij(0,7) = trap(0.75,0.8,0.95,1.,beam_rohv(ibin));              //      ROHV
+	Pij(0,8) = trap(0.,0.5,1.5,3.,beam_zdr_sd(ibin));              //      ZDR_SD2D
 	//cout<<"Num_entries control active"<<endl;
 
 // CLUTTER		
@@ -455,23 +455,29 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 	Pij(1,3) = trap (4.5, 5., 99., 99.9, beam_sd(ibin));		//	SD_2D
 	Pij(1,4) = trap (4., 4.5, 19.5, 99.9, beam_sdray(ibin));	//	SD_RAY
 	Pij(1,5) = trap (4., 4.5, 99., 99.9, beam_sdaz(ibin));		//	SD_AZ
-	if(Num_entries>6)
-	  Pij(1,6) = trap(-5,3.,5.,6.,beam_zdr(ibin));            //      ZDR for birds, for insects should be >+7
+	//if(Num_entries>6)
+	Pij(1,6) = trap(-5,3.,5.,6.,beam_zdr(ibin));            //      ZDR for birds, for insects should be >+7
+	Pij(1,7) = trap(0.65,0.95,1.,1.,beam_rohv(ibin));                 //      ROHV
+	Pij(1,8) = trap(1.,3.,5.,6.5,beam_zdr_sd(ibin));              //      ZDR_SD2D
 // INTERF. Strong	
 	Pij(2,0) = 1.;							//	Z
 	Pij(2,3) = trap (0.5, 1.5, 5., 7., beam_sd(ibin));		//	SD_2D
 	Pij(2,4) = trap (1., 2., 3., 4., beam_sdray(ibin));		//	SD_RAY
 	Pij(2,5) = trap (2.0, 4., 10.,15., beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(2,6) = trap(5.,15.,99.,99.9,beam_zdr(ibin));            //      ZDR 
+	Pij(2,6) = trap(5.,15.,99.,99.9,beam_zdr(ibin));            //      ZDR
+	Pij(2,7) = trap(0.5,0.7,0.87,0.95,beam_rohv(ibin));                 //      ROHV
+	Pij(2,8) = trap(0.,1.,2.3,6.,beam_zdr_sd(ibin));              //      ZDR_SD2D
 
 // INTERF. Med.			
 	Pij(3,0) = 1.;							//	Z
 	Pij(3,3) = trap (4.0, 5., 90., 90.9, beam_sd(ibin));		//	SD_2D
 	Pij(3,4) = trap (1., 2., 3., 5.0, beam_sdray(ibin));		//	SD_RAY
 	Pij(3,5) = trap (3., 4., 90., 90.9, beam_sdaz(ibin));		//	SD_AZ
-	if(Num_entries>6)
-	  Pij(3,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR 
+	//if(Num_entries>6)
+	Pij(3,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR
+	Pij(3,7) = trap(0.5,0.7,0.9,0.95,beam_rohv(ibin));                 //      ROHV
+	Pij(3,8) = trap(0.,1.4,5.,6.,beam_zdr_sd(ibin));              //      ZDR_SD2D
 
 // INTERF. Weak		
 	Pij(4,0) = 1.;							//	Z
@@ -479,7 +485,9 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 	Pij(4,4) = trap (1., 2., 3., 4., beam_sdray(ibin));		//	SD_RAY
 	Pij(4,5) = trap (0., 1., 10., 15., beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(4,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR 
+	Pij(4,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR
+	Pij(4,7) = trap(0.5,0.7,0.85,0.95,beam_rohv(ibin));                 //      ROHV
+	Pij(4,8) = trap(0.,1.3,4.5,6.,beam_zdr_sd(ibin));              //      ZDR_SD2D
 
 // NOISE	
 	double coeff = 1.;
@@ -494,7 +502,9 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 //	Pij(5,4) = trap (0., 0.001, 10., 15.,beam_sdray(ibin));		//	SD_RAY
 	Pij(5,5) = trap (1.5, 3., 99., 99.9,beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(5,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR 
+	Pij(5,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR
+	Pij(5,7) = trap(0.3,0.5,0.6,0.7,beam_rohv(ibin));                 //      ROHV
+	Pij(5,8) = trap(0.,1.3,4.5,6.,beam_zdr_sd(ibin));              //      ZDR_SD2D
 
     
 //---- fine calcolo probabilità
@@ -764,7 +774,7 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
     }
 }
 
-  void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number,const string radar, unsigned iel)
+  void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<double>& scan_rohv, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number,const string radar, unsigned iel)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
@@ -783,16 +793,18 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
     const unsigned beam_size = scan_z.beam_size;
 
 // compute texture volumes
-    radarelab::volume::Scans<double>   Z_S,  SD2D,SD_Ray,SD_Az;
+    radarelab::volume::Scans<double>   Z_S, SD2D, SD_Ray, SD_Az, ZDR_S, ZDR_SD2D;
     Z_S.push_back(scan_z);
+    ZDR_S.push_back(scan_zdr);
     radarelab::volume::textureSD( Z_S,SD2D, 1000. , 3,false);
     radarelab::volume::textureSD( Z_S,SD_Ray, scan_z.cell_size*21 , 360./scan_z.beam_count,true);
     radarelab::volume::textureSD( Z_S,SD_Az, scan_z.cell_size , 5*360./scan_z.beam_count,true);
 
-    cout<<"radar="<<radar<<endl;
+    radarelab::volume::textureSD( ZDR_S,ZDR_SD2D, 1000. , 3,false);
+
     for (unsigned i = 0; i <beam_count ; ++i) 
     {
-      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), scan_zdr.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, radar);
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), scan_zdr.row(i), scan_rohv.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar);
         for (unsigned ib = 0; ib < beam_size; ++ib)
 	   scan_cleanID(i,ib)=corrected[ib];
     }
