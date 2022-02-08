@@ -48,6 +48,8 @@ int main(int argc,char* argv[])
 	Z_SDAz.quantity="DBZH_SDAz";
 	volume::Scans<double> ZDR_SD2D;
 	ZDR_SD2D.quantity="ZDR_SD2D";
+	volume::Scans<double> Z_VD;
+	Z_VD.quantity="Z_VD";
 
 	std::string task;
 
@@ -91,6 +93,22 @@ int main(int argc,char* argv[])
 	    Texture.at(0).nodata=65535.;
 	    Texture.at(0).undetect=0.;
 	    ZDR_SD2D.push_back(Texture.at(0));
+	    // Z_VD
+	    if(i<full_volume_z.size()-1){
+	      //radarelab::PolarScan<double> Z_VDi(full_volume_z.at(i));
+
+	      //PolarScan<double> Z_VDi(full_volume_z.at(i)); //.beam_count, full_volume_z.at(i).beam_size, full_volume_z.at(i).undetect);
+	      //cout<<"z undetect, gain="<<full_volume_z.at(i).undetect<<", "<<full_volume_z.at(i).gain<<endl;
+	      //cout<<"beam_count, beam_size, nodata, undetect,gain for Z_VDi= "<<Z_VDi.beam_count<<", "<<Z_VDi.beam_size<<", "<<Z_VDi.nodata<<", "<<Z_VDi.undetect<<", "<<Z_VDi.gain<<endl;
+	      //radarelab::volume::textureVD(full_volume_z.at(i), full_volume_z.at(i+1), Z_VDi, true);
+	      volume::Scans<double> Input2; 
+	      Input2.push_back(full_volume_z.at(i+1));
+	      radarelab::volume::textureVD(Input, Input2, Texture, true);
+	      Texture.at(0).nodata=65535.;
+	      Texture.at(0).undetect=0.;
+	      Z_VD.push_back(Texture.at(0));
+	      cout<<"Z_VD.size="<<Z_VD.size()<<endl;
+	    }
 	}
       std::cout<<"Finito Cleaner, salvo risultati"<<std::endl;
 	volume::ODIMStorer storer;
@@ -99,8 +117,11 @@ int main(int argc,char* argv[])
 	storer.store_quantity_fp((Volume<double>*)(&Z_SDRay_21));
 	storer.store_quantity_fp((Volume<double>*)(&Z_SDAz));
 	storer.store_quantity_fp((Volume<double>*)(&ZDR_SD2D));
+	storer.store_quantity_fp((Volume<double>*)(&Z_VD));
 	storer.store(argv[1]);
 	cout<<endl<<"Fine"<<endl;
+
+	cout<<"vol00 = "<<Z_VD.at(5)(30,40)<<" da raw2="<<full_volume_z.at(5)(30,40)<<" - raw1"<<full_volume_z.at(5)(30,40)<<endl;
 }
 
 
