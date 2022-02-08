@@ -358,6 +358,58 @@ void textureSD(const Scans<T>& raw, Scans<T>& vol, double filter_range, double f
 	}
 }
 
+template<typename T>
+void textureVD(const Scans<T>& raw1, const Scans<T>& raw2, Scans<T>& vol,bool force_check_undetect=false)
+{
+	vol.clear();
+	check_undetect=force_check_undetect;
+	vol.quantity=raw1.quantity;
+	vol.units=raw1.units;
+	cout<<"raw1.size="<<raw1.size()<<endl;
+	cout<<"raw0 rows="<<raw1[0].rows()<<endl;
+	cout<<"raw0 cols="<<raw1[0].cols()<<endl;
+	cout<<"raw2 beam_size="<<raw2[0].beam_size<<endl;
+	for(unsigned i=0;i<raw1.size();i++)
+	{
+		PolarScan<T> scan(raw1[i]);
+		for(unsigned j=0;j<raw1[i].rows();++j){
+		  for(unsigned k=0;k<raw1[i].cols();++k){
+		    if((k<raw2[i].beam_size)&&(good(raw2[i],j,k))&&(good(raw1[i],j,k)))
+		      scan.set(j,k,raw2[i](j,k)-raw1[i](j,k));
+		    if(scan(j,k)!=scan(j,k)) scan.set(j,k,raw2[i].nodata);
+		    //else
+		    //scan.set(j,k,raw2[i].nodata);
+		  }
+		}
+		vol.push_back(scan);
+	}
+}
+
+template<typename T>
+void textureVD1(const PolarScan<double>& raw1, const PolarScan<double>& raw2, PolarScan<T>& vol,bool force_check_undetect=false)
+{
+
+  //vol.clear();
+  //	vol.quantity=raw1.quantity;
+  //	vol.units=raw1.units;
+  cout<<"z1.undetect="<<raw1.undetect<<endl;
+  cout<<"z2.undetect="<<raw2.undetect<<endl;
+  cout<<"z1.offset="<<raw1.offset<<endl;
+  cout<<"vol.offset="<<vol.offset<<endl;
+  	for(unsigned i=0;i<raw1.beam_count;++i){
+  	  for(unsigned j=0;j<raw1.beam_size;++j){
+	    //if((good(raw2,i,j))&&(good(raw1,i,j)))
+	    if((j<raw2.beam_size)&&(raw2(i,j)!=raw2.undetect)&&(raw1(i,j)!=raw1.undetect))
+	      vol.set(i,j,raw2(i,j)-raw1(i,j)); //-vol.offset/vol.gain
+	    //else
+	    //vol(i,j)=vol.undetect;
+          }
+	}
+	cout<<"vol beamcount="<<vol.beam_count<<" ,beamsize="<<vol.beam_size<<endl;
+	cout<<"vol.size()"<<vol.size()<<endl;
+	cout<<"vol00 = "<<vol(10,60)<<" da raw2="<<raw2(10,60)<<" - raw1"<<raw1(10,60)<<endl;
+}
+
 /*! \fn filter
  *  \brief Create a filtered Volume (mean value) of a provided raw Volume using a moving window in range
  *  @param[in] raw reference to a valid Volume
