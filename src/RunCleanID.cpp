@@ -35,7 +35,10 @@ int main(int argc,char* argv[])
 	volume::Scans<double> full_volume_vrad;
 	volume::Scans<double> full_volume_wrad;
 	volume::Scans<double> full_volume_rohv;
+	volume::Scans<double> full_volume_sqi;
+	volume::Scans<double> full_volume_snr;
 	volume::Scans<unsigned char> full_volume_cleanID;
+	//volume::Scans<double> Z_VD;
 	std::string task;
 	bool is_zdr=true;
 	string radar_name = "spc";
@@ -45,6 +48,8 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_VRAD,&full_volume_vrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_WRAD,&full_volume_wrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rohv);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
 
 	loader_all.load(argv[1]);
         cout<<argv[1]<<endl;
@@ -67,8 +72,33 @@ int main(int argc,char* argv[])
 	  for (unsigned i=0; i<full_volume_z.size();++i){//1 anziche full_volume_z.size()
 	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 
+	      volume::Scans<double> Texture;
+
+              //calcolo texture V:
+	      if(i< last){
+                volume::Scans<double> Input,Input2;        ;
+		Input.push_back(full_volume_z.at(i));
+	        Input2.push_back(full_volume_z.at(i+1));
+	        radarelab::volume::textureVD(Input, Input2, Texture, true);
+	        Texture.at(0).nodata=65535.;
+	        Texture.at(0).undetect=0.;
+	        //Z_VD.push_back(Texture.at(0));
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+	      }
+	      else{
+	        Texture.clear();
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
+		//M_start = Matrix2D::Zero(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size);
+		Texture.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
+		Texture.at(0).setZero();
+		Texture.at(0).nodata=65535.;
+	        Texture.at(0).undetect=0.;
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		//cout<<"Texture is zero?"<<Texture.at(0)(30,50)<<endl;
+	      }
+	      
 	      if(is_zdr){
-	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect , radar_name, i);
+	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_sqi.at(i), full_volume_snr.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect , radar_name, i);
 	      }else{
 		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect, radar_name, i);
 	      }
