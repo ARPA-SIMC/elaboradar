@@ -80,7 +80,7 @@ struct Cleaner
  */
     std::vector<bool> clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& SD,int iray) const;
     std::vector<unsigned char> eval_clean_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray) const;
-  std::vector<unsigned char> eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar) const;
+  std::vector<unsigned char> eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sqi, const Eigen::VectorXd& beam_snr, const Eigen::VectorXd& beam_zvd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar, double v_ny) const;
 
 /**
  * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
@@ -89,7 +89,7 @@ struct Cleaner
  * @param [in]	scan_V	- volume di V
  * @param [in]	iel	- indice elevazione solo per debug
  */
-  std::vector<unsigned char> eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar) const;
+  std::vector<unsigned char> eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar, double v_ny) const;
     static void clean(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,unsigned iel=0, bool set_undetect=false);
   static void evaluateCleanID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,PolarScan<unsigned char>& scan_cleanID, unsigned iel=0);
 /**
@@ -114,7 +114,7 @@ struct Cleaner
 
     static void evaluateCleanID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V,PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, unsigned iel=0);
 
-  static void evaluateClassID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_zdr, PolarScan<double>& scan_rohv, PolarScan<unsigned char>& scan_cleanID,double bin_wind_magic_number, const string radar, unsigned iel=0);
+  static void evaluateClassID(PolarScan<double>& scan_Z, PolarScan<double>& scan_W, PolarScan<double>& scan_V, PolarScan<double>& scan_zdr, PolarScan<double>& scan_rohv, PolarScan<double>& scan_sqi, PolarScan<double>& scan_snr, PolarScan<double>& scan_zvd, PolarScan<unsigned char>& scan_cleanID,double bin_wind_magic_number, const string radar, unsigned iel=0);
 /**
  * Funzione che crea l'oggetto cleaner, lo inizializza, pulisce i dati e modifica il PolarScan di DBZH.
  * @param [in,out]	scan_Z	- volume di DBZH
@@ -137,7 +137,7 @@ struct Cleaner
 /*!
  * trapezoidal probability function
  */
-	double trap(double x1, double x2, double x3, double x4, double val) const;
+  double trap(double x1, double x2, double x3, double x4, double val, double x5=-9999.) const;
 };
 
 }
