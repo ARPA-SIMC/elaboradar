@@ -586,7 +586,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     Matrix2D<double> Wij(Num_echoes,Num_entries);
     for(int i=0;i<Num_echoes;i++){ //itero colonna
       for(int j=0;j<Num_entries;j++){ //itero rriga
-        Wij(i,j) = stod( myVector[i+j]);
+        Wij(i,j) = stod( myVector[i*Num_entries+j]);
       }
     }
     
