@@ -187,7 +187,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
 }
 
-void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)
+  void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium, bool set_undetect)
 {
     using namespace radarelab::volume;
     LOG_CATEGORY("radar.io");
@@ -201,6 +201,12 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     Scans<double> v_volume;
     Scans<double> w_volume;
     Scans<double> zdr_volume;
+    Scans<double> rhohv_volume;
+    Scans<double> sqi_volume;
+    Scans<double> snr_volume;
+
+    string radar_name = site.name.c_str(); // da elaboradar/src/site.cpp : 'SPC' o 'GAT'
+    
     loader.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &dbzh_volume);
     loader.request_quantity(odim::PRODUCT_QUANTITY_TH, &th_volume);
 
@@ -209,6 +215,9 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
         loader.request_quantity(odim::PRODUCT_QUANTITY_VRAD, &v_volume);
         loader.request_quantity(odim::PRODUCT_QUANTITY_WRAD, &w_volume);
         loader.request_quantity(odim::PRODUCT_QUANTITY_ZDR, &zdr_volume);
+	loader.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&rhohv_volume);
+	loader.request_quantity(odim::PRODUCT_QUANTITY_SQI,&sqi_volume);
+	loader.request_quantity(odim::PRODUCT_QUANTITY_SNR,&snr_volume);
     }
     loader.load(nome_file);
 
@@ -238,6 +247,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     {
       if (zdr_volume.empty())
       {
+	//caso ZDR e grandezze polarimetriche assenti -> lascio versione master al 16/2/2022
 	volume::Scans<unsigned char> full_volume_cleanID;
         //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
@@ -250,15 +260,63 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
 	        }
 	}
       } else {
+	//caso ZDR e grandezze polarimetriche presenti--> uso fuzzy logic del branch elaboradar_updating al 16/2/2022
+	volume::Scans<unsigned char> full_volume_cleanID;
+	unsigned last = z_volume->size() -1;
         for (unsigned i = 0; i < z_volume->size(); ++i){
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i,true);
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100,true);
+	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+
+	    volume::Scans<double> Texture;
+
+            //calcolo texture di dbzh sulla verticale tra prima elevazione e seconda elevazione:
+	    if(i< last){
+                volume::Scans<double> Input,Input2;        
+		Input.push_back(z_volume->at(i));
+	        Input2.push_back(z_volume->at(i+1));
+	        radarelab::volume::textureVD(Input, Input2, Texture, true);
+	        Texture.at(0).nodata=65535.;
+	        Texture.at(0).undetect=0.;
+	    }
+	    else{
+	        Texture.clear();
+		Texture.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+		Texture.at(0).setZero();
+		Texture.at(0).nodata=65535.;
+	        Texture.at(0).undetect=0.;
+	    }
+
+	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
+
+            double new_value=z_volume->at(0).nodata;
+	    if (set_undetect) new_value=z_volume->at(0).undetect;
+
+	    for (unsigned ii = 0; ii < z_volume->at(i).beam_count; ++ii)
+                for (unsigned ib = 0; ib < z_volume->at(i).beam_size; ++ib) {
+		  
+     	          if(full_volume_cleanID.at(i)(ii,ib) ) 
+		    z_volume->at(i)(ii,ib)= new_value;
+		  //cout<<"full_clean_ID(i)(ii,ib)= "<<full_volume_cleanID.at(i)(ii,ib)<<endl;
+        	}
+	    	      
+	    }
+	    // commento doppia ripulitura tramite clean() della versione master al 16/2/2022
+            //algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i,true);
+            //algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100,true);
         }
       }
-    }
+
+
+    //  QUI ABBIAMO FATTO IL PONGHINO PPA 
+      for(unsigned i=0; i<volume[0].beam_count/8; i++)
+       for(unsigned k=0; k<volume[0].beam_size; k++)
+       {
+         volume[0].set(i, k,volume[0].nodata);
+       }
+// QUI FINISCE 
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(*z_volume, volume, 1.0);
+    cout<<"resampler fatto!!!"<<endl;
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);
@@ -306,6 +364,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     // TODO: look for the equivalent of declutter_rsp and check its consistency
     // like in test_volume
 }
+
 
 void CUM_BAC::declutter_anaprop()
 {
@@ -560,6 +619,8 @@ void CUM_BAC::caratterizzo_volume()
 
     HRay hray_inf(volume); /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     hray_inf.load_hray_inf(assets);
+
+    cout<<"sono in caratterizzo volume"<<endl;
 
     // path integrated attenuation
     double PIA;
