@@ -125,6 +125,7 @@ void Anaprop<T>::remove(
 
             // ------------assegno bin_low e bin_high 
 
+	    float bin_low_nodata = volume[el_inf].nodata;
             float bin_low  = volume[el_inf].get(i, k);
             float bin_high;
             if (el_up >= volume.size() || k >= volume[el_up].beam_size){
@@ -134,7 +135,8 @@ void Anaprop<T>::remove(
             } else{
                 bin_high = volume[el_up].get(i, k);
             }
-  //         LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up ); 
+  //         LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up );
+	    float bin_high_nodata = volume[el_up].nodata;
 
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if(bin_high == fondo_scala && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
