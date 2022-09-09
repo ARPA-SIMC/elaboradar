@@ -262,8 +262,10 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
       } else {
 	//caso ZDR e grandezze polarimetriche presenti--> uso fuzzy logic del branch elaboradar_updating al 16/2/2022
 	volume::Scans<unsigned char> full_volume_cleanID;
+
 	unsigned last = z_volume->size() -1;
         for (unsigned i = 0; i < z_volume->size(); ++i){
+	  cout<<"it="<<i<<endl;
 	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
 
 	    volume::Scans<double> Texture;
@@ -276,15 +278,19 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	        radarelab::volume::textureVD(Input, Input2, Texture, true);
 	        Texture.at(0).nodata=65535.;
 	        Texture.at(0).undetect=0.;
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 	    }
 	    else{
 	        Texture.clear();
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
 		Texture.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
 		Texture.at(0).setZero();
 		Texture.at(0).nodata=65535.;
 	        Texture.at(0).undetect=0.;
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 	    }
 
+	    cout<<"full_volume_cleanID size"<<full_volume_cleanID.at(i).size()<<endl;
 	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
 
             double new_value=z_volume->at(0).nodata;
@@ -305,14 +311,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         }
       }
 
-
-    //  QUI ABBIAMO FATTO IL PONGHINO PPA 
-      for(unsigned i=0; i<volume[0].beam_count/8; i++)
-       for(unsigned k=0; k<volume[0].beam_size; k++)
-       {
-         volume[0].set(i, k,volume[0].nodata);
-       }
-// QUI FINISCE 
+    cout<<"arrivo al ponghino"<<endl;
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(*z_volume, volume, 1.0);
