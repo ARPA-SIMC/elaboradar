@@ -367,46 +367,40 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     vector<unsigned char> res(beam_size, 0);
     int Num_entries=0;
     int Num_echoes = 5;
+    int Ntraps = 5; // 5 argomenti da passare a Trap : x1,x2,x3,x4,x5
 
-    //cout<<"size beam_zdr : "<<beam_zdr.size()<<" -> "<<beam_zdr.rows()<<"x"<<beam_zdr.cols()<<endl;
-    //if(beam_zdr.empty()){
-    //if(beam_zdr.size()<1) Num_entries=6;
-    //else{ Num_entries=7;} // che a questo punto se lasci zdr=tutta=0 nel caso manchi , va bene anche se lasci solo N_entries=7
-
-    //leggo matrice dei pesi
-    //string fin = "/home/ccardinali@ARPA.EMR.NET/Scrivania/matrix-"+radar+".txt";
-    string fin = "./matrix-"+radar+".txt";
-    vector<string> myVector;
-
-    ifstream f(fin, ifstream::in);
-    string line;
-  
-    if(f.is_open()){
-      while(getline(f,line)){
-        stringstream stream (line);
-        while( getline(stream, line, ' ')){
-	  //inserisco controllo commenti che li gestisce se attaccati tipo //commento
-	  if(line[0]=='\\'){ continue;}
-	  else{
-	    myVector.push_back(line);
-	  }
-        }
-      }
-    }
-    
-
-    Num_entries = myVector.size()/Num_echoes;
-
-    //cout<<"Num entries"<<Num_entries<<endl;
+    //leggo matrice dei pesi----------------------------------------------------
+    string fin_w = "./matrix-"+radar+".txt";
+    vector<string> w_vector;
+    w_vector = read_matrix_from_txt(fin_w);
+    Num_entries = w_vector.size()/Num_echoes;
 
     Matrix2D<double> Wij(Num_echoes,Num_entries);
     for(int i=0;i<Num_echoes;i++){ //itero colonna
       for(int j=0;j<Num_entries;j++){ //itero rriga
-        Wij(i,j) = stod( myVector[i*Num_entries+j]);
+        Wij(i,j) = stod( w_vector[i*Num_entries+j]);
 	//cout<<" W["<<i<<","<<j<<"]="<<Wij(i,j);
       }
-      cout<<" "<<endl;
+      //cout<<" "<<endl;
     }
+
+    //--------------------------------------------------------------------------
+    //leggo matrice dei traps
+    string fin_t = "./Trap-SPC.txt";
+    vector<string> t_vector;
+    t_vector = read_matrix_from_txt(fin_t);
+    double Traps[Num_entries][Num_echoes][Ntraps];
+    for(int i=0;i<Num_entries;i++){
+      for(int j=0;j<Num_echoes;j++){ 
+	for(int k=0;k<Ntraps;k++){
+	  Traps[i][j][k] = stod( t_vector[i*(Num_echoes*Ntraps)+j*Num_echoes+k]);
+	  //cout<<" Traps["<<i<<","<<j<<","<<k<<"]="<<Traps[i][j][k];
+	}
+	//cout<<endl;
+      }
+      //cout<<endl;
+    }
+    //------------------------------------------------------------------------
     
     vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
@@ -1053,6 +1047,31 @@ double Cleaner::trap(double x1, double x2, double x3, double x4, double val, dou
 	else if(val<=x5) return 1.;
 	else return 0.; // (val<=x1||val>=x4)
 
+}
+
+vector<string> Cleaner::read_matrix_from_txt(string fin) const
+{
+
+  /*
+  legge file txt e mette il contenuto in un vettore
+   */
+  vector<string> myVector;
+  ifstream f(fin, ifstream::in);
+  string line;
+  
+  if(f.is_open()){
+    while(getline(f,line)){
+      stringstream stream (line);
+      while( getline(stream, line, ' ')){
+	//inserisco controllo commenti che li gestisce se attaccati tipo //commento
+	if(line[0]=='\\'){ continue;}
+	else{
+	  myVector.push_back(line);
+	}
+      }
+    }
+  }
+  return myVector;
 }
 
 

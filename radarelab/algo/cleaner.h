@@ -9,8 +9,10 @@
 #include <radarelab/loader.h>
 
 #include <fstream>
+#include <string>
 
 using namespace Eigen;
+using namespace std;
 namespace radarelab {
 namespace algo {
 /**
@@ -134,10 +136,15 @@ struct Cleaner
  * @param [in]	iel	- indice elevazione solo per debug
  */
     static void clean( radarelab::volume::Loader load_structure, double bin_wind_magic_number,unsigned iel=0, bool set_undetect=false);
+  
 /*!
  * trapezoidal probability function
  */
   double trap(double x1, double x2, double x3, double x4, double val, double x5=-9999.) const;
+
+  /*function reading matrix from txt file*/
+  vector<string> read_matrix_from_txt(string fin) const;
+  
 };
 
 }
