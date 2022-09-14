@@ -535,36 +535,37 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     vector<unsigned char> res(beam_size, 0);
     int Num_entries=0;
     int Num_echoes = 5;
-
-    //cout<<"size beam_zdr : "<<beam_zdr.size()<<" -> "<<beam_zdr.rows()<<"x"<<beam_zdr.cols()<<endl;
-    //if(beam_zdr.empty()){
-    //if(beam_zdr.size()<1) Num_entries=6;
-    //else{ Num_entries=7;} // che a questo punto se lasci zdr=tutta=0 nel caso manchi , va bene anche se lasci solo N_entries=7
+    int Ntraps = 5; // 5 argomenti da passare a Trap : x1,x2,x3,x4,x5
 
     //leggo matrice dei pesi
-    string fin = "./matrix-"+radar+"-nozdr.txt";
-    vector<string> myVector;
-
-    ifstream f(fin, ifstream::in);
-    string line;
-  
-    if(f.is_open()){
-      while(getline(f,line)){
-        stringstream stream (line);
-        while( getline(stream, line, ' ')){
-	  myVector.push_back(line);
-        }
-      }
-    }
-
-    Num_entries = myVector.size()/Num_echoes;
+    string fin_w = "./matrix-"+radar+"-nozdr.txt";
+    vector<string> w_vector;
+    w_vector = read_matrix_from_txt(fin_w);
+    Num_entries = w_vector.size()/Num_echoes;
 
     Matrix2D<double> Wij(Num_echoes,Num_entries);
     for(int i=0;i<Num_echoes;i++){ //itero colonna
       for(int j=0;j<Num_entries;j++){ //itero rriga
-        Wij(i,j) = stod( myVector[i*Num_entries+j]);
+        Wij(i,j) = stod( w_vector[i*Num_entries+j]);
       }
     }
+
+    //leggo matrice dei traps
+    string fin_t = "./Trap-SPC-nozdr.txt";
+    vector<string> t_vector;
+    t_vector = read_matrix_from_txt(fin_t);
+    double Traps[Num_entries][Num_echoes][Ntraps];
+    for(int i=0;i<Num_entries;i++){
+      for(int j=0;j<Num_echoes;j++){ 
+	for(int k=0;k<Ntraps;k++){
+	  Traps[i][j][k] = stod( t_vector[i*(Num_echoes*Ntraps)+j*Num_echoes+k]);
+	  //cout<<" Traps["<<i<<","<<j<<","<<k<<"]="<<Traps[i][j][k];
+	}
+	//cout<<endl;
+      }
+      //cout<<endl;
+    }
+    //------------------------------------------------------------------------
     
     vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
@@ -586,11 +587,11 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
         
 //eseguo un test unico per VRAD e WRAD e assegno tutte le prob assieme
 	if (beam_v(ibin) != bin_wind_magic_number  ) {				//	VRAD
-	  Pij(0,1)=trap( v_ny, v_ny*0.99, -v_ny*0.99, -v_ny, beam_v(ibin));	 		// METEO
+	  Pij(0,1)=trap(v_ny*Traps[0][0][0], v_ny*Traps[0][0][1], -v_ny*Traps[0][0][2], -v_ny*Traps[0][0][3], beam_v(ibin));	 		// METEO
 	  double prob_v = trap (v_ny, v_ny, v_ny, v_ny, beam_v(ibin));	
 	   //cout<<"prob_v computed: "<<prob_v<<endl;
 	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
-	  Pij(1,1)=trap(-1.,-0.4,0.4,1., beam_v(ibin));	  		        // CLUTTER		 	
+	  Pij(1,1)=trap(Traps[0][1][0],Traps[0][1][1],Traps[0][1][2],Traps[0][1][3], beam_v(ibin));	  		        // CLUTTER		 	
            Pij(2,1)=prob_v;	  					// INTERF. Strong		
            Pij(3,1)=prob_v;	  					// INTERF. Med.		
            Pij(4,1)=prob_v;	  					// INTERF. Weak		
@@ -603,42 +604,39 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	}
 
 	// WRAD
-	Pij(0,2)= trap(0.,0.05,3.,5.,beam_w(ibin));                   // METEO
-	Pij(1,2)= trap(0.,0.05,1.5,2.,beam_w(ibin));                  // CLUTTER
-	double prob_w = trap(0.,0.,0.1,0.1,beam_w(ibin));
+	Pij(0,2)= trap(Traps[1][0][0],Traps[1][0][1],Traps[1][0][2],Traps[1][0][3],beam_w(ibin));                   // METEO
+	Pij(1,2)= trap(Traps[1][1][0],Traps[1][1][1],Traps[1][1][2],Traps[1][1][3],beam_w(ibin));                  // CLUTTER
+	double prob_w = trap(Traps[1][2][0],Traps[1][2][1],Traps[1][2][2],Traps[1][2][3],beam_w(ibin));
 	Pij(2,2) = prob_w;                                           // INTERF MULTIPLE
 	Pij(3,2) = prob_w;                                           // INTERF. Med.
 	Pij(4,2) = prob_w;                                           // INTERF. Weak
 	
 // METEO		
-	Pij(0,0) = trap(-5.,10.,60.,65.,beam_z(ibin), -30.);				//	Z
-	Pij(0,3) = trap (0., 0.1, 4.5,5.5, beam_sd(ibin));		//	SD_2D
-	Pij(0,4) = trap (0., 0.2, 5.5,6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(0,5) = trap (0., 0.1, 6.,10., beam_sdaz(ibin));		//	SD_AZ	
+	Pij(0,0) = trap(Traps[2][0][0],Traps[2][0][1],Traps[2][0][2],Traps[2][0][3],beam_z(ibin), Traps[2][0][4]);				//	Z
+	Pij(0,3) = trap (Traps[3][0][0],Traps[3][0][1],Traps[3][0][2],Traps[3][0][3], beam_sd(ibin));		//	SD_2D
+	Pij(0,4) = trap (Traps[4][0][0],Traps[4][0][1],Traps[4][0][2],Traps[4][0][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(0,5) = trap (Traps[5][0][0],Traps[5][0][1],Traps[5][0][2],Traps[5][0][3], beam_sdaz(ibin));		//	SD_AZ
 
 // CLUTTER		
-	Pij(1,0) = trap (5., 15., 99., 99.9, beam_z(ibin), -30.);		//	Z
-	Pij(1,3) = trap (2., 5., 20., 30., beam_sd(ibin));		//	SD_2D
-	Pij(1,4) = trap (1.5, 4.5, 22., 30., beam_sdray(ibin));	//	SD_RAY
-	Pij(1,5) = trap (0., 3., 15., 25., beam_sdaz(ibin));		//	SD_AZ
+	Pij(1,0) = trap (Traps[2][1][0],Traps[2][1][1],Traps[2][1][2],Traps[2][1][3], beam_z(ibin), Traps[2][1][4]);		//	Z
+	Pij(1,3) = trap (Traps[3][1][0],Traps[3][1][1],Traps[3][1][2],Traps[3][1][3], beam_sd(ibin));		//	SD_2D
+	Pij(1,4) = trap (Traps[4][1][0],Traps[4][1][1],Traps[4][1][2],Traps[4][1][3], beam_sdray(ibin));	//	SD_RAY
+	Pij(1,5) = trap (Traps[5][1][0],Traps[5][1][1],Traps[5][1][2],Traps[5][1][3], beam_sdaz(ibin));		//	SD_AZ
 // INTERF. Strong	
-	Pij(2,0) = trap(0.,10.,50.,65.,beam_z(ibin), -30.);		//	Z
-	Pij(2,3) = trap (0.5, 1.5, 10., 20., beam_sd(ibin));		//	SD_2D
-	Pij(2,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(2,5) = trap (0., 1., 13.,15., beam_sdaz(ibin));		//	SD_AZ 
-
+	Pij(2,0) = trap(Traps[2][2][0],Traps[2][2][1],Traps[2][2][2],Traps[2][2][3],beam_z(ibin), Traps[2][2][4]);		//	Z
+	Pij(2,3) = trap (Traps[3][2][0],Traps[3][2][1],Traps[3][2][2],Traps[3][2][3], beam_sd(ibin));		//	SD_2D
+	Pij(2,4) = trap (Traps[4][2][0],Traps[4][2][1],Traps[4][2][2],Traps[4][2][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(2,5) = trap (Traps[5][2][0],Traps[5][2][1],Traps[5][2][2],Traps[5][2][3], beam_sdaz(ibin));		//	SD_AZ
 // INTERF. Med.			
-	Pij(3,0) = trap(0.,10.,50.,65.,beam_z(ibin), -30.);		//	Z
-	Pij(3,3) = trap (0.5, 1.5, 10., 20., beam_sd(ibin));		//	SD_2D
-	Pij(3,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(3,5) = trap (0., 1., 13.,15., beam_sdaz(ibin));		//	SD_AZ
-
+	Pij(3,0) = trap(Traps[2][3][0],Traps[2][3][1],Traps[2][3][2],Traps[2][3][3],beam_z(ibin), Traps[2][3][4]);		//	Z
+	Pij(3,3) = trap (Traps[3][3][0],Traps[3][3][1],Traps[3][3][2],Traps[3][3][3], beam_sd(ibin));		//	SD_2D
+	Pij(3,4) = trap (Traps[4][3][0],Traps[4][3][1],Traps[4][3][2],Traps[4][3][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(3,5) = trap (Traps[5][3][0],Traps[5][3][1],Traps[5][3][2],Traps[5][3][3], beam_sdaz(ibin));		//	SD_AZ
 // INTERF. Weak		
-	Pij(4,0) = trap(-15.,-5.,25.,35.,beam_z(ibin), -30.);		//	Z
-	Pij(4,3) = trap (0., 0.5, 5., 7., beam_sd(ibin));		//	SD_2D
-	Pij(4,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(4,5) = trap (0., 1., 8., 15., beam_sdaz(ibin));		//	SD_AZ
-
+	Pij(4,0) = trap(Traps[2][4][0],Traps[2][4][1],Traps[2][4][2],Traps[2][4][3],beam_z(ibin), Traps[2][4][4]);		//	Z
+	Pij(4,3) = trap (Traps[3][4][0],Traps[3][4][1],Traps[3][4][2],Traps[3][4][3], beam_sd(ibin));		//	SD_2D
+	Pij(4,4) = trap (Traps[4][4][0],Traps[4][4][1],Traps[4][4][2],Traps[4][4][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(4,5) = trap (Traps[5][4][0],Traps[5][4][1],Traps[5][4][2],Traps[5][4][3], beam_sdaz(ibin));		//	SD_AZ
     
 //---- fine calcolo probabilità
 // Calcolo classe appartenenza
@@ -647,7 +645,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	unsigned i,ID;
 	Class_WP.maxCoeff(&i);
 	ID=i;
-	if (Class_WP(i) < 0.1 ) ID=6;
+	if (Class_WP(i) < 0.1 ) ID=5;
 	res[ibin]=ID;
 	//printf("ID %d \n",ID);
 	counter[ID]++;
