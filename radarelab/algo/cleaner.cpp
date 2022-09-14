@@ -366,7 +366,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     const unsigned beam_size = beam_z.rows();
     vector<unsigned char> res(beam_size, 0);
     int Num_entries=0;
-    int Num_echoes = 6;
+    int Num_echoes = 5;
 
     //cout<<"size beam_zdr : "<<beam_zdr.size()<<" -> "<<beam_zdr.rows()<<"x"<<beam_zdr.cols()<<endl;
     //if(beam_zdr.empty()){
@@ -403,7 +403,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     for(int i=0;i<Num_echoes;i++){ //itero colonna
       for(int j=0;j<Num_entries;j++){ //itero rriga
         Wij(i,j) = stod( myVector[i*Num_entries+j]);
-	cout<<" W["<<i<<","<<j<<"]="<<Wij(i,j);
+	//cout<<" W["<<i<<","<<j<<"]="<<Wij(i,j);
       }
       cout<<" "<<endl;
     }
@@ -416,7 +416,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	Matrix2D<double> Pij(Num_echoes,Num_entries);
 	Pij = Pij * 0.;
 	//cout<<Pij<<endl;
-	ArrayXd  Class_WP(6);	// la dimensione di Class_WP deve essere Num_echoes, perchè alla fine ricavo un vettore con 6 valori, uno per ogni echo, passando per prodotto pesi prob 
+	ArrayXd  Class_WP(Num_echoes);	// la dimensione di Class_WP deve essere Num_echoes, perchè alla fine ricavo un vettore con 6 valori, uno per ogni echo, passando per prodotto pesi prob 
 	Class_WP.setZero();
 	if (beam_z(ibin)  == Z_missing) {
 	  unsigned ID=0;
@@ -436,14 +436,12 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
            Pij(2,1)=prob_v;	  					// INTERF. Strong		
            Pij(3,1)=prob_v;	  					// INTERF. Med.		
            Pij(4,1)=prob_v;	  					// INTERF. Weak		
-           Pij(5,1)=prob_v;                                             // NOISE
 	} else {
 	   Pij(0,1)=0.3;	// METEO		
 	   Pij(1,1)=1.;		// CLUTTER		  
            Pij(2,1)=1.;		// INTERF. Strong	  
            Pij(3,1)=1.;		// INTERF. Med.		  
            Pij(4,1)=1.;		// INTERF. Weak		  
-           Pij(5,1)=1.;		// NOISE
 	}
 
 	// WRAD
@@ -453,7 +451,6 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	Pij(2,2) = prob_w;                                           // INTERF MULTIPLE
 	Pij(3,2) = prob_w;                                           // INTERF. Med.
 	Pij(4,2) = prob_w;                                           // INTERF. Weak
-	Pij(5,2) = prob_w;                                           // NOISE
 	
 // METEO		
 	Pij(0,0) = trap(-5.,10.,60.,65.,beam_z(ibin), -30.);				//	Z
@@ -517,25 +514,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
         Pij(4,9) = trap(0.,0.01,0.2, 0.6,beam_sqi(ibin),0.01);             // SQI
 	Pij(4,10) = trap(0.,1.,18., 25., beam_snr(ibin));           // SNR
 	Pij(4,11) = trap(-10.,-5.,50.,60.,beam_zvd(ibin));          // DBZH_VD
-// NOISE	
-	double coeff = 1.;
-	if (ibin >= 40 ) {
-	   if ( ibin <= 160) coeff =  (160 - ibin)/ 120. ;
-	   else coeff = 0.;
-        }
-	Pij(5,0) = trap(Z_missing-0.0001, Z_missing, 15., 20., beam_z(ibin));	//	Z
-	Pij(5,3) = trap (5., 7., 99., 99.9, beam_sd(ibin));		//	SD_2D
-	Pij(5,4) = trap (0., 0.001, 0.8 + coeff * 9.2 , 1. + coeff * 14.,beam_sdray(ibin));		//	SD_RAY
-//	Pij(5,4) = trap (0., 0.001, 0.8, 1.,beam_sdray(ibin));		//	SD_RAY
-//	Pij(5,4) = trap (0., 0.001, 10., 15.,beam_sdray(ibin));		//	SD_RAY
-	Pij(5,5) = trap (1.5, 3., 99., 99.9,beam_sdaz(ibin));		//	SD_AZ
-	//if(Num_entries>6)
-	Pij(5,6) = trap(-3.5,-3.,-1.,-0.5,beam_zdr(ibin));            //      ZDR
-	Pij(5,7) = trap(0.3,0.5,0.6,0.7,beam_rohv(ibin));                 //      ROHV
-	Pij(5,8) = trap(0.,1.3,4.5,6.,beam_zdr_sd(ibin));              //      ZDR_SD2D
-        Pij(5,9) = trap(0.,0.01,0.2, 0.6,beam_sqi(ibin),0.01);             // SQI
-        Pij(5,10) = trap(0.,1.,18., 25., beam_snr(ibin));           // SNR
-	Pij(5,11) = trap(-10.,-5.,50.,60.,beam_zvd(ibin));          // DBZH_VD
+
 //---- fine calcolo probabilità
 // Calcolo classe appartenenza
         
@@ -543,7 +522,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	unsigned i,ID;
 	Class_WP.maxCoeff(&i);
 	ID=i;
-	if (Class_WP(i) < 0.1 ) ID=6;
+	if (Class_WP(i) < 0.1 ) ID=5;
 	res[ibin]=ID;
 	//printf("ID %d \n",ID);
 	counter[ID]++;
@@ -561,7 +540,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     const unsigned beam_size = beam_z.rows();
     vector<unsigned char> res(beam_size, 0);
     int Num_entries=0;
-    int Num_echoes = 6;
+    int Num_echoes = 5;
 
     //cout<<"size beam_zdr : "<<beam_zdr.size()<<" -> "<<beam_zdr.rows()<<"x"<<beam_zdr.cols()<<endl;
     //if(beam_zdr.empty()){
@@ -601,7 +580,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	Matrix2D<double> Pij(Num_echoes,Num_entries);
 	Pij = Pij * 0.;
 	//cout<<Pij<<endl;
-	ArrayXd  Class_WP(6);	// la dimensione di Class_WP deve essere Num_echoes, perchè alla fine ricavo un vettore con 6 valori, uno per ogni echo, passando per prodotto pesi prob 
+	ArrayXd  Class_WP(Num_echoes);	// la dimensione di Class_WP deve essere Num_echoes, perchè alla fine ricavo un vettore con 6 valori, uno per ogni echo, passando per prodotto pesi prob 
 	Class_WP.setZero();
 	if (beam_z(ibin)  == Z_missing) {
 	  unsigned ID=0;
@@ -617,19 +596,16 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	  double prob_v = trap (v_ny, v_ny, v_ny, v_ny, beam_v(ibin));	
 	   //cout<<"prob_v computed: "<<prob_v<<endl;
 	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
-	  Pij(1,1)=trap(-1.,-0.4,0.4,1., beam_v(ibin));	  		        // CLUTTER		
-	   Pij(1,1)=prob_v;	  					// INTERF. Strong	
-           Pij(2,1)=prob_v;	  					// INTERF. Med.		
-           Pij(3,1)=prob_v;	  					// INTERF. Weak		
-           Pij(4,1)=prob_v;	  					// NOISE		
-           Pij(5,1)=prob_v;
+	  Pij(1,1)=trap(-1.,-0.4,0.4,1., beam_v(ibin));	  		        // CLUTTER		 	
+           Pij(2,1)=prob_v;	  					// INTERF. Strong		
+           Pij(3,1)=prob_v;	  					// INTERF. Med.		
+           Pij(4,1)=prob_v;	  					// INTERF. Weak		
 	} else {
 	   Pij(0,1)=0.3;	// METEO		
 	   Pij(1,1)=1.;		// CLUTTER		  
            Pij(2,1)=1.;		// INTERF. Strong	  
            Pij(3,1)=1.;		// INTERF. Med.		  
            Pij(4,1)=1.;		// INTERF. Weak		  
-           Pij(5,1)=1.;		// NOISE
 	}
 
 	// WRAD
@@ -639,7 +615,6 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	Pij(2,2) = prob_w;                                           // INTERF MULTIPLE
 	Pij(3,2) = prob_w;                                           // INTERF. Med.
 	Pij(4,2) = prob_w;                                           // INTERF. Weak
-	Pij(5,2) = prob_w;                                           // NOISE
 	
 // METEO		
 	Pij(0,0) = trap(-5.,10.,60.,65.,beam_z(ibin), -30.);				//	Z
@@ -669,19 +644,6 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	Pij(4,3) = trap (0., 0.5, 5., 7., beam_sd(ibin));		//	SD_2D
 	Pij(4,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
 	Pij(4,5) = trap (0., 1., 8., 15., beam_sdaz(ibin));		//	SD_AZ
-
-// NOISE	
-	double coeff = 1.;
-	if (ibin >= 40 ) {
-	   if ( ibin <= 160) coeff =  (160 - ibin)/ 120. ;
-	   else coeff = 0.;
-        }
-	Pij(5,0) = trap(Z_missing-0.0001, Z_missing, 15., 20., beam_z(ibin));	//	Z
-	Pij(5,3) = trap (5., 7., 99., 99.9, beam_sd(ibin));		//	SD_2D
-	Pij(5,4) = trap (0., 0.001, 0.8 + coeff * 9.2 , 1. + coeff * 14.,beam_sdray(ibin));		//	SD_RAY
-//	Pij(5,4) = trap (0., 0.001, 0.8, 1.,beam_sdray(ibin));		//	SD_RAY
-//	Pij(5,4) = trap (0., 0.001, 10., 15.,beam_sdray(ibin));		//	SD_RAY
-	Pij(5,5) = trap (1.5, 3., 99., 99.9,beam_sdaz(ibin));		//	SD_AZ
 
     
 //---- fine calcolo probabilità
