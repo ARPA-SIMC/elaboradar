@@ -422,11 +422,11 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
         
 //eseguo un test unico per VRAD e WRAD e assegno tutte le prob assieme
 	if (beam_v(ibin) != bin_wind_magic_number  ) {				//	VRAD
-	  Pij(0,1)=trap(v_ny, v_ny*0.99, -v_ny*0.99, -v_ny, beam_v(ibin));	 						// METEO		 
+	  Pij(0,1)=trap(v_ny*Traps[0][0][0], v_ny*Traps[0][0][1], -v_ny*Traps[0][0][2], -v_ny*Traps[0][0][3], beam_v(ibin));	 						// METEO		 
 	   double prob_v = trap (v_ny, v_ny, v_ny, v_ny, beam_v(ibin));	
 	   //cout<<"prob_v computed: "<<prob_v<<endl;
 	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
-	   Pij(1,1)=trap(-1.,-0.4,0.4,1., beam_v(ibin));	  					// CLUTTER	
+	   Pij(1,1)=trap(Traps[0][1][0],Traps[0][1][1],Traps[0][1][2],Traps[0][1][3], beam_v(ibin));	  					// CLUTTER	
            Pij(2,1)=prob_v;	  					// INTERF. Strong		
            Pij(3,1)=prob_v;	  					// INTERF. Med.		
            Pij(4,1)=prob_v;	  					// INTERF. Weak		
@@ -439,75 +439,75 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	}
 
 	// WRAD
-	Pij(0,2)= trap(0.,0.05,3.,5.,beam_w(ibin));                   // METEO
-	Pij(1,2)= trap(0.,0.05,1.5,2.,beam_w(ibin));                  // CLUTTER
-	double prob_w = trap(0.,0.,0.1,0.1,beam_w(ibin));
+	Pij(0,2)= trap(Traps[1][0][0],Traps[1][0][1],Traps[1][0][2],Traps[1][0][3],beam_w(ibin));                   // METEO
+	Pij(1,2)= trap(Traps[1][1][0],Traps[1][1][1],Traps[1][1][2],Traps[1][1][3],beam_w(ibin));                  // CLUTTER
+	double prob_w = trap(Traps[1][2][0],Traps[1][2][1],Traps[1][2][2],Traps[1][2][3],beam_w(ibin));
 	Pij(2,2) = prob_w;                                           // INTERF MULTIPLE
 	Pij(3,2) = prob_w;                                           // INTERF. Med.
 	Pij(4,2) = prob_w;                                           // INTERF. Weak
 	
 // METEO		
-	Pij(0,0) = trap(-5.,10.,60.,65.,beam_z(ibin), -30.);				//	Z
-	Pij(0,3) = trap (0., 0.1, 4.5,5.5, beam_sd(ibin));		//	SD_2D
-	Pij(0,4) = trap (0., 0.2, 5.5,6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(0,5) = trap (0., 0.1, 6.,10., beam_sdaz(ibin));		//	SD_AZ	
+	Pij(0,0) = trap(Traps[2][0][0],Traps[2][0][1],Traps[2][0][2],Traps[2][0][3],beam_z(ibin), Traps[2][0][4]);				//	Z
+	Pij(0,3) = trap (Traps[3][0][0],Traps[3][0][1],Traps[3][0][2],Traps[3][0][3], beam_sd(ibin));		//	SD_2D
+	Pij(0,4) = trap (Traps[4][0][0],Traps[4][0][1],Traps[4][0][2],Traps[4][0][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(0,5) = trap (Traps[5][0][0],Traps[5][0][1],Traps[5][0][2],Traps[5][0][3], beam_sdaz(ibin));		//	SD_AZ	
         //if(Num_entries>6)
-	Pij(0,6) = trap(-2.,-1.,3.,6.,beam_zdr(ibin));                 //      ZDR
-	Pij(0,7) = trap(0.6,0.8,1.,1.,beam_rohv(ibin));              //      ROHV
-	Pij(0,8) = trap(0.,0.1,2.,4.5,beam_zdr_sd(ibin));              //      ZDR_SD2D
-	Pij(0,9) = trap(0.01,0.1,0.95, 1.0, beam_sqi(ibin));           // SQI
-	Pij(0,10) = trap(0.,3.,35., 45., beam_snr(ibin));           // SNR
-	Pij(0,11) = trap(-20.,10.,20.,35.,beam_zvd(ibin));          // DBZH_VD
+	Pij(0,6) = trap(Traps[6][0][0],Traps[6][0][1],Traps[6][0][2],Traps[6][0][3],beam_zdr(ibin));                 //      ZDR
+	Pij(0,7) = trap(Traps[7][0][0],Traps[7][0][1],Traps[7][0][2],Traps[7][0][3],beam_rohv(ibin));              //      ROHV
+	Pij(0,8) = trap(Traps[8][0][0],Traps[8][0][1],Traps[8][0][2],Traps[8][0][3],beam_zdr_sd(ibin));              //      ZDR_SD2D
+	Pij(0,9) = trap(Traps[9][0][0],Traps[9][0][1],Traps[9][0][2],Traps[9][0][3], beam_sqi(ibin));           // SQI
+	Pij(0,10) = trap(Traps[10][0][0],Traps[10][0][1],Traps[10][0][2],Traps[10][0][3], beam_snr(ibin));           // SNR
+	Pij(0,11) = trap(Traps[11][0][0],Traps[11][0][1],Traps[11][0][2],Traps[11][0][3],beam_zvd(ibin));          // DBZH_VD
 	//cout<<"Num_entries control active"<<endl;
 
 // CLUTTER		
-	Pij(1,0) = trap (5., 15., 99., 99.9, beam_z(ibin), -30.);		//	Z
-	Pij(1,3) = trap (2., 5., 20., 30., beam_sd(ibin));		//	SD_2D
-	Pij(1,4) = trap (1.5, 4.5, 22., 30., beam_sdray(ibin));	//	SD_RAY
-	Pij(1,5) = trap (0., 3., 15., 25., beam_sdaz(ibin));		//	SD_AZ
+	Pij(1,0) = trap (Traps[2][1][0],Traps[2][1][1],Traps[2][1][2],Traps[2][1][3], beam_z(ibin), Traps[2][1][4]);		//	Z
+	Pij(1,3) = trap (Traps[3][1][0],Traps[3][1][1],Traps[3][1][2],Traps[3][1][3], beam_sd(ibin));		//	SD_2D
+	Pij(1,4) = trap (Traps[4][1][0],Traps[4][1][1],Traps[4][1][2],Traps[4][1][3], beam_sdray(ibin));	//	SD_RAY
+	Pij(1,5) = trap (Traps[5][1][0],Traps[5][1][1],Traps[5][1][2],Traps[5][1][3], beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(1,6) = trap(-6.,-6.,9.,9.,beam_zdr(ibin), -6.);            //      ZDR for birds, for insects should be >+7
-	Pij(1,7) = trap(0.65,0.95,1.,1.,beam_rohv(ibin));                 //      ROHV
-	Pij(1,8) = trap(0.7,1.5,6.,7.0,beam_zdr_sd(ibin));              //      ZDR_SD2D
-	Pij(1,9) = trap(0.01,0.1,0.95, 1.0,beam_sqi(ibin));             // SQI
-	Pij(1,10) = trap(0.,1.,70., 90., beam_snr(ibin));           // SNR
-	Pij(1,11) = trap(-10.,0.,60.,80.,beam_zvd(ibin));          // DBZH_VD
+	Pij(1,6) = trap(Traps[6][1][0],Traps[6][1][1],Traps[6][1][2],Traps[6][1][3],beam_zdr(ibin),Traps[6][1][4] );            //      ZDR for birds, for insects should be >+7
+	Pij(1,7) = trap(Traps[7][1][0],Traps[7][1][1],Traps[7][1][2],Traps[7][1][3],beam_rohv(ibin));                 //      ROHV
+	Pij(1,8) = trap(Traps[8][1][0],Traps[8][1][1],Traps[8][1][2],Traps[8][1][3],beam_zdr_sd(ibin));              //      ZDR_SD2D
+	Pij(1,9) = trap(Traps[9][1][0],Traps[9][1][1],Traps[9][1][2],Traps[9][1][3],beam_sqi(ibin));             // SQI
+	Pij(1,10) = trap(Traps[10][1][0],Traps[10][1][1],Traps[10][1][2],Traps[10][1][3], beam_snr(ibin));           // SNR
+	Pij(1,11) = trap(Traps[11][1][0],Traps[11][1][1],Traps[11][1][2],Traps[11][1][3],beam_zvd(ibin));          // DBZH_VD
 // INTERF. Strong	
-	Pij(2,0) = trap(0.,10.,50.,65.,beam_z(ibin), -30.);		//	Z
-	Pij(2,3) = trap (0.5, 1.5, 10., 20., beam_sd(ibin));		//	SD_2D
-	Pij(2,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(2,5) = trap (0., 1., 13.,15., beam_sdaz(ibin));		//	SD_AZ
+	Pij(2,0) = trap(Traps[2][2][0],Traps[2][2][1],Traps[2][2][2],Traps[2][2][3],beam_z(ibin), Traps[2][2][4]);		//	Z
+	Pij(2,3) = trap (Traps[3][2][0],Traps[3][2][1],Traps[3][2][2],Traps[3][2][3], beam_sd(ibin));		//	SD_2D
+	Pij(2,4) = trap (Traps[4][2][0],Traps[4][2][1],Traps[4][2][2],Traps[4][2][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(2,5) = trap (Traps[5][2][0],Traps[5][2][1],Traps[5][2][2],Traps[5][2][3], beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(2,6) = trap(-6.,-6.,9.,9.,beam_zdr(ibin),-6.);           //      ZDR
-	Pij(2,7) = trap(0.5,0.7,0.87,0.95,beam_rohv(ibin));                 //      ROHV
-	Pij(2,8) = trap(0.,0.6,5.,6.5,beam_zdr_sd(ibin));              //      ZDR_SD2D
-	Pij(2,9) = trap(0.,0.01,0.2, 0.6,beam_sqi(ibin),0.01);             // SQI
-        Pij(2,10) = trap(0.,1.,3., 38., beam_snr(ibin));           // SNR
-	Pij(2,11) = trap(-10.,-5.,65.,80.,beam_zvd(ibin));          // DBZH_VD
+	Pij(2,6) = trap(Traps[6][2][0],Traps[6][2][1],Traps[6][2][2],Traps[6][2][3],beam_zdr(ibin),Traps[6][2][4]);           //      ZDR
+	Pij(2,7) = trap(Traps[7][2][0],Traps[7][2][1],Traps[7][2][2],Traps[7][2][3],beam_rohv(ibin));                 //      ROHV
+	Pij(2,8) = trap(Traps[8][2][0],Traps[8][2][1],Traps[8][2][2],Traps[8][2][3],beam_zdr_sd(ibin));              //      ZDR_SD2D
+	Pij(2,9) = trap(Traps[9][2][0],Traps[9][2][1],Traps[9][2][2],Traps[9][2][3],beam_sqi(ibin),Traps[9][2][4]);             // SQI
+        Pij(2,10) = trap(Traps[10][2][0],Traps[10][2][1],Traps[10][2][2],Traps[10][2][3], beam_snr(ibin));           // SNR
+	Pij(2,11) = trap(Traps[11][2][0],Traps[11][2][1],Traps[11][2][2],Traps[11][2][3],beam_zvd(ibin));          // DBZH_VD
 // INTERF. Med.			
-	Pij(3,0) = trap(0.,10.,50.,65.,beam_z(ibin), -30.);		//	Z
-	Pij(3,3) = trap (0.5, 1.5, 10., 20., beam_sd(ibin));		//	SD_2D
-	Pij(3,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(3,5) = trap (0., 1., 13.,15., beam_sdaz(ibin));		//	SD_AZ
+	Pij(3,0) = trap(Traps[2][3][0],Traps[2][3][1],Traps[2][3][2],Traps[2][3][3],beam_z(ibin), Traps[2][3][4]);		//	Z
+	Pij(3,3) = trap (Traps[3][3][0],Traps[3][3][1],Traps[3][3][2],Traps[3][3][3], beam_sd(ibin));		//	SD_2D
+	Pij(3,4) = trap (Traps[4][3][0],Traps[4][3][1],Traps[4][3][2],Traps[4][3][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(3,5) = trap (Traps[5][3][0],Traps[5][3][1],Traps[5][3][2],Traps[5][3][3], beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(3,6) = trap(-6.,-6.,9.,9.,beam_zdr(ibin), -6.);           //      ZDR
-	Pij(3,7) = trap(0.5,0.7,0.95,0.98,beam_rohv(ibin));                 //      ROHV
-	Pij(3,8) = trap(0.,0.6,5.,6.5,beam_zdr_sd(ibin));             //      ZDR_SD2D
-        Pij(3,9) = trap(0.,0.01,0.2, 0.6,beam_sqi(ibin),0.01);             // SQI
-	Pij(3,10) = trap(0.,1.,30., 38., beam_snr(ibin));           // SNR
-	Pij(3,11) = trap(-10.,-5.,60.,75.,beam_zvd(ibin));          // DBZH_VD
+	Pij(3,6) = trap(Traps[6][3][0],Traps[6][3][1],Traps[6][3][2],Traps[6][3][3],beam_zdr(ibin),Traps[6][3][4]);           //      ZDR
+	Pij(3,7) = trap(Traps[7][3][0],Traps[7][3][1],Traps[7][3][2],Traps[7][3][3],beam_rohv(ibin));                 //      ROHV
+	Pij(3,8) = trap(Traps[8][3][0],Traps[8][3][1],Traps[8][3][2],Traps[8][3][3],beam_zdr_sd(ibin));             //      ZDR_SD2D
+        Pij(3,9) = trap(Traps[9][3][0],Traps[9][3][1],Traps[9][3][2],Traps[9][3][3],beam_sqi(ibin),Traps[9][3][4]);             // SQI
+	Pij(3,10) = trap(Traps[10][3][0],Traps[10][3][1],Traps[10][3][2],Traps[10][3][3], beam_snr(ibin));           // SNR
+	Pij(3,11) = trap(Traps[11][3][0],Traps[11][3][1],Traps[11][3][2],Traps[11][3][3],beam_zvd(ibin));          // DBZH_VD
 // INTERF. Weak		
-	Pij(4,0) = trap(-15.,-5.,25.,35.,beam_z(ibin), -30.);		//	Z
-	Pij(4,3) = trap (0., 0.5, 5., 7., beam_sd(ibin));		//	SD_2D
-	Pij(4,4) = trap (0., 0.2, 5., 6.5, beam_sdray(ibin));		//	SD_RAY
-	Pij(4,5) = trap (0., 1., 8., 15., beam_sdaz(ibin));		//	SD_AZ
+	Pij(4,0) = trap(Traps[2][4][0],Traps[2][4][1],Traps[2][4][2],Traps[2][4][3],beam_z(ibin), Traps[2][4][4]);		//	Z
+	Pij(4,3) = trap (Traps[3][4][0],Traps[3][4][1],Traps[3][4][2],Traps[3][4][3], beam_sd(ibin));		//	SD_2D
+	Pij(4,4) = trap (Traps[4][4][0],Traps[4][4][1],Traps[4][4][2],Traps[4][4][3], beam_sdray(ibin));		//	SD_RAY
+	Pij(4,5) = trap (Traps[5][4][0],Traps[5][4][1],Traps[5][4][2],Traps[5][4][3], beam_sdaz(ibin));		//	SD_AZ
 	//if(Num_entries>6)
-	Pij(4,6) = trap(-6.,-6.,9.,9.,beam_zdr(ibin), -6.);            //      ZDR
-	Pij(4,7) = trap(0.1,0.3,0.9,0.98,beam_rohv(ibin), 0.01);                 //      ROHV
-	Pij(4,8) = trap(0.,0.6,5.,6.5,beam_zdr_sd(ibin));              //      ZDR_SD2D
-        Pij(4,9) = trap(0.,0.01,0.2, 0.6,beam_sqi(ibin),0.01);             // SQI
-	Pij(4,10) = trap(0.,1.,18., 25., beam_snr(ibin));           // SNR
-	Pij(4,11) = trap(-10.,-5.,50.,60.,beam_zvd(ibin));          // DBZH_VD
+	Pij(4,6) = trap(Traps[6][4][0],Traps[6][4][1],Traps[6][4][2],Traps[6][4][3],beam_zdr(ibin),Traps[6][4][4]);            //      ZDR
+	Pij(4,7) = trap(Traps[7][4][0],Traps[7][4][1],Traps[7][4][2],Traps[7][4][3],beam_rohv(ibin),Traps[7][4][4]);                 //      ROHV
+	Pij(4,8) = trap(Traps[8][4][0],Traps[8][4][1],Traps[8][4][2],Traps[8][4][3],beam_zdr_sd(ibin));              //      ZDR_SD2D
+        Pij(4,9) = trap(Traps[9][4][0],Traps[9][4][1],Traps[9][4][2],Traps[9][4][3],beam_sqi(ibin),Traps[9][4][4]);             // SQI
+	Pij(4,10) = trap(Traps[10][4][0],Traps[10][4][1],Traps[10][4][2],Traps[10][4][3], beam_snr(ibin));           // SNR
+	Pij(4,11) = trap(Traps[11][4][0],Traps[11][4][1],Traps[11][4][2],Traps[11][4][3],beam_zvd(ibin));          // DBZH_VD
 
 //---- fine calcolo probabilità
 // Calcolo classe appartenenza
