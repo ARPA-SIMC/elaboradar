@@ -393,6 +393,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
         }
       }
     }
+    
 
     Num_entries = myVector.size()/Num_echoes;
 
@@ -402,7 +403,9 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     for(int i=0;i<Num_echoes;i++){ //itero colonna
       for(int j=0;j<Num_entries;j++){ //itero rriga
         Wij(i,j) = stod( myVector[i*Num_entries+j]);
+	cout<<" W["<<i<<","<<j<<"]="<<Wij(i,j);
       }
+      cout<<" "<<endl;
     }
     
     vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter
