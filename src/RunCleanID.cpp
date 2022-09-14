@@ -41,7 +41,7 @@ int main(int argc,char* argv[])
 	//volume::Scans<double> Z_VD;
 	std::string task;
 	bool is_zdr=true;
-	string radar_name = "spc";
+	string radar_name = "SPC";
         
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
