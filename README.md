@@ -1,7 +1,6 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/elaboradar/centos7.png)](https://simc.arpae.it/moncic-ci/elaboradar/)
 [![Build Status](https://simc.arpae.it/moncic-ci/elaboradar/centos8.png)](https://simc.arpae.it/moncic-ci/elaboradar/)
-[![Build Status](https://simc.arpae.it/moncic-ci/elaboradar/fedora32.png)](https://simc.arpae.it/moncic-ci/elaboradar/)
-[![Build Status](https://simc.arpae.it/moncic-ci/elaboradar/fedora34.png)](https://simc.arpae.it/moncic-ci/elaboradar/)
+[![Build Status](https://simc.arpae.it/moncic-ci/elaboradar/fedora36.png)](https://simc.arpae.it/moncic-ci/elaboradar/)
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/elaboradar/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/elaboradar/)
 
 # ElaboRadar
