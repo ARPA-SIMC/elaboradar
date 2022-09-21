@@ -6,7 +6,7 @@ Build-Depends:
   debhelper (>= 9), dh-buildinfo, dh-autoreconf,
   doxygen, pkg-config,
   liblog4c-dev, libgsl-dev, libgdal-dev, libhdf5-dev, libradar-dev,
-  libeigen3-dev, libwibble-dev
+  libeigen3-dev, libproj-dev
 Standards-Version: 3.9.6.0
 Homepage: https://github.com/ARPA-SIMC/elaboradar
 Vcs-Git: https://github.com/ARPA-SIMC/elaboradar.git
