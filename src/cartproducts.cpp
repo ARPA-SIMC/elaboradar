@@ -1,8 +1,13 @@
 #include "cartproducts.h"
 #include "assets.h"
 #include <radarlib/radar.hpp>
+
+#ifdef USE_OLD_PROJ
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H
 #include <proj_api.h>
+#else
+#include <proj.h>
+#endif
 
 using namespace radarelab;
 using namespace OdimH5v21;
@@ -100,19 +105,21 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     image->setDateTime(assets.getAcqTime());
     image->setSource(OdimSource);
 
-		/* where */
-    std::string proj ="+proj=aeqd +lat_0=";
-    proj = proj+std::to_string(assets.getRadarSite().lat_r)+"N +lon_0="+std::to_string(assets.getRadarSite().lon_r)+"E  +units=m +datum=WGS84";
-    projPJ pj_aeqd, pj_latlong;
-    std::string LatLon_def ("+proj=latlong +datum=WGS84");
-    if (!(pj_aeqd = pj_init_plus(proj.c_str())) ) 
-       exit(1);
-    if (!(pj_latlong = pj_init_plus(LatLon_def.c_str())) )
-       exit(1);
+    /* where */
     double coord_min =  -(image_side * odimProd.prodRes *0.5) ;
     double coord_max =    image_side * odimProd.prodRes *0.5   ;
     double x[]={coord_min, coord_max, coord_min, coord_max};		// { LL , LR, UL, UR }
     double y[]={coord_min, coord_min, coord_max, coord_max};		// { LL , LR, UL, UR }
+    std::string proj ="+proj=aeqd +lat_0=";
+    proj = proj+std::to_string(assets.getRadarSite().lat_r)+"N +lon_0="+std::to_string(assets.getRadarSite().lon_r)+"E  +units=m +datum=WGS84";
+    std::string LatLon_def ("+proj=latlong +datum=WGS84");
+
+#if USE_OLD_PROJ
+    projPJ pj_aeqd, pj_latlong;
+    if (!(pj_aeqd = pj_init_plus(proj.c_str())) ) 
+       exit(1);
+    if (!(pj_latlong = pj_init_plus(LatLon_def.c_str())) )
+       exit(1);
     if (pj_transform(pj_aeqd, pj_latlong,  4, 1, x, y, NULL ) != 0 ) exit(1000);
     image->setLL_Latitude (y[0]*RAD_TO_DEG);
     image->setLL_Longitude(x[0]*RAD_TO_DEG);
@@ -122,6 +129,29 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     image->setUL_Longitude(x[2]*RAD_TO_DEG);
     image->setUR_Latitude (y[3]*RAD_TO_DEG);
     image->setUR_Longitude(x[3]*RAD_TO_DEG);
+#else
+    PJ* P = proj_create_crs_to_crs(PJ_DEFAULT_CTX, proj.c_str(), LatLon_def.c_str(), nullptr);
+    if (!P)
+        exit(1);
+
+    double height = 0;
+    size_t res = proj_trans_generic(
+            P, PJ_FWD,
+            x, sizeof(x[0]), 4,
+            y, sizeof(y[0]), 4,
+            &height, sizeof(height), 1,
+            0, 0, 0);
+    if (res != 4)
+        exit(1000);
+    image->setLL_Latitude (y[0]);
+    image->setLL_Longitude(x[0]);
+    image->setLR_Latitude (y[1]);
+    image->setLR_Longitude(x[1]);
+    image->setUL_Latitude (y[2]);
+    image->setUL_Longitude(x[2]);
+    image->setUR_Latitude (y[3]);
+    image->setUR_Longitude(x[3]);
+#endif
 
     image->setXSize(image_side);
     image->setYSize(image_side);
@@ -203,12 +233,13 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
 
 }
 
-OdimProdDefs::OdimProdDefs(radarelab::Image<unsigned char> & prodField, double prodRes) 
+OdimProdDefs::OdimProdDefs(radarelab::Image<unsigned char> & prodField, double prodRes)
    :  prodField (prodField), System("ARPA-SIMC"), ProductType("SURF"),
     Quantity(PRODUCT_QUANTITY_DBZH), Nodata(255), Undetect (0), Offset(-20.),
     QuantityDynamics (80), SaveQuality(false), prodRes(prodRes)
 {
 	// Nothing to do
+    // TODO: DANGER! This leaves QualityField uninitialized!
 }
 
 OdimProdDefs::OdimProdDefs(radarelab::Image<unsigned char> & prodField, radarelab::Image<unsigned char> & QualityField, double prodRes) 
