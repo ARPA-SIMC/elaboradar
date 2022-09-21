@@ -530,13 +530,8 @@ std::string Assets::fname_from_acq_time() const
 {
     const unsigned buf_size = 16;
     char buf[buf_size];
-
     struct tm *tempo = gmtime(&conf_acq_time);
-
-    snprintf(buf, buf_size, "%04d%02d%02d%02d%02d",
-            tempo->tm_year+1900, tempo->tm_mon+1, tempo->tm_mday,
-            tempo->tm_hour, tempo->tm_min);
-
+    strftime(buf, buf_size, "%Y%m%d%H%M", tempo);
     return buf;
 }
 
@@ -618,7 +613,7 @@ void Assets::write_subimage(const Matrix2D<unsigned char>& image, unsigned image
     // Convert to south-north columns scanned west to east
     unsigned xofs = (image.cols() - image_side) / 2;
     unsigned yofs = (image.rows() - image_side) / 2;
-    LOG_INFO(" Image_size %4d , Image.cols %4d Image.Rows %4d -- xofs %d yofs %d", image_side, image.cols(), image.rows(), xofs, yofs);
+    LOG_INFO(" Image_size %4d , Image.cols %4d Image.Rows %4d -- xofs %d yofs %d", image_side, (int)image.cols(), (int)image.rows(), xofs, yofs);
     Matrix2D<unsigned char> transformed(image_side, image_side);
     for (unsigned y = 0; y < image_side; ++y)
         for (unsigned x = 0; x < image_side; ++x)
