@@ -360,7 +360,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 }
 
 // CC: fuzzy logic
-std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sqi, const Eigen::VectorXd& beam_snr, const Eigen::VectorXd& beam_zvd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar, double v_ny) const
+  std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sqi, const Eigen::VectorXd& beam_snr, const Eigen::VectorXd& beam_zvd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar, double v_ny, bool stamp) const
 {
 
     const unsigned beam_size = beam_z.rows();
@@ -419,10 +419,12 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 
 	  continue;
         }
-        
+
+	//cout<<"V Nyquist: "<<v_ny<<endl;
+	//cout<<sizeof(Traps)<<" "<<Wij.size()<<" "<<Pij.size()<<endl;
 //eseguo un test unico per VRAD e WRAD e assegno tutte le prob assieme
 	if (beam_v(ibin) != bin_wind_magic_number  ) {				//	VRAD
-	  Pij(0,1)=trap(v_ny*Traps[0][0][0], v_ny*Traps[0][0][1], -v_ny*Traps[0][0][2], -v_ny*Traps[0][0][3], beam_v(ibin));	 						// METEO		 
+	  Pij(0,1)=trap(v_ny*Traps[0][0][0], v_ny*Traps[0][0][1], v_ny*Traps[0][0][2], v_ny*Traps[0][0][3], beam_v(ibin));	 						// METEO		 
 	   double prob_v = trap (v_ny, v_ny, v_ny, v_ny, beam_v(ibin));	
 	   //cout<<"prob_v computed: "<<prob_v<<endl;
 	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
@@ -511,7 +513,6 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 
 //---- fine calcolo probabilità
 // Calcolo classe appartenenza
-        
 	Class_WP = ((Wij.array()*Pij.array()).matrix()*VectorXd::Ones(Num_entries)).array()/(Wij*VectorXd::Ones(Num_entries)).array();
 	unsigned i,ID;
 	Class_WP.maxCoeff(&i);
@@ -520,7 +521,17 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	res[ibin]=ID;
 	//printf("ID %d \n",ID);
 	counter[ID]++;
-
+	//if(stamp){
+	//printf("bin %4d ",ibin);
+	//for(unsigned c=0;c<5;c++) printf("%5.3f ",Class_WP(c));
+	//printf(" ID %d \n",ID);
+	//printf(" %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f \n",beam_z(ibin), beam_v(ibin), beam_w(ibin), beam_sd(ibin), beam_sdray(ibin), beam_sdaz(ibin), beam_zdr(ibin),
+	//	 beam_rohv(ibin), beam_zdr_sd(ibin), beam_sqi(ibin), beam_snr(ibin), beam_zvd(ibin));
+	//for (unsigned c=0;c<5; c++){
+	//  for (unsigned d=0; d<12; d++) printf(" %8.3f", Pij(c,d));
+	//  printf("\n");
+	//}
+	//}
     }
 
     return res;
@@ -587,8 +598,8 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
         
 //eseguo un test unico per VRAD e WRAD e assegno tutte le prob assieme
 	if (beam_v(ibin) != bin_wind_magic_number  ) {				//	VRAD
-	  Pij(0,1)=trap(v_ny*Traps[0][0][0], v_ny*Traps[0][0][1], -v_ny*Traps[0][0][2], -v_ny*Traps[0][0][3], beam_v(ibin));	 		// METEO
-	  double prob_v = trap (v_ny, v_ny, v_ny, v_ny, beam_v(ibin));	
+	  Pij(0,1)=trap(v_ny*Traps[0][0][0], v_ny*Traps[0][0][1], v_ny*Traps[0][0][2], v_ny*Traps[0][0][3], beam_v(ibin),v_ny*Traps[0][0][4]);	 		// METEO
+	  double prob_v = trap (v_ny, v_ny, v_ny, v_ny, beam_v(ibin),v_ny);	
 	   //cout<<"prob_v computed: "<<prob_v<<endl;
 	   //for(int e=1;e<Num_echoes;e++){ Pij(e,1) = prob_v };		
 	  Pij(1,1)=trap(Traps[0][1][0],Traps[0][1][1],Traps[0][1][2],Traps[0][1][3], beam_v(ibin));	  		        // CLUTTER		 	
@@ -797,14 +808,12 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
 
     radarelab::volume::textureSD( ZDR_S,ZDR_SD2D, 1000. , 3,false);
 
+    bool stamp=false;
     for (unsigned i = 0; i <beam_count ; ++i) 
     {
-      // add: normalizzo VRAD per V_Nyquist ovvero offset letto dal volume per elevazione corrente
-      //for(unsigned j=0;j<beam_size;++j){
-      //scan_v.row(i)[j] /= scan_v.offset;
-      //}
-      
-      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset);
+      // bool stamp=false;
+      //if(i==376) stamp=true;//311
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp);
         for (unsigned ib = 0; ib < beam_size; ++ib)
 	   scan_cleanID(i,ib)=corrected[ib];
     }
