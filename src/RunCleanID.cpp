@@ -70,6 +70,7 @@ int main(int argc,char* argv[])
 	  cout<<"full volume zdr size = "<<full_volume_zdr.size()<<" and z size "<<full_volume_z.size()<<endl;
 	  cout<<"is zdr="<<is_zdr<<endl;
 	  for (unsigned i=0; i<full_volume_z.size();++i){//1 anziche full_volume_z.size()
+	  //for (unsigned i=0; i<1;++i){
 	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 
 	      volume::Scans<double> Texture;
@@ -87,7 +88,7 @@ int main(int argc,char* argv[])
 	      }
 	      else{
 	        Texture.clear();
-		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
 		//M_start = Matrix2D::Zero(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size);
 		Texture.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 		Texture.at(0).setZero();
