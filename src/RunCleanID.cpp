@@ -38,18 +38,33 @@ int main(int argc,char* argv[])
 	volume::Scans<double> full_volume_sqi;
 	volume::Scans<double> full_volume_snr;
 	volume::Scans<unsigned char> full_volume_cleanID;
+	volume::Scans<double> full_volume_diffprob;
+	full_volume_cleanID.quantity="ClassID";
+	full_volume_diffprob.quantity="Diffprob";
 	//volume::Scans<double> Z_VD;
 	std::string task;
 	bool is_zdr=true;
-	string radar_name = "SPC";
+	//string radar_name = "SPC";
+	string radar_name = argv[3];
+	bool init_sqi = false;
         
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_VRAD,&full_volume_vrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_WRAD,&full_volume_wrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rohv);
-	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
+	//try{
+	//loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
+	//}
+	//catch(const std::exception &exc){
+	//init_sqi = true;
+	//cout<<"impossible loading SQI: initialize to 0"<<endl;
+	//}
+	if(radar_name=="GAT")
+	  init_sqi=true;
+	else
+	  loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 
 	loader_all.load(argv[1]);
         cout<<argv[1]<<endl;
@@ -70,8 +85,13 @@ int main(int argc,char* argv[])
 	  cout<<"full volume zdr size = "<<full_volume_zdr.size()<<" and z size "<<full_volume_z.size()<<endl;
 	  cout<<"is zdr="<<is_zdr<<endl;
 	  for (unsigned i=0; i<full_volume_z.size();++i){//1 anziche full_volume_z.size()
-	  //for (unsigned i=0; i<1;++i){
+	    //for (unsigned i=0; i<1;++i){
 	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
+	      full_volume_diffprob.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
+	      if(init_sqi){
+		full_volume_sqi.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
+		full_volume_sqi.at(i).setZero();
+	      }
 
 	      volume::Scans<double> Texture;
 
@@ -84,7 +104,7 @@ int main(int argc,char* argv[])
 	        Texture.at(0).nodata=65535.;
 	        Texture.at(0).undetect=0.;
 	        //Z_VD.push_back(Texture.at(0));
-		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 	      }
 	      else{
 	        Texture.clear();
@@ -99,7 +119,10 @@ int main(int argc,char* argv[])
 	      }
 	      
 	      if(is_zdr){
-	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_sqi.at(i), full_volume_snr.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect , radar_name, i);
+	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_sqi.at(i), full_volume_snr.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(i), full_volume_vrad.at(i).undetect , radar_name, i, true);
+
+		//full_volume_diffprob.at(i).gain=100.0;
+
 	      }else{
 		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect, radar_name, i);
 	      }
@@ -127,6 +150,8 @@ int main(int argc,char* argv[])
 	cout<<"replaced quantity"<<endl;
 	storer.store_quantity_uchar((Volume<unsigned char>*)(&full_volume_cleanID));
 	cout<<"stored_quantity_uchar"<<endl;
+	storer.store_quantity_fp((Volume<double>*)(&full_volume_diffprob));
+	cout<<"stored quantity"<<endl;
 	storer.store(argv[2]);
 	cout<<endl<<"Fine"<<endl;
 }
