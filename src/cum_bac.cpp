@@ -204,8 +204,12 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
     Scans<double> rhohv_volume;
     Scans<double> sqi_volume;
     Scans<double> snr_volume;
+    //Scans<unsigned char> full_volume_cleanID;
+    //Scans<double> full_volume_diffprob;
+    //full_volume_diffprob.quantity="Diffprob";
 
     string radar_name = site.name.c_str(); // da elaboradar/src/site.cpp : 'SPC' o 'GAT'
+    bool init_sqi = false;
     
     loader.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &dbzh_volume);
     loader.request_quantity(odim::PRODUCT_QUANTITY_TH, &th_volume);
@@ -243,6 +247,9 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         z_volume = &th_volume;
     }
 
+    if(sqi_volume.empty()) init_sqi = true;
+    cout<<"init_sqi"<<init_sqi<<endl;
+
     if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
       if (zdr_volume.empty())
@@ -260,15 +267,27 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	        }
 	}
       } else {
+	cout<<"applico logica fuzzy"<<endl;
 	//caso ZDR e grandezze polarimetriche presenti--> uso fuzzy logic del branch elaboradar_updating al 16/2/2022
+	//volume::Scans<unsigned char> full_volume_cleanID;
+	//volume::Scans<double>full_volume_diffprob;
 	volume::Scans<unsigned char> full_volume_cleanID;
 
 	unsigned last = z_volume->size() -1;
         for (unsigned i = 0; i < z_volume->size(); ++i){
-	  cout<<"it="<<i<<endl;
+	    cout<<"it="<<i<<endl;
+	    //volume::Scans<unsigned char> full_volume_cleanID;
+	    volume::Scans<double>full_volume_diffprob;
 	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	    full_volume_diffprob.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	    //full_volume_cleanID.at(0).setZero();
 
 	    volume::Scans<double> Texture;
+	    //cout<<"init_sqi = "<<init_sqi<<endl;
+	    if(init_sqi){
+	      sqi_volume.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	      sqi_volume.at(i).setZero();
+	    }
 
             //calcolo texture di dbzh sulla verticale tra prima elevazione e seconda elevazione:
 	    if(i< last){
@@ -289,9 +308,11 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	        Texture.at(0).undetect=0.;
 		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 	    }
-
-	    cout<<"full_volume_cleanID size"<<full_volume_cleanID.at(i).size()<<endl;
-	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
+	    
+	    //algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
+	    //modifico il force_bool a true (ultimo parametro)
+	    
+	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(0), v_volume.at(i).undetect , radar_name, i, false);
 
             double new_value=z_volume->at(0).nodata;
 	    if (set_undetect) new_value=z_volume->at(0).undetect;
@@ -299,19 +320,21 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	    for (unsigned ii = 0; ii < z_volume->at(i).beam_count; ++ii)
                 for (unsigned ib = 0; ib < z_volume->at(i).beam_size; ++ib) {
 		  
-     	          if(full_volume_cleanID.at(i)(ii,ib) ) 
+     	          if(full_volume_cleanID.at(i)(ii,ib) ){
+		    //cout<<"correggo"<<endl;
 		    z_volume->at(i)(ii,ib)= new_value;
-		  //cout<<"full_clean_ID(i)(ii,ib)= "<<full_volume_cleanID.at(i)(ii,ib)<<endl;
-        	}
-	    	      
+		  }
+		  //else{ if(z_volume->at(i)(ii,ib)>-31.) cout<<z_volume->at(i)(ii,ib)<<endl;}
+        	}	      
 	    }
+	    
 	    // commento doppia ripulitura tramite clean() della versione master al 16/2/2022
             //algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i,true);
             //algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100,true);
         }
       }
 
-    cout<<"arrivo al ponghino"<<endl;
+    //cout<<"arrivo al ponghino"<<endl;
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(*z_volume, volume, 1.0);
