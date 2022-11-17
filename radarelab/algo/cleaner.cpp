@@ -541,14 +541,14 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
 	  }
 	}
 	//if((force_meteo)&&(diff<=50.0)&&(prevID==0)&&(ID==4)) res[ibin] = 0;
+	if(radar=="GAT"){
+	  if((force_meteo)&&(diff<=10.0)&&(prevID==0)&&(ID!=1)) res[ibin] = 0;
+	}
+	else if(radar=="SPC"){
+	  if((force_meteo)&&(diff<=10.)&&(prevID==0)) res[ibin] = 0;
 	
-	if((force_meteo)&&(diff<=10.0)&&(prevID==0)&&(ID!=1)) res[ibin] = 0;
-	//if((force_meteo)&&(diff<=30.)&&(prevID==0)&&(ID==4)) res[ibin] = 0;
-	
-	//if((force_meteo)&&(diff<=20.0)&&(prevID==0)&&(ID==4)){
-	//res[ibin] = 0;
-	  //cout<<"ID"<<ID<<" prevID"<<prevID<<" diff="<<diff<<endl;
-	//}
+	  if((force_meteo)&&(diff<=20.0)&&(prevID==0)&&(ID==4)) res[ibin] = 0;
+	}else cout<<"radar non specificato"<<endl;
 	
 	diffs[ibin]=diff;
 	counter[ID]++;
