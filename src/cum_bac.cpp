@@ -247,11 +247,11 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         z_volume = &th_volume;
     }
 
-    if(sqi_volume.empty()) init_sqi = true;
-    cout<<"init_sqi"<<init_sqi<<endl;
-
+    cout<<"z max ="<<z_volume->at(0).maxCoeff()<<endl;
     if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
+      if(sqi_volume.empty()) init_sqi = true;
+      cout<<"init_sqi"<<init_sqi<<endl;
       if (zdr_volume.empty())
       {
 	//caso ZDR e grandezze polarimetriche assenti -> lascio versione master al 16/2/2022
@@ -320,11 +320,8 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	    for (unsigned ii = 0; ii < z_volume->at(i).beam_count; ++ii)
                 for (unsigned ib = 0; ib < z_volume->at(i).beam_size; ++ib) {
 		  
-     	          if(full_volume_cleanID.at(i)(ii,ib) ){
-		    //cout<<"correggo"<<endl;
-		    z_volume->at(i)(ii,ib)= new_value;
-		  }
-		  //else{ if(z_volume->at(i)(ii,ib)>-31.) cout<<z_volume->at(i)(ii,ib)<<endl;}
+     	          if(full_volume_cleanID.at(i)(ii,ib) ) z_volume->at(i)(ii,ib)= new_value;
+
         	}	      
 	    }
 	    

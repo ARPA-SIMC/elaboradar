@@ -281,14 +281,7 @@ int main (int argc, char **argv)
         LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
         return 2;
     }
-    check_volume(volume, file_type);
-    for (unsigned ii = 0; ii < volume.at(0).beam_count; ++ii)
-      for (unsigned ib = 0; ib < volume.at(0).beam_size; ++ib) {
-	if((volume.at(0)(ii,ib)<95.)&&(volume.at(0)(ii,ib)>-30))
-          cout<<"volume0type = "<<typeid(volume.at(0)(ii,ib)).name()<<endl;
-	else cout<<" - "<<typeid(volume.at(0)(ii,ib)).name()<<endl;
-      }
-    
+    check_volume(volume, file_type);    
 
     unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
@@ -311,8 +304,8 @@ int main (int argc, char **argv)
         //--------------se def anaprop : rimozione propagazione anomala e correzione beam blocking-----------------//
         LOG_INFO("inizio rimozione anaprop e beam blocking");
         for(unsigned k=0; k<volume.size(); k++) LOG_INFO(" SCAN # %2d - BeamSIZE %4d",k,volume[k].beam_size);
-        //cb->declutter_anaprop();
-        //cb->caratterizzo_volume();
+        cb->declutter_anaprop();
+        cb->caratterizzo_volume();
 
         unsigned CART_DIM_ZLR  = CL_opt.do_medium ? 512 : 256;
         unsigned ZLR_N_ELEMENTARY_PIXEL = volume.at(0).cell_size == 1000. ? 1 : 4;
