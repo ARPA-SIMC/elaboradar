@@ -202,8 +202,8 @@ struct ScaledIndexMapping : public IndexMapping
                 std::function<void(unsigned, unsigned)> compute_average = [&samples, &src](unsigned azimuth, unsigned range) {
                     if (azimuth < 0 || azimuth > src.beam_count) return;
                     if (range < 0 || range > src.beam_size) return;
-		    if(src(azimuth,range) == src.nodata) return
-                    samples.push_back(src(azimuth, range));
+		    //if(src(azimuth,range) == src.nodata) return
+                   samples.push_back(src(azimuth, range));
                 };
 
                 for(unsigned sy = 0; sy < fullsize_pixels_per_scaled_pixel; ++sy)
