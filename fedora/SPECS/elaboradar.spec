@@ -65,7 +65,7 @@ make
 %defattr(-,root,root,-)
 %{_includedir}/radarelab/*
 %{_libdir}/libradarelab.a
-%{_libdir}/libradarelab.la
+%exclude %{_libdir}/libradarelab.la
 %{_libdir}/libradarelab.so
 %{_libdir}/pkgconfig/radarelab.pc
 
