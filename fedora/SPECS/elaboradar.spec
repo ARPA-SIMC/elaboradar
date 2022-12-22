@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.14
+Version: 	0.15
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -65,7 +65,7 @@ make
 %defattr(-,root,root,-)
 %{_includedir}/radarelab/*
 %{_libdir}/libradarelab.a
-%{_libdir}/libradarelab.la
+%exclude %{_libdir}/libradarelab.la
 %{_libdir}/libradarelab.so
 %{_libdir}/pkgconfig/radarelab.pc
 
@@ -83,6 +83,9 @@ make
 %{_libexecdir}/%{name}/vecchioripulisco
 
 %changelog
+* Wed Nov 30 2022 Daniele Branchini <dbranchini@arpae.it> - 0.15-1
+- Added support for new proj API (#19)
+
 * Fri Oct 30 2020 Daniele Branchini <dbranchini@arpae.it> - 0.14-1
 - fixed offset management
 - added AddCleanerQuantities

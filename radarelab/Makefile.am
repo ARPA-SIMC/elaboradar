@@ -21,6 +21,9 @@ nobase_dist_radarelabinclude_HEADERS = \
   utils.h \
   utils/string.h \
   utils/sys.h \
+  utils/subprocess.h \
+  utils/term.h \
+  utils/testrunner.h \
   utils/tests.h \
   cylindrical.h \
   matrix.h \
@@ -51,6 +54,9 @@ libradarelab_la_SOURCES = \
   utils.cpp \
   utils/string.cc \
   utils/sys.cc \
+  utils/subprocess.cc \
+  utils/term.cc \
+  utils/testrunner.cc \
   utils/tests.cc \
   cylindrical.cpp \
   image.cpp \
