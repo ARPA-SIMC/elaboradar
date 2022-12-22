@@ -5,15 +5,16 @@
  * @author Enrico Zini <enrico@enricozini.org>
  * @brief Operating system functions
  *
- * Copyright (C) 2007--2015  Enrico Zini <enrico@debian.org>
+ * Copyright (C) 2007--2018  Enrico Zini <enrico@debian.org>
  */
 
 #include <string>
-//#include <iosfwd>
 #include <memory>
 #include <iterator>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -87,6 +88,15 @@ bool exists(const std::string& s);
 /// Get the absolute path of the current working directory
 std::string getcwd();
 
+/// Change working directory
+void chdir(const std::string& dir);
+
+/// Change root directory
+void chroot(const std::string& dir);
+
+/// Change umask (always succeeds and returns the previous umask)
+mode_t umask(mode_t mask);
+
 /// Get the absolute path of a file
 std::string abspath(const std::string& pathname);
 
@@ -117,7 +127,7 @@ public:
     operator const T*() const { return reinterpret_cast<const T*>(addr); }
 
     template<typename T>
-    operator T*() const { return reinterpret_cast<T*>(addr); };
+    operator T*() const { return reinterpret_cast<T*>(addr); }
 };
 
 /**
@@ -178,9 +188,23 @@ public:
     void fstat(struct stat& st);
     void fchmod(mode_t mode);
 
+    void futimens(const struct ::timespec ts[2]);
+
+    void fsync();
+    void fdatasync();
+
     int dup();
 
     size_t read(void* buf, size_t count);
+
+    /**
+     * Read `count` bytes into bufr, retrying partial reads, stopping at EOF.
+     *
+     * Return true if `count` bytes have been read, false in case of eof, and
+     * raise an exception in case EOF was found after reading between 0 and
+     * count-1 bytes.
+     */
+    bool read_all_or_retry(void* buf, size_t count);
 
     /**
      * Read all the data into buf, throwing runtime_error in case of a partial
@@ -258,8 +282,30 @@ public:
      */
     bool ofd_getlk(struct ::flock&);
 
+    /// Get open flags for the file
+    int getfl();
+
+    /// Set open flags for the file
+    void setfl(int flags);
+
     operator int() const { return fd; }
 };
+
+
+/**
+ * RAII mechanism to save restore file times at the end of some file operations
+ */
+class PreserveFileTimes
+{
+protected:
+    FileDescriptor fd;
+    struct ::timespec ts[2];
+
+public:
+    PreserveFileTimes(FileDescriptor fd);
+    ~PreserveFileTimes();
+};
+
 
 
 /**
@@ -320,8 +366,14 @@ struct Path : public ManagedNamedFileDescriptor
     /**
      * Iterator for directory entries
      */
-    struct iterator : public std::iterator<std::input_iterator_tag, struct dirent>
+    struct iterator
     {
+        using iterator_category = std::input_iterator_tag;
+        using value_type = struct dirent;
+        using difference_type = int;
+        using pointer = struct dirent*;
+        using reference = struct dirent&;
+
         Path* path = nullptr;
         DIR* dir = nullptr;
         struct dirent* cur_entry = nullptr;
@@ -377,19 +429,22 @@ struct Path : public ManagedNamedFileDescriptor
     /**
      * Open the given pathname with flags | O_PATH.
      */
-    Path(const char* pathname, int flags=0);
+    Path(const char* pathname, int flags=0, mode_t mode=0777);
     /**
      * Open the given pathname with flags | O_PATH.
      */
-    Path(const std::string& pathname, int flags=0);
+    Path(const std::string& pathname, int flags=0, mode_t mode=0777);
     /**
      * Open the given pathname calling parent.openat, with flags | O_PATH
      */
-    Path(Path& parent, const char* pathname, int flags=0);
+    Path(Path& parent, const char* pathname, int flags=0, mode_t mode=0777);
     Path(const Path&) = delete;
     Path(Path&&) = default;
     Path& operator=(const Path&) = delete;
     Path& operator=(Path&&) = default;
+
+    /// Wrapper around open(2) with flags | O_PATH
+    void open(int flags, mode_t mode=0777);
 
     DIR* fdopendir();
 
@@ -400,6 +455,11 @@ struct Path : public ManagedNamedFileDescriptor
     iterator end();
 
     int openat(const char* pathname, int flags, mode_t mode=0777);
+
+    /// Same as openat, but returns -1 if the file does not exist
+    int openat_ifexists(const char* pathname, int flags, mode_t mode=0777);
+
+    bool faccessat(const char* pathname, int mode, int flags=0);
 
     void fstatat(const char* pathname, struct stat& st);
 
@@ -414,8 +474,14 @@ struct Path : public ManagedNamedFileDescriptor
 
     void unlinkat(const char* pathname);
 
+    void mkdirat(const char* pathname, mode_t mode=0777);
+
     /// unlinkat with the AT_REMOVEDIR flag set
     void rmdirat(const char* pathname);
+
+    void symlinkat(const char* target, const char* linkpath);
+
+    std::string readlinkat(const char* pathname);
 
     /**
      * Delete the directory pointed to by this Path, with all its contents.
@@ -423,6 +489,10 @@ struct Path : public ManagedNamedFileDescriptor
      * The path must point to a directory.
      */
     void rmtree();
+
+    static std::string mkdtemp(const std::string& prefix);
+    static std::string mkdtemp(const char* prefix);
+    static std::string mkdtemp(char* pathname_template);
 };
 
 
@@ -458,7 +528,56 @@ public:
     bool open_ifexists(int flags, mode_t mode=0777);
 
     static File mkstemp(const std::string& prefix);
+    static File mkstemp(const char* prefix);
+    static File mkstemp(char* pathname_template);
 };
+
+
+/**
+ * Open a temporary file.
+ *
+ * By default, the temporary file will be deleted when the object is deleted.
+ */
+class Tempfile : public File
+{
+protected:
+    bool m_unlink_on_exit = true;
+
+public:
+    Tempfile();
+    Tempfile(const std::string& prefix);
+    Tempfile(const char* prefix);
+    ~Tempfile();
+
+    /// Change the unlink-on-exit behaviour
+    void unlink_on_exit(bool val);
+
+    /// Unlink the file right now
+    void unlink();
+};
+
+
+/**
+ * Open a temporary directory.
+ *
+ * By default, the temporary directory will be deleted when the object is
+ * deleted.
+ */
+class Tempdir : public Path
+{
+protected:
+    bool m_rmtree_on_exit = true;
+
+public:
+    Tempdir();
+    Tempdir(const std::string& prefix);
+    Tempdir(const char* prefix);
+    ~Tempdir();
+
+    /// Change the rmtree-on-exit behaviour
+    void rmtree_on_exit(bool val);
+};
+
 
 /// Read whole file into memory. Throws exceptions on failure.
 std::string read_file(const std::string &file);
@@ -563,6 +682,13 @@ void rmdir(const std::string& pathname);
 void rmtree(const std::string& pathname);
 
 /**
+ * Delete the directory \a pathname and all its contents.
+ *
+ * If the directory does not exist, it returns false, else true.
+ */
+bool rmtree_ifexists(const std::string& pathname);
+
+/**
  * Rename src_pathname into dst_pathname.
  *
  * This is just a wrapper to the rename(2) system call: source and destination
@@ -570,63 +696,64 @@ void rmtree(const std::string& pathname);
  */
 void rename(const std::string& src_pathname, const std::string& dst_pathname);
 
-#if 0
-/// Nicely wrap access to directories
-class Directory
+/**
+ * Set mtime and atime for the file
+ */
+void touch(const std::string& pathname, time_t ts);
+
+/**
+ * Call clock_gettime, raising an exception if it fails
+ */
+void clock_gettime(::clockid_t clk_id, struct ::timespec& ts);
+
+/**
+ * Return the time elapsed between two timesec structures, in nanoseconds
+ */
+unsigned long long timesec_elapsed(const struct ::timespec& begin, const struct ::timespec& until);
+
+/**
+ * Access to clock_gettime
+ */
+struct Clock
 {
-protected:
-    /// Directory pathname
-    std::string m_path;
+    ::clockid_t clk_id;
+    struct ::timespec ts;
 
-public:
-    class const_iterator
-    {
-        /// Directory we are iterating
-        const Directory* dir;
-        /// DIR* pointer
-        void* dirp;
-        /// dirent structure used for iterating entries
-        struct dirent* direntbuf;
+    /**
+     * Initialize ts with the value of the given clock
+     */
+    Clock(::clockid_t clk_id);
 
-    public:
-        // Create an end iterator
-        const_iterator();
-        // Create a begin iterator
-        const_iterator(const Directory& dir);
-        // Cleanup properly
-        ~const_iterator();
-
-        /// auto_ptr style copy semantics
-        const_iterator(const const_iterator& i);
-        const_iterator& operator=(const const_iterator& i);
-
-        /// Move to the next directory entry
-        const_iterator& operator++();
-
-        /// @return the current file name
-        std::string operator*() const;
-
-        bool operator==(const const_iterator& iter) const;
-        bool operator!=(const const_iterator& iter) const;
-    };
-
-    Directory(const std::string& path);
-    ~Directory();
-
-    /// Pathname of the directory
-    const std::string& path() const { return m_path; }
-
-    /// Check if the directory exists
-    bool exists() const;
-
-    /// Begin iterator
-    const_iterator begin() const;
-
-    /// End iterator
-    const_iterator end() const;
+    /**
+     * Return the number of nanoseconds elapsed since the last time ts was
+     * updated
+     */
+    unsigned long long elapsed();
 };
 
-#endif
+/**
+ * rlimit wrappers
+ */
+
+/// Call getrlimit, raising an exception if it fails
+void getrlimit(int resource, struct ::rlimit& rlim);
+
+/// Call setrlimit, raising an exception if it fails
+void setrlimit(int resource, const struct ::rlimit& rlim);
+
+/// Override a soft resource limit during the lifetime of the object
+struct OverrideRlimit
+{
+    int resource;
+    struct ::rlimit orig;
+
+    OverrideRlimit(int resource, rlim_t rlim);
+    ~OverrideRlimit();
+
+    /// Change the limit value again
+    void set(rlim_t rlim);
+};
+
 }
 }
 }

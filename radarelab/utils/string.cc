@@ -7,6 +7,83 @@ namespace radarelab {
 namespace utils {
 namespace str {
 
+namespace {
+
+/**
+ * Return the substring of 'str' without all leading characters for which
+ * 'classifier' returns true.
+ */
+template<typename FUN>
+std::string lstrip(const std::string& str, const FUN& classifier)
+{
+    if (str.empty())
+        return str;
+
+    size_t beg = 0;
+    while (beg < str.size() && classifier(str[beg]))
+        ++beg;
+
+    return str.substr(beg, str.size() - beg + 1);
+}
+
+/**
+ * Return the substring of 'str' without all trailing characters for which
+ * 'classifier' returns true.
+ */
+template<typename FUN>
+std::string rstrip(const std::string& str, const FUN& classifier)
+{
+    if (str.empty())
+        return str;
+
+    size_t end = str.size();
+    while (end > 0 && classifier(str[end - 1]))
+        --end;
+
+    if (end == 0)
+        return std::string();
+    else
+        return str.substr(0, end);
+}
+
+/**
+ * Return the substring of 'str' without all leading and trailing characters
+ * for which 'classifier' returns true.
+ */
+template<typename FUN>
+std::string strip(const std::string& str, const FUN& classifier)
+{
+    if (str.empty())
+        return str;
+
+    size_t beg = 0;
+    size_t end = str.size();
+    while (beg < end && classifier(str[beg]))
+        ++beg;
+    while (beg < end && classifier(str[end - 1]))
+        --end;
+
+    return str.substr(beg, end - beg);
+}
+
+}
+
+
+std::string lstrip(const std::string& str)
+{
+    return lstrip(str, ::isspace);
+}
+
+std::string rstrip(const std::string& str)
+{
+    return rstrip(str, ::isspace);
+}
+
+std::string strip(const std::string& str)
+{
+    return strip(str, ::isspace);
+}
+
 std::string basename(const std::string& pathname)
 {
     size_t pos = pathname.rfind("/");
@@ -155,7 +232,7 @@ std::string Split::const_iterator::remainder() const
         return std::string();
     else
         return split->str.substr(end);
-};
+}
 
 void Split::const_iterator::skip_separators()
 {
@@ -354,7 +431,7 @@ std::string decode_url(const std::string& str)
 static const char* base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 template<typename T>
-static const char invbase64(const T& idx)
+static char invbase64(const T& idx)
 {
     static const char data[] = {62,0,0,0,63,52,53,54,55,56,57,58,59,60,61,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,0,0,0,0,0,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
     if (idx < 43) return 0;

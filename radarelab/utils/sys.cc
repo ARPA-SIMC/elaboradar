@@ -9,8 +9,12 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <utime.h>
 #include <alloca.h>
+#include <algorithm>
 
 namespace {
 
@@ -164,6 +168,23 @@ std::string getcwd()
 #endif
 }
 
+void chdir(const std::string& dir)
+{
+    if (::chdir(dir.c_str()) == -1)
+        throw std::system_error(errno, std::system_category(), "cannot change the current working directory to " + dir);
+}
+
+void chroot(const std::string& dir)
+{
+    if (::chroot(dir.c_str()) == -1)
+        throw std::system_error(errno, std::system_category(), "cannot chroot to " + dir);
+}
+
+mode_t umask(mode_t mask)
+{
+    return ::umask(mask);
+}
+
 std::string abspath(const std::string& pathname)
 {
     if (pathname[0] == '/')
@@ -275,6 +296,26 @@ size_t FileDescriptor::read(void* buf, size_t count)
     return res;
 }
 
+bool FileDescriptor::read_all_or_retry(void* buf, size_t count)
+{
+    char* dest = (char*)buf;
+    size_t remaining = count;
+    while (remaining > 0)
+    {
+        size_t res = read(dest, remaining);
+        if (res == 0)
+        {
+            if (remaining == count)
+                return false;
+
+            throw_runtime_error("partial read before EOF");
+        }
+        dest += res;
+        remaining -= res;
+    }
+    return true;
+}
+
 void FileDescriptor::read_all_or_throw(void* buf, size_t count)
 {
     size_t res = read(buf, count);
@@ -350,7 +391,7 @@ bool FileDescriptor::ofd_setlk(struct flock& lk)
     if (fcntl(fd, F_SETLK, &lk) != -1)
 #endif
         return true;
-    if (errno != EAGAIN)
+    if (errno != EAGAIN && errno != EACCES)
         throw_error("cannot acquire lock");
     return false;
 }
@@ -365,7 +406,7 @@ bool FileDescriptor::ofd_setlkw(struct flock& lk, bool retry_on_signal)
         if (fcntl(fd, F_SETLKW, &lk) != -1)
 #endif
             return true;
-        if (errno != EAGAIN)
+        if (errno != EINTR)
             throw_error("cannot acquire lock");
         if (!retry_on_signal)
             return false;
@@ -382,6 +423,58 @@ bool FileDescriptor::ofd_getlk(struct flock& lk)
         throw_error("cannot test lock");
     return lk.l_type == F_UNLCK;
 }
+
+int FileDescriptor::getfl()
+{
+    int res = fcntl(fd, F_GETFL, 0);
+    if (res == -1)
+        throw_error("cannot get file flags (fcntl F_GETFL)");
+    return res;
+}
+
+void FileDescriptor::setfl(int flags)
+{
+    if (fcntl(fd, F_SETFL, flags) == -1)
+        throw_error("cannot set file flags (fcntl F_SETFL)");
+}
+
+void FileDescriptor::futimens(const struct ::timespec ts[2])
+{
+    if (::futimens(fd, ts) == -1)
+        throw_error("cannot change file timestamps");
+}
+
+void FileDescriptor::fsync()
+{
+    if (::fsync(fd) == -1)
+        throw_error("fsync failed");
+}
+
+void FileDescriptor::fdatasync()
+{
+    if (::fdatasync(fd) == -1)
+        throw_error("fdatasync failed");
+}
+
+
+/*
+ * PreserveFileTimes
+ */
+
+PreserveFileTimes::PreserveFileTimes(FileDescriptor fd)
+    : fd(fd)
+{
+    struct stat st;
+    fd.fstat(st);
+    ts[0] = st.st_atim;
+    ts[1] = st.st_mtim;
+}
+
+PreserveFileTimes::~PreserveFileTimes()
+{
+    fd.futimens(ts);
+}
+
 
 /*
  * NamedFileDescriptor
@@ -441,26 +534,30 @@ ManagedNamedFileDescriptor& ManagedNamedFileDescriptor::operator=(ManagedNamedFi
  * Path
  */
 
-Path::Path(const char* pathname, int flags)
+Path::Path(const char* pathname, int flags, mode_t mode)
     : ManagedNamedFileDescriptor(-1, pathname)
 {
-    fd = open(pathname, flags | O_PATH);
-    if (fd == -1)
-        throw_error("cannot open path");
+    open(flags, mode);
 }
 
-Path::Path(const std::string& pathname, int flags)
+Path::Path(const std::string& pathname, int flags, mode_t mode)
     : ManagedNamedFileDescriptor(-1, pathname)
 {
-    fd = open(pathname.c_str(), flags | O_PATH);
-    if (fd == -1)
-        throw_error("cannot open path");
+    open(flags, mode);
 }
 
-Path::Path(Path& parent, const char* pathname, int flags)
-    : ManagedNamedFileDescriptor(parent.openat(pathname, flags | O_PATH),
+Path::Path(Path& parent, const char* pathname, int flags, mode_t mode)
+    : ManagedNamedFileDescriptor(parent.openat(pathname, flags | O_PATH, mode),
             str::joinpath(parent.name(), pathname))
 {
+}
+
+void Path::open(int flags, mode_t mode)
+{
+    close();
+    fd = ::open(pathname.c_str(), flags | O_PATH, mode);
+    if (fd == -1)
+        throw_error("cannot open path");
 }
 
 DIR* Path::fdopendir()
@@ -495,6 +592,23 @@ int Path::openat(const char* pathname, int flags, mode_t mode)
     if (res == -1)
         throw_error("cannot openat");
     return res;
+}
+
+int Path::openat_ifexists(const char* pathname, int flags, mode_t mode)
+{
+    int res = ::openat(fd, pathname, flags, mode);
+    if (res == -1)
+    {
+        if (errno == ENOENT)
+            return -1;
+        throw_error("cannot openat");
+    }
+    return res;
+}
+
+bool Path::faccessat(const char* pathname, int mode, int flags)
+{
+    return ::faccessat(fd, pathname, mode, flags) == 0;
 }
 
 void Path::fstatat(const char* pathname, struct stat& st)
@@ -537,11 +651,42 @@ void Path::unlinkat(const char* pathname)
         throw_error("cannot unlinkat");
 }
 
+void Path::mkdirat(const char* pathname, mode_t mode)
+{
+    if (::mkdirat(fd, pathname, mode) == -1)
+        throw_error("cannot mkdirat");
+}
+
 void Path::rmdirat(const char* pathname)
 {
     if (::unlinkat(fd, pathname, AT_REMOVEDIR) == -1)
         throw_error("cannot unlinkat");
 }
+
+void Path::symlinkat(const char* target, const char* linkpath)
+{
+    if (::symlinkat(target, fd, linkpath) == -1)
+        throw_error("cannot symlinkat");
+}
+
+std::string Path::readlinkat(const char* pathname)
+{
+    std::string res(256, 0);
+    while (true)
+    {
+        // TODO: remove the cast to char* after C++14
+        ssize_t sz = ::readlinkat(fd, pathname, (char*)res.data(), res.size());
+        if (sz == -1)
+            throw_error("cannot readlinkat");
+        if (sz < (ssize_t)res.size())
+        {
+            res.resize(sz);
+            return res;
+        }
+        res.resize(res.size() * 2);
+    }
+}
+
 
 Path::iterator::iterator()
 {
@@ -706,6 +851,30 @@ void Path::rmtree()
     rmdir(name());
 }
 
+std::string Path::mkdtemp(const std::string& prefix)
+{
+    char* fbuf = (char*)alloca(prefix.size() + 7);
+    memcpy(fbuf, prefix.data(), prefix.size());
+    memcpy(fbuf + prefix.size(), "XXXXXX", 7);
+    return mkdtemp(fbuf);
+}
+
+std::string Path::mkdtemp(const char* prefix)
+{
+    size_t prefix_size = strlen(prefix);
+    char* fbuf = (char*)alloca(prefix_size + 7);
+    memcpy(fbuf, prefix, prefix_size);
+    memcpy(fbuf + prefix_size, "XXXXXX", 7);
+    return mkdtemp(fbuf);
+}
+
+std::string Path::mkdtemp(char* pathname_template)
+{
+    if (char* pathname = ::mkdtemp(pathname_template))
+        return pathname;
+    throw std::system_error(errno, std::system_category(), std::string("mkdtemp failed on ") + pathname_template);
+}
+
 /*
  * File
  */
@@ -743,11 +912,74 @@ File File::mkstemp(const std::string& prefix)
     char* fbuf = (char*)alloca(prefix.size() + 7);
     memcpy(fbuf, prefix.data(), prefix.size());
     memcpy(fbuf + prefix.size(), "XXXXXX", 7);
-    int fd = ::mkstemp(fbuf);
-    if (fd < 0)
-        throw std::system_error(errno, std::system_category(), std::string("cannot create temporary file ") + fbuf);
-    return File(fd, fbuf);
+    return mkstemp(fbuf);
 }
+
+File File::mkstemp(const char* prefix)
+{
+    size_t prefix_size = strlen(prefix);
+    char* fbuf = (char*)alloca(prefix_size + 7);
+    memcpy(fbuf, prefix, prefix_size);
+    memcpy(fbuf + prefix_size, "XXXXXX", 7);
+    return mkstemp(fbuf);
+}
+
+File File::mkstemp(char* pathname_template)
+{
+    int fd = ::mkstemp(pathname_template);
+    if (fd < 0)
+        throw std::system_error(errno, std::system_category(), std::string("cannot create temporary file ") + pathname_template);
+    return File(fd, pathname_template);
+}
+
+
+/*
+ * Tempfile
+ */
+
+Tempfile::Tempfile() : sys::File(sys::File::mkstemp("")) {}
+Tempfile::Tempfile(const std::string& prefix) : sys::File(sys::File::mkstemp(prefix)) {}
+Tempfile::Tempfile(const char* prefix) : sys::File(sys::File::mkstemp(prefix)) {}
+
+Tempfile::~Tempfile()
+{
+    if (m_unlink_on_exit)
+        ::unlink(name().c_str());
+}
+
+void Tempfile::unlink_on_exit(bool val)
+{
+    m_unlink_on_exit = val;
+}
+
+void Tempfile::unlink()
+{
+    sys::unlink(name());
+}
+
+
+/*
+ * Tempdir
+ */
+
+Tempdir::Tempdir() : sys::Path(sys::Path::mkdtemp("")) {}
+Tempdir::Tempdir(const std::string& prefix) : sys::Path(sys::Path::mkdtemp(prefix)) {}
+Tempdir::Tempdir(const char* prefix) : sys::Path(sys::Path::mkdtemp(prefix)) {}
+
+Tempdir::~Tempdir()
+{
+    if (m_rmtree_on_exit)
+        try {
+            rmtree();
+        } catch (...) {
+        }
+}
+
+void Tempdir::rmtree_on_exit(bool val)
+{
+    m_rmtree_on_exit = val;
+}
+
 
 std::string read_file(const std::string& file)
 {
@@ -756,6 +988,9 @@ std::string read_file(const std::string& file)
     // Get the file size
     struct stat st;
     in.fstat(st);
+
+    if (st.st_size == 0)
+        return std::string();
 
     // mmap the input file
     MMap src = in.mmap(st.st_size, PROT_READ, MAP_SHARED);
@@ -770,7 +1005,7 @@ void write_file(const std::string& file, const std::string& data, mode_t mode)
 
 void write_file(const std::string& file, const void* data, size_t size, mode_t mode)
 {
-    File out(file, O_WRONLY | O_CREAT, mode);
+    File out(file, O_WRONLY | O_CREAT | O_TRUNC, mode);
     out.write_all_or_retry(data, size);
     out.close();
 }
@@ -838,6 +1073,14 @@ bool rename_ifexists(const std::string& src, const std::string& dst)
     else
         return true;
 }
+
+void touch(const std::string& pathname, time_t ts)
+{
+    struct utimbuf t = { ts, ts };
+    if (::utime(pathname.c_str(), &t) != 0)
+        throw std::system_error(errno, std::system_category(), "cannot set mtime/atime of " + pathname);
+}
+
 
 template<typename String>
 static bool impl_mkdir_ifmissing(String pathname, mode_t mode)
@@ -949,14 +1192,98 @@ void rmtree(const std::string& pathname)
     path.rmtree();
 }
 
-#if 0
-std::string mkdtemp( std::string tmpl )
+bool rmtree_ifexists(const std::string& pathname)
 {
-    char *_tmpl = reinterpret_cast< char * >( alloca( tmpl.size() + 1 ) );
-    strcpy( _tmpl, tmpl.c_str() );
-    return ::mkdtemp( _tmpl );
+    int fd = open(pathname.c_str(), O_PATH);
+    if (fd == -1)
+    {
+        if (errno == ENOENT)
+            return false;
+        throw std::system_error(errno, std::system_category(), "cannot open path " + pathname);
+    }
+    Path path(fd, pathname);
+    path.rmtree();
+    return true;
 }
-#endif
+
+void clock_gettime(::clockid_t clk_id, struct ::timespec& ts)
+{
+    int res = ::clock_gettime(clk_id, &ts);
+    if (res == -1)
+        throw std::system_error(errno, std::system_category(), "clock_gettime failed on clock " + std::to_string(clk_id));
+}
+
+unsigned long long timesec_elapsed(const struct ::timespec& begin, const struct ::timespec& until)
+{
+    if (begin.tv_sec > until.tv_sec)
+        return 0;
+
+    if (begin.tv_sec == until.tv_sec)
+    {
+        if (begin.tv_nsec > until.tv_nsec)
+            return 0;
+        return until.tv_nsec - begin.tv_nsec;
+    }
+
+    if (until.tv_nsec < begin.tv_nsec)
+        return (until.tv_sec - begin.tv_sec - 1) * 1000000000 + (until.tv_nsec + 1000000000 - begin.tv_nsec);
+    else
+        return (until.tv_sec - begin.tv_sec) * 1000000000 + until.tv_nsec - begin.tv_nsec;
+}
+
+/*
+ * Clock
+ */
+
+Clock::Clock(clockid_t clk_id)
+    : clk_id(clk_id)
+{
+    clock_gettime(clk_id, ts);
+}
+
+unsigned long long Clock::elapsed()
+{
+    struct timespec cur_ts;
+    clock_gettime(clk_id, cur_ts);
+    return timesec_elapsed(ts, cur_ts);
+}
+
+
+/*
+ * rlimit
+ */
+
+void getrlimit(int resource, struct ::rlimit& rlim)
+{
+    if (::getrlimit(resource, &rlim) == -1)
+        throw std::system_error(errno, std::system_category(), "getrlimit failed");
+}
+
+void setrlimit(int resource, const struct ::rlimit& rlim)
+{
+    if (::setrlimit(resource, &rlim) == -1)
+        throw std::system_error(errno, std::system_category(), "setrlimit failed");
+}
+
+OverrideRlimit::OverrideRlimit(int resource, rlim_t rlim)
+    : resource(resource)
+{
+    getrlimit(resource, orig);
+    set(rlim);
+}
+
+OverrideRlimit::~OverrideRlimit()
+{
+    setrlimit(resource, orig);
+}
+
+void OverrideRlimit::set(rlim_t rlim)
+{
+    struct rlimit newval(orig);
+    newval.rlim_cur = rlim;
+    setrlimit(resource, newval);
+}
+
 }
 }
 }

@@ -3,15 +3,15 @@ Section: science
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends:
-  debhelper (>= 9), dh-buildinfo, dh-autoreconf,
+  debhelper (>= 9), dh-buildinfo, dh-autoreconf, libtool-bin,
   doxygen, pkg-config,
   liblog4c-dev, libgsl-dev, libgdal-dev, libhdf5-dev, libradar-dev,
-  libeigen3-dev, libwibble-dev
+  libeigen3-dev, libproj-dev, libtclap-dev
 Standards-Version: 3.9.6.0
 Homepage: https://github.com/ARPA-SIMC/elaboradar
 Vcs-Git: https://github.com/ARPA-SIMC/elaboradar.git
 
-Package: libelaboradar-dev
+Package: libradarelab-dev
 Section: libdevel
 Architecture: any
 Depends: libelaboradar0 (= ${binary:Version}), ${misc:Depends}
@@ -21,13 +21,19 @@ Description: library for working with radar images
  .
  TODO: description to be written.
 
-Package: libelaboradar0
+Package: libradarelab0
 Section: libs
 Architecture: any
-Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: shared library for working with radar images
  libelaboradar is a C++ library for working with radar images.
  .
  This is the shared library for C programs.
+
+Package: libradarelab-doc
+Section: doc
+Architecture: any
+Description: library for working with radar images
+ libelaboradar is a C++ library for working with radar images.
+ .
+ This is the documentation for the library
