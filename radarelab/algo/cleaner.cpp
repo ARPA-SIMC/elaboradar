@@ -20,11 +20,17 @@
 #include "radarelab/image.h"
 #include "radarelab/matrix.h"
 
+#include <string>
+#include <filesystem>
+#include <unistd.h>
+#include <cstring>
+
 namespace radarelab {
 namespace algo {
 
 using namespace std;
 using namespace radarelab;
+using std::filesystem::current_path;
 
 //--------------------------------------------------------------------------------
 //  These methods use only VRAD and WRAD values to clean the beam
@@ -370,9 +376,13 @@ tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam
     int Num_entries=0;
     int Num_echoes = 5;
     int Ntraps = 5; // 5 argomenti da passare a Trap : x1,x2,x3,x4,x5
+    //char f_dir[256];
+    char *cwd = get_current_dir_name();
+    //strcpy(f_dir,cwd);
+    string f_dir = cwd;
 
     //leggo matrice dei pesi----------------------------------------------------
-    string fin_w = "/autofs/nfshomes/ccardinali/elaboradar_updating/elaboradar/matrix-"+radar+".txt";
+    string fin_w = f_dir+"/matrix-"+radar+".txt";//strcat(f_dir,wname.c_str());
     vector<string> w_vector;
     w_vector = read_matrix_from_txt(fin_w);
     Num_entries = w_vector.size()/Num_echoes;
@@ -388,7 +398,7 @@ tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam
 
     //--------------------------------------------------------------------------
     //leggo matrice dei traps
-    string fin_t = "/autofs/nfshomes/ccardinali/elaboradar_updating/elaboradar/Trap-"+radar+".txt";
+    string fin_t = f_dir+"/Trap-"+radar+".txt";
     vector<string> t_vector;
     t_vector = read_matrix_from_txt(fin_t);
     double Traps[Num_entries][Num_echoes][Ntraps];
@@ -862,7 +872,7 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
     for (unsigned i = 0; i <beam_count ; ++i) 
     {
        bool stamp=false;
-       if(i==100) stamp=true;//311
+       //if(i==100) stamp=true;//311
       //vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp);
       auto [corrected, diff_prob] = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp, force_meteo);
       //vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp, force_meteo);
