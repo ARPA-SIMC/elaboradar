@@ -1,20 +1,20 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(elaboradar, [0.15], [palberoni@arpae.it])
+AC_INIT([elaboradar],[0.15],[palberoni@arpae.it])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR([m4])
 
 LT_INIT()
 LT_LANG([C++])
-AM_PROG_LIBTOOL
+LT_INIT
 
 dnl To use subdirs
 AC_PROG_MAKE_SET
 
 AC_LANG([C++])
 
-AC_ISC_POSIX
+AC_SEARCH_LIBS([strerror],[cposix])
 AC_PROG_CC
 AC_PROG_CXX
 
