@@ -1,20 +1,20 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(elaboradar, [0.15], [palberoni@arpae.it])
+AC_INIT([elaboradar],[0.15],[palberoni@arpae.it])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR([m4])
 
 LT_INIT()
 LT_LANG([C++])
-AM_PROG_LIBTOOL
+LT_INIT
 
 dnl To use subdirs
 AC_PROG_MAKE_SET
 
 AC_LANG([C++])
 
-AC_ISC_POSIX
+AC_SEARCH_LIBS([strerror],[cposix])
 AC_PROG_CC
 AC_PROG_CXX
 
@@ -40,10 +40,10 @@ then
 fi
 
 dnl CentOS 7 has no pkg-config for proj-devel
-PKG_CHECK_MODULES(PROJ, [proj], [have_proj=yes], [have_proj=no])
+PKG_CHECK_MODULES(PROJ, [proj >= 6.3.2], [have_proj=yes], [have_proj=no])
 if test $have_proj = yes
 then
-        PKG_CHECK_MODULES(PROJ, [proj])
+        PKG_CHECK_MODULES(PROJ, [proj >= 6.3.2])
 else
 	AC_CHECK_LIB([proj], [pj_init], [have_proj=yes], [have_proj=no])
 	AC_CHECK_HEADER([proj_api.h], [have_proj=yes], [have_proj=no])
