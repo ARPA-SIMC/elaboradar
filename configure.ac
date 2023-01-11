@@ -40,10 +40,10 @@ then
 fi
 
 dnl CentOS 7 has no pkg-config for proj-devel
-PKG_CHECK_MODULES(PROJ, [proj], [have_proj=yes], [have_proj=no])
+PKG_CHECK_MODULES(PROJ, [proj >= 6.3.2], [have_proj=yes], [have_proj=no])
 if test $have_proj = yes
 then
-        PKG_CHECK_MODULES(PROJ, [proj])
+        PKG_CHECK_MODULES(PROJ, [proj >= 6.3.2])
 else
 	AC_CHECK_LIB([proj], [pj_init], [have_proj=yes], [have_proj=no])
 	AC_CHECK_HEADER([proj_api.h], [have_proj=yes], [have_proj=no])
