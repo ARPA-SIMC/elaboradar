@@ -1,13 +1,7 @@
 #include "cartproducts.h"
 #include "assets.h"
 #include <radarlib/radar.hpp>
-
-#ifdef USE_OLD_PROJ
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H
-#include <proj_api.h>
-#else
 #include <proj.h>
-#endif
 
 using namespace radarelab;
 using namespace OdimH5v21;
@@ -81,9 +75,7 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     assets.write_subimage(conv_1x1, image_side, algos, "DIR_QUALITY", ".conv_ZLR", "punti convettivi");
 }
 
-   
-
-    void CartProducts::write_odim(Assets& assets, unsigned image_side, std::string algos, OdimProdDefs &odimProd)
+void CartProducts::write_odim(Assets& assets, unsigned image_side, std::string algos, OdimProdDefs &odimProd)
 {
     const char* dir = getenv("OUTPUT_Z_LOWRIS_DIR");
     if (!dir)
@@ -114,22 +106,6 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     proj = proj+std::to_string(assets.getRadarSite().lat_r)+"N +lon_0="+std::to_string(assets.getRadarSite().lon_r)+"E  +units=m +datum=WGS84";
     std::string LatLon_def ("+proj=latlong +datum=WGS84");
 
-#if USE_OLD_PROJ
-    projPJ pj_aeqd, pj_latlong;
-    if (!(pj_aeqd = pj_init_plus(proj.c_str())) ) 
-       exit(1);
-    if (!(pj_latlong = pj_init_plus(LatLon_def.c_str())) )
-       exit(1);
-    if (pj_transform(pj_aeqd, pj_latlong,  4, 1, x, y, NULL ) != 0 ) exit(1000);
-    image->setLL_Latitude (y[0]*RAD_TO_DEG);
-    image->setLL_Longitude(x[0]*RAD_TO_DEG);
-    image->setLR_Latitude (y[1]*RAD_TO_DEG);
-    image->setLR_Longitude(x[1]*RAD_TO_DEG);
-    image->setUL_Latitude (y[2]*RAD_TO_DEG);
-    image->setUL_Longitude(x[2]*RAD_TO_DEG);
-    image->setUR_Latitude (y[3]*RAD_TO_DEG);
-    image->setUR_Longitude(x[3]*RAD_TO_DEG);
-#else
     PJ* P = proj_create_crs_to_crs(PJ_DEFAULT_CTX, proj.c_str(), LatLon_def.c_str(), nullptr);
     if (!P)
         exit(1);
@@ -151,7 +127,6 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     image->setUL_Longitude(x[2]);
     image->setUR_Latitude (y[3]);
     image->setUR_Longitude(x[3]);
-#endif
 
     image->setXSize(image_side);
     image->setYSize(image_side);
@@ -159,7 +134,7 @@ void CartProducts::write_out(Assets& assets, unsigned image_side,std::string alg
     image->setYScale(odimProd.prodRes);
     image->setProjectionArguments(proj);
 
-		/* how */
+    /* how */
     image->setTaskOrProdGen(algos);
     image->setStartEpochs((unsigned int)assets.getAcqTime());
     image->setEndEpochs(  (unsigned int)assets.getAcqTime());

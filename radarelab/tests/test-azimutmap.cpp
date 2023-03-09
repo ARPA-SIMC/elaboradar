@@ -9,17 +9,13 @@ using namespace radarelab;
 using namespace radarelab::algo;
 using namespace radarelab::algo::azimuthresample;
 
-namespace radarelab {
-namespace algo {
-namespace azimuthresample {
+namespace std {
 
 ostream& operator<<(ostream& out, const pair<double, unsigned>& p)
 {
     return out << "(" << p.first << "," << p.second << ")";
 }
 
-}
-}
 }
 
 namespace {
