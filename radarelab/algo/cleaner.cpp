@@ -607,9 +607,11 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     int Num_entries=0;
     int Num_echoes = 5;
     int Ntraps = 5; // 5 argomenti da passare a Trap : x1,x2,x3,x4,x5
+    char *cwd = get_current_dir_name();
+    string f_dir = cwd;
 
     //leggo matrice dei pesi
-    string fin_w = "./matrix-"+radar+"-nozdr.txt";
+    string fin_w = f_dir+"/matrix-"+radar+"-nozdr.txt";
     vector<string> w_vector;
     w_vector = read_matrix_from_txt(fin_w);
     Num_entries = w_vector.size()/Num_echoes;
@@ -622,7 +624,7 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     }
 
     //leggo matrice dei traps
-    string fin_t = "./Trap-SPC-nozdr.txt";
+    string fin_t = f_dir+"/Trap-"+radar+"-nozdr.txt";
     vector<string> t_vector;
     t_vector = read_matrix_from_txt(fin_t);
     double Traps[Num_entries][Num_echoes][Ntraps];
