@@ -187,7 +187,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
 }
 
-void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium)
+  void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium, bool set_undetect)
 {
     using namespace radarelab::volume;
     LOG_CATEGORY("radar.io");
@@ -201,6 +201,16 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     Scans<double> v_volume;
     Scans<double> w_volume;
     Scans<double> zdr_volume;
+    Scans<double> rhohv_volume;
+    Scans<double> sqi_volume;
+    Scans<double> snr_volume;
+    //Scans<unsigned char> full_volume_cleanID;
+    //Scans<double> full_volume_diffprob;
+    //full_volume_diffprob.quantity="Diffprob";
+
+    string radar_name = site.name.c_str(); // da elaboradar/src/site.cpp : 'SPC' o 'GAT'
+    bool init_sqi = false;
+    
     loader.request_quantity(odim::PRODUCT_QUANTITY_DBZH, &dbzh_volume);
     loader.request_quantity(odim::PRODUCT_QUANTITY_TH, &th_volume);
 
@@ -209,6 +219,9 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
         loader.request_quantity(odim::PRODUCT_QUANTITY_VRAD, &v_volume);
         loader.request_quantity(odim::PRODUCT_QUANTITY_WRAD, &w_volume);
         loader.request_quantity(odim::PRODUCT_QUANTITY_ZDR, &zdr_volume);
+	loader.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&rhohv_volume);
+	loader.request_quantity(odim::PRODUCT_QUANTITY_SQI,&sqi_volume);
+	loader.request_quantity(odim::PRODUCT_QUANTITY_SNR,&snr_volume);
     }
     loader.load(nome_file);
 
@@ -234,10 +247,14 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
         z_volume = &th_volume;
     }
 
+    cout<<"z max ="<<z_volume->at(0).maxCoeff()<<endl;
     if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
+      if(sqi_volume.empty()) init_sqi = true;
+      cout<<"init_sqi"<<init_sqi<<endl;
       if (zdr_volume.empty())
       {
+	//caso ZDR e grandezze polarimetriche assenti -> lascio versione master al 16/2/2022
 	volume::Scans<unsigned char> full_volume_cleanID;
         //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
@@ -250,15 +267,76 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
 	        }
 	}
       } else {
+	cout<<"applico logica fuzzy"<<endl;
+	//caso ZDR e grandezze polarimetriche presenti--> uso fuzzy logic del branch elaboradar_updating al 16/2/2022
+	//volume::Scans<unsigned char> full_volume_cleanID;
+	//volume::Scans<double>full_volume_diffprob;
+	volume::Scans<unsigned char> full_volume_cleanID;
+
+	unsigned last = z_volume->size() -1;
         for (unsigned i = 0; i < z_volume->size(); ++i){
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i,true);
-            algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100,true);
+	    cout<<"it="<<i<<endl;
+	    //volume::Scans<unsigned char> full_volume_cleanID;
+	    volume::Scans<double>full_volume_diffprob;
+	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	    full_volume_diffprob.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	    //full_volume_cleanID.at(0).setZero();
+
+	    volume::Scans<double> Texture;
+	    //cout<<"init_sqi = "<<init_sqi<<endl;
+	    if(init_sqi){
+	      sqi_volume.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	      sqi_volume.at(i).setZero();
+	    }
+
+            //calcolo texture di dbzh sulla verticale tra prima elevazione e seconda elevazione:
+	    if(i< last){
+                volume::Scans<double> Input,Input2;        
+		Input.push_back(z_volume->at(i));
+	        Input2.push_back(z_volume->at(i+1));
+	        radarelab::volume::textureVD(Input, Input2, Texture, true);
+	        Texture.at(0).nodata=65535.;
+	        Texture.at(0).undetect=0.;
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+	    }
+	    else{
+	        Texture.clear();
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
+		Texture.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+		Texture.at(0).setZero();
+		Texture.at(0).nodata=65535.;
+	        Texture.at(0).undetect=0.;
+		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+	    }
+	    
+	    //algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
+	    //modifico il force_bool a true (ultimo parametro)
+	    
+	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(0), v_volume.at(i).undetect , radar_name, i, true);
+
+            double new_value=z_volume->at(0).nodata;
+	    //provo a commentare per test di uso solo nodata dei punti clssificati come non meteo
+	    if (set_undetect) new_value=z_volume->at(i).undetect;
+
+	    for (unsigned ii = 0; ii < z_volume->at(i).beam_count; ++ii)
+                for (unsigned ib = 0; ib < z_volume->at(i).beam_size; ++ib) {
+		  
+     	          if(full_volume_cleanID.at(i)(ii,ib) ) z_volume->at(i)(ii,ib)= new_value;
+
+        	}	      
+	    }
+	    
+	    // commento doppia ripulitura tramite clean() della versione master al 16/2/2022
+            //algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i,true);
+            //algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),zdr_volume.at(i),i+100,true);
         }
       }
-    }
+
+    //cout<<"arrivo al ponghino"<<endl;
 
     algo::azimuthresample::MaxOfClosest<double> resampler;
     resampler.resample_volume(*z_volume, volume, 1.0);
+    cout<<"resampler fatto!!!"<<endl;
 
     /*
     printf("fbeam ϑ%f α%f", this->volume.scan(0)[0].teta, this->volume.scan(0)[0].alfa);
@@ -306,6 +384,7 @@ void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const c
     // TODO: look for the equivalent of declutter_rsp and check its consistency
     // like in test_volume
 }
+
 
 void CUM_BAC::declutter_anaprop()
 {
@@ -560,6 +639,8 @@ void CUM_BAC::caratterizzo_volume()
 
     HRay hray_inf(volume); /*quota limite inferiore fascio in funzione della distanza e elevazione*/
     hray_inf.load_hray_inf(assets);
+
+    cout<<"sono in caratterizzo volume"<<endl;
 
     // path integrated attenuation
     double PIA;
@@ -1237,6 +1318,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                             if (*hliq<0) *hliq=0;
                             tipo_profilo=2;
                             //*vpr_liq=vpr.val[(hvprmax+1000)/TCK_VPR]*2.15;
+			    // iv.C = risultato dell'interpolazione (interpolated vpr)
                             *vpr_liq=iv.C;
                         }
                     }

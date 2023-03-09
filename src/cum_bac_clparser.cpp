@@ -80,6 +80,9 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	TCLAP::SwitchArg SaveFullResProd("F", "SaveFullResProd", "Save product at fullsize resolution", false);
         cmd.add(SaveFullResProd);
 
+	// Pass to the cmdline the set_undetect parameter for read_odim_volume(): if True pixels classified as non-meteo echoes are set to Z undetect value, otherwise are set to Z nodata value.
+	TCLAP::SwitchArg SetUndetect("U", "SetUndetect", "Set non-meteo classified pixel to undetect Z value", false);
+        cmd.add(SetUndetect);
 
 
 	
@@ -111,6 +114,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
         opt->do_intermediateProd=IntermediateProd.getValue();
         opt->do_SaveBothRanges=SaveBothRanges.getValue();
         opt->do_SaveFullRes=SaveFullResProd.getValue();
+	//add value of SetUndetect
+	opt->set_undetect=SetUndetect.getValue();
 	
   } catch ( TCLAP::ArgException& e )
   { std::cout << "ERROR: " << e.error() << " " << e.argId() << std::endl; }
@@ -137,6 +142,7 @@ void PrintOptions(struct CUM_BAC_CLOPT *opt){
    std::cout <<"do_intermediateProd"<<opt->do_intermediateProd<<std::endl;
    std::cout <<"do_SaveBothRanges"<<  opt->do_SaveBothRanges  <<std::endl;
    std::cout <<"do_SaveFullRes"<<  opt->do_SaveFullRes  <<std::endl;
+   std::cout <<"SetUndetect"<<  opt->set_undetect <<std::endl;
 
    return ;
 }

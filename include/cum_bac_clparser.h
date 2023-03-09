@@ -25,6 +25,8 @@ struct CUM_BAC_CLOPT {
    bool do_intermediateProd;
    bool do_SaveBothRanges; 
    bool do_SaveFullRes;
+
+  bool set_undetect;
 }  ;
 
 

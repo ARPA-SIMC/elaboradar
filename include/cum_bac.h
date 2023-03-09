@@ -78,7 +78,7 @@ public:
      * @param [in] do_clean - flag to abilitate cleaning procedure 
      * @param [in] do_medium - flag to force processing as medium range data  
      */
-    static void read_odim_volume(radarelab::Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false);
+  static void read_odim_volume(radarelab::Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean=false, bool do_medium=false, bool set_undetect=false);
 
     log4c_category_t* logging_category; ///< logging category 
 
@@ -99,6 +99,9 @@ public:
     bool do_devel = false;      ///< Produce additional output
     bool do_readStaticMap = false;  ///< Read Static clutter map
     bool do_anaprop=false;      ///< anaprop correction
+
+    // add set_undetect
+  bool set_undetect=false;///Set to Z undetect value the Zpixels classified as non-meteo echoes
 
     radarelab::Volume<double>& volume;      ///< Polar volume of Reflectivity 
     radarelab::Volume<double> SD_Z6;        ///< Polar volume of standard deviation of reflectivity over 6 km length

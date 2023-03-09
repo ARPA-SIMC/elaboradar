@@ -125,6 +125,7 @@ void Anaprop<T>::remove(
 
             // ------------assegno bin_low e bin_high 
 
+	    //float bin_low_nodata = volume[el_inf].nodata;
             float bin_low  = volume[el_inf].get(i, k);
             float bin_high;
             if (el_up >= volume.size() || k >= volume[el_up].beam_size){
@@ -134,7 +135,8 @@ void Anaprop<T>::remove(
             } else{
                 bin_high = volume[el_up].get(i, k);
             }
-  //         LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up ); 
+  //         LOG_WARN(" utilizzo %d %d %d %d ",i,k,el_inf, el_up );
+	    //float bin_high_nodata = volume[el_up].nodata;
 
             //----------questo serviva per evitare di tagliare la precipitazione shallow ma si dovrebbe trovare un metodo migliore p.es. v. prove su soglia
             if(bin_high == fondo_scala && SD[el_inf].get(i,k)<= conf_texture_threshold && SD[el_inf].get(i,k) > 0.01)                     //-----------ANNULLO EFFETTO TEST ANAP
@@ -237,7 +239,7 @@ void Anaprop<T>::remove(
 
               //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
                else
-               {
+	       {
                    for (unsigned ii=0; ii<7; ii++){
                        int iaz_prox = (i + ii - 3 + volume.beam_count) % volume.beam_count;
                        if( SD[el_inf].get(iaz_prox,k) < loc_conf_text_thre && SD[el_inf].get(iaz_prox,k) > 0.01) count_low++;
@@ -388,12 +390,14 @@ LOG_WARN("Anaprop remove without SD");
             grid_stats.incr_tot(i, k);
             // ------------assegno l'elevazione el_inf a first_level e elev_fin a el_inf---------
             int loc_el_inf = first_level(i, k) < volume.size() ? first_level(i,k) : volume.size()-1;
+	    
             while ( k >= volume[loc_el_inf].beam_size)
             {
             //    LOG_INFO("Decremento el_inf per k fuori range (i,k,beam_size,el_inf_dec) (%d,%d,%d,%d)",i,k,volume[loc_el_inf].beam_size,loc_el_inf-1);
                 loc_el_inf--;
                 if (loc_el_inf < 0) throw std::runtime_error("loc_el_inf < 0");
             }
+
 /* ---------------------------------
  * PER IL MOMENTO NON BUTTO ANCORA QUESTO CODICE CI DEVO PENSARE
  */
@@ -417,6 +421,7 @@ LOG_WARN("Anaprop remove without SD");
             float bin_high;
             if (el_up >= volume.size() || k >= volume[el_up].beam_size){
                 el_up=el_inf;
+		//cout<<" i="<<i<<" el_up= "<<el_up<<" volume.beam_size= "<<volume[el_up].beam_size<<endl;
                 bin_high = volume[el_up].get(i, k);
                 //bin_high=fondo_scala;
             } else{

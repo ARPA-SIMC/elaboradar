@@ -261,7 +261,7 @@ int main (int argc, char **argv)
     if(CL_opt.do_medium && CL_opt.filetype == 3) MyMAX_BIN = 512;   // questo dovrebbe essere il caso del medio vecchio 
 
     elaboradar::Config cfg;
-
+    
     setwork(sito);  //-------setto ambiente lavoro (se var amb lavoro non settate le setta in automatico) ------
 
     startup_banner(&CL_opt);
@@ -269,10 +269,11 @@ int main (int argc, char **argv)
     const Site& site(Site::get(sito));
     Volume<double> volume(NUM_AZ_X_PPI);
 
+    cout<<"volume size = "<<volume.size()<<endl;
     try {
-        if (CL_opt.data_in_odim)
+      if (CL_opt.data_in_odim)
             // Legge e controlla il volume dal file ODIM
-            CUM_BAC::read_odim_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium);
+	  CUM_BAC::read_odim_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium, CL_opt.set_undetect);
         else
             // Legge e controlla il volume dal file SP20
             CUM_BAC::read_sp20_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium);
@@ -280,7 +281,7 @@ int main (int argc, char **argv)
         LOG_ERROR("Errore nel caricamento del volume: %s", e.what());
         return 2;
     }
-    check_volume(volume, file_type);
+    check_volume(volume, file_type);    
 
     unique_ptr<elaboradar::CUM_BAC> cb(new elaboradar::CUM_BAC(volume, cfg, site, CL_opt.do_medium,MyMAX_BIN));
     // Set feature flags
