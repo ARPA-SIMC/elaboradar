@@ -47,6 +47,10 @@ int main(int argc,char* argv[])
 	//string radar_name = "SPC";
 	string radar_name = argv[3];
 	bool init_sqi = false;
+	cout<<"argv 4 "<<argv[4]<<endl;
+
+	volume::Scans<double> SDZ6;
+	SDZ6.quantity="SDZ6";
         
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
@@ -92,12 +96,13 @@ int main(int argc,char* argv[])
 		full_volume_sqi.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 		full_volume_sqi.at(i).setZero();
 	      }
+	      //SDZ6.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 
 	      volume::Scans<double> Texture;
 
               //calcolo texture V:
 	      if(i< last){
-                volume::Scans<double> Input,Input2;        ;
+                volume::Scans<double> Input,Input2;
 		Input.push_back(full_volume_z.at(i));
 	        Input2.push_back(full_volume_z.at(i+1));
 	        radarelab::volume::textureVD(Input, Input2, Texture, true);
@@ -133,8 +138,8 @@ int main(int argc,char* argv[])
               
 	      task="Cleaner base";
 	      double new_value=full_volume_z.at(last).nodata;
+	      if (argc == 5 && ! sscanf(argv[4], "--Use_undetect") ) new_value=full_volume_z.at(last).undetect;
 	      cout<<"novalue"<<new_value<<endl;
-	      if (argc == 4 && ! sscanf(argv[3], " --Use_undetect") ) new_value=full_volume_z.at(last).undetect;
 	      for (unsigned ii = 0; ii < full_volume_z.at(i).beam_count; ++ii)
                 for (unsigned ib = 0; ib < full_volume_z.at(i).beam_size; ++ib) {
 		  
@@ -142,6 +147,13 @@ int main(int argc,char* argv[])
 		    full_volume_z.at(i)(ii,ib)= new_value;
 		  //cout<<"full_clean_ID(i)(ii,ib)= "<<full_volume_cleanID.at(i)(ii,ib)<<endl;
         	}
+
+	      volume::Scans<double> sdz6, z_cur;
+	      z_cur.push_back(full_volume_z.at(i));
+	      textureSD(z_cur,sdz6,6000., false);
+	      sdz6.at(0).nodata=65535.;
+	      sdz6.at(0).undetect=0.;
+	      SDZ6.push_back(sdz6.at(0));
 	    	      
 	      }
 	  
@@ -152,6 +164,8 @@ int main(int argc,char* argv[])
 	volume::ODIMStorer storer;
 	storer.replace_quantity((Volume<double>*)(&full_volume_z));
 	cout<<"replaced quantity"<<endl;
+	storer.store_quantity_fp((Volume<double>*)(&SDZ6));
+	cout<<"stored quantity"<<endl;
 	storer.store_quantity_uchar((Volume<unsigned char>*)(&full_volume_cleanID));
 	cout<<"stored_quantity_uchar"<<endl;
 	storer.store_quantity_fp((Volume<double>*)(&full_volume_diffprob));
