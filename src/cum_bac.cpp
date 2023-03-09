@@ -312,10 +312,11 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	    //algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
 	    //modifico il force_bool a true (ultimo parametro)
 	    
-	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(0), v_volume.at(i).undetect , radar_name, i, false);
+	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(0), v_volume.at(i).undetect , radar_name, i, true);
 
             double new_value=z_volume->at(0).nodata;
-	    if (set_undetect) new_value=z_volume->at(0).undetect;
+	    //provo a commentare per test di uso solo nodata dei punti clssificati come non meteo
+	    if (set_undetect) new_value=z_volume->at(i).undetect;
 
 	    for (unsigned ii = 0; ii < z_volume->at(i).beam_count; ++ii)
                 for (unsigned ib = 0; ib < z_volume->at(i).beam_size; ++ib) {
@@ -1317,6 +1318,7 @@ int CalcoloVPR::analyse_VPR(float *vpr_liq,int *snow,float *hliq)
                             if (*hliq<0) *hliq=0;
                             tipo_profilo=2;
                             //*vpr_liq=vpr.val[(hvprmax+1000)/TCK_VPR]*2.15;
+			    // iv.C = risultato dell'interpolazione (interpolated vpr)
                             *vpr_liq=iv.C;
                         }
                     }

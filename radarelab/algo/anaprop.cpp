@@ -239,7 +239,7 @@ void Anaprop<T>::remove(
 
               //-----non c'è propagazione anomala:ricopio su tutte e elevazioni il valore di el_inf e correggo il beam blocking,  incremento la statistica beam_blocking, assegno matrice anaprop a 0 nel punto , assegno a 0 indicatore anap nel raggio, assegno elevazione finale e incremento statisica cambio elevazione se el_inf > first_level_static(i, k)-----------
                else
-               {
+	       {
                    for (unsigned ii=0; ii<7; ii++){
                        int iaz_prox = (i + ii - 3 + volume.beam_count) % volume.beam_count;
                        if( SD[el_inf].get(iaz_prox,k) < loc_conf_text_thre && SD[el_inf].get(iaz_prox,k) > 0.01) count_low++;
