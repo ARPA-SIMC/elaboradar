@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.15
+Version: 	0.16
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -83,6 +83,11 @@ make
 %{_libexecdir}/%{name}/vecchioripulisco
 
 %changelog
+* Mon Mar 13 2023 Daniele Branchini <dbranchini@arpae.it> - 0.16-1
+- Update cleaning module with fuzzy logic methods
+- Added `-U` flag in elaboradar to set bin as `undetect`
+- Dropped CentOS7 support (#19)
+
 * Wed Nov 30 2022 Daniele Branchini <dbranchini@arpae.it> - 0.15-1
 - Added support for new proj API (#19)
 
