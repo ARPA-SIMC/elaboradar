@@ -80,7 +80,7 @@ AC_CONFIG_FILES([
 Makefile
 radarelab/Makefile
 src/Makefile
-data/Makefile
+dati/Makefile
 testdata/Makefile
 esplosione/Makefile
 doc/Makefile
