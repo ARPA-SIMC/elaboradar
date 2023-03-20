@@ -380,6 +380,7 @@ tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam
     char *cwd = get_current_dir_name();
     //strcpy(f_dir,cwd);
     string f_dir = cwd;
+    f_dir = f_dir +"/dati";
 
     //leggo matrice dei pesi----------------------------------------------------
     string fin_w = f_dir+"/matrix-"+radar+".txt";//strcat(f_dir,wname.c_str());
