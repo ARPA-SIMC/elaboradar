@@ -81,6 +81,7 @@ make
 %{_bindir}/stat_CleanID
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/vecchioripulisco
+%{_datadir}/%{name}/*
 
 %changelog
 * Mon Mar 13 2023 Daniele Branchini <dbranchini@arpae.it> - 0.16-1
