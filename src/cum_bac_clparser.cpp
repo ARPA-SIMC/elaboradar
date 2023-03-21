@@ -83,6 +83,8 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	// Pass to the cmdline the set_undetect parameter for read_odim_volume(): if True pixels classified as non-meteo echoes are set to Z undetect value, otherwise are set to Z nodata value.
 	TCLAP::SwitchArg SetUndetect("U", "SetUndetect", "Set non-meteo classified pixel to undetect Z value", false);
         cmd.add(SetUndetect);
+	TCLAP::UnlabeledValueArg<std::string> FuzzyPath( "FuzzyPath", "Set path of fuzzy logic files", false, "/home/ccardinali@ARPA.EMR.NET/elaboradar_merge/elaboradar/dati", "std:.string");
+        cmd.add(FuzzyPath);
 
 
 	
@@ -116,6 +118,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
         opt->do_SaveFullRes=SaveFullResProd.getValue();
 	//add value of SetUndetect
 	opt->set_undetect=SetUndetect.getValue();
+	opt->fuzzy_path=FuzzyPath.getValue();
 	
   } catch ( TCLAP::ArgException& e )
   { std::cout << "ERROR: " << e.error() << " " << e.argId() << std::endl; }
@@ -143,6 +146,7 @@ void PrintOptions(struct CUM_BAC_CLOPT *opt){
    std::cout <<"do_SaveBothRanges"<<  opt->do_SaveBothRanges  <<std::endl;
    std::cout <<"do_SaveFullRes"<<  opt->do_SaveFullRes  <<std::endl;
    std::cout <<"SetUndetect"<<  opt->set_undetect <<std::endl;
+   std::cout <<"FuzzyPath"<<  opt->fuzzy_path.c_str() <<std::endl;
 
    return ;
 }

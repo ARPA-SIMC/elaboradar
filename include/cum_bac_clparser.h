@@ -27,6 +27,7 @@ struct CUM_BAC_CLOPT {
    bool do_SaveFullRes;
 
   bool set_undetect;
+  std::string fuzzy_path;
 }  ;
 
 

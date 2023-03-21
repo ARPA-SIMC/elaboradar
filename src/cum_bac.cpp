@@ -187,7 +187,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
 }
 
-  void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, bool do_clean, bool do_medium, bool set_undetect)
+  void CUM_BAC::read_odim_volume(Volume<double>& volume, const Site& site, const char* nome_file, char* fuzzypath, bool do_clean, bool do_medium, bool set_undetect)
 {
     using namespace radarelab::volume;
     LOG_CATEGORY("radar.io");
@@ -312,7 +312,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	    //algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);
 	    //modifico il force_bool a true (ultimo parametro)
 	    
-	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(0), v_volume.at(i).undetect , radar_name, i, true);
+	    algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(0), v_volume.at(i).undetect , radar_name, fuzzypath, i, true);
 
             double new_value=z_volume->at(0).nodata;
 	    //provo a commentare per test di uso solo nodata dei punti clssificati come non meteo

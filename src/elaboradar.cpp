@@ -235,6 +235,7 @@ int main (int argc, char **argv)
     char *nome_file;
     int ier_main=0;//uscite errore generico (lettura volume e succ.anap) , di test_file, del main
     char *sito;//GAT O SPC
+    char *fuzzypath;
     int file_type; // -- x definire n_elev e reolution e se è =1 esco
 
     CUM_BAC_CLOPT CL_opt;
@@ -257,6 +258,7 @@ int main (int argc, char **argv)
     nome_file 		= (char *)CL_opt.filename.c_str(); 
     file_type		=	  CL_opt.filetype;
     sito		= (char *)CL_opt.sito.c_str();
+    fuzzypath          = (char *)CL_opt.fuzzy_path.c_str();
 
     if(CL_opt.do_medium && CL_opt.filetype == 3) MyMAX_BIN = 512;   // questo dovrebbe essere il caso del medio vecchio 
 
@@ -273,7 +275,7 @@ int main (int argc, char **argv)
     try {
       if (CL_opt.data_in_odim)
             // Legge e controlla il volume dal file ODIM
-	  CUM_BAC::read_odim_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium, CL_opt.set_undetect);
+	CUM_BAC::read_odim_volume(volume, site, nome_file, fuzzypath, CL_opt.do_clean, CL_opt.do_medium, CL_opt.set_undetect);
         else
             // Legge e controlla il volume dal file SP20
             CUM_BAC::read_sp20_volume(volume, site, nome_file, CL_opt.do_clean, CL_opt.do_medium);

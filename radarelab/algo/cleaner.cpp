@@ -366,7 +366,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 }
 
 // CC: fuzzy logic
-tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sqi, const Eigen::VectorXd& beam_snr, const Eigen::VectorXd& beam_zvd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar, double v_ny, bool stamp, bool force_meteo) const
+  tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_zdr, const Eigen::VectorXd& beam_rohv, const Eigen::VectorXd& beam_sqi, const Eigen::VectorXd& beam_snr, const Eigen::VectorXd& beam_zvd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, const Eigen::VectorXd& beam_zdr_sd, int iray, const string radar, double v_ny, char* fuzzy_path, bool stamp, bool force_meteo) const
 {
 
     const unsigned beam_size = beam_z.rows();
@@ -377,13 +377,16 @@ tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam
     int Num_echoes = 5;
     int Ntraps = 5; // 5 argomenti da passare a Trap : x1,x2,x3,x4,x5
     //char f_dir[256];
-    char *cwd = get_current_dir_name();
+    //char *cwd = get_current_dir_name();
     //strcpy(f_dir,cwd);
-    string f_dir = cwd;
-    f_dir = f_dir +"/dati";
+
+    //string f_dir = cwd;
+    string f_dir = fuzzy_path;
+    //f_dir = f_dir +"/dati";
 
     //leggo matrice dei pesi----------------------------------------------------
     string fin_w = f_dir+"/matrix-"+radar+".txt";//strcat(f_dir,wname.c_str());
+    cout<<"leggo pesi da "<<fin_w<<endl;
     vector<string> w_vector;
     w_vector = read_matrix_from_txt(fin_w);
     Num_entries = w_vector.size()/Num_echoes;
@@ -600,7 +603,7 @@ tuple<std::vector<unsigned char>,std::vector<double>> Cleaner::eval_classID_beam
     }
 
 // CC: fuzzy logic senza zdr
-std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar, double v_ny) const
+  std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& beam_z, const Eigen::VectorXd& beam_w, const Eigen::VectorXd& beam_v, const Eigen::VectorXd& beam_sd, const Eigen::VectorXd& beam_sdray, const Eigen::VectorXd& beam_sdaz, int iray, const string radar, double v_ny, char* fuzzy_path) const
 {
 
     const unsigned beam_size = beam_z.rows();
@@ -608,8 +611,9 @@ std::vector<unsigned char> Cleaner::eval_classID_beam(const Eigen::VectorXd& bea
     int Num_entries=0;
     int Num_echoes = 5;
     int Ntraps = 5; // 5 argomenti da passare a Trap : x1,x2,x3,x4,x5
-    char *cwd = get_current_dir_name();
-    string f_dir = cwd;
+    //char *cwd = get_current_dir_name();
+    //string f_dir = cwd;
+    string f_dir = fuzzy_path;
 
     //leggo matrice dei pesi
     string fin_w = f_dir+"/matrix-"+radar+"-nozdr.txt";
@@ -841,7 +845,7 @@ void Cleaner::evaluateCleanID(PolarScan<double>& scan_z, PolarScan<double>& scan
     }
 }
 
-void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<double>& scan_rohv, PolarScan<double>& scan_sqi, PolarScan<double>& scan_snr, PolarScan<double>& scan_zvd, PolarScan<unsigned char>& scan_cleanID, PolarScan<double>& scan_DiffProb, double bin_wind_magic_number,const string radar, unsigned iel, bool force_meteo)
+void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<double>& scan_zdr, PolarScan<double>& scan_rohv, PolarScan<double>& scan_sqi, PolarScan<double>& scan_snr, PolarScan<double>& scan_zvd, PolarScan<unsigned char>& scan_cleanID, PolarScan<double>& scan_DiffProb, double bin_wind_magic_number,const string radar,  char* fuzzy_path, unsigned iel, bool force_meteo)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
@@ -877,7 +881,7 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
        bool stamp=false;
        //if(i==100) stamp=true;//311
       //vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp);
-      auto [corrected, diff_prob] = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp, force_meteo);
+       auto [corrected, diff_prob] = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, fuzzy_path, stamp, force_meteo);
       //vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), scan_zdr.row(i), scan_rohv.row(i), scan_sqi.row(i), scan_snr.row(i), scan_zvd.row(i),  SD_Ray[0].row(i), SD_Az[0].row(i), ZDR_SD2D[0].row(i), i, radar, scan_v.offset, stamp, force_meteo);
       for (unsigned ib = 0; ib < beam_size; ++ib){
 	   scan_cleanID(i,ib)=corrected[ib];
@@ -889,7 +893,7 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
 }
 
 // senza zdr
-  void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, const string radar, unsigned iel)
+void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan_w, PolarScan<double>& scan_v, PolarScan<unsigned char>& scan_cleanID, double bin_wind_magic_number, const string radar, char* fuzzy_path, unsigned iel)
 {
 
     if (scan_z.beam_count != scan_w.beam_count)
@@ -917,7 +921,7 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
 
     for (unsigned i = 0; i <beam_count ; ++i) 
     {
-      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, radar, scan_v.offset);
+      vector<unsigned char> corrected = cleaner.eval_classID_beam(scan_z.row(i), scan_w.row(i), scan_v.row(i), SD2D[0].row(i), SD_Ray[0].row(i), SD_Az[0].row(i), i, radar, scan_v.offset, fuzzy_path);
         for (unsigned ib = 0; ib < beam_size; ++ib)
 	   scan_cleanID(i,ib)=corrected[ib];
     }

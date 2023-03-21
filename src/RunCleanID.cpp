@@ -20,11 +20,19 @@ int main(int argc,char* argv[])
 {
 	if (argc < 2)
 	{
-		fprintf(stderr, "Usage: %s <h5-volume-input> <h5-volume-output> [--Use_undetect] \n", argv[0]);
+		fprintf(stderr, "Usage: %s <h5-volume-input> <h5-volume-output> <RADAR> [--Use_undetect] [--FuzzyPath] \n", argv[0]);
 		exit(1);
 	}
 	
-	std::string pathname = argv[1];	
+	std::string pathname = argv[1];
+	char* fuzzy_path = "/home/ccardinali@ARPA.EMR.NET/elaboradar_merge/elaboradar/dati";
+	for (int i =0; i<argc;i++){
+	  if(! sscanf(argv[i], "--FuzzyPath")){
+	    fuzzy_path=(char*)argv[i];
+	  }
+	}
+	
+	  cout<<"fuzzypath="<<fuzzy_path<<" "<<endl;
 
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
@@ -128,12 +136,12 @@ int main(int argc,char* argv[])
 	      }
 	      
 	      if(is_zdr){
-	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_sqi.at(i), full_volume_snr.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(i), full_volume_vrad.at(i).undetect , radar_name, i, true);
+	        radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_zdr.at(i), full_volume_rohv.at(i), full_volume_sqi.at(i), full_volume_snr.at(i), Texture.at(0), full_volume_cleanID.at(i), full_volume_diffprob.at(i), full_volume_vrad.at(i).undetect , radar_name, fuzzy_path, i, true);
 
 		//full_volume_diffprob.at(i).gain=100.0;
 
 	      }else{
-		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect, radar_name, i);
+		radarelab::algo::Cleaner::evaluateClassID(full_volume_z.at(i), full_volume_wrad.at(i), full_volume_vrad.at(i), full_volume_cleanID.at(i), full_volume_vrad.at(i).undetect, radar_name, fuzzy_path, i);
 	      }
               
 	      task="Cleaner base";
