@@ -232,9 +232,10 @@ add_method("read_sp20", []() {
 add_method("read_odim", []() {
     // Test loading of a radar volume via SP20
     static const char* fname = "../testdata/MSG1400715300U.101.h5";
+    char* fuzzypath = "../dati";
     const Site& site(Site::get("GAT"));
     Volume<double> volume(NUM_AZ_X_PPI);
-    CUM_BAC::read_odim_volume(volume, site, fname, false);
+    CUM_BAC::read_odim_volume(volume, site, fname, fuzzypath, false);
     // Check the contents of what we read
     wassert(test_0120141530gat_ODIM(volume));
 });

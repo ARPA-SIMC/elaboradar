@@ -120,8 +120,10 @@ void Assets::load_dem(Matrix2D<float>& matrix)
 void Assets::load_first_level(Matrix2D<unsigned char>& matrix)
 {
     const char* fname = getenv("FIRST_LEVEL_FILE");
-    if (!fname)
+    if (!fname){
+        LOG_WARN("leggo datipath da conf_site..");
         fname = conf_site->get_first_level_file_name(conf_month);
+    }
     load_raw(fname, "mappa statica", matrix);
 }
 

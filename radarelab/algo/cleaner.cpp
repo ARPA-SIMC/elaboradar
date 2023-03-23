@@ -386,7 +386,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 
     //leggo matrice dei pesi----------------------------------------------------
     string fin_w = f_dir+"/matrix-"+radar+".txt";//strcat(f_dir,wname.c_str());
-    cout<<"leggo pesi da "<<fin_w<<endl;
+    //cout<<"leggo pesi da "<<fin_w<<endl;
     vector<string> w_vector;
     w_vector = read_matrix_from_txt(fin_w);
     Num_entries = w_vector.size()/Num_echoes;
@@ -416,6 +416,7 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
       }
       //cout<<endl;
     }
+    //cout<<"T shape"<<Traps[0].size()<<endl;
     //------------------------------------------------------------------------
     
     vector<unsigned> counter (Num_entries,0) ; // non sono sicura di cosa delle dimensioni di questo counter

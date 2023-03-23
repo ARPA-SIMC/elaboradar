@@ -505,7 +505,7 @@ void CUM_BAC::leggo_first_level()
     if (do_readStaticMap)
     {
         // Leggo mappa statica
-        assets.load_first_level(first_level_static);
+      assets.load_first_level(first_level_static);
         // Allargo per coprire la dimensione del volume
         if (first_level_static.cols() < volume.max_beam_size())
             first_level_static.resize_beams_and_propagate_last_bin(volume.max_beam_size());

@@ -28,6 +28,7 @@ struct CBTest
     Volume<double> volume;
     bool do_medium;
     unsigned max_bin;
+    char* fuzzypath = "../dati";
 
     CBTest(const char* site_name, bool do_medium, unsigned max_bin=512):
         site(Site::get(site_name)), volume(NUM_AZ_X_PPI), do_medium(do_medium), max_bin(max_bin)
@@ -39,9 +40,9 @@ struct CBTest
         CUM_BAC::read_sp20_volume(volume, site, fname, do_clean, do_medium);
     }
 
-    void read_odim(const char* fname, bool do_clean)
+  void read_odim(const char* fname, bool do_clean)
     {
-        CUM_BAC::read_odim_volume(volume, site, fname, do_clean, do_medium);
+      CUM_BAC::read_odim_volume(volume, site, fname, fuzzypath, do_clean, do_medium);
     }
 };
 

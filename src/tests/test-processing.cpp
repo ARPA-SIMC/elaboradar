@@ -27,6 +27,7 @@ struct CBTest
     Volume<double> volume;
     bool do_medium;
     unsigned max_bin;
+    char* fuzzypath="../dati";
 
     CBTest(const char* site_name, bool do_medium, unsigned max_bin=512):
         site(Site::get(site_name)), volume(NUM_AZ_X_PPI), do_medium(do_medium), max_bin(max_bin)
@@ -38,9 +39,9 @@ struct CBTest
         CUM_BAC::read_sp20_volume(volume, site, fname, do_clean, do_medium);
     }
 
-    void read_odim(const char* fname, bool do_clean)
+  void read_odim(const char* fname, bool do_clean)
     {
-        CUM_BAC::read_odim_volume(volume, site, fname, do_clean, do_medium);
+      CUM_BAC::read_odim_volume(volume, site, fname, fuzzypath, do_clean, do_medium);
     }
 
     unique_ptr<CUM_BAC> make_cumbac()
@@ -781,6 +782,7 @@ add_method("test_10", []() {
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../testdata/2014-05-09-12-40-00.itgat.PVOL.0.h5";
+    //char* fuzzypath = "../dati";
     unsetwork();
     setenv("FIRST_LEVEL_FILE", "../dati/FIRST_LEVEL_corto_GAT_2006_INV", 1);
     setenv("DIR_OUT_PP_BLOC", "../testdata", 1);
@@ -889,6 +891,7 @@ add_method("test_11", []() {
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../esplosione/2014-03-01-09-15-00.itgat.PVOL.0.h5";
+    
     unsetwork();
     setenv("DIR_OUT_PP_BLOC", "../esplosione", 1);
     setenv("VPR0_FILE"      , "../esplosione/vpr_GAT", 1);
@@ -931,6 +934,7 @@ add_method("test_12", []() {
 
     // versione BB che corrisponde al parametro algo_corto
     static const char* fname = "../testdata/vpr/2014-03-01-01-35-00.itgat.PVOL.0.h5";
+    //char* fuzzypath="../dati";
     unsetwork();
     setenv("DIR_OUT_PP_BLOC", "../testdata/vpr", 1);
     setenv("VPR0_FILE"      , "../testdata/vpr/vpr_GAT", 1);

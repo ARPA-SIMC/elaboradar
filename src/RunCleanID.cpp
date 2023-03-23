@@ -27,12 +27,12 @@ int main(int argc,char* argv[])
 	std::string pathname = argv[1];
 	char* fuzzy_path = "/home/ccardinali@ARPA.EMR.NET/elaboradar_merge/elaboradar/dati";
 	for (int i =0; i<argc;i++){
-	  if(! sscanf(argv[i], "--FuzzyPath")){
+	  if( sscanf(argv[i], "--FuzzyPath")){
 	    fuzzy_path=(char*)argv[i];
 	  }
 	}
 	
-	  cout<<"fuzzypath="<<fuzzy_path<<" "<<endl;
+	cout<<"fuzzypath="<<fuzzy_path<<" "<<endl;
 
 	printf("il nome del mio file è %s\n", pathname.c_str());
 
@@ -84,6 +84,7 @@ int main(int argc,char* argv[])
 	if( !full_volume_wrad.empty() && !full_volume_vrad.empty()){
 
 	  unsigned last = full_volume_z.size() -1;
+	  cout<<"last="<<last<<endl;
 	  
 	  if (full_volume_zdr.empty()){
 	    //inizializzo matrice di zeri
@@ -98,6 +99,7 @@ int main(int argc,char* argv[])
 	  cout<<"is zdr="<<is_zdr<<endl;
 	  for (unsigned i=0; i<full_volume_z.size();++i){//1 anziche full_volume_z.size()
 	  //for (unsigned i=0; i<1;++i){
+	    cout<<"elev="<<full_volume_z.at(i).elevation<<endl;
 	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 	      full_volume_diffprob.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 	      if(init_sqi){
@@ -120,6 +122,7 @@ int main(int argc,char* argv[])
 	        Texture.at(0).offset=-100.;
 	        //Z_VD.push_back(Texture.at(0));
 		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		//cout<<"z min"<<std::min(full_volume_z.at(i),100000)<<"z max"<<std::max(full_volume_z.at(i),0)<<endl;
 	      }
 	      else{
 	        Texture.clear();
