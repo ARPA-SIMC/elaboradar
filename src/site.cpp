@@ -63,14 +63,16 @@ struct SiteGAT : public Site
         return getenv_default("FILE_DEM_GAT", "../../PP+BLOC/dati/dem_Gatta.txt");
     }
 
-    virtual const char* get_first_level_file_name(unsigned month) const
+  virtual const char* get_first_level_file_name(unsigned month) const
     {
         if (1 <= month && month <= 3)
-            return "../dati/FIRST_LEVEL_GAT_2006_INV";
+	  return (datipath+"/FIRST_LEVEL_GAT_2006_INV").c_str();
         else if (4 <= month && month <= 9)
-            return "../dati/FIRST_LEVEL_GAT_2006_PRI-EST";
+	  //return "../dati/FIRST_LEVEL_GAT_2006_PRI-EST";
+	  return (datipath+"FIRST_LEVEL_GAT_2006_PRI-EST").c_str();
         else
-            return "../dati/FIRST_LEVEL_GAT_2006_AUT";
+	  //return "../dati/FIRST_LEVEL_GAT_2006_AUT";
+	  return (datipath+"FIRST_LEVEL_GAT_2006_AUT").c_str();
     }
 
     virtual std::vector<double> get_elev_array(bool medium=false) const
@@ -117,14 +119,17 @@ struct SiteSPC : public Site
         return getenv_default("FILE_DEM_SPC", "../../PP+BLOC/dati/dem_SanPi.txt");
     }
 
-    virtual const char* get_first_level_file_name(unsigned month) const
+  virtual const char* get_first_level_file_name(unsigned month) const
     {
         if (1 <= month && month <= 3)
-            return "../dati/FIRST_LEVEL_SPC_2006_INV";
+	  //return "../dati/FIRST_LEVEL_SPC_2006_INV";
+	  return (datipath+"FIRST_LEVEL_SPC_2006_INV").c_str();
         else if (4 <= month && month <= 9)
-            return "../dati/FIRST_LEVEL_SPC_2006_PRI-EST";
+	  //return "../dati/FIRST_LEVEL_SPC_2006_PRI-EST";
+	  return (datipath+"FIRST_LEVEL_SPC_2006_PRI-EST").c_str();
         else
-            return "../dati/FIRST_LEVEL_SPC_2006_AUT";
+	  //return "../dati/FIRST_LEVEL_SPC_2006_AUT";
+	  return (datipath+"FIRST_LEVEL_SPC_2006_AUT").c_str();
     }
 
     virtual std::vector<double> get_elev_array(bool medium=false) const
@@ -151,12 +156,14 @@ struct SiteSPC : public Site
 
 
 
-const Site& Site::get(const char* name)
+  const Site& Site::get(const char* name)
 {
-    if (strcmp(name, "GAT") == 0)
-        return site_gat;
-    else if (strcmp(name, "SPC") == 0)
+  if (strcmp(name, "GAT") == 0){
+    return site_gat;
+  }
+  else if (strcmp(name, "SPC") == 0){
         return site_spc;
+  }
     else
     {
         string errmsg(name);

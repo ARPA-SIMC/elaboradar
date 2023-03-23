@@ -27,6 +27,12 @@ struct Site
  * @brief Nome sito radar
  */
     std::string name;
+  
+/*!
+ * string_datipath 
+ * @brief Path mappe statiche e dati fuzzy logic
+ */
+  std::string datipath;
 
 /*!
  * radarSite 
@@ -59,7 +65,7 @@ struct Site
  * @param [in] month - month  
  * @return first_elev file name [char *]
  */
-    virtual const char* get_first_level_file_name(unsigned month) const = 0;
+  virtual const char* get_first_level_file_name(unsigned month) const = 0;
 /*!
  *  @brief return the elev array used
  *  @param [in] medium -  flag to specify medium pulse
@@ -82,7 +88,7 @@ struct Site
  * @param [in] name - name of radar site
  * @return - Site Object [Site]
  */
-   static const Site& get(const char* name);
+  static const Site& get(const char* name);
 };
 
 }

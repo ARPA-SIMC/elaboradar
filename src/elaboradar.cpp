@@ -269,6 +269,7 @@ int main (int argc, char **argv)
     startup_banner(&CL_opt);
 
     const Site& site(Site::get(sito));
+    site.datipath = fuzzypath;
     Volume<double> volume(NUM_AZ_X_PPI);
 
     cout<<"volume size = "<<volume.size()<<endl;
