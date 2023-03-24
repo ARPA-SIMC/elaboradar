@@ -4,18 +4,19 @@ EXTRA_DIST =
 
 noinst_LTLIBRARIES = libtmp.la
 
-AM_CXXFLAGS=-std=c++11
+AM_CXXFLAGS = -std=c++11
 
 AM_CPPFLAGS = -I$(top_srcdir) \
               -I$(top_srcdir)/include \
-	      $(RADARLIB_CFLAGS) \
-	      $(HDF5_CFLAGS) \
-	      $(EIGEN3_CFLAGS) \
-	      $(LOG4C_CFLAGS) \
-	      $(GSL_CFLAGS) \
-	      $(GDAL_CFLAGS) \
-	      $(TCLAP_CFLAGS) \
-	      -fpermissive
+              $(RADARLIB_CFLAGS) \
+              $(HDF5_CFLAGS) \
+              $(EIGEN3_CFLAGS) \
+              $(LOG4C_CFLAGS) \
+              $(GSL_CFLAGS) \
+              $(GDAL_CFLAGS) \
+              $(TCLAP_CFLAGS) \
+              -fpermissive \
+              -DFUZZY_PATH=\"$(fuzzy_path)\"
 
 AM_LDFLAGS = $(RADARLIB_LIBS) $(EIGEN3_LIBS) $(HDF5_LIBS) -lhdf5_cpp $(LOG4C_LIBS) $(GSL_LIBS) $(GDAL_LIBS) $(PROJ_LIBS) $(TCLAP_LIBS)
 

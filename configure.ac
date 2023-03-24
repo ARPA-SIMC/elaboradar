@@ -76,6 +76,10 @@ fi
 PKG_CHECK_MODULES([RADARLIB], [radarlib])
 PKG_CHECK_MODULES([EIGEN3], [eigen3])
 
+fuzzy_path='${datadir}'"/$PACKAGE"
+AC_SUBST(fuzzy_path)
+
+
 AC_CONFIG_FILES([
 Makefile
 radarelab/Makefile
