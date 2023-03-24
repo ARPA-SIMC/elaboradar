@@ -49,6 +49,7 @@ sh autogen.sh
 
 %configure
 make
+make check
 
 %install
 [ "%{buildroot}" != / ] && rm -rf %{buildroot}
