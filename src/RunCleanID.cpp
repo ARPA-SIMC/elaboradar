@@ -7,8 +7,8 @@
 #include <radarelab/image.h>
 #include <radarelab/algo/azimuth_resample.h>
 #include <radarelab/algo/cleaner.h>
-
 #include <radarelab/algo/elabora_volume.h>
+#include <tclap/CmdLine.h>
 
 using namespace radarelab;
 using namespace std;
@@ -18,23 +18,27 @@ namespace odim = OdimH5v21;
 
 int main(int argc,char* argv[])
 {
-	if (argc < 2)
-	{
-		fprintf(stderr, "Usage: %s <h5-volume-input> <h5-volume-output> <RADAR> [--Use_undetect] [--FuzzyPath] \n", argv[0]);
-		exit(1);
-	}
-	
-	std::string pathname = argv[1];
-	char* fuzzy_path = "/home/ccardinali@ARPA.EMR.NET/elaboradar_merge/elaboradar/dati";
-	for (int i =0; i<argc;i++){
-	  if( sscanf(argv[i], "--FuzzyPath")){
-	    fuzzy_path=(char*)argv[i];
-	  }
-	}
-	
-	cout<<"fuzzypath="<<fuzzy_path<<" "<<endl;
+	TCLAP::CmdLine cmd("stat_CleanID ", ' ', "0.1" );
 
-	printf("il nome del mio file è %s\n", pathname.c_str());
+	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "hdf5 volume input", true, "NULL", "h5-volume-output");
+	cmd.add(cmd_vol_input);
+
+	TCLAP::UnlabeledValueArg<std::string> cmd_vol_output("h5_volume_output", "hdf5 volume output", true, "NULL", "h5-volume-output");
+	cmd.add(cmd_vol_output);
+
+	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name", true, "NULL", "radar-name");
+	cmd.add(cmd_radar);
+
+	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Set path of fuzzy logic files", false, FUZZY_PATH "/dati", "path");
+	cmd.add(cmd_fuzzy_path);
+
+	TCLAP::SwitchArg cmd_use_undetect("U", "use-undetect", "Use undetect TODO", false);
+	cmd.add(cmd_use_undetect);
+
+	cmd.parse(argc,argv);
+
+	const char* fuzzy_path = cmd_fuzzy_path.getValue().c_str();
+	cout<<"fuzzypath="<<fuzzy_path<<" "<<endl;
 
 	volume::ODIMLoader loader_all;
 
@@ -53,9 +57,8 @@ int main(int argc,char* argv[])
 	std::string task;
 	bool is_zdr=true;
 	//string radar_name = "SPC";
-	string radar_name = argv[3];
+	string radar_name = cmd_radar.getValue();
 	bool init_sqi = false;
-	cout<<"argv 4 "<<argv[4]<<endl;
 
 	volume::Scans<double> SDZ6;
 	SDZ6.quantity="SDZ6";
@@ -78,8 +81,7 @@ int main(int argc,char* argv[])
 	else
 	  loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 
-	loader_all.load(argv[1]);
-        cout<<argv[1]<<endl;
+	loader_all.load(cmd_vol_input.getValue());
 	//unica funzione fuzzy
 	if( !full_volume_wrad.empty() && !full_volume_vrad.empty()){
 
@@ -149,7 +151,7 @@ int main(int argc,char* argv[])
               
 	      task="Cleaner base";
 	      double new_value=full_volume_z.at(last).nodata;
-	      if (argc == 5 && ! sscanf(argv[4], "--Use_undetect") ) new_value=full_volume_z.at(last).undetect;
+	      if (cmd_use_undetect.getValue()) new_value=full_volume_z.at(last).undetect;
 	      cout<<"novalue"<<new_value<<endl;
 	      for (unsigned ii = 0; ii < full_volume_z.at(i).beam_count; ++ii)
                 for (unsigned ib = 0; ib < full_volume_z.at(i).beam_size; ++ib) {
@@ -181,6 +183,6 @@ int main(int argc,char* argv[])
 	cout<<"stored_quantity_uchar"<<endl;
 	storer.store_quantity_fp((Volume<double>*)(&full_volume_diffprob));
 	cout<<"stored quantity"<<endl;
-	storer.store(argv[2]);
+	storer.store(cmd_vol_output.getValue());
 	cout<<endl<<"Fine"<<endl;
 }
