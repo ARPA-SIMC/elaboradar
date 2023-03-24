@@ -330,7 +330,7 @@ void PrintOldHeader (T_MDB_data_header *old_header)
   printf("%2d ", old_header->norm.maq.imp_duration);
   printf("%2d ", old_header->norm.maq.num_imp);
   printf("%2d\n ", old_header->norm.maq.resolution);
-  printf("%5.2f ", old_header->norm.maq.rot_vel);
+  printf("%5.2f ", (double)old_header->norm.maq.rot_vel);
   printf("%2d ", old_header->norm.maq.declutter_rsp);
   printf("%2d ", old_header->norm.maq.filter_value);
   printf("%2d ", old_header->norm.maq.type_declutter);
@@ -429,9 +429,9 @@ time_t get_date(unsigned char hd[], struct tm *tm_date)
 void get_asc_date(struct tm *tm_date, char *asc_date)
 /* ====================== */
 {
-  char *mese[12]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+  const char *mese[12]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
   //char *weekday[7]={"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
-  char *weekday[7]={"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+  const char *weekday[7]={"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
   
   sprintf(asc_date,"%s %s %2d %2.2d:%2.2d:%2.2d %4d",weekday[tm_date->tm_wday],
 	  mese[tm_date->tm_mon],tm_date->tm_mday,tm_date->tm_hour,
@@ -867,7 +867,7 @@ void PrintHeader(BEAM_HD_SP20_INFO *beam_info)
 {
   printf("HEADER BEAM:\n");
   printf("%s ",beam_info->date);
-  printf("%i ",beam_info->time);
+  printf("%li ",beam_info->time);
   printf("%c ",beam_info->scan_mode);
   printf("%s ",beam_info->quantities);
   printf("%c ",beam_info->Z_range);
