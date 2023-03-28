@@ -102,7 +102,7 @@ int main(int argc,char* argv[])
 	  for (unsigned i=0; i<full_volume_z.size();++i){//1 anziche full_volume_z.size()
 	  //for (unsigned i=0; i<1;++i){
 	    cout<<"elev="<<full_volume_z.at(i).elevation<<endl;
-	      full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
+	    full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size, 0);
 	      full_volume_diffprob.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 	      if(init_sqi){
 		full_volume_sqi.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);

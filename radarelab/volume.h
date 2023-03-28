@@ -327,7 +327,7 @@ public:
      * @param [in] elevation - PolarScan elevation (degrees)
      * @param [in] cell_size - PolarScan cell size [m]
      */
-    PolarScan<T>& append_scan(unsigned beam_count, unsigned beam_size, double elevation, double cell_size)
+  PolarScan<T>& append_scan(unsigned beam_count, unsigned beam_size, double elevation, double cell_size, const T& default_value=algo::DBZ::BYTEtoDB(1))
     {
         // Ensure elevations grow as scan indices grow
         if (!this->empty() && elevation <= this->back().elevation)
@@ -337,7 +337,7 @@ public:
             throw std::runtime_error("elevation not greather than the last one");
         }
         // Add the new polar scan
-        this->push_back(PolarScan<T>(beam_count, beam_size));
+        this->push_back(PolarScan<T>(beam_count, beam_size, default_value));
         this->back().elevation = elevation;
         this->back().cell_size = cell_size;
         return this->back();
