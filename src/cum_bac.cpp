@@ -259,7 +259,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         //for (unsigned i = 0; i < 1; ++i){
         for (unsigned i = 0; i < z_volume->size(); ++i){
 //            radarelab::algo::Cleaner::clean(z_volume->at(i), w_volume.at(i), v_volume.at(i),i);
-	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
+	  full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size, 0);
             radarelab::algo::Cleaner::evaluateCleanID(z_volume->at(i), w_volume.at(i), v_volume.at(i),full_volume_cleanID.at(i),i);
             for (unsigned ibeam=0;ibeam<z_volume->at(i).beam_count; ibeam++)
 		for (unsigned j=0; j<z_volume->at(i).beam_size; j++){
