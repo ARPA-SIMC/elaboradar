@@ -66,7 +66,7 @@ void InstantaneousVPR::compute()
     long int dist,dist_plain,vol_rain;
     float area,quota_true_st;
     float grad;
-
+    
     //----------------inizializzazioni----------------
     long int vert_ext=0;
 
@@ -264,7 +264,6 @@ VPR combine_profiles(const VPR& _vpr0, const VPR& _vpr1, long int cv, long int c
     VPR vpr0 = _vpr0;
     VPR vpr1 = _vpr1;
     vpr.area = vpr1.area;
-
     /*----calcolo il peso c0 per la combinazione dei profili*/
     long int c0 = 2 * cv;
     int n=0,diff=0;
@@ -279,13 +278,16 @@ VPR combine_profiles(const VPR& _vpr0, const VPR& _vpr1, long int cv, long int c
     }
     if (n>0){
         //------------- trovo livello minimo -------
-        Livmin livmin(vpr);
+        Livmin livmin1(vpr0);
+        Livmin livmin2(vpr1);
         diff=diff/n;
-        for (unsigned ilay=0; ilay<livmin.livmin/TCK_VPR; ilay++){
+        for (unsigned ilay=0; ilay<max(livmin1.livmin/TCK_VPR,livmin2.livmin/TCK_VPR); ilay++){
             if (vpr0.val[ilay]<= NODATAVPR && vpr1.val[ilay] > NODATAVPR)
                 vpr0.val[ilay]=vpr1.val[ilay]-diff;
+            vpr.area[ilay]=vpr1.area[ilay];
             if (vpr1.val[ilay]<= NODATAVPR && vpr0.val[ilay] > NODATAVPR)
                 vpr1.val[ilay]=vpr0.val[ilay]+diff;
+            vpr.area[ilay]=vpr0.area[ilay];            
 
         }
     }
@@ -294,6 +296,7 @@ VPR combine_profiles(const VPR& _vpr0, const VPR& _vpr1, long int cv, long int c
     for (unsigned ilay=0; ilay<NMAXLAYER; ilay++){
         if (vpr0.val[ilay] > NODATAVPR && vpr1.val[ilay] > NODATAVPR)
             vpr.val[ilay]=comp_levels(vpr0.val[ilay],vpr1.val[ilay],NODATAVPR,alfat);// combino livelli
+             vpr.area[ilay]=vpr1.area[ilay];
     }
 
     return vpr;
