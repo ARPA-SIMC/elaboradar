@@ -73,6 +73,7 @@ libradarelab_la_SOURCES = \
   algo/azimuth_resample.cpp \
   algo/cleaner.cpp \
   algo/dbz.cpp \
+  algo/elabora_volume.cpp \
   algo/steiner.cpp \
   algo/viz.cpp \
   algo/vpr.cpp

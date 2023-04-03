@@ -9,7 +9,7 @@ using namespace std;
 
 namespace radarelab {
 
-namespace {bool check_undetect=false;}
+extern bool check_undetect;
 
 /*! \fn good
  *  \brief Check if data in a PolarScan is good
