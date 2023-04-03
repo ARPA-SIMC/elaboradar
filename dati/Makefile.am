@@ -12,7 +12,7 @@ pkgdataroot_DATA = \
 	FIRST_LEVEL_corto_GAT_PRI-EST_2011 \
 	FIRST_LEVEL_corto_GAT_PRI-EST_2011_15el \
 	FIRST_LEVEL_corto+medio_GAT_AUT_2011 \
-	FIRST_LEVEL_corto+medio_GAT_INV_2011 \
+	FIRST_LEVEL_corto+medio_GAT_INV_2011  \
 	FIRST_LEVEL_corto+medio_GAT_PRI-EST_2011 \
 	FIRST_LEVEL_corto+medio_SPC_AUT_2011 \
 	FIRST_LEVEL_corto+medio_SPC_INV_2011 \
@@ -32,6 +32,10 @@ pkgdataroot_DATA = \
 	FIRST_LEVEL_medio_SPC \
 	FL_2003.DIM \
 	FL_2006.DIM \
+	matrix-GAT-nozdr.txt \
+	matrix-GAT.txt \
+	matrix-SPC-nozdr.txt \
+	matrix-SPC.txt \
 	Trap-GAT-nozdr.txt \
 	Trap-GAT.txt \
 	Trap-SPC-nozdr.txt \
