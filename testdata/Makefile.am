@@ -35,6 +35,7 @@ TESTFILES = \
 EXTRA_DIST = $(addsuffix .xz,$(TESTFILES))
 
 %: %.xz
+	mkdir -p `dirname $@`
 	xz -cd $^ > $@
 
 BUILT_SOURCES = $(TESTFILES)
