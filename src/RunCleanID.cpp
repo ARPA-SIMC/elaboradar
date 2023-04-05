@@ -29,7 +29,7 @@ int main(int argc,char* argv[])
 	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name", true, "NULL", "radar-name");
 	cmd.add(cmd_radar);
 
-	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Set path of fuzzy logic files", false, FUZZY_PATH "/dati", "path");
+	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Set path of fuzzy logic files", false, FUZZY_PATH, "path");
 	cmd.add(cmd_fuzzy_path);
 
 	TCLAP::SwitchArg cmd_use_undetect("U", "use-undetect", "Use undetect TODO", false);

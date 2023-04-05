@@ -83,7 +83,7 @@ void parseOptions(int argc, char** argv , CUM_BAC_CLOPT *opt)
 	// Pass to the cmdline the set_undetect parameter for read_odim_volume(): if True pixels classified as non-meteo echoes are set to Z undetect value, otherwise are set to Z nodata value.
 	TCLAP::SwitchArg SetUndetect("U", "SetUndetect", "Set non-meteo classified pixel to undetect Z value", false);
         cmd.add(SetUndetect);
-	TCLAP::UnlabeledValueArg<std::string> FuzzyPath( "FuzzyPath", "Set path of fuzzy logic files", false, FUZZY_PATH "/dati", "std:.string");
+	TCLAP::UnlabeledValueArg<std::string> FuzzyPath( "FuzzyPath", "Set path of fuzzy logic files", false, FUZZY_PATH, "std:.string");
         cmd.add(FuzzyPath);
 
 
