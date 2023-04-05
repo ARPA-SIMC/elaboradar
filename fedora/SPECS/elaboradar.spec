@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.17
+Version: 	0.18
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -85,6 +85,11 @@ make check
 %{_datadir}/%{name}/*
 
 %changelog
+* Mon Apr  3 2023 Daniele Branchini <dbranchini@arpae.it> - 0.18-1
+- refactoring of `FUZZY_PATH` variable management
+- using TCLAP for input parameters in `stat_CleanID.cpp` and `RunCleanID.cpp`
+- fixing variable `check_undetect` (#23)
+
 * Mon Mar 20 2023 Daniele Branchini <dbranchini@arpae.it> - 0.17-1
 - Added data dir
 
