@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.18
+Version: 	0.19
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -85,10 +85,13 @@ make check
 %{_datadir}/%{name}/*
 
 %changelog
+* Wed Apr 12 2023 Daniele Branchini <dbranchini@arpae.it> - 0.19-1
+- Fixed default fuzzypath
+
 * Mon Apr  3 2023 Daniele Branchini <dbranchini@arpae.it> - 0.18-1
-- refactoring of `FUZZY_PATH` variable management
-- using TCLAP for input parameters in `stat_CleanID.cpp` and `RunCleanID.cpp`
-- fixing variable `check_undetect` (#23)
+- Refactoring of `FUZZY_PATH` variable management
+- Using TCLAP for input parameters in `stat_CleanID.cpp` and `RunCleanID.cpp`
+- Fixing variable `check_undetect` (#23)
 
 * Mon Mar 20 2023 Daniele Branchini <dbranchini@arpae.it> - 0.17-1
 - Added data dir
@@ -102,32 +105,32 @@ make check
 - Added support for new proj API (#19)
 
 * Fri Oct 30 2020 Daniele Branchini <dbranchini@arpae.it> - 0.14-1
-- fixed offset management
-- added AddCleanerQuantities
-- forcing clean to use undetect instead of nodata
+- Fixed offset management
+- Added AddCleanerQuantities
+- Forcing clean to use undetect instead of nodata
 
 * Thu Sep  3 2020 Daniele Branchini <dbranchini@arpae.it> - 0.13-1
-- external reading for melting layer
-- flag Use_undetect
+- External reading for melting layer
+- Flag Use_undetect
 
 * Tue Apr 28 2020 Daniele Branchini <dbranchini@arpae.it> - 0.12-1
-- added RadarSite.h
+- Added RadarSite.h
 
 * Wed Feb 19 2020 Daniele Branchini <dbranchini@arpae.it> - 0.11-1
-- removed melting layer top and bottom external reading top, now computed again
+- Removed melting layer top and bottom external reading top, now computed again
 
 * Thu Mar 28 2019 Daniele Branchini <dbranchini@arpae.it> - 0.10-1
-- added undetect option to RunCleanID
-- added Ht and Hb parameters passage from rds
+- Added undetect option to RunCleanID
+- Added Ht and Hb parameters passage from rds
 
 * Wed Sep 27 2017 Daniele Branchini <dbranchini@arpae.it> - 0.7-1
-- lots of stuff (please refer to upstream github logs)
+- Lots of stuff (please refer to upstream github logs)
 
 * Wed Jul 13 2016 Daniele Branchini <dbranchini@arpae.it> - 0.6-1
-- bounding box now computed according to ODIM specification
-- closed #4
-- add RadarSite class to describe radar information site
-- some minor bug fixing
+- Bounding box now computed according to ODIM specification
+- Closed #4
+- Add RadarSite class to describe radar information site
+- Some minor bug fixing
 
 * Fri May 6 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.5-1%{dist}
 - Add method to save products with additional info in the filename
@@ -137,17 +140,17 @@ make check
 - Get RangeScale value from Odim scan
 
 * Fri Apr 15 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.4-1%{dist}
-- fixed bug in indexes calculation
-- fixed missing copy of h_radar attribute in resample_volume
+- Fixed bug in indexes calculation
+- Fixed missing copy of h_radar attribute in resample_volume
 
 * Tue Mar 22 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.2-1%{dist}
-- closed \#6, \#7
-- fixed bug for range computation
-- removed dependency from site.h
-- changed samplign algorithm
-- double operation instead of unsigned operations
-- renamed lib
-- added doc
+- Closed #6, #7
+- Fixed bug for range computation
+- Removed dependency from site.h
+- Changed samplign algorithm
+- Double operation instead of unsigned operations
+- Renamed lib
+- Aadded doc
 
 * Fri Jan 8 2016 Daniele Branchini <dbranchini@arpa.emr.it> - 0.1-1%{dist}
 - First build
