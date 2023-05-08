@@ -18,21 +18,21 @@ namespace odim = OdimH5v21;
 
 int main(int argc,char* argv[])
 {
-	TCLAP::CmdLine cmd("stat_CleanID ", ' ', "0.1" );
+	TCLAP::CmdLine cmd("RunCleanID ", ' ', "0.1" );
 
-	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "hdf5 volume input", true, "NULL", "h5-volume-output");
+	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "input hdf5 volume", true, "NULL", "h5-volume-output");
 	cmd.add(cmd_vol_input);
 
-	TCLAP::UnlabeledValueArg<std::string> cmd_vol_output("h5_volume_output", "hdf5 volume output", true, "NULL", "h5-volume-output");
+	TCLAP::UnlabeledValueArg<std::string> cmd_vol_output("h5_volume_output", "post-processed overwritten input hdf5 volume", true, "NULL", "h5-volume-output");
 	cmd.add(cmd_vol_output);
 
-	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name", true, "NULL", "radar-name");
+	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name (SPC or GAT)", true, "NULL", "radar-name");
 	cmd.add(cmd_radar);
 
-	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Set path of fuzzy logic files", false, FUZZY_PATH, "path");
+	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Optional: Set path of fuzzy logic files and clutter maps. \n Default: /usr/share/elaboradar ", false, FUZZY_PATH, "path");
 	cmd.add(cmd_fuzzy_path);
 
-	TCLAP::SwitchArg cmd_use_undetect("U", "use-undetect", "Use undetect TODO", false);
+	TCLAP::SwitchArg cmd_use_undetect("U", "use-undetect", "Optional: Use undetect value (-31.15 dBZ) as DBZH replacing value for pixels classified as non meteorological echo. \nIf not passed, nodata value is used instead (99.95 dBZ)", false);
 	cmd.add(cmd_use_undetect);
 
 	cmd.parse(argc,argv);
@@ -69,17 +69,7 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_WRAD,&full_volume_wrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rohv);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
-	//try{
-	//loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
-	//}
-	//catch(const std::exception &exc){
-	//init_sqi = true;
-	//cout<<"impossible loading SQI: initialize to 0"<<endl;
-	//}
-	if(radar_name=="GAT")
-	  init_sqi=true;
-	else
-	  loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 
 	loader_all.load(cmd_vol_input.getValue());
 	//unica funzione fuzzy
@@ -89,13 +79,10 @@ int main(int argc,char* argv[])
 	  cout<<"last="<<last<<endl;
 	  
 	  if (full_volume_zdr.empty()){
-	    //inizializzo matrice di zeri
-	    //cout<<"ZDR empty"<<endl;
-	    //for (unsigned i=0; i<full_volume_z.size();++i){
-	    //full_volume_zdr.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
-	    //full_volume_zdr.at(i).row(i).setZero(); //0 sarebbe undetected, puoi scegliere altro valore
-	    //}
 	    is_zdr = false;
+	  }
+	  if(full_volume_sqi.empty()){
+	    init_sqi=true;
 	  }
 	  cout<<"full volume zdr size = "<<full_volume_zdr.size()<<" and z size "<<full_volume_z.size()<<endl;
 	  cout<<"is zdr="<<is_zdr<<endl;
