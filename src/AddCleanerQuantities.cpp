@@ -52,6 +52,7 @@ int main(int argc,char* argv[])
 	Z_VD.quantity="Z_VD";
 
 	std::string task;
+	bool is_zdr=false;
 
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_DBZH,&full_volume_z);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_ZDR,&full_volume_zdr);
@@ -87,12 +88,16 @@ int main(int argc,char* argv[])
 	    Texture.at(0).nodata=65535.;
 	    Texture.at(0).undetect=0.;
 	    Z_SDAz.push_back(Texture.at(0));
-// Texture ZDR 2D 
+// Texture ZDR 2D
+	    if( ! full_volume_zdr.empty()){
 	    Input_zdr.push_back(full_volume_zdr.at(i));
 	    radarelab::volume::textureSD( Input_zdr, Texture, 1000. , 3.,false);
 	    Texture.at(0).nodata=65535.;
 	    Texture.at(0).undetect=0.;
 	    ZDR_SD2D.push_back(Texture.at(0));
+
+	    is_zdr=true;
+	    }
 	    // Z_VD
 	    if(i<full_volume_z.size()-1){
 	      //radarelab::PolarScan<double> Z_VDi(full_volume_z.at(i));
@@ -116,12 +121,12 @@ int main(int argc,char* argv[])
 	storer.store_quantity_fp((Volume<double>*)(&Z_SDRay_9));
 	storer.store_quantity_fp((Volume<double>*)(&Z_SDRay_21));
 	storer.store_quantity_fp((Volume<double>*)(&Z_SDAz));
-	storer.store_quantity_fp((Volume<double>*)(&ZDR_SD2D));
+	if( is_zdr ) storer.store_quantity_fp((Volume<double>*)(&ZDR_SD2D));
 	storer.store_quantity_fp((Volume<double>*)(&Z_VD));
 	storer.store(argv[1]);
 	cout<<endl<<"Fine"<<endl;
 
-	cout<<"vol00 = "<<Z_VD.at(5)(30,40)<<" da raw2="<<full_volume_z.at(5)(30,40)<<" - raw1"<<full_volume_z.at(5)(30,40)<<endl;
+	//cout<<"vol00 = "<<Z_VD.at(5)(30,40)<<" da raw2="<<full_volume_z.at(5)(30,40)<<" - raw1"<<full_volume_z.at(5)(30,40)<<endl;
 }
 
 

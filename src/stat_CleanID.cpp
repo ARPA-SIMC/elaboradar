@@ -63,10 +63,7 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_WRAD,&full_volume_wrad);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rohv);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
-	if(radar_name=="GAT")
-	  init_sqi=true;
-	else
-	  loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 
 	loader_all.load(cmd_vol_input.getValue());
 
@@ -76,6 +73,9 @@ int main(int argc,char* argv[])
       if (full_volume_zdr.empty())
       {
 	is_zdr = false;
+      }
+      if (full_volume_sqi.empty()){
+	init_sqi = true;
       }
         //for (unsigned i = 0; i < 1; ++i){
       for (unsigned i = 0; i < full_volume_z.size(); ++i){
