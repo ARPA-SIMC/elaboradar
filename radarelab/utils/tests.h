@@ -14,6 +14,7 @@
 #include <exception>
 #include <functional>
 #include <vector>
+#include <cstdint>
 
 namespace radarelab {
 namespace utils {
