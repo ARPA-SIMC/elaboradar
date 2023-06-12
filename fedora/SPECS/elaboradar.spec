@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.19
+Version: 	0.20
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -85,6 +85,11 @@ make check
 %{_datadir}/%{name}/*
 
 %changelog
+* Mon Jun 12 2023 Daniele Branchini <dbranchini@arpae.it> - 0.20-1
+- Aggiunta mappe statiche corrette su 2 settori di occlusione valide fino al 30/5/2023
+- Aggiornamento mappe statiche originali correggendo un solo settore per l albero non ancora tagliato
+- Gestione generalizzata mancanza di SQI
+
 * Wed Apr 12 2023 Daniele Branchini <dbranchini@arpae.it> - 0.19-1
 - Fixed default fuzzypath
 
