@@ -247,11 +247,11 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
         z_volume = &th_volume;
     }
 
-    cout<<"z max ="<<z_volume->at(0).maxCoeff()<<endl;
+    //cout<<"z max ="<<z_volume->at(0).maxCoeff()<<endl;
     if (do_clean && !w_volume.empty() && !v_volume.empty())
     {
       if(sqi_volume.empty()) init_sqi = true;
-      cout<<"init_sqi"<<init_sqi<<endl;
+      //cout<<"init_sqi"<<init_sqi<<endl;
       if (zdr_volume.empty())
       {
 	//caso ZDR e grandezze polarimetriche assenti -> lascio versione master al 16/2/2022
@@ -275,7 +275,7 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 
 	unsigned last = z_volume->size() -1;
         for (unsigned i = 0; i < z_volume->size(); ++i){
-	    cout<<"it="<<i<<endl;
+	  //cout<<"it="<<i<<endl;
 	    //volume::Scans<unsigned char> full_volume_cleanID;
 	    volume::Scans<double>full_volume_diffprob;
 	    full_volume_cleanID.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
@@ -297,16 +297,16 @@ void CUM_BAC::read_sp20_volume(Volume<double>& volume, const Site& site, const c
 	        radarelab::volume::textureVD(Input, Input2, Texture, true);
 	        Texture.at(0).nodata=65535.;
 	        Texture.at(0).undetect=0.;
-		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 	    }
 	    else{
 	        Texture.clear();
-		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<endl;
 		Texture.append_scan(z_volume->at(i).beam_count,z_volume->at(i).beam_size,z_volume->at(i).elevation, z_volume->at(i).cell_size);
 		Texture.at(0).setZero();
 		Texture.at(0).nodata=65535.;
 	        Texture.at(0).undetect=0.;
-		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 	    }
 	    
 	    //algo::Cleaner::evaluateClassID(z_volume->at(i), w_volume.at(i), v_volume.at(i), zdr_volume.at(i), rhohv_volume.at(i), sqi_volume.at(i), snr_volume.at(i), Texture.at(0), full_volume_cleanID.at(i), v_volume.at(i).undetect , radar_name, i);

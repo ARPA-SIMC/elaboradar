@@ -223,13 +223,13 @@ std::vector<bool> Cleaner::clean_beam(const Eigen::VectorXd& beam_z, const Eigen
 	 }
          if( is_clutter) counter_clutter ++;
          if( is_trash  ) counter_trash ++;
-if(ibin <40 && false){
-	printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
-	printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
-	(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
-	(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
-	(unsigned char)((beam_sd(ibin)-SD.offset)/SD.gain/256));
-}       
+	 //if(ibin <40 && false){
+	 //printf(" %4d %4d  %6.2f %6.2f %10.6f %6.2f %6.2f ",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin), beam_sd(ibin),beam_sdzdr(ibin));
+	 //printf("     -----    %2x %2x %2x %2x ",(unsigned char)((beam_z(ibin)-scan_z.offset)/scan_z.gain/256),
+	 //(unsigned char)((beam_v(ibin)-scan_v.offset)/scan_v.gain/256),
+	 //(unsigned char)((beam_w(ibin)-scan_w.offset)/scan_w.gain/256),
+	 //(unsigned char)((beam_sd(ibin)-SD.offset)/SD.gain/256));
+	 //}       
         if (!in_a_segment)
         {
             /* cerco la prima cella segmento da pulire*/
@@ -750,7 +750,7 @@ std::vector<unsigned char> Cleaner::eval_clean_beam(const Eigen::VectorXd& beam_
 
     for (unsigned ibin = 0; ibin < beam_size; ++ibin)
     {
-printf(" %4d %4d  %6.2f %6.2f %10.6f  %10.6f %10.6f %10.6f",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin),beam_sd(ibin),beam_sdray(ibin),beam_sdaz(ibin));
+      //printf(" %4d %4d  %6.2f %6.2f %10.6f  %10.6f %10.6f %10.6f",iray,ibin , beam_z(ibin),beam_v(ibin),beam_w(ibin),beam_sd(ibin),beam_sdray(ibin),beam_sdaz(ibin));
 	if ((beam_w(ibin) > W_threshold && beam_v(ibin) != bin_wind_magic_number && beam_sd(ibin) >= 1. && 
 	    beam_sd(ibin) <= 10. ) || beam_z(ibin) == Z_missing) {
 	// this should be a meteorological echo
@@ -788,7 +788,7 @@ printf(" %4d %4d  %6.2f %6.2f %10.6f  %10.6f %10.6f %10.6f",iray,ibin , beam_z(i
             }
         }
         }   // ELSE this should be not a meteo echo
-printf("%2d %4d %4d %4d %4d %4d\n",res[ibin],countClutter,countIntStrong, countIntMed, countIntWeak, countNoise);
+	//printf("%2d %4d %4d %4d %4d %4d\n",res[ibin],countClutter,countIntStrong, countIntMed, countIntWeak, countNoise);
     }
 
     return res;
@@ -864,7 +864,7 @@ void Cleaner::evaluateClassID(PolarScan<double>& scan_z, PolarScan<double>& scan
     const unsigned beam_count = scan_z.beam_count;
     const unsigned beam_size = scan_z.beam_size;
 
-    cout<<"VRAD OFFSET="<<scan_v.offset<<" , GAIN="<<scan_v.gain<<endl;    
+    //cout<<"VRAD OFFSET="<<scan_v.offset<<" , GAIN="<<scan_v.gain<<endl;    
 
 // compute texture volumes
     radarelab::volume::Scans<double>   Z_S, SD2D, SD_Ray, SD_Az, ZDR_S, ZDR_SD2D;
