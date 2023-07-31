@@ -21,11 +21,8 @@ int main(int argc,char* argv[])
 {
 	TCLAP::CmdLine cmd("stat_CleanID ", ' ', "0.1" );
 
-	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "hdf5 volume input", true, "NULL", "h5-volume-output");
+	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "hdf5 volume input", true, "NULL", "h5-volume-input");
 	cmd.add(cmd_vol_input);
-
-	TCLAP::UnlabeledValueArg<std::string> cmd_vol_output("h5_volume_output", "hdf5 volume output", true, "NULL", "h5-volume-output");
-	cmd.add(cmd_vol_output);
 
 	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name", true, "NULL", "radar-name");
 	cmd.add(cmd_radar);
