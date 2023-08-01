@@ -24,9 +24,6 @@ int main(int argc,char* argv[])
 	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "hdf5 volume input", true, "NULL", "h5-volume-input");
 	cmd.add(cmd_vol_input);
 
-	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name", true, "NULL", "radar-name");
-	cmd.add(cmd_radar);
-
 	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Set path of fuzzy logic files", false, FUZZY_PATH, "path");
 	cmd.add(cmd_fuzzy_path);
 
@@ -50,7 +47,6 @@ int main(int argc,char* argv[])
 	full_volume_cleanID.quantity="ClassID";
 	full_volume_diffprob.quantity="Diffprob";
 	bool is_zdr=true;
-	string radar_name = cmd_radar.getValue();
 	bool init_sqi = false;
 	std::string task;
 
@@ -61,8 +57,13 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_RHOHV,&full_volume_rohv);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SNR,&full_volume_snr);
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
+	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 
 	loader_all.load(cmd_vol_input.getValue());
+	string radar_name = full_volume_z.load_info->source_name;
+	radar_name = radar_name.substr(2);
+	transform(radar_name.begin(), radar_name.end(), radar_name.begin(),::toupper);
+	cout<<"radarname "<<radar_name<<endl;
 
     if ( !full_volume_wrad.empty() && !full_volume_vrad.empty())
     {

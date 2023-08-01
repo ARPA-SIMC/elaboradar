@@ -246,7 +246,9 @@ struct LoadInfo
     /// Acquisition date
     time_t acq_date;
     /// flag true if data have been decluttered with Doppler at rsp level
-    bool declutter_rsp; 
+    bool declutter_rsp;
+    /// radar source name in capital letters (SPC or GAT) 
+    std::string source_name;
 
     LoadInfo()
         : declutter_rsp(false)

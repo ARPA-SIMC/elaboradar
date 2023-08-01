@@ -47,6 +47,24 @@ void ODIMLoader::load(const std::string& pathname)
 
     load_info->acq_date = volume->getDateTime();
 
+    try
+      {
+	//string sourcename(volume->getSource().Place.substr(2).c_str());
+	//transform(sourcename.begin(), sourcename.end(), sourcename.begin(),::toupper);
+	//cout<<"volume getsource : "<<sourcename<<endl;
+	string sourcename(volume->getSource().Place.c_str());
+	cout<<"volume getsource : "<<sourcename<<endl;
+        load_info->source_name = sourcename;
+      }
+    catch (std::exception& stde)
+      {
+	std::cerr << "Errore durante l'esecuzione: " << stde.what() << std::endl;
+      }
+    catch (...)
+      {
+	std::cerr << "Errore sconosciuto" << std::endl;
+      }
+
     double range_scale = 0;
 
     // Iterate all scans

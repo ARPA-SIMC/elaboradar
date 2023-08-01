@@ -26,9 +26,6 @@ int main(int argc,char* argv[])
 	TCLAP::UnlabeledValueArg<std::string> cmd_vol_output("h5_volume_output", "post-processed overwritten input hdf5 volume", true, "NULL", "h5-volume-output");
 	cmd.add(cmd_vol_output);
 
-	TCLAP::UnlabeledValueArg<std::string> cmd_radar("radar_name", "radar name (SPC or GAT)", true, "NULL", "radar-name");
-	cmd.add(cmd_radar);
-
 	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Optional: Set path of fuzzy logic files and clutter maps. \n Default: /usr/share/elaboradar ", false, FUZZY_PATH, "path");
 	cmd.add(cmd_fuzzy_path);
 
@@ -56,8 +53,6 @@ int main(int argc,char* argv[])
 	//volume::Scans<double> Z_VD;
 	std::string task;
 	bool is_zdr=true;
-	//string radar_name = "SPC";
-	string radar_name = cmd_radar.getValue();
 	bool init_sqi = false;
 
 	volume::Scans<double> SDZ6;
@@ -72,6 +67,10 @@ int main(int argc,char* argv[])
 	loader_all.request_quantity(odim::PRODUCT_QUANTITY_SQI,&full_volume_sqi);
 
 	loader_all.load(cmd_vol_input.getValue());
+	string radar_name = full_volume_z.load_info->source_name;
+	radar_name = radar_name.substr(2);
+	transform(radar_name.begin(), radar_name.end(), radar_name.begin(),::toupper);
+	
 	//unica funzione fuzzy
 	if( !full_volume_wrad.empty() && !full_volume_vrad.empty()){
 
