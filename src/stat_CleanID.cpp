@@ -63,7 +63,6 @@ int main(int argc,char* argv[])
 	string radar_name = full_volume_z.load_info->source_name;
 	radar_name = radar_name.substr(2);
 	transform(radar_name.begin(), radar_name.end(), radar_name.begin(),::toupper);
-	cout<<"radarname "<<radar_name<<endl;
 
     if ( !full_volume_wrad.empty() && !full_volume_vrad.empty())
     {
