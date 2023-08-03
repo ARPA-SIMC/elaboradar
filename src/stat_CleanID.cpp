@@ -135,7 +135,8 @@ int main(int argc,char* argv[])
     vector <std::string> Sweep(full_volume_cleanID.at(0).beam_count, "" );
     std::string my_time;         // formato "YYYY-MM-DD hh:mm:s
     my_time = Radar::timeutils::absoluteToString(full_volume_z.load_info->acq_date);
-    for (unsigned iel = 0; iel< full_volume_cleanID.size(); iel++){
+    //for (unsigned iel = 0; iel< full_volume_cleanID.size(); iel++){
+    for (unsigned iel = 0; iel< 6; iel++){
       //VectorXd  conteggi ;
       auto Weather = (full_volume_cleanID.at(iel).array() == 0 && full_volume_z.at(iel).array() >= -30.).rowwise().count() ;
       auto Clutter = (full_volume_cleanID.at(iel).array() == 1 ).rowwise().count() ;
