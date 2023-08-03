@@ -95,7 +95,7 @@ int main(int argc,char* argv[])
 		Texture.at(0).gain=200./65535.;
 	        Texture.at(0).offset=-100.;
 	        //Z_VD.push_back(Texture.at(0));
-		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 		//cout<<"z min"<<std::min(full_volume_z.at(i),100000)<<"z max"<<std::max(full_volume_z.at(i),0)<<endl;
 	      }
 	      else{
@@ -108,7 +108,7 @@ int main(int argc,char* argv[])
 	        Texture.at(0).undetect=0.;
 		Texture.at(0).gain=200./65535.;
 	        Texture.at(0).offset=-100.;
-		cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
+		//cout<<"it="<<i<<", Texture size = "<<Texture.size()<<" "<<Texture.at(0).size()<<endl;
 		//cout<<"Texture is zero?"<<Texture.at(0)(30,50)<<endl;
 	      }
 
@@ -121,7 +121,7 @@ int main(int argc,char* argv[])
 	      task="Cleaner base";
 	      double new_value=full_volume_z.at(last).nodata;
 	      if (cmd_use_undetect.getValue()) new_value=full_volume_z.at(last).undetect;
-	      cout<<"novalue"<<new_value<<endl;
+	      //cout<<"novalue"<<new_value<<endl;
 	      for (unsigned ii = 0; ii < full_volume_z.at(i).beam_count; ++ii)
                 for (unsigned ib = 0; ib < full_volume_z.at(i).beam_size; ++ib) {
 		  
