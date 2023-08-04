@@ -27,6 +27,9 @@ int main(int argc,char* argv[])
 	TCLAP::ValueArg<std::string> cmd_fuzzy_path("F", "fuzzy-path", "Set path of fuzzy logic files", false, FUZZY_PATH, "path");
 	cmd.add(cmd_fuzzy_path);
 
+	TCLAP::ValueArg<int> how_many_elev("N", "how-many-elev", "Number of sweeps to be analised", false, 6, "Number of sweeps to be analised");
+	cmd.add(how_many_elev);
+
 	TCLAP::SwitchArg cmd_use_undetect("U", "use-undetect", "Use undetect TODO", false);
 	cmd.add(cmd_use_undetect);
 
@@ -64,6 +67,7 @@ int main(int argc,char* argv[])
 	radar_name = radar_name.substr(2);
 	transform(radar_name.begin(), radar_name.end(), radar_name.begin(),::toupper);
 
+    int N_ELEV = full_volume_z.size() < how_many_elev.getValue() ? full_volume_z.size() : how_many_elev.getValue();
     if ( !full_volume_wrad.empty() && !full_volume_vrad.empty())
     {
       unsigned last = full_volume_z.size() -1;
@@ -74,8 +78,7 @@ int main(int argc,char* argv[])
       if (full_volume_sqi.empty()){
 	init_sqi = true;
       }
-        //for (unsigned i = 0; i < 1; ++i){
-      for (unsigned i = 0; i < full_volume_z.size(); ++i){
+      for (unsigned i = 0; i < N_ELEV ; ++i){
 	full_volume_cleanID.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size, 0);
 	  full_volume_diffprob.append_scan(full_volume_z.at(i).beam_count,full_volume_z.at(i).beam_size,full_volume_z.at(i).elevation, full_volume_z.at(i).cell_size);
 	  if(init_sqi){
@@ -135,8 +138,7 @@ int main(int argc,char* argv[])
     vector <std::string> Sweep(full_volume_cleanID.at(0).beam_count, "" );
     std::string my_time;         // formato "YYYY-MM-DD hh:mm:s
     my_time = Radar::timeutils::absoluteToString(full_volume_z.load_info->acq_date);
-    //for (unsigned iel = 0; iel< full_volume_cleanID.size(); iel++){
-    for (unsigned iel = 0; iel< 6; iel++){
+    for (unsigned iel = 0; iel< N_ELEV; iel++){
       //VectorXd  conteggi ;
       auto Weather = (full_volume_cleanID.at(iel).array() == 0 && full_volume_z.at(iel).array() >= -30.).rowwise().count() ;
       auto Clutter = (full_volume_cleanID.at(iel).array() == 1 ).rowwise().count() ;
@@ -147,11 +149,17 @@ int main(int argc,char* argv[])
 	//sprintf(Ray,", %5.1f, %5d, %5d, %5d, %5d",full_volume_z.at(iel).elevation, Weather(iray), Clutter(iray), Interf(iray), Noise(iray));
 	sprintf(Ray,", %5.1f, %5d, %5d, %5d",full_volume_z.at(iel).elevation, Weather(iray), Clutter(iray), Interf(iray));
         Sweep[iray] += Ray;	
-//	printf("%s,%5.1f,%6.1f, %5d, %5d, %5d, %5d\n",my_time.c_str(), full_volume_z.at(iel).elevation, full_volume_z.at(iel).azimuths_real(iray), 
-//		Weather(iray), Clutter(iray), Interf(iray), Noise(iray));
       }
     }
-	printf("DateTime, Azimuth, Elev_01, Weather_E01,Clutter_E01, Iterf_E01, Elev_02, Weather_E02,Clutter_E02, Iterf_E02, Elev_03, Weather_E03,Clutter_E03, Iterf_E03, Elev_04, Weather_E04,Clutter_E04, Iterf_E04, Elev_05, Weather_E05,Clutter_E05, Iterf_E05, Elev_06, Weather_E06,Clutter_E06, Iterf_E06\n");
+
+    // stampo tabella statistica output
+    std::string TabHeader="DateTime, Azimuth";
+    for (unsigned i=1; i<=N_ELEV; i++){
+	    char Header_Elev[50];
+	    sprintf(Header_Elev,", Elev_%2.2d, Weather_E%2.2d,Clutter_E%2.2d, Iterf_E%2.2d",i,i,i,i);
+	    TabHeader += Header_Elev;
+    }
+    printf("%s\n",TabHeader.c_str());
     for (unsigned iray=0; iray < Sweep.size(); iray ++){
 	printf("%s,%6.1f %s\n",my_time.c_str(), full_volume_z.at(0).azimuths_real(iray),Sweep[iray].c_str()); 
     }
