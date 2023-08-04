@@ -52,9 +52,9 @@ void ODIMLoader::load(const std::string& pathname)
 	//string sourcename(volume->getSource().Place.substr(2).c_str());
 	//transform(sourcename.begin(), sourcename.end(), sourcename.begin(),::toupper);
 	//cout<<"volume getsource : "<<sourcename<<endl;
-	string sourcename(volume->getSource().Place.c_str());
-	cout<<"volume getsource : "<<sourcename<<endl;
-        load_info->source_name = sourcename;
+//	string sourcename(volume->getSource().Place.c_str());
+//	cout<<"volume getsource : "<<sourcename<<endl;
+        load_info->source_name = volume->getSource().Place.c_str() ; //sourcename;
       }
     catch (std::exception& stde)
       {
