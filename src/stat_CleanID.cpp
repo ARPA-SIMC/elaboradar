@@ -19,7 +19,7 @@ namespace odim = OdimH5v21;
 
 int main(int argc,char* argv[])
 {
-	TCLAP::CmdLine cmd("stat_CleanID ", ' ', "0.1" );
+	TCLAP::CmdLine cmd("stat_CleanID ", ' ', "1.0" );
 
 	TCLAP::UnlabeledValueArg<std::string> cmd_vol_input("h5_volume_input", "hdf5 volume input", true, "NULL", "h5-volume-input");
 	cmd.add(cmd_vol_input);
