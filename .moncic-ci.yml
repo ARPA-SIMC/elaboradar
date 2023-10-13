@@ -1,6 +1,4 @@
-version: 1
-images:
- - name: rocky:8
- - name: fedora:36
- - name: fedora:38
-
+version: 2
+exclude_images:
+  - name: centos:7
+  - name: ubuntu:jammy
