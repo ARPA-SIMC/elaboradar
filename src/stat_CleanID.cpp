@@ -144,10 +144,11 @@ int main(int argc,char* argv[])
       auto Clutter = (full_volume_cleanID.at(iel).array() == 1 ).rowwise().count() ;
       auto Interf  = (full_volume_cleanID.at(iel).array() >= 2 && full_volume_cleanID.at(iel).array() <= 4 ).rowwise().count() ;
       //auto Noise   = (full_volume_cleanID.at(iel).array() == 5 ).rowwise().count() ;
+      int beam_size_elev  = full_volume_cleanID.at(iel).beam_size;
       for (unsigned iray=0; iray < full_volume_cleanID.at(iel).beam_count; iray ++){
         char Ray[50];
 	//sprintf(Ray,", %5.1f, %5d, %5d, %5d, %5d",full_volume_z.at(iel).elevation, Weather(iray), Clutter(iray), Interf(iray), Noise(iray));
-	sprintf(Ray,", %5.1f, %5d, %5d, %5d",full_volume_z.at(iel).elevation, Weather(iray), Clutter(iray), Interf(iray));
+	sprintf(Ray,", %5.1f, %5d, %5d, %5d, %5d",full_volume_z.at(iel).elevation, beam_size_elev,  Weather(iray), Clutter(iray), Interf(iray));
         Sweep[iray] += Ray;	
       }
     }
@@ -156,7 +157,7 @@ int main(int argc,char* argv[])
     std::string TabHeader="DateTime, Azimuth";
     for (unsigned i=1; i<=N_ELEV; i++){
 	    char Header_Elev[50];
-	    sprintf(Header_Elev,", Elev_%2.2d, Weather_E%2.2d,Clutter_E%2.2d, Iterf_E%2.2d",i,i,i,i);
+	    sprintf(Header_Elev,", Elev_%2.2d, Beam_size_%2.2d, Weather_E%2.2d,Clutter_E%2.2d, Iterf_E%2.2d",i,i,i,i,i);
 	    TabHeader += Header_Elev;
     }
     printf("%s\n",TabHeader.c_str());
