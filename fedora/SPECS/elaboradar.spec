@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.22
+Version: 	0.23
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -85,6 +85,9 @@ make check
 %{_datadir}/%{name}/*
 
 %changelog
+* Mon Oct 16 2023 Daniele Branchini <dbranchini@arpae.it> - 0.23-1
+- Corretto problema buffer overflow su stat_CleanID
+
 * Fri Oct 13 2023 Daniele Branchini <dbranchini@arpae.it> - 0.22-1
 - Rimosso il nome radar dagli argomenti passati in input da riga di comando a RunCleanID e stat_CleanID
 - Aggiunto il numero di elevazioni da stampare tra gli argomenti passati a stat_CleanID
