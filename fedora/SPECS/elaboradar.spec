@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.23
+Version: 	0.24
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -85,6 +85,9 @@ make check
 %{_datadir}/%{name}/*
 
 %changelog
+* Wed Oct 25 2023 Daniele Branchini <dbranchini@arpae.it> - 0.24-1
+- Modifiche files logica fuzzy per rimozione interferenza a 234-235 gradi di azimuth
+
 * Mon Oct 16 2023 Daniele Branchini <dbranchini@arpae.it> - 0.23-1
 - Corretto problema buffer overflow su stat_CleanID
 
