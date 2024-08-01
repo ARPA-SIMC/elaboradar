@@ -14,7 +14,7 @@
 4. 13. 55. 60. -30.\\DBZH-intmultiple
 0. 10. 40. 55. -30.\\DBZH-intmedie
 -5. 0. 30. 32. -30.\\DBZHintdeboli
-1. 1. 10. 20. 0.\\DBZH_SD2D-meteo0-.0.1-4.5-5.5
+0. 0.1 10. 25. 0.\\DBZH_SD2D-meteo0-.0.1-4.5-5.5
 1. 2. 18. 30. 0.\\DBZH_SD2D-clutter
 0.5 2.5 30. 38. 0.\\DBZH_SD2D-intmultiple:x0:0
 0.5 1.5 29. 32. 0.\\DBZH_SD2D-intmedie
