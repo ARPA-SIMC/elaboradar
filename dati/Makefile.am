@@ -30,6 +30,9 @@ pkgdataroot_DATA = \
 	FIRST_LEVEL_corto_SPC_PRI-EST_2011 \
 	FIRST_LEVEL_corto_SPC_PRI-EST_2011_15el \
 	FIRST_LEVEL_corto_SPC_PRI-EST_2011_alberi_2023-05-30-09-30 \
+        FIRST_LEVEL_corto_SPC_AUT_2011_alberi_2024 \
+        FIRST_LEVEL_corto_SPC_INV_2011_alberi_2024 \
+        FIRST_LEVEL_corto_SPC_PRI-EST_2011_alberi_2024 \
 	FIRST_LEVEL_medio_GAT \
 	FIRST_LEVEL_medio_SPC \
 	FIRST_LEVEL_medio_SPC_alberi_2023-05-30-09-30 \
