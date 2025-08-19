@@ -33,6 +33,7 @@ void CalcoloVIZ::classifico_VIZ()
     // kmax=ceil(z_size/res_vert_cil);
 
     if (t_ground < T_MAX_ML) kmax=0;/////se t suolo dentro t melting layer pongo kmax=00 e in tal modo non classifico
+    if (kbbb>z_size) kbbb=z_size;
     if (ktbb>z_size) ktbb=z_size;
     LOG_DEBUG("kmax= %i \n kbbb= %i \n ktbb= %i \n  z_size= %i",kmax,kbbb,ktbb,z_size);
 
@@ -53,48 +54,45 @@ void CalcoloVIZ::classifico_VIZ()
                     ext_bbb=res_vert_cil+ext_bbb;
                 }
             }
-//std::cout<<"Z_size :"<<z_size<<" kbbb :"<<kbbb<<" ktbb "<<ktbb<<std::endl;
             for(unsigned k=kbbb; k<ktbb; k++)
             {
-                if (k < 4 ){
-                    if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5.){
-                        if (cil(i, j, k) - cil(i, j, k+4) > 5.)
+                // Controllo inserito perché dentro a questo blocco prende le colonna k-4 e k+4
+                if (k >= 4 || k < z_size - 4) {
+                    if (k < 4 ){
+                        if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5.){
+                            if (cil(i, j, k) - cil(i, j, k+4) > 5.)
+                                stratiform(i, j)=1;
+                        }
+                    }
+                    else if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5. &&  cil(i, j, k-4) > 5.){
+                        if (cil(i, j, k) - cil(i, j, k+4) > 5.&&   cil(i, j, k)- cil(i, j, k-4) > 5. )
                             stratiform(i, j)=1;
+
                     }
-                }
-                else if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5. &&  cil(i, j, k-4) > 5.){
-                    if (cil(i, j, k) - cil(i, j, k+4) > 5.&&   cil(i, j, k)- cil(i, j, k-4) > 5. )
+
+                    if (cil(i, j, k) - cil(i, j, k+4) > 5.)
                         stratiform(i, j)=1;
-
                 }
+            }
 
-                if (cil(i, j, k) - cil(i, j, k+4) > 5.)
-                    stratiform(i, j)=1;
-
-                for(k=ktbb; k<z_size; k++)
-                {
-                    if (cil(i, j, k) > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
-                        base=(cil(i, j, k))/10.;
-                        cil_Z=pow(10.,base);
-                        Zabb(i, j) = Zabb(i, j) + res_vert_cil*cil_Z;
-                        ext_abb=res_vert_cil+ext_abb;
-                    }
+            for(k=ktbb; k<z_size; k++)
+            {
+                if (cil(i, j, k) > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
+                    base=(cil(i, j, k))/10.;
+                    cil_Z=pow(10.,base);
+                    Zabb(i, j) = Zabb(i, j) + res_vert_cil*cil_Z;
+                    ext_abb=res_vert_cil+ext_abb;
                 }
+            }
 
 
-                //solo se l'estensione verticale del segnale sopra il top della bright band è maggiore di 0.8 Km classifico
+            //solo se l'estensione verticale del segnale sopra il top della bright band è maggiore di 0.8 Km classifico
 
-                if (ext_bbb +  ext_abb>0.8) {
-                    //if ( ext_abb>0.8) {
-                    if ((Zabb(i, j) +Zbbb(i, j))/(ext_bbb+ext_abb) > THR_VIZ){
-                        //if ((Zabb(i, j) /ext_abb) > THR_VIZ){
-                        conv_VIZ(i, j)=CONV_VAL;
-                        //lista_conv[ncv][0]= i;
-                        //lista_conv[ncv][1]= j;
-                        ncv=ncv+1;
-                    }
+            if (ext_bbb +  ext_abb>0.8) {
+                if ((Zabb(i, j) +Zbbb(i, j))/(ext_bbb+ext_abb) > THR_VIZ){
+                    conv_VIZ(i, j)=CONV_VAL;
+                    ncv=ncv+1;
                 }
-
             }
         }
     }
