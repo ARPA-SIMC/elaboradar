@@ -56,8 +56,8 @@ void CalcoloVIZ::classifico_VIZ()
             }
             for(unsigned k=kbbb; k<ktbb; k++)
             {
-                // Controllo inserito perché dentro a questo blocco prende le colonna k-4 e k+4
-                if (k >= 4 || k < z_size - 4) {
+                // Controllo inserito perché dentro a questo blocco prende le colonna k-4 e k+4, per evitare che vada fuori i limiti della matrice cil
+                if (k >= 4 && k < z_size - 4) {
                     if (k < 4 ){
                         if (cil(i, j, k)>10. &&  cil(i, j, k+4)> 5.){
                             if (cil(i, j, k) - cil(i, j, k+4) > 5.)
@@ -75,7 +75,7 @@ void CalcoloVIZ::classifico_VIZ()
                 }
             }
 
-            for(k=ktbb; k<z_size; k++)
+            for(unsigned k=ktbb; k<z_size; k++)
             {
                 if (cil(i, j, k) > -19.){    // 08/01/2013..modifica, prendo fin dove ho un segnale
                     base=(cil(i, j, k))/10.;
