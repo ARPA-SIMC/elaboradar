@@ -3,7 +3,7 @@
 
 Summary:	Library and tools to handle weather radar images and data
 Name: 		elaboradar
-Version: 	0.25
+Version: 	0.26
 Release: 	1
 License: 	GPL
 Group: 		Applications/Meteo
@@ -85,6 +85,10 @@ make check
 %{_datadir}/%{name}/*
 
 %changelog
+* Mon Aug 25 2025 Emanuele Di Giacomo <edigiacomo@arpae.it> - 0.26-1
+- Fix per non uscire dai limiti della matrice cilindrica durante il ciclo verticale
+- Correzione di un for annidato per errore durante il ciclo verticale
+
 * Wed Jan 15 2025 Daniele Branchini <dbranchini@arpae.it> - 0.25-1
 - Aggiunte mappe statiche per alberi 2024
 
